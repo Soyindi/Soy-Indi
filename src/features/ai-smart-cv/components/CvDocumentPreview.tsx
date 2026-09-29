@@ -6,13 +6,32 @@ import { Mail, Phone, MapPin, Globe, ShieldCheck, Link2 } from 'lucide-react';
 
 interface CvDocumentPreviewProps {
   cv: CVFormValues;
+  pageFormat?: 'letter' | 'a4';
 }
 
-export function CvDocumentPreview({ cv }: CvDocumentPreviewProps) {
+export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPreviewProps) {
   const { content } = cv;
 
   return (
-    <div className="w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 font-sans border border-zinc-200 min-h-[850px] flex flex-col justify-between selection:bg-indigo-100 selection:text-indigo-900">
+    <div className={`w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 font-sans border border-zinc-200 flex flex-col justify-between selection:bg-indigo-100 selection:text-indigo-900 transition-all ${
+      pageFormat === 'a4' ? 'min-h-[920px] max-w-[800px] mx-auto' : 'min-h-[850px] max-w-[820px] mx-auto'
+    }`}>
+      {/* Estilos de impresión dinámicos según formato seleccionado */}
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: ${pageFormat === 'a4' ? 'A4' : 'letter'};
+            margin: 12mm 15mm;
+          }
+          body {
+            background: white !important;
+            color: black !important;
+          }
+          header, nav, button, .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
       <div>
         {/* Cabecera del CV */}
         <div className="border-b-2 border-zinc-900 pb-5 mb-6">

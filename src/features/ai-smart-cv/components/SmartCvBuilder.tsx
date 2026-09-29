@@ -23,7 +23,8 @@ import {
   PenTool,
   Link2,
   Globe,
-  Trash2
+  Trash2,
+  Download
 } from 'lucide-react';
 
 export function SmartCvBuilder() {
@@ -38,6 +39,9 @@ export function SmartCvBuilder() {
 
   // Modo de visualización: 'split' (ambos), 'edit' (solo editor), 'preview' (solo documento)
   const [viewMode, setViewMode] = useState<'split' | 'edit' | 'preview'>('split');
+  // Formato de página: 'letter' (EE.UU./Tech/Silicon Valley) o 'a4' (LatAm/Europa/Global)
+  const [pageFormat, setPageFormat] = useState<'letter' | 'a4'>('letter');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [formData, setFormData] = useState<CVFormValues>({
     title: 'CV Ejecutivo 2026',
@@ -216,8 +220,23 @@ export function SmartCvBuilder() {
     });
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPdf = () => {
+    setIsDownloading(true);
+    const sanitizedName = (formData.content.fullName || 'Profesional')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]/g, '_');
+    
+    const originalTitle = document.title;
+    document.title = `CV_${sanitizedName}_2026`;
+
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.title = originalTitle;
+        setIsDownloading(false);
+      }, 1000);
+    }, 250);
   };
 
   return (
@@ -299,13 +318,42 @@ export function SmartCvBuilder() {
           <span className="font-mono font-bold text-white">{currentScore}% ATS</span>
         </button>
 
-        {/* Imprimir / PDF */}
+        {/* Selector Dinámico de Formato de Página */}
+        <div className="hidden sm:flex bg-slate-900/80 p-0.5 rounded-xl border border-white/10 text-xs font-mono">
+          <button
+            type="button"
+            onClick={() => setPageFormat('letter')}
+            className={`px-2.5 py-1.5 rounded-lg transition-all ${
+              pageFormat === 'letter' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
+            }`}
+            title="Formato Carta (8.5x11 pulgadas - Estándar EE.UU./Canadá/Tech)"
+          >
+            Carta (US)
+          </button>
+          <button
+            type="button"
+            onClick={() => setPageFormat('a4')}
+            className={`px-2.5 py-1.5 rounded-lg transition-all ${
+              pageFormat === 'a4' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
+            }`}
+            title="Formato A4 (210x297mm - Estándar Europa/LatAm/Global)"
+          >
+            A4
+          </button>
+        </div>
+
+        {/* Descargar PDF Directo */}
         <button
-          onClick={handlePrint}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs font-medium transition-all"
+          onClick={handleDownloadPdf}
+          disabled={isDownloading}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
         >
-          <Printer className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="hidden sm:inline">Imprimir</span>
+          {isDownloading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Download className="w-3.5 h-3.5" />
+          )}
+          <span>{isDownloading ? 'Generando PDF...' : 'Descargar PDF'}</span>
         </button>
 
         {/* Guardar CV */}
@@ -628,16 +676,18 @@ export function SmartCvBuilder() {
           </div>
         )}
 
-        {/* Columna Documento Previsualizado (Tipografía Suiza A4) */}
+        {/* Columna Documento Previsualizado (Tipografía Suiza) */}
         {(viewMode === 'split' || viewMode === 'preview') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'w-full'} sticky top-6`}>
             <div className="flex items-center justify-between mb-3 px-1 text-xs text-zinc-400 font-mono">
-              <span>DOCUMENTO A4 (ATS COMPATIBLE)</span>
-              <span>ESTÁNDAR EDITORIAL SUIZO</span>
+              <span className="uppercase font-semibold text-slate-300">
+                FORMATO {pageFormat === 'letter' ? 'CARTA (US LETTER • 8.5x11")' : 'A4 (GLOBAL • 210x297mm)'}
+              </span>
+              <span className="text-[11px] text-cyan-400">DUAL-TARGET ATS</span>
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
-              <CvDocumentPreview cv={formData} />
+              <CvDocumentPreview cv={formData} pageFormat={pageFormat} />
             </div>
           </div>
         )}
