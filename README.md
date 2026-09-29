@@ -49,7 +49,12 @@ A diferencia de las tarjetas de visita de papel tradicionales —que el 88% de l
 - **Asistente Generador con IA**: Estructura títulos, contenidos y notas del orador a partir de una simple idea o propuesta comercial.
 - **Temas de Alto Impacto**: Paletas oscuras inmersivas (*Orbital Cyber*, *Emerald Aurora*, *Deep Space*) con iluminación volumétrica reactiva.
 
-### 4. 🚪 Onboarding Hub Guiado (`/start`)
+### 4. 🎛️ Dashboard Unificado Multientidad (`/dashboard`)
+- **Gestión Centralizada con Pestañas**: Monitorea y administra en un solo panel tus Tarjetas Digitales, Smart CVs y Presentaciones.
+- **Métricas Agregadas**: Visitas globales en Edge, clicks en WhatsApp e interacciones directas.
+- **Navegación Bidireccional Continua**: Cabecera universal `AppEditorHeader` con botón *"← Volver al Panel"* en todos los editores y redirección fluida tras guardar.
+
+### 5. 🚪 Onboarding Hub Guiado (`/start`)
 - Al iniciar la prueba de 15 días, el usuario accede a un selector interactivo (*Job-to-be-Done*) que le permite elegir por dónde empezar (Tarjeta, CV o Presentación) con estimaciones de tiempo (2 a 4 minutos).
 
 ---
@@ -76,16 +81,19 @@ src/
 │   ├── api/                     # Handlers de Autenticación y Open Graph
 │   │   ├── auth/[...all]/route.ts # Better-Auth universal
 │   │   └── og/route.tsx         # Generador de Open Graph en Edge con @vercel/og
-│   ├── c/[slug]/page.tsx        # Vista pública Server Component de tarjeta
-│   ├── cards/                   # Dashboard de gestión (/cards) y Creador (/cards/new)
-│   ├── cv/                      # Optimizador de Smart CV ATS
-│   ├── presentations/           # Estudio cinematográfico de presentaciones 16:9
+│   ├── c/[slug]/page.tsx        # Vista pública Server Component de tarjeta con barra de retorno
+│   ├── cards/                   # Redirección a /dashboard?tab=cards
+│   ├── cards/new/               # Creador en tiempo real con AppEditorHeader
+│   ├── cv/                      # Optimizador de Smart CV ATS con AppEditorHeader
+│   ├── dashboard/               # Panel central unificado con pestañas (/dashboard)
+│   ├── presentations/           # Estudio cinematográfico 16:9 con AppEditorHeader
 │   ├── pricing/                 # Página comercial con comparativa, FAQ y garantías
 │   ├── start/                   # Onboarding Hub interactivo (Prueba 15 días)
 │   └── page.tsx                 # Landing Page de alta conversión en 7 bloques
 ├── features/                    # Módulos de lógica de negocio (FSD)
 │   ├── card-builder/            # Formularios reactivos, dashboard actions y temas
 │   ├── ai-smart-cv/             # Auditoría heurística ATS y maquetador A4
+│   ├── dashboard/               # UnifiedDashboardView (Tarjetas, CVs y Presentaciones)
 │   ├── orbital-presentations/   # Visor de diapositivas 16:9 y generador IA
 │   ├── visual-effects/          # SmartParticles v3.0 anti-colisión acelerado por GPU
 │   ├── onboarding/              # Grid interactivo de selección de proyectos
@@ -95,7 +103,8 @@ src/
 │   └── subscription/            # Tipos de membresía y entitlements
 └── shared/                      # Primitivas transversales reutilizables
     ├── api/db.ts                # Cliente unificado Turso LibSQL (dual local/nube)
-    └── lib/auth.ts              # Configuración Better-Auth
+    ├── lib/auth.ts              # Configuración Better-Auth
+    └── ui/                      # AppEditorHeader (navegación continua), logos y componentes atómicos
 ```
 
 ### Tecnologías Clave:
