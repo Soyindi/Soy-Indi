@@ -58,6 +58,9 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
           credentialType: 'UNVERIFIED',
         })),
         credentials: [],
+        signatureType: 'NONE',
+        signatureUrl: '',
+        signatureDate: '',
       },
     };
 

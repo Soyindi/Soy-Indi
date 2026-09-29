@@ -71,6 +71,14 @@ export const cvFormSchema = z.object({
     experience: z.array(cvExperienceSchema).default([]),
     education: z.array(cvEducationSchema).default([]),
     credentials: z.array(verifiedCredentialSchema).optional().default([]),
+    // Enlaces Profesionales Modernos
+    linkedinUrl: z.string().optional(),
+    websiteUrl: z.string().optional(),
+    indiCardSlug: z.string().optional(),
+    // Firma Digital Ejecutiva
+    signatureUrl: z.string().optional(),
+    signatureType: z.enum(['DRAWN', 'UPLOADED', 'TYPOGRAPHIC', 'NONE']).optional().default('NONE'),
+    signatureDate: z.string().optional(),
   }),
 });
 
