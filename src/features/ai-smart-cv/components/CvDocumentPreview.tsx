@@ -23,6 +23,10 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
   const page1Experiences = needsTwoPages ? content.experience.slice(0, 3) : content.experience;
   const page2Experiences = needsTwoPages ? content.experience.slice(3) : [];
 
+  // Helper de sanitización: previene viñetas duplicadas (• •) si el texto ya trae viñeta literal
+  const cleanBullet = (text: string) =>
+    text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '').trim();
+
   const pageDimensions =
     pageFormat === 'a4'
       ? 'min-h-[1050px] max-w-[800px] mx-auto'
@@ -163,7 +167,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                         <ul className="list-disc list-inside space-y-1.5 text-zinc-600 pl-0.5">
                           {exp.bullets.map((b, bIdx) => (
                             <li key={bIdx} className="leading-snug">
-                              {b}
+                              {cleanBullet(b)}
                             </li>
                           ))}
                         </ul>
@@ -275,7 +279,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                           <ul className="list-disc list-inside space-y-1.5 text-zinc-600 pl-0.5">
                             {exp.bullets.map((b, bIdx) => (
                               <li key={bIdx} className="leading-snug">
-                                {b}
+                                {cleanBullet(b)}
                               </li>
                             ))}
                           </ul>

@@ -728,7 +728,10 @@ export function SmartCvBuilder() {
                         rows={3}
                         value={exp.bullets.join('\n')}
                         onChange={(e) => {
-                          const newBullets = e.target.value.split('\n').filter(Boolean);
+                          const newBullets = e.target.value
+                            .split('\n')
+                            .map((b) => b.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim())
+                            .filter(Boolean);
                           const updated = [...formData.content.experience];
                           updated[idx].bullets = newBullets;
                           handleContentChange('experience', updated);

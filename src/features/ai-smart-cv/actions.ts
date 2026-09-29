@@ -48,9 +48,11 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
           company: exp.company,
           role: exp.role,
           period: exp.period,
-          bullets: exp.xyzBullets.map((b) => b.text),
+          bullets: exp.xyzBullets.map((b) =>
+            b.text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim()
+          ),
           detailedBullets: exp.xyzBullets.map((b) => ({
-            text: b.text,
+            text: b.text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim(),
             needs_metric: b.needs_metric,
           })),
         })),

@@ -222,20 +222,43 @@ export function parseCvTextToStructuredData(
   } | null = null;
 
   const datePattern = /(?:(?:ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+)?(?:19|20)\d{2}\b/i;
+  // Regex universal de caracteres de viñeta: bullets unicode, guiones, asteriscos, círculos, etc.
+  const bulletSymbolRegex = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/g;
+  const stripLeadingBullet = (s: string) => s.replace(bulletSymbolRegex, '').trim();
   let pendingCompanyCandidate = '';
 
-  for (let i = 0; i < expLines.length; i++) {
-    const line = expLines[i];
-    const hasYear = datePattern.test(line);
-    const isBullet = line.startsWith('•') || line.startsWith('-') || line.startsWith('*') || line.startsWith('>');
+  // Helper para detectar si una línea parece un cargo profesional nuevo
+  const looksLikeRoleHeader = (str: string): boolean => {
+    const s = str.toLowerCase();
+    const roleKeywords = [
+      'psicólog', 'psicolog', 'ingenier', 'desarrollador', 'analista', 'consultor',
+      'coordinador', 'director', 'jefe', 'especialista', 'docente', 'profesor',
+      'terapeuta', 'investigador', 'asistente', 'practicante', 'reemplazante', 'encargado'
+    ];
+    return roleKeywords.some((k) => s.includes(k));
+  };
 
-    if (hasYear && !isBullet) {
+  for (let i = 0; i < expLines.length; i++) {
+    const rawLine = expLines[i];
+    const strippedLine = stripLeadingBullet(rawLine);
+    const hasBulletPrefix = rawLine !== strippedLine;
+    const hasYear = datePattern.test(strippedLine);
+    const isRoleHeader = looksLikeRoleHeader(strippedLine);
+
+    // Condición para nueva experiencia:
+    // 1. Tiene fecha identificable y no es un logro largo
+    // 2. O contiene un cargo profesional evidente con institución asociada (ej. "Psicólogo (Reemplazante) · Hospital...")
+    const isNewRole =
+      (hasYear && strippedLine.length < 120 && !strippedLine.includes('reducción') && !strippedLine.includes('diseño')) ||
+      (isRoleHeader && (strippedLine.includes('·') || strippedLine.includes(' - ') || strippedLine.includes('(')) && strippedLine.length < 130);
+
+    if (isNewRole) {
       if (currentExp && (currentExp.xyzBullets.length > 0 || currentExp.role)) {
         experience.push(currentExp);
       }
 
-      // Separar componentes en la misma línea
-      const parts = line.split(/[|–—\-·•]/).map((p) => p.trim()).filter(Boolean);
+      // Separar componentes (Cargo · Empresa / Institución - Fechas)
+      const parts = strippedLine.split(/[|–—\-·•]/).map((p) => p.trim()).filter(Boolean);
       let period = '';
       let inlineCompany = '';
       let role = '';
@@ -243,6 +266,10 @@ export function parseCvTextToStructuredData(
       parts.forEach((p) => {
         if (datePattern.test(p)) {
           period = period ? `${period} - ${p}` : p;
+        } else if (!role && looksLikeRoleHeader(p)) {
+          role = p;
+        } else if (!inlineCompany && (p.toLowerCase().includes('hospital') || p.toLowerCase().includes('clínica') || p.toLowerCase().includes('sodexo') || p.toLowerCase().includes('universidad') || p.toLowerCase().includes('programa') || p.toLowerCase().includes('empresa') || p.toLowerCase().includes('instituto'))) {
+          inlineCompany = p;
         } else if (!role) {
           role = p;
         } else if (!inlineCompany) {
@@ -257,15 +284,15 @@ export function parseCvTextToStructuredData(
       currentExp = {
         company: effectiveCompany,
         role: role || targetRole,
-        period: period || '2022 - Presente',
+        period: period || (hasYear ? 'Periodo Registrado' : '2022 - Presente'),
         rawAchievements: [],
         xyzBullets: [],
       };
-    } else if (!isBullet && line.length < 65 && !line.includes(':')) {
+    } else if (!hasBulletPrefix && strippedLine.length < 65 && !strippedLine.includes(':') && !hasYear) {
       // Línea candidata a ser el nombre de la empresa u organización
-      pendingCompanyCandidate = line;
+      pendingCompanyCandidate = strippedLine;
     } else if (currentExp) {
-      const cleanBullet = line.replace(/^[•\-*>\s]+/, '').trim();
+      const cleanBullet = stripLeadingBullet(strippedLine);
       if (cleanBullet.length > 5) {
         const hasMetric = /\b(?:\d+[%kKmM]?|\$\d+|\d+\s?(?:personas|usuarios|pacientes|clientes|meses|días|proyectos))\b/i.test(
           cleanBullet
