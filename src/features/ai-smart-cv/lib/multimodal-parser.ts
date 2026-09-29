@@ -1,4 +1,5 @@
 import { multimodalCvExtractionSchema, MultimodalCvExtraction, verifiedCredentialSchema, VerifiedCredential } from '@/entities/cv/schemas';
+import { parseCvTextToStructuredData } from '@/features/ai-smart-cv/lib/cv-text-parser';
 
 /**
  * Prompt para el extractor multimodal Qwen2.5-VL / Gemini Flash
@@ -88,9 +89,57 @@ export async function parseCvDocumentMultimodal(
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
   const geminiApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-  // Si hay API key de OpenRouter configurada, invocar Qwen2.5-VL 72B / 7B
+  // 1. Extracción de texto real desde documentos PDF o texto plano
+  let extractedRawText = '';
+  const isPdf =
+    mimeType.includes('pdf') ||
+    fileName.toLowerCase().endsWith('.pdf') ||
+    fileBase64.startsWith('JVBERi0');
+
+  if (isPdf) {
+    try {
+      const { extractText } = await import('unpdf');
+      const buffer = Buffer.from(fileBase64, 'base64');
+      const uint8 = new Uint8Array(buffer);
+      const res = await extractText(uint8);
+      extractedRawText = Array.isArray(res.text) ? res.text.join('\n') : (res.text || '');
+      console.log(`[IDP] Texto extraído exitosamente de PDF ${fileName} (${extractedRawText.length} caracteres)`);
+    } catch (pdfErr) {
+      console.warn('[IDP] Error extrayendo texto con unpdf:', pdfErr);
+    }
+  } else if (
+    mimeType.includes('text') ||
+    fileName.toLowerCase().endsWith('.txt') ||
+    fileName.toLowerCase().endsWith('.md')
+  ) {
+    try {
+      extractedRawText = Buffer.from(fileBase64, 'base64').toString('utf-8');
+    } catch (e) {
+      console.warn('[IDP] Error decodificando texto plano:', e);
+    }
+  }
+
+  // 2. Si hay API key de OpenRouter configurada, invocar Qwen2.5-VL 72B / 7B
   if (openRouterApiKey) {
     try {
+      const promptContent: any[] = [
+        {
+          type: 'text',
+          text: extractedRawText
+            ? `Extrae y optimiza este CV respetando la fórmula Google XYZ y marcando needs_metric a partir del siguiente texto extraído del documento:\n\n${extractedRawText.slice(0, 12000)}`
+            : 'Extrae y optimiza este CV respetando la fórmula Google XYZ y marcando needs_metric.',
+        },
+      ];
+
+      if (!extractedRawText || extractedRawText.length < 50) {
+        promptContent.push({
+          type: 'image_url',
+          image_url: {
+            url: `data:${mimeType};base64,${fileBase64}`,
+          },
+        });
+      }
+
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -108,18 +157,7 @@ export async function parseCvDocumentMultimodal(
             },
             {
               role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: 'Extrae y optimiza este CV respetando la fórmula Google XYZ y marcando needs_metric.',
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: `data:${mimeType};base64,${fileBase64}`,
-                  },
-                },
-              ],
+              content: promptContent,
             },
           ],
           response_format: { type: 'json_object' },
@@ -139,8 +177,12 @@ export async function parseCvDocumentMultimodal(
     }
   }
 
-  // Fallback Inteligente y Determinista con Algoritmo de Detección STAR/XYZ
-  // Garantiza que el usuario pueda usar el sistema de inmediato incluso sin API keys externas
+  // 3. Si se extrajo texto real del documento del usuario, parsearlo de inmediato
+  if (extractedRawText && extractedRawText.trim().length > 30) {
+    return parseCvTextToStructuredData(extractedRawText, fileName);
+  }
+
+  // 4. Fallback si el archivo era una imagen o no se pudo extraer texto
   return synthesizeDeterministicExtraction(fileName);
 }
 

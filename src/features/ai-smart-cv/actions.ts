@@ -39,6 +39,9 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
         email: extracted.email || 'contacto@indi.bio',
         phone: extracted.phone || '+56 9 0000 0000',
         location: extracted.location || 'Chile / Remoto',
+        rut: extracted.rut || undefined,
+        linkedinUrl: extracted.linkedinUrl || undefined,
+        websiteUrl: extracted.websiteUrl || undefined,
         summary: extracted.summary || '',
         skills: extracted.skills.length > 0 ? extracted.skills : ['Estrategia', 'Gestión', 'Liderazgo'],
         experience: extracted.experience.map((exp) => ({
