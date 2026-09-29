@@ -227,7 +227,8 @@ export async function generateAndDownloadCvPdf(
     // Si hay rúbrica o imagen de firma
     if (content.signatureUrl && content.signatureUrl.startsWith('data:image')) {
       try {
-        doc.addImage(content.signatureUrl, 'PNG', signatureBlockX + 5, cursorY, 45, 16);
+        const imgFormat = content.signatureUrl.includes('image/jpeg') || content.signatureUrl.includes('image/jpg') ? 'JPEG' : 'PNG';
+        doc.addImage(content.signatureUrl, imgFormat, signatureBlockX + 5, cursorY, 45, 16);
         cursorY += 17;
       } catch (e) {
         console.warn('No se pudo incrustar la imagen de firma en PDF:', e);
@@ -300,6 +301,21 @@ export async function generateAndDownloadCvPdf(
   
   const finalFilename = options.filename || `CV_${sanitizedName}_2026.pdf`;
 
-  // Disparar descarga directa en 1 clic
-  doc.save(finalFilename);
+  // Disparar descarga directa mediante Blob nativo en el cliente
+  if (typeof window !== 'undefined') {
+    const pdfBlob = doc.output('blob');
+    const blobUrl = window.URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = finalFilename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    }, 1500);
+  } else {
+    doc.save(finalFilename);
+  }
 }

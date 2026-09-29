@@ -42,6 +42,8 @@ export function SmartCvBuilder() {
   // Formato de página: 'letter' (EE.UU./Tech/Silicon Valley) o 'a4' (LatAm/Europa/Global)
   const [pageFormat, setPageFormat] = useState<'letter' | 'a4'>('letter');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<CVFormValues>({
     title: 'CV Ejecutivo 2026',
@@ -222,10 +224,15 @@ export function SmartCvBuilder() {
 
   const handleDownloadPdf = async () => {
     setIsDownloading(true);
+    setDownloadError(null);
     try {
       await generateAndDownloadCvPdf(formData, { format: pageFormat });
-    } catch (err) {
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 3500);
+    } catch (err: any) {
       console.error('Error al generar PDF vectorial directo:', err);
+      setDownloadError(err?.message || 'Error al generar el PDF. Por favor reintenta.');
+      setTimeout(() => setDownloadError(null), 5000);
     } finally {
       setIsDownloading(false);
     }
@@ -338,15 +345,31 @@ export function SmartCvBuilder() {
         <button
           onClick={handleDownloadPdf}
           disabled={isDownloading}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+          className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all disabled:opacity-50 ${
+            downloadSuccess
+              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-emerald-500/20'
+              : downloadError
+              ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+              : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+          }`}
           title="Descarga directa del archivo PDF vectorial (Compatible con ATS)"
         >
           {isDownloading ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : downloadSuccess ? (
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
           ) : (
             <Download className="w-3.5 h-3.5" />
           )}
-          <span>{isDownloading ? 'Generando PDF...' : 'Descargar PDF'}</span>
+          <span>
+            {isDownloading
+              ? 'Generando PDF...'
+              : downloadSuccess
+              ? '¡PDF Descargado!'
+              : downloadError
+              ? 'Error al descargar'
+              : 'Descargar PDF'}
+          </span>
         </button>
 
         {/* Guardar CV */}
