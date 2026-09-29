@@ -150,17 +150,17 @@ export function UnifiedDashboardView({
 
       {/* Barra de Navegación Global del Dashboard */}
       <div className="flex items-center justify-between pb-6 mb-8 border-b border-white/10">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
-            href="/"
+            href="/start"
             className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition-all shadow-sm"
-            title="Volver a la Página Principal"
+            title="Volver al Selector de Inicio"
           >
             <span className="text-zinc-500 group-hover:-translate-x-0.5 transition-transform">←</span>
-            <span>Volver al Inicio</span>
+            <span>Menú de Inicio</span>
           </Link>
 
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2" title="Ir a la Web Principal">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px]">
               <div className="w-full h-full bg-black/80 rounded-[7px] flex items-center justify-center">
                 <span className="font-black text-xs text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
