@@ -127,7 +127,7 @@ export function parseCvTextToStructuredData(
       lower.includes('lead') ||
       lower.includes('diseñador')
     ) {
-      targetRole = l.length > 60 ? l.slice(0, 57) + '...' : l;
+      targetRole = l.trim();
       break;
     }
   }
@@ -262,26 +262,35 @@ export function parseCvTextToStructuredData(
 
   for (let i = 0; i < expLines.length; i++) {
     const rawLine = expLines[i];
-    const strippedLine = stripLeadingBullet(rawLine);
+    let strippedLine = stripLeadingBullet(rawLine);
     const hasBulletPrefix = rawLine !== strippedLine;
     const hasYear = datePattern.test(strippedLine);
     const isRoleHeader = looksLikeRoleHeader(strippedLine);
 
     // Condición para nueva experiencia:
-    // 1. Tiene fecha identificable y no es un logro largo
-    // 2. O contiene un cargo profesional evidente con institución asociada (ej. "Psicólogo (Reemplazante) · Hospital...")
+    // 1. Es un encabezado de cargo evidente (ej: "Psicólogo de Reinserción Social · Complejo...")
+    // 2. O contiene fecha y no es un logro
     const isNewRole =
-      (hasYear && strippedLine.length < 120 && !strippedLine.includes('reducción') && !strippedLine.includes('diseño')) ||
-      (isRoleHeader && (strippedLine.includes('·') || strippedLine.includes(' - ') || strippedLine.includes('(')) && strippedLine.length < 130);
+      (isRoleHeader && (strippedLine.includes('·') || strippedLine.includes(' - ') || strippedLine.includes('(') || strippedLine.length < 90)) ||
+      (hasYear && !hasBulletPrefix && strippedLine.length < 120 && !strippedLine.includes('reducción') && !strippedLine.includes('diseño'));
 
     if (isNewRole) {
       if (currentExp && (currentExp.xyzBullets.length > 0 || currentExp.role)) {
         experience.push(currentExp);
       }
 
+      // Si la línea siguiente es la fecha correspondiente a este cargo (ej: Línea 1 Cargo, Línea 2 "Ene. 2025 - Mar. 2025")
+      let period = '';
+      if (!hasYear && i + 1 < expLines.length) {
+        const nextLine = stripLeadingBullet(expLines[i + 1]);
+        if (datePattern.test(nextLine) && !looksLikeRoleHeader(nextLine) && !nextLine.startsWith('●') && !nextLine.startsWith('•')) {
+          period = nextLine;
+          i++; // Consumir la línea de fecha para no crear un cargo duplicado
+        }
+      }
+
       // Separar componentes (Cargo · Empresa / Institución - Fechas)
       const parts = strippedLine.split(/[|–—\-·•]/).map((p) => p.trim()).filter(Boolean);
-      let period = '';
       let inlineCompany = '';
       let role = '';
 
@@ -290,7 +299,7 @@ export function parseCvTextToStructuredData(
           period = period ? `${period} - ${p}` : p;
         } else if (!role && looksLikeRoleHeader(p)) {
           role = p;
-        } else if (!inlineCompany && (p.toLowerCase().includes('hospital') || p.toLowerCase().includes('clínica') || p.toLowerCase().includes('sodexo') || p.toLowerCase().includes('universidad') || p.toLowerCase().includes('programa') || p.toLowerCase().includes('empresa') || p.toLowerCase().includes('instituto'))) {
+        } else if (!inlineCompany && (p.toLowerCase().includes('hospital') || p.toLowerCase().includes('clínica') || p.toLowerCase().includes('sodexo') || p.toLowerCase().includes('universidad') || p.toLowerCase().includes('programa') || p.toLowerCase().includes('empresa') || p.toLowerCase().includes('instituto') || p.toLowerCase().includes('cesfam') || p.toLowerCase().includes('escuela') || p.toLowerCase().includes('ministerial') || p.toLowerCase().includes('seremi'))) {
           inlineCompany = p;
         } else if (!role) {
           role = p;
@@ -305,7 +314,7 @@ export function parseCvTextToStructuredData(
 
       currentExp = {
         company: effectiveCompany,
-        role: role || targetRole,
+        role: role || (isRoleHeader ? strippedLine : 'Cargo Profesional'),
         period: period || (hasYear ? 'Periodo Registrado' : '2022 - Presente'),
         rawAchievements: [],
         xyzBullets: [],
