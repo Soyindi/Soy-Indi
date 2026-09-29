@@ -74,12 +74,12 @@ export const cvFormSchema = z.object({
   targetRole: z.string().min(2, 'El rol objetivo debe tener al menos 2 caracteres'),
   templateId: z.string().default('executive-modern'),
   content: z.object({
-    fullName: z.string().min(2, 'Nombre completo requerido'),
-    email: z.string().email('Email válido requerido'),
-    phone: z.string().min(6, 'Teléfono requerido'),
-    location: z.string().default('Chile'),
-    rut: z.string().optional(), // RUT / DNI / Cédula de Identidad
-    summary: z.string().min(10, 'El resumen debe tener al menos 10 caracteres'),
+    fullName: z.string().min(1, 'Nombre completo requerido'),
+    email: z.string().default(''), // Puede quedar pendiente si no viene en el documento
+    phone: z.string().default(''), // Puede quedar pendiente si no viene en el documento
+    location: z.string().default(''), // Puede quedar pendiente
+    rut: z.string().optional(), // RUT / DNI
+    summary: z.string().default(''), // Resumen profesional (puede estar pendiente)
     skills: z.array(z.string()).default([]),
     experience: z.array(cvExperienceSchema).default([]),
     education: z.array(cvEducationSchema).default([]),

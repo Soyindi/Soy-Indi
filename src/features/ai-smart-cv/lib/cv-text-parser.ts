@@ -16,18 +16,33 @@ export function parseCvTextToStructuredData(
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
 
-  // Expresiones regulares universales
+  // 1.1 Extraer RUT chileno primero con máxima prioridad (formato XX.XXX.XXX-K o XXXXXXXX-K)
+  const rutMatch = rawText.match(/\b\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]\b/);
+  const rut = rutMatch ? rutMatch[0] : '';
+
+  // 1.2 Extraer Teléfono excluyendo explícitamente cualquier fragmento que forme parte del RUT
+  // Los números de teléfono chilenos tienen formato: +56 9 XXXX XXXX o fijo 61 2 XXXXXX o 9XXXXXXXX
+  let phone = '';
+  const chileanMobileMatch = rawText.match(/(?:\+?56\s?9|\b9)\s?\d{4}\s?\d{4}\b/);
+  const chileanLandlineMatch = rawText.match(/(?:\+?56\s?)?(?:61|2|32|33|34|35|41|42|43|45|51|52|53|55|57|58|71|72|73|75)\s?\d{1,2}\s?\d{5,6}\b/);
+
+  if (chileanMobileMatch && (!rut || !rut.includes(chileanMobileMatch[0].replace(/\s/g, '')))) {
+    phone = chileanMobileMatch[0].trim();
+  } else if (chileanLandlineMatch && (!rut || !rut.includes(chileanLandlineMatch[0].replace(/\s/g, '')))) {
+    phone = chileanLandlineMatch[0].trim();
+  } else {
+    // Intento con regex internacional que no sea un RUT (no termina con guión dígito/k)
+    const genericPhoneMatch = rawText.match(/(?:\+?56\s?)?9\s?\d{4}\s?\d{4}/);
+    if (genericPhoneMatch) {
+      phone = genericPhoneMatch[0].trim();
+    }
+  }
+
+  // 1.3 Email
   const emailMatch = rawText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i);
   const email = emailMatch ? emailMatch[0].toLowerCase() : '';
 
-  const phoneMatch = rawText.match(
-    /(?:\+?56\s?9|\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/
-  );
-  const phone = phoneMatch ? phoneMatch[0].trim() : '';
-
-  const rutMatch = rawText.match(/\b\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]\b/);
-  const rut = rutMatch ? rutMatch[0] : undefined;
-
+  // 1.4 Enlaces profesionales
   const linkedinMatch = rawText.match(
     /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([a-zA-Z0-9_-]+)/i
   );
@@ -38,11 +53,11 @@ export function parseCvTextToStructuredData(
   );
   const websiteUrl = websiteMatch && !websiteMatch[0].includes('linkedin') ? websiteMatch[0] : '';
 
-  // Ubicación básica
+  // 1.5 Ubicación básica (dejando vacío si no se encuentra en lugar de inventar)
   const locationMatch = rawText.match(
-    /\b(Santiago|Punta Arenas|Valparaíso|Viña del Mar|Concepción|Antofagasta|La Serena|Temuco|Rancagua|Puerto Montt|Chile|Remoto|Remote|Buenos Aires|Lima|Bogotá|Ciudad de México|Madrid)\b/i
+    /\b(Punta Arenas|Santiago|Valparaíso|Viña del Mar|Concepción|Penco|Antofagasta|La Serena|Temuco|Rancagua|Puerto Montt|Chile|Remoto|Remote|Buenos Aires|Lima|Bogotá|Ciudad de México|Madrid)\b/i
   );
-  const location = locationMatch ? `${locationMatch[0]}, Chile` : 'Chile / Remoto';
+  const location = locationMatch ? (locationMatch[0].toLowerCase().includes('chile') ? locationMatch[0] : `${locationMatch[0]}, Chile`) : '';
 
   // 2. Extraer Nombre del Candidato
   let fullName = '';
@@ -452,17 +467,72 @@ export function parseCvTextToStructuredData(
     });
   }
 
-  // 9. Procesar Referencias Laborales
+  // 9. Procesar Referencias Laborales (Deteniéndose estrictamente al terminar el CV o al encontrar anexos/certificados)
   const refLines = getSectionLines('references');
   const references: Array<{ name: string; role: string; company: string; contact?: string }> = [];
 
+  // Palabras prohibidas que corresponden a diplomas, folios, certificados del Estado o metadatos
+  const isCertificateOrNoise = (str: string): boolean => {
+    const s = str.toLowerCase();
+    return (
+      s.includes('certificado') ||
+      s.includes('diploma') ||
+      s.includes('constancia') ||
+      s.includes('sence') ||
+      s.includes('senda') ||
+      s.includes('tcpdf') ||
+      s.includes('folio') ||
+      s.includes('rut alumno') ||
+      s.includes('franquicia') ||
+      s.includes('capacitación') ||
+      s.includes('capacitacion') ||
+      s.includes('aprobó el curso') ||
+      s.includes('ha completado') ||
+      s.includes('se confiere') ||
+      s.includes('código de verificación') ||
+      s.includes('codigo de verificacion') ||
+      s.includes('call center') ||
+      s.includes('subsecretaría de derechos humanos') ||
+      s.includes('organización panamericana de la salud') ||
+      s.includes('organizacion panamericana de la salud') ||
+      s.includes('campus virtual') ||
+      s.includes('evaluación final') ||
+      s.includes('horas pedagógicas') ||
+      s.includes('horas cronológicas') ||
+      s.includes('______') ||
+      /^\d+$/.test(str.trim()) // Números sueltos como "8970"
+    );
+  };
+
   for (let i = 0; i < refLines.length; i++) {
-    const rawLine = refLines[i];
-    const cleanLine = stripLeadingBullet(rawLine);
+    let cleanLine = stripLeadingBullet(refLines[i]);
     if (cleanLine.length < 3) continue;
 
-    // Buscar si la línea tiene separadores (Nombre · Cargo · Empresa · Contacto)
-    const parts = cleanLine.split(/[|–—\-·•]/).map((p) => p.trim()).filter(Boolean);
+    // Si encontramos la línea de firma final del CV (ej: "Matías Ricardo... · RUT 18.209.442-0" o "______")
+    // o encabezado de certificado/anexo, el CV terminó formalmente aquí.
+    if (
+      cleanLine.includes('______') ||
+      (fullName && cleanLine.includes(fullName) && (cleanLine.includes('RUT') || cleanLine.includes('18.'))) ||
+      cleanLine.toLowerCase().startsWith('certificado') ||
+      cleanLine.toLowerCase().startsWith('diploma') ||
+      cleanLine.toLowerCase().startsWith('constancia')
+    ) {
+      break; // DETENER: Todo lo posterior son anexos o certificados adjuntos
+    }
+
+    if (isCertificateOrNoise(cleanLine)) continue;
+
+    // Si la siguiente línea es un número huérfano (ej. "8970" porque el PDF partió el teléfono en 2 líneas)
+    if (i + 1 < refLines.length) {
+      const nextLine = refLines[i + 1].trim();
+      if (/^\d{3,5}$/.test(nextLine)) {
+        cleanLine = `${cleanLine} ${nextLine}`;
+        i++; // Avanzar índice para consumir el número
+      }
+    }
+
+    // Separar por em-dash, guión o punto medio
+    const parts = cleanLine.split(/[—|–·]/).map((p) => p.trim()).filter(Boolean);
 
     let name = '';
     let role = '';
@@ -472,28 +542,43 @@ export function parseCvTextToStructuredData(
     // Buscar email o teléfono en la línea
     const phoneInLine = cleanLine.match(/(?:\+?56\s?9|\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/);
     const emailInLine = cleanLine.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i);
-    if (phoneInLine) contact = phoneInLine[0].trim();
+    if (phoneInLine && phoneInLine[0].length >= 8) contact = phoneInLine[0].trim();
     if (emailInLine) contact = contact ? `${contact} • ${emailInLine[0]}` : emailInLine[0];
 
     if (parts.length >= 3) {
       name = parts[0];
-      role = parts[1];
-      company = parts[2];
+      // Si el segundo término contiene cargo y empresa separados por coma
+      const roleCompanyPart = parts[1];
+      if (roleCompanyPart.includes(',')) {
+        const [r, ...c] = roleCompanyPart.split(',');
+        role = r.trim();
+        company = c.join(',').trim();
+      } else {
+        role = parts[1];
+        company = parts[2];
+      }
     } else if (parts.length === 2) {
       name = parts[0];
-      role = parts[1];
-      company = 'Institución / Organización';
-    } else {
-      name = cleanLine;
-      role = 'Contacto de Referencia';
-      company = 'Institución';
+      if (parts[1].includes(',')) {
+        const [r, ...c] = parts[1].split(',');
+        role = r.trim();
+        company = c.join(',').trim();
+      } else {
+        role = parts[1];
+        company = 'Institución de Referencia';
+      }
     }
 
-    if (name) {
+    // Validar que el nombre no sea ruido ni el propio usuario
+    if (name && name.length >= 4 && !name.toLowerCase().includes('tcpdf') && !name.toLowerCase().includes('folio')) {
+      // Limpiar datos de contacto del cargo/empresa
+      const cleanField = (s: string) =>
+        s.replace(/(?:\+?56\s?9|\b9\d{8}\b|tel|fono|email|correo).*$/i, '').trim();
+
       references.push({
-        name: name.replace(/(?:tel|fono|email|correo).*$/i, '').trim(),
-        role: role.replace(/(?:tel|fono|email|correo).*$/i, '').trim(),
-        company: company.replace(/(?:tel|fono|email|correo).*$/i, '').trim(),
+        name: cleanField(name),
+        role: cleanField(role) || 'Referencia Profesional',
+        company: cleanField(company) || 'Institución',
         contact: contact || undefined,
       });
     }
@@ -501,15 +586,15 @@ export function parseCvTextToStructuredData(
 
   return {
     fullName,
-    email: email || 'contacto@indi.bio',
-    phone: phone || '+56 9 0000 0000',
-    location,
-    rut,
+    email: email || '', // Dejar en blanco si no se encontró (pendiente de completar)
+    phone: phone || '', // Dejar en blanco si no se encontró (pendiente de completar)
+    location: location || '', // Dejar en blanco si no se encontró
+    rut: rut || undefined,
     linkedinUrl,
     websiteUrl,
     targetRole,
     summary,
-    skills: extractedSkills.length > 0 ? extractedSkills : ['Liderazgo', 'Evaluación', 'Resolución de Problemas'],
+    skills: extractedSkills.length > 0 ? extractedSkills : [],
     experience,
     education,
     references,

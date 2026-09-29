@@ -32,18 +32,18 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
     // Mapear a CVFormValues con soporte de viñetas XYZ
     const structuredCv: Partial<CVFormValues> = {
       title: `CV Optimizado - ${extracted.targetRole || 'Profesional'}`,
-      targetRole: extracted.targetRole || 'Full Stack Engineer',
+      targetRole: extracted.targetRole || '',
       templateId: 'executive-modern',
       content: {
-        fullName: extracted.fullName || 'Profesional',
-        email: extracted.email || 'contacto@indi.bio',
-        phone: extracted.phone || '+56 9 0000 0000',
-        location: extracted.location || 'Chile / Remoto',
+        fullName: extracted.fullName || '',
+        email: extracted.email || '', // Vacío si falta, marcado como pendiente
+        phone: extracted.phone || '', // Vacío si falta, marcado como pendiente
+        location: extracted.location || '',
         rut: extracted.rut || undefined,
         linkedinUrl: extracted.linkedinUrl || undefined,
         websiteUrl: extracted.websiteUrl || undefined,
         summary: extracted.summary || '',
-        skills: extracted.skills.length > 0 ? extracted.skills : ['Estrategia', 'Gestión', 'Liderazgo'],
+        skills: extracted.skills || [],
         experience: extracted.experience.map((exp) => ({
           company: exp.company,
           role: exp.role,

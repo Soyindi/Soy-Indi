@@ -552,23 +552,60 @@ export function SmartCvBuilder() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
                 <div>
-                  <label className="text-[11px] font-mono text-zinc-400 block mb-1">Nombre Completo</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] font-mono text-zinc-400">Nombre Completo</label>
+                    {!formData.content.fullName && (
+                      <span className="text-[9px] font-mono text-amber-400 bg-amber-400/10 px-1.5 py-0.2 rounded border border-amber-400/20">
+                        Pendiente
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="text"
                     value={formData.content.fullName}
                     onChange={(e) => handleContentChange('fullName', e.target.value)}
+                    placeholder="Tu Nombre Completo"
                     className="w-full text-xs text-white bg-black/30 rounded-xl px-3 py-2 border border-white/5 focus:outline-none focus:border-cyan-400"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-mono text-zinc-400 block mb-1">Email Profesional</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] font-mono text-zinc-400">Email Profesional</label>
+                    {!formData.content.email && (
+                      <span className="text-[9px] font-mono text-amber-400 bg-amber-400/10 px-1.5 py-0.2 rounded border border-amber-400/20">
+                        Pendiente
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="email"
                     value={formData.content.email}
                     onChange={(e) => handleContentChange('email', e.target.value)}
-                    className="w-full text-xs text-white bg-black/30 rounded-xl px-3 py-2 border border-white/5 focus:outline-none focus:border-cyan-400"
+                    placeholder="correo@ejemplo.com"
+                    className={`w-full text-xs text-white bg-black/30 rounded-xl px-3 py-2 border focus:outline-none ${
+                      !formData.content.email ? 'border-amber-500/30 focus:border-amber-400' : 'border-white/5 focus:border-cyan-400'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] font-mono text-zinc-400">Teléfono</label>
+                    {!formData.content.phone && (
+                      <span className="text-[9px] font-mono text-amber-400 bg-amber-400/10 px-1.5 py-0.2 rounded border border-amber-400/20">
+                        Pendiente
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    type="tel"
+                    value={formData.content.phone}
+                    onChange={(e) => handleContentChange('phone', e.target.value)}
+                    placeholder="+56 9 1234 5678"
+                    className={`w-full text-xs text-white bg-black/30 rounded-xl px-3 py-2 border focus:outline-none font-mono ${
+                      !formData.content.phone ? 'border-amber-500/30 focus:border-amber-400' : 'border-white/5 focus:border-cyan-400'
+                    }`}
                   />
                 </div>
               </div>
