@@ -7,6 +7,7 @@ import { CvDocumentPreview } from '@/features/ai-smart-cv/components/CvDocumentP
 import { ImportDocumentModal } from '@/features/ai-smart-cv/components/ImportDocumentModal';
 import { SignatureModal } from '@/features/ai-smart-cv/components/SignatureModal';
 import { InlineAiWriter } from '@/features/ai-smart-cv/components/InlineAiWriter';
+import { generateAndDownloadCvPdf } from '@/features/ai-smart-cv/lib/pdf-engine';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { 
   Sparkles, 
@@ -220,8 +221,18 @@ export function SmartCvBuilder() {
     });
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     setIsDownloading(true);
+    try {
+      await generateAndDownloadCvPdf(formData, { format: pageFormat });
+    } catch (err) {
+      console.error('Error al generar PDF vectorial directo:', err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleNativePrint = () => {
     const sanitizedName = (formData.content.fullName || 'Profesional')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -234,9 +245,8 @@ export function SmartCvBuilder() {
       window.print();
       setTimeout(() => {
         document.title = originalTitle;
-        setIsDownloading(false);
       }, 1000);
-    }, 250);
+    }, 200);
   };
 
   return (
@@ -342,11 +352,12 @@ export function SmartCvBuilder() {
           </button>
         </div>
 
-        {/* Descargar PDF Directo */}
+        {/* Descargar PDF Directo en 1 Clic */}
         <button
           onClick={handleDownloadPdf}
           disabled={isDownloading}
           className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+          title="Descarga directa del archivo PDF vectorial (Compatible con ATS)"
         >
           {isDownloading ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -354,6 +365,16 @@ export function SmartCvBuilder() {
             <Download className="w-3.5 h-3.5" />
           )}
           <span>{isDownloading ? 'Generando PDF...' : 'Descargar PDF'}</span>
+        </button>
+
+        {/* Impresión Física Opcional */}
+        <button
+          type="button"
+          onClick={handleNativePrint}
+          className="inline-flex items-center justify-center p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs transition-all"
+          title="Imprimir en impresora física o diálogo del sistema"
+        >
+          <Printer className="w-3.5 h-3.5" />
         </button>
 
         {/* Guardar CV */}
