@@ -14,7 +14,6 @@ import {
   ShieldCheck, 
   CheckCircle, 
   FileText, 
-  Printer, 
   Loader2,
   Award,
   UploadCloud,
@@ -232,23 +231,6 @@ export function SmartCvBuilder() {
     }
   };
 
-  const handleNativePrint = () => {
-    const sanitizedName = (formData.content.fullName || 'Profesional')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9]/g, '_');
-    
-    const originalTitle = document.title;
-    document.title = `CV_${sanitizedName}_2026`;
-
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 1000);
-    }, 200);
-  };
-
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 font-sans">
       {/* Header Minimalista Suizo */}
@@ -365,16 +347,6 @@ export function SmartCvBuilder() {
             <Download className="w-3.5 h-3.5" />
           )}
           <span>{isDownloading ? 'Generando PDF...' : 'Descargar PDF'}</span>
-        </button>
-
-        {/* Impresión Física Opcional */}
-        <button
-          type="button"
-          onClick={handleNativePrint}
-          className="inline-flex items-center justify-center p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs transition-all"
-          title="Imprimir en impresora física o diálogo del sistema"
-        >
-          <Printer className="w-3.5 h-3.5" />
         </button>
 
         {/* Guardar CV */}
