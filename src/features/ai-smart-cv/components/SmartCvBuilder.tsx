@@ -48,6 +48,7 @@ export function SmartCvBuilder() {
       email: 'matias@indi.bio',
       phone: '+56 9 8765 4321',
       location: 'Santiago / Remoto Global',
+      rut: '18.492.041-K',
       linkedinUrl: 'linkedin.com/in/matias-riquelme',
       websiteUrl: 'github.com/matiquelmec',
       signatureUrl: '',
@@ -385,6 +386,30 @@ export function SmartCvBuilder() {
                     type="email"
                     value={formData.content.email}
                     onChange={(e) => handleContentChange('email', e.target.value)}
+                    className="w-full text-xs text-white bg-black/30 rounded-xl px-3 py-2 border border-white/5 focus:outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              {/* RUT / DNI y Ubicación */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-mono text-zinc-400 block mb-1">RUT / Identificación Oficial</label>
+                  <input
+                    type="text"
+                    value={formData.content.rut || ''}
+                    onChange={(e) => handleContentChange('rut', e.target.value)}
+                    placeholder="12.345.678-9"
+                    className="w-full text-xs text-white bg-black/30 rounded-xl px-3 py-2 border border-white/5 focus:outline-none focus:border-cyan-400 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-mono text-zinc-400 block mb-1">Ubicación / Modalidad</label>
+                  <input
+                    type="text"
+                    value={formData.content.location}
+                    onChange={(e) => handleContentChange('location', e.target.value)}
+                    placeholder="Santiago / Remoto Global"
                     className="w-full text-xs text-white bg-black/30 rounded-xl px-3 py-2 border border-white/5 focus:outline-none focus:border-cyan-400"
                   />
                 </div>

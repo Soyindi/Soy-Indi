@@ -66,6 +66,7 @@ export const cvFormSchema = z.object({
     email: z.string().email('Email válido requerido'),
     phone: z.string().min(6, 'Teléfono requerido'),
     location: z.string().default('Chile'),
+    rut: z.string().optional(), // RUT / DNI / Cédula de Identidad
     summary: z.string().min(10, 'El resumen debe tener al menos 10 caracteres'),
     skills: z.array(z.string()).default([]),
     experience: z.array(cvExperienceSchema).default([]),

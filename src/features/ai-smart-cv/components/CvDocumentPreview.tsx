@@ -43,6 +43,11 @@ export function CvDocumentPreview({ cv }: CvDocumentPreviewProps) {
                 {content.location}
               </span>
             )}
+            {content.rut && (
+              <span className="flex items-center gap-1.5 font-mono text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200">
+                RUT: {content.rut}
+              </span>
+            )}
             {content.linkedinUrl && (
               <a
                 href={content.linkedinUrl.startsWith('http') ? content.linkedinUrl : `https://${content.linkedinUrl}`}
@@ -178,11 +183,16 @@ export function CvDocumentPreview({ cv }: CvDocumentPreviewProps) {
                 alt={`Firma de ${content.fullName}`}
                 className="max-h-16 max-w-[220px] object-contain mb-1"
               />
-              <div className="w-full border-t border-zinc-800 pt-1 text-center">
-                <span className="text-[11px] font-bold text-zinc-900 block leading-none">
+              <div className="w-full border-t border-zinc-800 pt-1.5 text-center">
+                <span className="text-[11px] font-bold text-zinc-950 block leading-tight">
                   {content.fullName}
                 </span>
-                <span className="text-[9px] text-zinc-500 tracking-wider uppercase font-mono">
+                {content.rut && (
+                  <span className="text-[10px] font-mono text-zinc-700 block leading-tight font-medium">
+                    RUT: {content.rut}
+                  </span>
+                )}
+                <span className="text-[9px] text-zinc-400 tracking-wider uppercase font-mono block mt-0.5">
                   {content.signatureDate || 'Firma Profesional'}
                 </span>
               </div>
