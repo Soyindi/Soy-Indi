@@ -4,30 +4,37 @@ import React, { useState, useTransition } from 'react';
 import { CVFormValues, AtsAuditResult, VerifiedCredential } from '@/entities/cv/schemas';
 import { auditAtsScoreAction, upsertSmartCvAction } from '@/features/ai-smart-cv/actions';
 import { CvDocumentPreview } from '@/features/ai-smart-cv/components/CvDocumentPreview';
-import { SmartDocumentDropzone } from '@/features/ai-smart-cv/components/SmartDocumentDropzone';
+import { ImportDocumentModal } from '@/features/ai-smart-cv/components/ImportDocumentModal';
+import { InlineAiWriter } from '@/features/ai-smart-cv/components/InlineAiWriter';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { 
   Sparkles, 
   ShieldCheck, 
   CheckCircle, 
-  AlertTriangle, 
-  Plus, 
-  Trash2, 
   FileText, 
   Printer, 
   Loader2,
   Award,
-  Zap,
-  HelpCircle
+  UploadCloud,
+  Eye,
+  Edit3,
+  Layers,
+  HelpCircle,
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 export function SmartCvBuilder() {
   const [isPending, startTransition] = useTransition();
   const [auditPending, startAuditTransition] = useTransition();
   const [isDropzoneProcessing, setIsDropzoneProcessing] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [currentScore, setCurrentScore] = useState<number>(85);
   const [auditReport, setAuditReport] = useState<AtsAuditResult | null>(null);
+
+  // Modo de visualización: 'split' (ambos), 'edit' (solo editor), 'preview' (solo documento)
+  const [viewMode, setViewMode] = useState<'split' | 'edit' | 'preview'>('split');
 
   const [formData, setFormData] = useState<CVFormValues>({
     title: 'CV Ejecutivo 2026',
@@ -47,7 +54,7 @@ export function SmartCvBuilder() {
           period: '2024 - Presente',
           bullets: [
             'Diseñé la arquitectura distribuida en Turso LibSQL, reduciendo la latencia P95 a 18ms para más de 100k consultas concurrentes.',
-            'Implementé un sistema de caché de borde para compartir perfiles en redes sociales con generación instantánea de OpenGraph.',
+            'Implementé un sistema de caché de borde para perfiles públicos, alcanzando una tasa de acierto del 98% en Cloudflare.',
           ],
           detailedBullets: [
             {
@@ -55,8 +62,8 @@ export function SmartCvBuilder() {
               needs_metric: false,
             },
             {
-              text: 'Implementé un sistema de caché de borde para compartir perfiles en redes sociales con generación instantánea de OpenGraph.',
-              needs_metric: true, // Requiere métrica de impacto
+              text: 'Implementé un sistema de caché de borde para perfiles públicos, alcanzando una tasa de acierto del 98% en Cloudflare.',
+              needs_metric: false,
             },
           ],
         },
@@ -102,7 +109,6 @@ export function SmartCvBuilder() {
     },
   });
 
-  // Manejador de campos generales
   const handleContentChange = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
@@ -113,7 +119,6 @@ export function SmartCvBuilder() {
     }));
   };
 
-  // Callback cuando la ingesta multimodal de CV termina
   const handleCvParsed = (extractedCv: Partial<CVFormValues>) => {
     setFormData((prev) => ({
       ...prev,
@@ -126,13 +131,11 @@ export function SmartCvBuilder() {
     }));
   };
 
-  // Callback cuando se adjunta y valida un diploma / título
   const handleCredentialParsed = (credential: VerifiedCredential) => {
     setFormData((prev) => {
       const existingCredentials = prev.content.credentials || [];
       const updatedEducation = [...prev.content.education];
 
-      // Si se emparejó con un registro existente de educación, actualizar su tipo
       if (
         credential.mappedEducationIndex !== undefined &&
         updatedEducation[credential.mappedEducationIndex]
@@ -155,7 +158,6 @@ export function SmartCvBuilder() {
     });
   };
 
-  // Ejecutar auditoría ATS con IA
   const handleRunAtsAudit = () => {
     startAuditTransition(async () => {
       const res = await auditAtsScoreAction(formData);
@@ -166,7 +168,6 @@ export function SmartCvBuilder() {
     });
   };
 
-  // Guardar CV
   const handleSaveCv = () => {
     startTransition(async () => {
       const res = await upsertSmartCvAction(formData);
@@ -178,45 +179,89 @@ export function SmartCvBuilder() {
     });
   };
 
-  // Imprimir / Exportar a PDF nativo
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Header con botón de retroceso a /dashboard */}
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 font-sans">
+      {/* Header Minimalista Suizo */}
       <AppEditorHeader
-        sectionTitle="Optimizador de CV & Resume"
+        sectionTitle="Optimizador de CV"
         categoryName="Smart CV (ATS)"
         categoryHref="/dashboard"
-        badgeText="Dual-Target ATS • Qwen2.5-VL"
+        badgeText="Swiss Canvas"
       >
+        {/* Selector de modo de vista */}
+        <div className="hidden md:flex bg-slate-900/80 p-0.5 rounded-xl border border-white/10 text-xs">
+          <button
+            type="button"
+            onClick={() => setViewMode('split')}
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+              viewMode === 'split' ? 'bg-white/15 text-white font-medium' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            Dividido
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('edit')}
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+              viewMode === 'edit' ? 'bg-white/15 text-white font-medium' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            Editar
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('preview')}
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
+              viewMode === 'preview' ? 'bg-white/15 text-white font-medium' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            Previsualizar
+          </button>
+        </div>
+
+        {/* Botón Discreto de Importación */}
         <button
-          onClick={handlePrint}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl glass-panel text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+          type="button"
+          onClick={() => setIsImportModalOpen(true)}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 text-xs font-medium transition-all"
         >
-          <Printer className="w-4 h-4 text-cyan-400" />
-          <span>Imprimir / PDF</span>
+          <UploadCloud className="w-3.5 h-3.5" />
+          <span>Importar Documento</span>
         </button>
 
+        {/* Badge Compacto de Score ATS */}
         <button
+          type="button"
           onClick={handleRunAtsAudit}
           disabled={auditPending}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/40 text-xs font-semibold transition-all disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 border border-white/10 hover:border-indigo-500/40 text-xs transition-all"
+          title="Score de compatibilidad con filtros ATS"
         >
-          {auditPending ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-          )}
-          <span>Auditar ATS</span>
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="font-mono font-bold text-white">{currentScore}% ATS</span>
         </button>
 
+        {/* Imprimir / PDF */}
+        <button
+          onClick={handlePrint}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white text-xs font-medium transition-all"
+        >
+          <Printer className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="hidden sm:inline">Imprimir / PDF</span>
+        </button>
+
+        {/* Guardar CV */}
         <button
           onClick={handleSaveCv}
           disabled={isPending}
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-md shadow-indigo-500/20 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
         >
           {isPending ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -225,12 +270,14 @@ export function SmartCvBuilder() {
           ) : (
             <FileText className="w-3.5 h-3.5" />
           )}
-          <span>{savedSuccess ? '¡Guardado!' : 'Guardar CV'}</span>
+          <span>{savedSuccess ? '¡Guardado!' : 'Guardar'}</span>
         </button>
       </AppEditorHeader>
 
-      {/* Dropzone Inteligente de CV y Títulos Académicos */}
-      <SmartDocumentDropzone
+      {/* Modal de Importación Desacoplado */}
+      <ImportDocumentModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
         onCvParsed={handleCvParsed}
         onCredentialParsed={handleCredentialParsed}
         isProcessing={isDropzoneProcessing}
@@ -238,113 +285,82 @@ export function SmartCvBuilder() {
         currentEducation={formData.content.education}
       />
 
-      {/* Barra de Score ATS & Alertas Regulatorias */}
-      <div className="mb-8 glass-panel rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 border border-indigo-500/20">
-        <div className="flex items-center gap-4">
-          <div className="relative w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center font-black text-2xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
-            {currentScore}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-white">Score de Compatibilidad ATS</span>
-              <span className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full ${
-                currentScore >= 80 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
-              }`}>
-                {currentScore >= 80 ? 'EXCELENTE' : 'OPTIMIZABLE'}
-              </span>
-            </div>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Dual-Target: Capa semántica lineal para Workday/Greenhouse + Presentación tipográfica para reclutadores.
-            </p>
-          </div>
-        </div>
+      {/* Lienzo Principal con Filosofía Minimalista */}
+      <div className={`mt-6 grid gap-8 ${
+        viewMode === 'split' ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1 max-w-4xl mx-auto'
+      }`}>
+        {/* Columna Formulario */}
+        {(viewMode === 'split' || viewMode === 'edit') && (
+          <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'w-full'} space-y-6`}>
+            {/* Sección: Identidad Profesional */}
+            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                  Identidad Profesional
+                </span>
+                <span className="text-[11px] font-mono text-cyan-400">Paso 1 de 4</span>
+              </div>
 
-        <button
-          onClick={handleRunAtsAudit}
-          className="text-xs text-cyan-400 hover:text-cyan-300 font-mono font-medium underline underline-offset-4"
-        >
-          Re-analizar con IA
-        </button>
-      </div>
-
-      {/* Alertas de Mitigación de Alucinaciones (EU AI Act) */}
-      {auditReport?.hallucinationWarnings && auditReport.hallucinationWarnings.length > 0 && (
-        <div className="mb-8 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-          <div className="text-xs space-y-1">
-            <span className="font-semibold text-amber-300">Auditoría de Impacto Cuantitativo (Google XYZ)</span>
-            <p className="text-amber-200/80">
-              {auditReport.hallucinationWarnings[0]}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Layout Editor: Columna Formulario + Columna Preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Formulario Estructurado */}
-        <div className="lg:col-span-6 space-y-6">
-          {/* Datos Personales & Cargo Objetivo */}
-          <div className="glass-panel rounded-3xl p-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white font-mono mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-cyan-400" />
-              1. Identidad Profesional & Rol Objetivo
-            </h3>
-            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1.5">Cargo o Rol Deseado</label>
                 <input
                   type="text"
                   value={formData.targetRole}
                   onChange={(e) => setFormData((prev) => ({ ...prev, targetRole: e.target.value }))}
-                  className="w-full rounded-xl bg-black/40 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
-                  placeholder="ej. Senior Full Stack Engineer"
+                  className="w-full text-base font-bold text-white bg-transparent border-b border-white/10 pb-2 focus:outline-none focus:border-cyan-400 placeholder-zinc-500"
+                  placeholder="Cargo Objetivo (ej. Lead Software Architect)"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 <div>
-                  <label className="block text-xs font-mono text-zinc-400 mb-1.5">Nombre Completo</label>
+                  <label className="text-[11px] font-mono text-zinc-400 block mb-1">Nombre</label>
                   <input
                     type="text"
                     value={formData.content.fullName}
                     onChange={(e) => handleContentChange('fullName', e.target.value)}
-                    className="w-full rounded-xl bg-black/40 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs text-white bg-black/30 rounded-xl px-3 py-2 border border-white/5 focus:outline-none focus:border-cyan-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-zinc-400 mb-1.5">Email Profesional</label>
+                  <label className="text-[11px] font-mono text-zinc-400 block mb-1">Email</label>
                   <input
                     type="email"
                     value={formData.content.email}
                     onChange={(e) => handleContentChange('email', e.target.value)}
-                    className="w-full rounded-xl bg-black/40 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full text-xs text-white bg-black/30 rounded-xl px-3 py-2 border border-white/5 focus:outline-none focus:border-cyan-400"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1.5">Resumen de Propuesta de Valor</label>
+              {/* Resumen con Copiloto de Redacción IA */}
+              <div className="pt-2">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[11px] font-mono text-zinc-400">Resumen Ejecutivo</label>
+                  <InlineAiWriter
+                    currentText={formData.content.summary}
+                    type="SUMMARY"
+                    targetRole={formData.targetRole}
+                    onApply={(newText) => handleContentChange('summary', newText)}
+                  />
+                </div>
                 <textarea
                   rows={3}
                   value={formData.content.summary}
                   onChange={(e) => handleContentChange('summary', e.target.value)}
-                  className="w-full rounded-xl bg-black/40 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none"
+                  className="w-full text-xs text-zinc-200 bg-black/30 rounded-xl p-3 border border-white/5 focus:outline-none focus:border-cyan-400 resize-none leading-relaxed"
+                  placeholder="Sintetiza tu propuesta de valor y experiencia clave..."
                 />
               </div>
             </div>
-          </div>
 
-          {/* Habilidades Técnicas Normalizadas */}
-          <div className="glass-panel rounded-3xl p-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white font-mono mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-indigo-400" />
-              2. Habilidades y Palabras Clave (ESCO / ATS)
-            </h3>
-            <div>
-              <label className="block text-xs font-mono text-zinc-400 mb-2">
-                Habilidades separadas por comas (Optimizadas para indexación algorítmica)
-              </label>
+            {/* Sección: Habilidades */}
+            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                  Habilidades & Tecnologías ATS
+                </span>
+                <span className="text-[11px] font-mono text-indigo-400">Paso 2 de 4</span>
+              </div>
               <input
                 type="text"
                 value={formData.content.skills.join(', ')}
@@ -354,145 +370,129 @@ export function SmartCvBuilder() {
                     e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
                   )
                 }
-                className="w-full rounded-xl bg-black/40 border border-white/10 px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
-                placeholder="TypeScript, React, SQL, Liderazgo..."
+                className="w-full text-xs text-zinc-200 bg-black/30 rounded-xl px-3 py-2.5 border border-white/5 focus:outline-none focus:border-indigo-400 font-mono"
+                placeholder="TypeScript, React, Turso SQLite, Docker..."
               />
             </div>
-          </div>
 
-          {/* Experiencia Laboral con fórmula Google XYZ y Alerta needs_metric */}
-          <div className="glass-panel rounded-3xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-teal-400" />
-                3. Experiencias de Alto Impacto (STAR / XYZ)
-              </h3>
-              <span className="text-[10px] font-mono text-cyan-400/80 bg-cyan-950/40 border border-cyan-500/20 px-2 py-0.5 rounded-full">
-                Fórmula Google XYZ
-              </span>
-            </div>
+            {/* Sección: Experiencia Laboral con Inline AI Writer */}
+            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                  Experiencia Laboral (Fórmula Google XYZ)
+                </span>
+                <span className="text-[11px] font-mono text-teal-400">Paso 3 de 4</span>
+              </div>
 
-            <div className="space-y-5">
-              {formData.content.experience.map((exp, idx) => (
-                <div key={idx} className="p-4 rounded-2xl bg-black/30 border border-white/5 space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      value={exp.role}
-                      onChange={(e) => {
-                        const updated = [...formData.content.experience];
-                        updated[idx].role = e.target.value;
-                        handleContentChange('experience', updated);
-                      }}
-                      className="rounded-lg bg-zinc-900 border border-white/10 px-2.5 py-1.5 text-xs text-white"
-                      placeholder="Cargo"
-                    />
-                    <input
-                      type="text"
-                      value={exp.company}
-                      onChange={(e) => {
-                        const updated = [...formData.content.experience];
-                        updated[idx].company = e.target.value;
-                        handleContentChange('experience', updated);
-                      }}
-                      className="rounded-lg bg-zinc-900 border border-white/10 px-2.5 py-1.5 text-xs text-white"
-                      placeholder="Empresa"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-mono text-zinc-400 block mb-1">
-                      Logros y funciones (1 por línea)
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={exp.bullets.join('\n')}
-                      onChange={(e) => {
-                        const newBullets = e.target.value.split('\n').filter(Boolean);
-                        const updated = [...formData.content.experience];
-                        updated[idx].bullets = newBullets;
-                        // Actualizar también detailedBullets
-                        updated[idx].detailedBullets = newBullets.map((b) => ({
-                          text: b,
-                          needs_metric: !/\d+|%|\$|millones|miles/i.test(b),
-                        }));
-                        handleContentChange('experience', updated);
-                      }}
-                      className="w-full rounded-lg bg-zinc-900 border border-white/10 px-2.5 py-1.5 text-xs text-white resize-none"
-                    />
-                  </div>
-
-                  {/* Badges de advertencia de métricas cuantitativas */}
-                  {exp.detailedBullets && exp.detailedBullets.some((b) => b.needs_metric) && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
-                      <HelpCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>Una o más viñetas carecen de métrica verificable (%, $, tiempo o cantidad).</span>
+              <div className="space-y-4">
+                {formData.content.experience.map((exp, idx) => (
+                  <div key={idx} className="p-4 rounded-xl bg-black/25 border border-white/5 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        value={exp.role}
+                        onChange={(e) => {
+                          const updated = [...formData.content.experience];
+                          updated[idx].role = e.target.value;
+                          handleContentChange('experience', updated);
+                        }}
+                        className="text-xs font-medium text-white bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5"
+                        placeholder="Cargo"
+                      />
+                      <input
+                        type="text"
+                        value={exp.company}
+                        onChange={(e) => {
+                          const updated = [...formData.content.experience];
+                          updated[idx].company = e.target.value;
+                          handleContentChange('experience', updated);
+                        }}
+                        className="text-xs text-zinc-300 bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5"
+                        placeholder="Empresa"
+                      />
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Títulos Universitarios y Credenciales Verificadas */}
-          <div className="glass-panel rounded-3xl p-6">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-white font-mono mb-4 flex items-center gap-2">
-              <Award className="w-4 h-4 text-purple-400" />
-              4. Educación y Credenciales Académicas
-            </h3>
-
-            <div className="space-y-3">
-              {formData.content.education.map((edu, idx) => (
-                <div key={idx} className="p-3.5 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-white">{edu.degree}</p>
-                    <p className="text-[11px] text-slate-400">{edu.institution} • {edu.year}</p>
-                  </div>
-                  {edu.credentialType === 'DEGREE' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400">
-                      <ShieldCheck className="w-3 h-3" />
-                      Validado Documentalmente
-                    </span>
-                  )}
-                </div>
-              ))}
-
-              {formData.content.credentials && formData.content.credentials.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
-                  <span className="text-[11px] font-mono text-purple-400 uppercase tracking-wider block">
-                    Documentos de Respaldo Analizados:
-                  </span>
-                  {formData.content.credentials.map((cred) => (
-                    <div key={cred.id} className="p-2.5 rounded-lg bg-purple-950/20 border border-purple-500/20 flex items-center justify-between text-xs">
-                      <div>
-                        <span className="text-purple-200 font-medium">{cred.credentialName}</span>
-                        <p className="text-[10px] text-slate-400">{cred.issuingInstitution} • Folio: {cred.verificationCode}</p>
+                    {/* Viñetas con Asistente de Redacción Individual */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-mono text-zinc-400">Logros Cuantificables</label>
+                        <InlineAiWriter
+                          currentText={exp.bullets[0] || ''}
+                          type="BULLET"
+                          targetRole={formData.targetRole}
+                          onApply={(newText) => {
+                            const updated = [...formData.content.experience];
+                            if (updated[idx].bullets.length === 0) {
+                              updated[idx].bullets = [newText];
+                            } else {
+                              updated[idx].bullets[0] = newText;
+                            }
+                            handleContentChange('experience', updated);
+                          }}
+                        />
                       </div>
-                      <span className="text-[10px] font-mono text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded">
-                        Similitud Coseno
-                      </span>
+
+                      <textarea
+                        rows={3}
+                        value={exp.bullets.join('\n')}
+                        onChange={(e) => {
+                          const newBullets = e.target.value.split('\n').filter(Boolean);
+                          const updated = [...formData.content.experience];
+                          updated[idx].bullets = newBullets;
+                          handleContentChange('experience', updated);
+                        }}
+                        className="w-full text-xs text-zinc-200 bg-zinc-900/80 rounded-lg p-2.5 border border-white/5 resize-none leading-relaxed"
+                        placeholder="Logré [X], medido por [Y], haciendo [Z]..."
+                      />
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Sección: Educación y Títulos */}
+            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5 text-purple-400" />
+                  Educación & Diplomas
+                </span>
+                <span className="text-[11px] font-mono text-purple-400">Paso 4 de 4</span>
+              </div>
+
+              <div className="space-y-2">
+                {formData.content.education.map((edu, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-black/25 border border-white/5 flex items-center justify-between text-xs">
+                    <div>
+                      <p className="font-semibold text-white">{edu.degree}</p>
+                      <p className="text-[11px] text-zinc-400">{edu.institution} • {edu.year}</p>
+                    </div>
+                    {edu.credentialType === 'DEGREE' && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        <ShieldCheck className="w-3 h-3" />
+                        Validado
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Vista Previa del Documento Dual-Target ATS */}
-        <div className="lg:col-span-6 sticky top-6">
-          <div className="w-full flex items-center justify-between mb-3 px-2">
-            <span className="text-xs font-mono font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-cyan-400" />
-              Documento Formateado (Vista de Impresión)
-            </span>
-            <span className="text-[11px] text-cyan-400 font-mono">Formato A4 Estándar</span>
-          </div>
+        {/* Columna Documento Previsualizado (Tipografía Suiza A4) */}
+        {(viewMode === 'split' || viewMode === 'preview') && (
+          <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'w-full'} sticky top-6`}>
+            <div className="flex items-center justify-between mb-3 px-1 text-xs text-zinc-400 font-mono">
+              <span>DOCUMENTO A4 (ATS COMPATIBLE)</span>
+              <span>ESTÁNDAR EDITORIAL SUIZO</span>
+            </div>
 
-          <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
-            <CvDocumentPreview cv={formData} />
+            <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
+              <CvDocumentPreview cv={formData} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
