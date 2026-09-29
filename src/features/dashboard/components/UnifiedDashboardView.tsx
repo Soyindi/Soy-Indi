@@ -196,10 +196,10 @@ export function UnifiedDashboardView({
       </div>
 
       {/* Selector de Pestañas Unificado (Tabs) */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl glass-panel border border-white/10 mb-8 max-w-2xl">
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl glass-panel border border-white/10 mb-8 max-w-2xl overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveTab('cards')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+          className={`flex-1 min-w-[130px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all shrink-0 ${
             activeTab === 'cards'
               ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md'
               : 'text-zinc-400 hover:text-white hover:bg-white/5'
@@ -211,7 +211,7 @@ export function UnifiedDashboardView({
 
         <button
           onClick={() => setActiveTab('cvs')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+          className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all shrink-0 ${
             activeTab === 'cvs'
               ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
               : 'text-zinc-400 hover:text-white hover:bg-white/5'
@@ -223,7 +223,7 @@ export function UnifiedDashboardView({
 
         <button
           onClick={() => setActiveTab('presentations')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+          className={`flex-1 min-w-[160px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all shrink-0 ${
             activeTab === 'presentations'
               ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
               : 'text-zinc-400 hover:text-white hover:bg-white/5'

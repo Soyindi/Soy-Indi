@@ -28,17 +28,17 @@ export default function HomePage() {
       <div className="absolute bottom-[-10%] left-[-10%] w-[550px] h-[550px] rounded-full bg-blue-700/15 blur-[150px] pointer-events-none" />
 
       {/* Header / Navbar Global */}
-      <header className="relative z-20 w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20">
+      <header className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20">
             <div className="w-full h-full bg-black/80 rounded-[11px] flex items-center justify-center">
-              <span className="font-black text-xl tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
+              <span className="font-black text-lg sm:text-xl tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
                 IN
               </span>
             </div>
           </div>
-          <span className="text-xl font-bold tracking-tight text-white">INDI</span>
-          <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono font-medium">
+          <span className="text-lg sm:text-xl font-bold tracking-tight text-white">INDI</span>
+          <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono font-medium">
             2026 SaaS
           </span>
         </div>
@@ -50,18 +50,18 @@ export default function HomePage() {
           <Link href="/pricing" className="hover:text-white transition-colors">Precios ($1.000/mes)</Link>
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href="/pricing"
-            className="text-xs font-semibold px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/5 text-zinc-300 hover:text-white transition-all"
+            className="hidden sm:inline-flex text-xs font-semibold px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/5 text-zinc-300 hover:text-white transition-all"
           >
             Ver Planes
           </Link>
           <Link
             href="/start"
-            className="text-xs font-semibold px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 transition-all"
+            className="text-xs font-semibold px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 transition-all text-center"
           >
-            Prueba Gratis 15 Días
+            Prueba 15 Días
           </Link>
         </div>
       </header>
