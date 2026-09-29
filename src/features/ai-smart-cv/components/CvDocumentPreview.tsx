@@ -63,9 +63,11 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
       {/* ============================================================== */}
       {/* HOJA 1: ENCABEZADO, RESUMEN Y EXPERIENCIA PRINCIPAL           */}
       {/* ============================================================== */}
-      <div className="relative">
-        <div className="page-badge absolute -top-3.5 left-6 bg-slate-900 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono px-3 py-0.5 rounded-full shadow-md z-10">
-          Hoja 1 {needsTwoPages ? 'de 2' : 'de 1'} • {pageFormat === 'a4' ? 'A4 Global' : 'Carta (US)'}
+      <div className="w-full flex flex-col items-center">
+        {/* Badge indicador de hoja */}
+        <div className="page-badge mb-2.5 self-start flex items-center gap-1.5 bg-slate-900/90 text-cyan-300 border border-cyan-500/30 text-[11px] font-mono px-3.5 py-1 rounded-full shadow-sm backdrop-blur-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <span>Hoja 1 {needsTwoPages ? 'de 2' : 'de 1'} • {pageFormat === 'a4' ? 'A4 Global' : 'Carta (US)'}</span>
         </div>
 
         <div className={`cv-page-sheet w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 border border-zinc-200 flex flex-col justify-between transition-all ${pageDimensions}`}>
@@ -234,9 +236,11 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
       {/* EDUCACIÓN Y FIRMA DIGITAL EJECUTIVA                           */}
       {/* ============================================================== */}
       {needsTwoPages && (
-        <div className="relative">
-          <div className="page-badge absolute -top-3.5 left-6 bg-slate-900 text-purple-300 border border-purple-500/30 text-[10px] font-mono px-3 py-0.5 rounded-full shadow-md z-10">
-            Hoja 2 de 2 • {pageFormat === 'a4' ? 'A4 Global' : 'Carta (US)'}
+        <div className="w-full flex flex-col items-center">
+          {/* Badge indicador de hoja 2 */}
+          <div className="page-badge mb-2.5 self-start flex items-center gap-1.5 bg-slate-900/90 text-purple-300 border border-purple-500/30 text-[11px] font-mono px-3.5 py-1 rounded-full shadow-sm backdrop-blur-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+            <span>Hoja 2 de 2 • {pageFormat === 'a4' ? 'A4 Global' : 'Carta (US)'}</span>
           </div>
 
           <div className={`cv-page-sheet w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 border border-zinc-200 flex flex-col justify-between transition-all ${pageDimensions}`}>

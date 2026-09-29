@@ -873,7 +873,7 @@ export function SmartCvBuilder() {
               <span className="text-[11px] text-cyan-400">DUAL-TARGET ATS</span>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
+            <div className="w-full">
               <CvDocumentPreview cv={formData} pageFormat={pageFormat} />
             </div>
           </div>
