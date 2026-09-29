@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { PresentationSlide, PresentationTheme, PresentationFormValues } from '@/entities/presentation/schemas';
 import { SlideViewer } from '@/features/orbital-presentations/components/SlideViewer';
 import { generateAiSlidesAction, upsertPresentationAction } from '@/features/orbital-presentations/actions';
+import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { 
   Sparkles, 
   ChevronLeft, 
@@ -141,38 +142,28 @@ export function PresentationStudio() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill text-xs font-medium text-cyan-400 mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Orbital Studio • Presentaciones Cinematográficas</span>
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">
-            Editor de Presentaciones
-          </h1>
-          <p className="text-sm text-zinc-400 mt-1">
-            Crea diapositivas cinemáticas interactivas con iluminación volumétrica y orquestación por IA.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleSave}
-            disabled={isPending}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
-          >
-            {isPending ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : savedSuccess ? (
-              <Check className="w-3.5 h-3.5 text-emerald-300" />
-            ) : (
-              <Save className="w-3.5 h-3.5" />
-            )}
-            <span>{savedSuccess ? '¡Guardada!' : 'Guardar Presentación'}</span>
-          </button>
-        </div>
-      </div>
+      {/* Header con botón de retroceso al Dashboard */}
+      <AppEditorHeader
+        sectionTitle="Editor de Presentaciones"
+        categoryName="Presentaciones Cinemáticas"
+        categoryHref="/dashboard"
+        badgeText="Orbital Studio 16:9"
+      >
+        <button
+          onClick={handleSave}
+          disabled={isPending}
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
+        >
+          {isPending ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : savedSuccess ? (
+            <Check className="w-3.5 h-3.5 text-emerald-300" />
+          ) : (
+            <Save className="w-3.5 h-3.5" />
+          )}
+          <span>{savedSuccess ? '¡Guardada!' : 'Guardar Presentación'}</span>
+        </button>
+      </AppEditorHeader>
 
       {/* Barra de Asistente IA Generador */}
       <div className="mb-8 glass-panel rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border border-indigo-500/20">

@@ -109,6 +109,25 @@ export default async function PublicCardPage({ params }: PageProps) {
 
   return (
     <div className="relative min-h-screen py-16 px-4 flex flex-col items-center justify-center overflow-hidden">
+      {/* Barra superior flotante de retorno al panel */}
+      <div className="absolute top-6 left-6 z-30 flex items-center gap-3">
+        <a
+          href="/dashboard"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 shadow-lg"
+        >
+          <span>← Volver a mi Panel</span>
+        </a>
+      </div>
+
+      <div className="absolute top-6 right-6 z-30 flex items-center gap-2">
+        <a
+          href="/"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-panel text-[11px] font-mono text-zinc-400 hover:text-white transition-all border border-white/5"
+        >
+          <span>INDI • Identidad Digital</span>
+        </a>
+      </div>
+
       {/* Luces volumétricas de fondo */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[130px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-cyan-500/15 blur-[120px] pointer-events-none" />

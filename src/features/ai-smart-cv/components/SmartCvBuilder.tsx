@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { CVFormValues, AtsAuditResult } from '@/entities/cv/schemas';
 import { auditAtsScoreAction, upsertSmartCvAction } from '@/features/ai-smart-cv/actions';
 import { CvDocumentPreview } from '@/features/ai-smart-cv/components/CvDocumentPreview';
+import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { 
   Sparkles, 
   ShieldCheck, 
@@ -109,59 +110,49 @@ export function SmartCvBuilder() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill text-xs font-medium text-cyan-400 mb-2">
-            <BrainCircuit className="w-3.5 h-3.5" />
-            <span>Motor Smart CV con Calibración ATS</span>
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">
-            Optimizador de CV & Resume
-          </h1>
-          <p className="text-sm text-zinc-400 mt-1">
-            Adapta tu currículum a los filtros automatizados ATS de reclutadores y empresas tecnológicas.
-          </p>
-        </div>
+      {/* Header con botón de retroceso a /dashboard */}
+      <AppEditorHeader
+        sectionTitle="Optimizador de CV & Resume"
+        categoryName="Smart CV (ATS)"
+        categoryHref="/dashboard"
+        badgeText="Calibración Heurística"
+      >
+        <button
+          onClick={handlePrint}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl glass-panel text-zinc-300 hover:text-white text-xs font-semibold transition-all"
+        >
+          <Printer className="w-4 h-4 text-cyan-400" />
+          <span>Imprimir / PDF</span>
+        </button>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl glass-panel text-zinc-300 hover:text-white text-xs font-semibold transition-all"
-          >
-            <Printer className="w-4 h-4 text-cyan-400" />
-            <span>Imprimir / PDF</span>
-          </button>
+        <button
+          onClick={handleRunAtsAudit}
+          disabled={auditPending}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/40 text-xs font-semibold transition-all disabled:opacity-50"
+        >
+          {auditPending ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+          )}
+          <span>Auditar ATS</span>
+        </button>
 
-          <button
-            onClick={handleRunAtsAudit}
-            disabled={auditPending}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/40 text-xs font-semibold transition-all disabled:opacity-50"
-          >
-            {auditPending ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-            )}
-            <span>Auditar ATS</span>
-          </button>
-
-          <button
-            onClick={handleSaveCv}
-            disabled={isPending}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
-          >
-            {isPending ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : savedSuccess ? (
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
-            ) : (
-              <FileText className="w-3.5 h-3.5" />
-            )}
-            <span>{savedSuccess ? '¡Guardado!' : 'Guardar CV'}</span>
-          </button>
-        </div>
-      </div>
+        <button
+          onClick={handleSaveCv}
+          disabled={isPending}
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
+        >
+          {isPending ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : savedSuccess ? (
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
+          ) : (
+            <FileText className="w-3.5 h-3.5" />
+          )}
+          <span>{savedSuccess ? '¡Guardado!' : 'Guardar CV'}</span>
+        </button>
+      </AppEditorHeader>
 
       {/* Barra de Score ATS */}
       <div className="mb-8 glass-panel rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 border border-indigo-500/20">

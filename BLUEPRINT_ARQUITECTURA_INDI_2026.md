@@ -422,5 +422,22 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Tarjeta 2: **Optimizar o Crear Smart CV** (Filtros ATS, formato A4 imprimible, 4 min) -> `/cv`.
    - Tarjeta 3: **Elaborar Presentación Cinemática** (IA estructuradora, formato 16:9, 3 min) -> `/presentations`.
 3. **Atajo Directo al Dashboard**: Enlace alternativo para usuarios recurrentes hacia `/cards`.
-4. **Validación de Compilación**: Proyecto verificado con `npm run build` (Next.js 16 App Router) con salida limpia y ruta `/start` generada dinámicamente.
+### ✅ Fase 7: Flujo Continuo, Navegación Bidireccional y Dashboard Unificado (COMPLETADA)
+1. **Componente Universal `AppEditorHeader.tsx`**:
+   - Integrado en `/cards/new`, `/cv` y `/presentations`.
+   - Botón *"← Volver al Panel"* con micro-animación en hover, breadcrumbs interactivos y área para botones de acción.
+2. **Redirección Post-Creación al Dashboard**:
+   - En `/cards/new`, al guardar con éxito, redirige a `/dashboard?created=true&slug=[slug]`.
+   - Banner de confirmación visual en el Dashboard con botón para ver la tarjeta en vivo.
+3. **Suite Unificada en `/dashboard` (`UnifiedDashboardView.tsx`)**:
+   - Pestaña 1: **Tarjetas Digitales** (métricas de visitas, clicks, switch de activación, copia rápida de URL, previsualización en vivo y borrado).
+   - Pestaña 2: **Smart CVs (ATS)** (listado con badge de puntaje ATS 0 a 100, fecha de actualización y acceso al editor imprimible A4).
+   - Pestaña 3: **Presentaciones Cinemáticas** (listado con contador de diapositivas 16:9, vistas y acceso al estudio interactivo).
+   - Botones contextuales de creación rápida según la pestaña activa ("Nueva Tarjeta", "Crear o Mejorar CV", "Nueva Presentación").
+4. **Navegación en Tarjeta Pública (`/c/[slug]`)**:
+   - Barra superior flotante con acceso directo de retorno *"← Volver a mi Panel"*.
+5. **Enrutamiento Coherente**:
+   - `/cards` redirige limpiamente a `/dashboard?tab=cards`.
+   - Barra de navegación global en `src/app/page.tsx` actualizada con *"Panel General"*.
+6. **Compilación Verificada**: `npm run build` exitoso con 0 errores TypeScript.
 

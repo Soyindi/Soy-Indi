@@ -164,7 +164,7 @@ export function OnboardingChoiceGrid({ daysRemaining, aiCredits }: OnboardingCho
           ¿Ya sabes cómo usar la plataforma o deseas ver tus proyectos creados?
         </p>
         <Link
-          href="/cards"
+          href="/dashboard"
           className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition"
         >
           <span>Ir directamente al Panel General (Dashboard)</span>

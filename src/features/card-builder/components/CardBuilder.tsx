@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { DigitalCard, CardData } from '@/entities/card/components/DigitalCard';
 import { upsertCardAction } from '@/features/card-builder/actions';
+import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -102,8 +103,8 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
       } else {
         setSavedSuccess(true);
         setTimeout(() => {
-          router.push(`/c/${res.data?.slug}`);
-        }, 800);
+          router.push(`/dashboard?created=true&slug=${res.data?.slug}`);
+        }, 900);
       }
     });
   };
@@ -118,46 +119,36 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {/* Barra superior */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill text-xs font-medium text-cyan-400 mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Editor Visual en Tiempo Real</span>
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">
-            Diseñador de Tarjeta INDI
-          </h1>
-          <p className="text-sm text-zinc-400 mt-1">
-            Personaliza tus datos, partículas y enlaces. Los cambios se reflejan al instante.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleSave}
-            disabled={isPending}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all disabled:opacity-50"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Guardando en Turso...</span>
-              </>
-            ) : savedSuccess ? (
-              <>
-                <Check className="w-4 h-4 text-emerald-300" />
-                <span>¡Publicado con Éxito!</span>
-              </>
-            ) : (
-              <>
-                <span>Guardar y Publicar</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+      {/* Barra superior con botón de retorno al Dashboard */}
+      <AppEditorHeader
+        sectionTitle="Diseñador de Tarjeta INDI"
+        categoryName="Tarjetas Digitales"
+        categoryHref="/dashboard"
+        badgeText="Sincronización 60 FPS"
+      >
+        <button
+          onClick={handleSave}
+          disabled={isPending}
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all disabled:opacity-50"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Guardando en Turso...</span>
+            </>
+          ) : savedSuccess ? (
+            <>
+              <Check className="w-4 h-4 text-emerald-300" />
+              <span>¡Guardado! Redirigiendo...</span>
+            </>
+          ) : (
+            <>
+              <span>Guardar y Publicar</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
+      </AppEditorHeader>
 
       {errorMsg && (
         <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">

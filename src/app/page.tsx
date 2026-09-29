@@ -44,7 +44,7 @@ export default function HomePage() {
         </div>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-          <Link href="/cards" className="hover:text-white transition-colors">Tarjetas</Link>
+          <Link href="/dashboard" className="hover:text-white transition-colors">Panel General</Link>
           <Link href="/cv" className="hover:text-white transition-colors">Smart CV (ATS)</Link>
           <Link href="/presentations" className="hover:text-white transition-colors">Presentaciones</Link>
           <Link href="/pricing" className="hover:text-white transition-colors">Precios ($1.000/mes)</Link>
