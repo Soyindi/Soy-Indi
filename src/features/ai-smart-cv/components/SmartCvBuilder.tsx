@@ -24,7 +24,9 @@ import {
   Link2,
   Globe,
   Trash2,
-  Download
+  Download,
+  Plus,
+  Wand2
 } from 'lucide-react';
 
 export function SmartCvBuilder() {
@@ -168,6 +170,86 @@ export function SmartCvBuilder() {
           ...prev.content,
           education: updatedEducation,
           credentials: [...existingCredentials, credential],
+        },
+      };
+    });
+  };
+
+  const handleAddExperience = () => {
+    setFormData((prev) => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        experience: [
+          ...prev.content.experience,
+          {
+            company: 'Nueva Institución / Empresa',
+            role: 'Cargo Profesional',
+            period: '2023 - Presente',
+            bullets: ['Logré [resultado de impacto], medido por [métrica], haciendo [acción técnica].'],
+            detailedBullets: [{ text: 'Logré [resultado], medido por [métrica], haciendo [acción].', needs_metric: true }],
+          },
+        ],
+      },
+    }));
+  };
+
+  const handleDeleteExperience = (idx: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        experience: prev.content.experience.filter((_, i) => i !== idx),
+      },
+    }));
+  };
+
+  const handleAddEducation = () => {
+    setFormData((prev) => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        education: [
+          ...prev.content.education,
+          {
+            degree: 'Título Profesional o Grado',
+            institution: 'Universidad o Instituto',
+            year: 'Año de Graduación',
+            credentialType: 'UNVERIFIED',
+          },
+        ],
+      },
+    }));
+  };
+
+  const handleDeleteEducation = (idx: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        education: prev.content.education.filter((_, i) => i !== idx),
+      },
+    }));
+  };
+
+  const handlePurgeEducationDates = () => {
+    setFormData((prev) => {
+      const isDateOnly = (text: string) => {
+        const lower = text.toLowerCase();
+        return (
+          /^(santiago|valdiviana|chile|puerto|punta)?[,\s]*\d{1,2}\s+de\s+[a-z]+\s+(?:del?\s+)?\d{4}/i.test(lower) ||
+          /^\d{1,2}\s+de\s+[a-z]+\s+de\s+\d{4}/i.test(lower) ||
+          /^fecha\s+de\s+emisi/i.test(lower)
+        );
+      };
+      const cleaned = prev.content.education.filter(
+        (edu) => !isDateOnly(edu.degree) && !isDateOnly(edu.institution) && edu.degree.length > 3
+      );
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          education: cleaned.length > 0 ? cleaned : prev.content.education,
         },
       };
     });
@@ -555,16 +637,38 @@ export function SmartCvBuilder() {
             {/* Sección: Experiencia Laboral con Inline AI Writer */}
             <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                  Experiencia Laboral (Fórmula Google XYZ)
-                </span>
-                <span className="text-[11px] font-mono text-teal-400">Paso 3 de 4</span>
+                <div>
+                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
+                    Experiencia Laboral (Fórmula Google XYZ)
+                  </span>
+                  <span className="text-[11px] font-mono text-teal-400">Paso 3 de 4</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddExperience}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/20 text-xs font-medium transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Agregar Cargo</span>
+                </button>
               </div>
 
               <div className="space-y-4">
                 {formData.content.experience.map((exp, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-black/25 border border-white/5 space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
+                  <div key={idx} className="p-4 rounded-xl bg-black/25 border border-white/5 space-y-3 relative group">
+                    <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                      <span className="text-[11px] font-mono text-zinc-500">#{idx + 1} • {exp.role || 'Nuevo Cargo'}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteExperience(idx)}
+                        className="text-zinc-500 hover:text-rose-400 p-1 rounded-lg hover:bg-rose-500/10 transition-colors"
+                        title="Eliminar este cargo"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                       <input
                         type="text"
                         value={exp.role}
@@ -573,8 +677,8 @@ export function SmartCvBuilder() {
                           updated[idx].role = e.target.value;
                           handleContentChange('experience', updated);
                         }}
-                        className="text-xs font-medium text-white bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5"
-                        placeholder="Cargo"
+                        className="text-xs font-medium text-white bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5 focus:border-teal-500/40"
+                        placeholder="Cargo profesional"
                       />
                       <input
                         type="text"
@@ -584,8 +688,19 @@ export function SmartCvBuilder() {
                           updated[idx].company = e.target.value;
                           handleContentChange('experience', updated);
                         }}
-                        className="text-xs text-zinc-300 bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5"
-                        placeholder="Empresa"
+                        className="text-xs text-zinc-300 bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5 focus:border-teal-500/40"
+                        placeholder="Empresa o Institución"
+                      />
+                      <input
+                        type="text"
+                        value={exp.period}
+                        onChange={(e) => {
+                          const updated = [...formData.content.experience];
+                          updated[idx].period = e.target.value;
+                          handleContentChange('experience', updated);
+                        }}
+                        className="text-xs font-mono text-zinc-400 bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5 focus:border-teal-500/40"
+                        placeholder="ej. 2022 - Presente"
                       />
                     </div>
 
@@ -618,7 +733,7 @@ export function SmartCvBuilder() {
                           updated[idx].bullets = newBullets;
                           handleContentChange('experience', updated);
                         }}
-                        className="w-full text-xs text-zinc-200 bg-zinc-900/80 rounded-lg p-2.5 border border-white/5 resize-none leading-relaxed"
+                        className="w-full text-xs text-zinc-200 bg-zinc-900/80 rounded-lg p-2.5 border border-white/5 resize-none leading-relaxed focus:border-teal-500/40"
                         placeholder="Logré [X], medido por [Y], haciendo [Z]..."
                       />
                     </div>
@@ -630,26 +745,82 @@ export function SmartCvBuilder() {
             {/* Sección: Educación y Firma */}
             <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Award className="w-3.5 h-3.5 text-purple-400" />
-                  Educación & Firma Ejecutiva
-                </span>
-                <span className="text-[11px] font-mono text-purple-400">Paso 4 de 4</span>
+                <div>
+                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Award className="w-3.5 h-3.5 text-purple-400" />
+                    Educación & Formación
+                  </span>
+                  <span className="text-[11px] font-mono text-purple-400">Paso 4 de 4</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePurgeEducationDates}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[11px] font-medium transition-all"
+                    title="Depurar fechas aisladas que no sean títulos"
+                  >
+                    <span>Depurar Fechas</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddEducation}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 text-[11px] font-medium transition-all"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Agregar</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {formData.content.education.map((edu, idx) => (
-                  <div key={idx} className="p-3 rounded-xl bg-black/25 border border-white/5 flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-semibold text-white">{edu.degree}</p>
-                      <p className="text-[11px] text-zinc-400">{edu.institution} • {edu.year}</p>
+                  <div key={idx} className="p-3 rounded-xl bg-black/25 border border-white/5 flex items-center justify-between text-xs gap-3 group">
+                    <div className="flex-1 min-w-0">
+                      <input
+                        type="text"
+                        value={edu.degree}
+                        onChange={(e) => {
+                          const updated = [...formData.content.education];
+                          updated[idx].degree = e.target.value;
+                          handleContentChange('education', updated);
+                        }}
+                        className="w-full font-semibold text-white bg-transparent border-b border-transparent focus:border-purple-400/40 focus:outline-none mb-1 text-xs"
+                        placeholder="Título o Grado"
+                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={edu.institution}
+                          onChange={(e) => {
+                            const updated = [...formData.content.education];
+                            updated[idx].institution = e.target.value;
+                            handleContentChange('education', updated);
+                          }}
+                          className="flex-1 text-[11px] text-zinc-400 bg-transparent border-b border-transparent focus:border-purple-400/40 focus:outline-none"
+                          placeholder="Universidad / Instituto"
+                        />
+                        <input
+                          type="text"
+                          value={edu.year}
+                          onChange={(e) => {
+                            const updated = [...formData.content.education];
+                            updated[idx].year = e.target.value;
+                            handleContentChange('education', updated);
+                          }}
+                          className="w-24 text-[11px] font-mono text-zinc-400 bg-transparent border-b border-transparent focus:border-purple-400/40 focus:outline-none text-right"
+                          placeholder="Año"
+                        />
+                      </div>
                     </div>
-                    {edu.credentialType === 'DEGREE' && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        <ShieldCheck className="w-3 h-3" />
-                        Validado
-                      </span>
-                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteEducation(idx)}
+                      className="text-zinc-600 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-colors shrink-0"
+                      title="Eliminar este título o certificación"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 ))}
               </div>
