@@ -62,6 +62,7 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
           year: edu.year,
           credentialType: 'UNVERIFIED',
         })),
+        references: extracted.references || [],
         credentials: [],
         signatureType: 'NONE',
         signatureUrl: '',

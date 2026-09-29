@@ -295,5 +295,6 @@ function synthesizeDeterministicExtraction(fileName: string): MultimodalCvExtrac
         year: '2016 - 2021',
       },
     ],
+    references: [],
   };
 }

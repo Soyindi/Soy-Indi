@@ -57,6 +57,18 @@ export const cvSkillItemSchema = z.object({
   normalizedTaxonomyId: z.string().optional(), // ESCO code
 });
 
+/**
+ * Referencia laboral o profesional
+ */
+export const cvReferenceSchema = z.object({
+  name: z.string().min(1, 'Nombre de la referencia requerido'),
+  role: z.string().min(1, 'Cargo de la referencia requerido'),
+  company: z.string().min(1, 'Empresa o institución requerida'),
+  contact: z.string().optional(), // Teléfono o Email
+});
+
+export type CVReference = z.infer<typeof cvReferenceSchema>;
+
 export const cvFormSchema = z.object({
   title: z.string().min(2, 'El título del CV debe tener al menos 2 caracteres'),
   targetRole: z.string().min(2, 'El rol objetivo debe tener al menos 2 caracteres'),
@@ -71,6 +83,7 @@ export const cvFormSchema = z.object({
     skills: z.array(z.string()).default([]),
     experience: z.array(cvExperienceSchema).default([]),
     education: z.array(cvEducationSchema).default([]),
+    references: z.array(cvReferenceSchema).optional().default([]),
     credentials: z.array(verifiedCredentialSchema).optional().default([]),
     // Enlaces Profesionales Modernos
     linkedinUrl: z.string().optional(),
@@ -130,6 +143,7 @@ export const multimodalCvExtractionSchema = z.object({
       year: z.string(),
     })
   ).default([]),
+  references: z.array(cvReferenceSchema).default([]),
 });
 
 export type MultimodalCvExtraction = z.infer<typeof multimodalCvExtractionSchema>;

@@ -122,13 +122,20 @@ export function parseCvTextToStructuredData(
   }
 
   // 4. Identificar Secciones del CV por Palabras Clave
-  type SectionType = 'summary' | 'experience' | 'education' | 'skills' | 'other';
+  type SectionType = 'summary' | 'experience' | 'education' | 'skills' | 'references' | 'other';
   const sectionIndices: Array<{ type: SectionType; lineIndex: number; title: string }> = [];
 
   const isSectionHeader = (line: string): { isHeader: boolean; type: SectionType } => {
     const lower = line.toLowerCase().replace(/[:\-#*]/g, '').trim();
     if (lower.length > 40) return { isHeader: false, type: 'other' };
 
+    if (
+      lower.includes('referencia') ||
+      lower.includes('references') ||
+      lower.includes('contactos de referencia')
+    ) {
+      return { isHeader: true, type: 'references' };
+    }
     if (
       lower.includes('resumen') ||
       lower.includes('perfil') ||
@@ -445,6 +452,53 @@ export function parseCvTextToStructuredData(
     });
   }
 
+  // 9. Procesar Referencias Laborales
+  const refLines = getSectionLines('references');
+  const references: Array<{ name: string; role: string; company: string; contact?: string }> = [];
+
+  for (let i = 0; i < refLines.length; i++) {
+    const rawLine = refLines[i];
+    const cleanLine = stripLeadingBullet(rawLine);
+    if (cleanLine.length < 3) continue;
+
+    // Buscar si la línea tiene separadores (Nombre · Cargo · Empresa · Contacto)
+    const parts = cleanLine.split(/[|–—\-·•]/).map((p) => p.trim()).filter(Boolean);
+
+    let name = '';
+    let role = '';
+    let company = '';
+    let contact = '';
+
+    // Buscar email o teléfono en la línea
+    const phoneInLine = cleanLine.match(/(?:\+?56\s?9|\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/);
+    const emailInLine = cleanLine.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i);
+    if (phoneInLine) contact = phoneInLine[0].trim();
+    if (emailInLine) contact = contact ? `${contact} • ${emailInLine[0]}` : emailInLine[0];
+
+    if (parts.length >= 3) {
+      name = parts[0];
+      role = parts[1];
+      company = parts[2];
+    } else if (parts.length === 2) {
+      name = parts[0];
+      role = parts[1];
+      company = 'Institución / Organización';
+    } else {
+      name = cleanLine;
+      role = 'Contacto de Referencia';
+      company = 'Institución';
+    }
+
+    if (name) {
+      references.push({
+        name: name.replace(/(?:tel|fono|email|correo).*$/i, '').trim(),
+        role: role.replace(/(?:tel|fono|email|correo).*$/i, '').trim(),
+        company: company.replace(/(?:tel|fono|email|correo).*$/i, '').trim(),
+        contact: contact || undefined,
+      });
+    }
+  }
+
   return {
     fullName,
     email: email || 'contacto@indi.bio',
@@ -458,5 +512,6 @@ export function parseCvTextToStructuredData(
     skills: extractedSkills.length > 0 ? extractedSkills : ['Liderazgo', 'Evaluación', 'Resolución de Problemas'],
     experience,
     education,
+    references,
   };
 }

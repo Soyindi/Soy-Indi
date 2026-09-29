@@ -216,6 +216,26 @@ export async function generateAndDownloadCvPdf(
     cursorY += skillLines.length * 4.4 + 5;
   }
 
+  // --- 4.5. REFERENCIAS LABORALES ---
+  if (content.references && content.references.length > 0) {
+    drawSectionHeader('Referencias Laborales');
+    for (const ref of content.references) {
+      checkPageBreak(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text(ref.name, marginX, cursorY);
+
+      cursorY += 4;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(67, 56, 202); // Indigo 700
+      const refDetail = `${ref.role} • ${ref.company}${ref.contact ? ` (${ref.contact})` : ''}`;
+      doc.text(refDetail, marginX, cursorY);
+      cursorY += 5;
+    }
+  }
+
   // --- 5. FIRMA DIGITAL EJECUTIVA Y PIE LEGAL ---
   if (content.signatureUrl || content.fullName) {
     // Si la firma está cerca del borde inferior, mover a nueva página

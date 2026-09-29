@@ -123,6 +123,14 @@ export function SmartCvBuilder() {
           mappedEducationIndex: 0,
         },
       ],
+      references: [
+        {
+          name: 'Dra. Carolina Morales',
+          role: 'Directora de Operaciones Clínicas',
+          company: 'Hospital Clínico',
+          contact: '+56 9 9123 4567 • cmorales@hospital.cl',
+        },
+      ],
     },
   });
 
@@ -228,6 +236,34 @@ export function SmartCvBuilder() {
       content: {
         ...prev.content,
         education: prev.content.education.filter((_, i) => i !== idx),
+      },
+    }));
+  };
+
+  const handleAddReference = () => {
+    setFormData((prev) => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        references: [
+          ...(prev.content.references || []),
+          {
+            name: 'Nombre de Referencia',
+            role: 'Cargo Profesional',
+            company: 'Empresa o Institución',
+            contact: '+56 9 0000 0000',
+          },
+        ],
+      },
+    }));
+  };
+
+  const handleDeleteReference = (idx: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        references: (prev.content.references || []).filter((_, i) => i !== idx),
       },
     }));
   };
@@ -862,6 +898,96 @@ export function SmartCvBuilder() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* Sección: Referencias Laborales */}
+            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
+                    Referencias Laborales
+                  </span>
+                  <span className="text-[11px] font-mono text-indigo-400">Verificación y Contactos</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddReference}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 text-xs font-medium transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Agregar Referencia</span>
+                </button>
+              </div>
+
+              {(!formData.content.references || formData.content.references.length === 0) ? (
+                <div className="p-4 rounded-xl bg-black/20 border border-dashed border-white/10 text-center text-xs text-zinc-500">
+                  No hay referencias agregadas. Pulsa &quot;Agregar Referencia&quot; o importa tu CV para detectarlas.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {formData.content.references.map((ref, idx) => (
+                    <div key={idx} className="p-3.5 rounded-xl bg-black/25 border border-white/5 flex items-center justify-between text-xs gap-3 group">
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        <input
+                          type="text"
+                          value={ref.name}
+                          onChange={(e) => {
+                            const updated = [...(formData.content.references || [])];
+                            updated[idx].name = e.target.value;
+                            handleContentChange('references', updated);
+                          }}
+                          className="w-full font-semibold text-white bg-transparent border-b border-transparent focus:border-indigo-400/40 focus:outline-none text-xs"
+                          placeholder="Nombre completo de la referencia"
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={ref.role}
+                            onChange={(e) => {
+                              const updated = [...(formData.content.references || [])];
+                              updated[idx].role = e.target.value;
+                              handleContentChange('references', updated);
+                            }}
+                            className="text-[11px] text-indigo-300 bg-transparent border-b border-transparent focus:border-indigo-400/40 focus:outline-none"
+                            placeholder="Cargo / Relación"
+                          />
+                          <input
+                            type="text"
+                            value={ref.company}
+                            onChange={(e) => {
+                              const updated = [...(formData.content.references || [])];
+                              updated[idx].company = e.target.value;
+                              handleContentChange('references', updated);
+                            }}
+                            className="text-[11px] text-zinc-400 bg-transparent border-b border-transparent focus:border-indigo-400/40 focus:outline-none"
+                            placeholder="Empresa / Institución"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          value={ref.contact || ''}
+                          onChange={(e) => {
+                            const updated = [...(formData.content.references || [])];
+                            updated[idx].contact = e.target.value;
+                            handleContentChange('references', updated);
+                          }}
+                          className="w-full text-[10px] font-mono text-zinc-500 bg-transparent border-b border-transparent focus:border-indigo-400/40 focus:outline-none"
+                          placeholder="Teléfono o Email de contacto"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteReference(idx)}
+                        className="text-zinc-600 hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 transition-colors shrink-0"
+                        title="Eliminar referencia"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

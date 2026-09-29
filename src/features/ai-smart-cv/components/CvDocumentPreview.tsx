@@ -13,10 +13,11 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
   const { content } = cv;
 
   // Determinar si el contenido requiere paginación en 2 hojas
-  // Regla editorial: más de 3 experiencias o más de 4 ítems de educación justifican Hoja 2
+  // Regla editorial: más de 3 experiencias o referencias o más de 4 ítems de educación justifican Hoja 2
+  const hasReferences = (content.references && content.references.length > 0);
   const needsTwoPages =
     content.experience.length > 3 ||
-    (content.experience.length > 2 && content.education.length > 3) ||
+    (content.experience.length > 2 && (content.education.length > 3 || hasReferences)) ||
     (content.summary.length > 300 && content.experience.length > 2);
 
   // División de experiencias entre Hoja 1 y Hoja 2
@@ -223,6 +224,26 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                     </div>
                   </div>
                 )}
+
+                {/* Referencias Laborales (Hoja 1 si cabe) */}
+                {content.references && content.references.length > 0 && (
+                  <div className="mb-6">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
+                      Referencias Laborales
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {content.references.map((ref, rIdx) => (
+                        <div key={rIdx} className="text-xs p-2 rounded-lg bg-zinc-50 border border-zinc-150">
+                          <div className="font-bold text-zinc-900">{ref.name}</div>
+                          <div className="text-indigo-700 text-[11px] font-medium">{ref.role} • {ref.company}</div>
+                          {ref.contact && (
+                            <div className="text-zinc-500 text-[10px] font-mono mt-0.5">{ref.contact}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -329,6 +350,26 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                           )}
                         </div>
                         <span className="text-zinc-500 text-[11px] font-mono">{edu.year}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Referencias Laborales (Hoja 2) */}
+              {content.references && content.references.length > 0 && (
+                <div className="mb-6">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
+                    Referencias Laborales
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {content.references.map((ref, rIdx) => (
+                      <div key={rIdx} className="text-xs p-2.5 rounded-lg bg-zinc-50 border border-zinc-200/80">
+                        <div className="font-bold text-zinc-900">{ref.name}</div>
+                        <div className="text-indigo-700 text-[11px] font-medium">{ref.role} • {ref.company}</div>
+                        {ref.contact && (
+                          <div className="text-zinc-500 text-[10px] font-mono mt-0.5">{ref.contact}</div>
+                        )}
                       </div>
                     ))}
                   </div>
