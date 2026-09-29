@@ -441,3 +441,19 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Barra de navegación global en `src/app/page.tsx` actualizada con *"Panel General"*.
 6. **Compilación Verificada**: `npm run build` exitoso con 0 errores TypeScript.
 
+### ✅ Fase 8: Ingesta Documental Multimodal, Qwen2.5-VL y Dual-Target ATS (COMPLETADA)
+1. **Ingesta Inteligente de Documentos Multimodal (`SmartDocumentDropzone.tsx`)**:
+   - Soporte dual para carga interactiva de **Currículums existentes** (PDF/imagen) y **Títulos Universitarios / Certificaciones** (PDF/imagen).
+   - Inferencia con modelos de frontera visuales: **Qwen2.5-VL** (resolución dinámica nativa NaViT y bounding boxes de layouts) con fallback resiliente a **Gemini 2.0 Flash**.
+2. **Sanitización Regulatoria (EU AI Act & Antisesgo)**:
+   - Filtrado automático de atributos protegidos (edad, estado civil, fotografía no reglamentaria, religión y género) para garantizar cumplimiento estricto con la Ley de Inteligencia Artificial europea.
+3. **Reescritura STAR / Google XYZ con Mitigación Activa de Alucinaciones**:
+   - Reformulación de cada viñeta bajo la estructura: *"Logré [X], medido por [Y], haciendo [Z]"*.
+   - Detección algorítmica de viñetas sin métricas cuantitativas (`needs_metric: true`), alertando al usuario en la UI para evitar que la IA invente datos falsos.
+4. **Validación y Mapeo Semántico de Títulos Universitarios**:
+   - Extracción de entidad emisora, nombre del título, año y folio/código de verificación.
+   - Algoritmo de similitud semántica para emparejar automáticamente diplomas con las entradas correspondientes en la sección `Educación`, agregando el sello de validación documental.
+5. **Arquitectura Dual-Target ATS**:
+   - Generación de capa semántica lineal serializada en el AST del documento para parseo determinista en sistemas ATS globales (Workday, Greenhouse, Lever, Taleo) combinada con visualización tipográfica de alta fidelidad.
+
+
