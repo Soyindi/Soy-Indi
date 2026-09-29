@@ -148,6 +148,46 @@ export function UnifiedDashboardView({
         </div>
       )}
 
+      {/* Barra de Navegación Global del Dashboard */}
+      <div className="flex items-center justify-between pb-6 mb-8 border-b border-white/10">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition-all shadow-sm"
+            title="Volver a la Página Principal"
+          >
+            <span className="text-zinc-500 group-hover:-translate-x-0.5 transition-transform">←</span>
+            <span>Volver al Inicio</span>
+          </Link>
+
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px]">
+              <div className="w-full h-full bg-black/80 rounded-[7px] flex items-center justify-center">
+                <span className="font-black text-xs text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
+                  IN
+                </span>
+              </div>
+            </div>
+            <span className="text-sm font-bold tracking-tight text-white hidden sm:inline-block">INDI</span>
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Link
+            href="/pricing"
+            className="text-xs text-zinc-400 hover:text-white transition hidden sm:inline-block"
+          >
+            Planes y Precios
+          </Link>
+          <Link
+            href="/start"
+            className="text-xs px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-300 font-mono font-medium transition"
+          >
+            + Nuevo Proyecto
+          </Link>
+        </div>
+      </div>
+
       {/* Cabecera Principal del Dashboard */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
