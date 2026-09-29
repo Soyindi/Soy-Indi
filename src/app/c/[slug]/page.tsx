@@ -1,0 +1,119 @@
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { db } from '@/shared/api/db';
+import { cards } from '@/entities/schema';
+import { eq } from 'drizzle-orm';
+import { DigitalCard } from '@/entities/card/components/DigitalCard';
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  // Si es slug demo, retornamos metadatos de presentación
+  if (slug === 'demo') {
+    const ogImageUrl = `http://localhost:3000/api/og?title=${encodeURIComponent('Matías Riquelme')}&role=${encodeURIComponent('Ingeniero de Software & Arquitecto Cloud')}&about=${encodeURIComponent('Especialista en arquitecturas web distribuidas, Edge computing y sistemas de alta concurrencia.')}`;
+
+    return {
+      title: 'Matías Riquelme — Ingeniero de Software & Arquitecto Cloud | INDI',
+      description: 'Conecta directamente con Matías Riquelme en un solo clic por WhatsApp o redes.',
+      openGraph: {
+        title: 'Matías Riquelme — Ingeniero de Software',
+        description: 'Tarjeta de identidad interactiva y networking profesional.',
+        url: 'https://indi.bio/c/demo',
+        siteName: 'INDI Digital Identity',
+        images: [{ url: ogImageUrl, width: 1200, height: 630, alt: 'Matías Riquelme' }],
+        type: 'profile',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Matías Riquelme — Ingeniero de Software',
+        description: 'Tarjeta de identidad interactiva y networking profesional.',
+        images: [ogImageUrl],
+      },
+    };
+  }
+
+  const card = await db.query.cards.findFirst({
+    where: eq(cards.slug, slug),
+  });
+
+  if (!card) {
+    return { title: 'Tarjeta No Encontrada | INDI' };
+  }
+
+  const ogImageUrl = `https://indi.bio/api/og?title=${encodeURIComponent(card.title)}&role=${encodeURIComponent(card.profession)}&about=${encodeURIComponent(card.about || '')}&photo=${encodeURIComponent(card.photoUrl || '')}`;
+
+  return {
+    title: `${card.title} — ${card.profession} | INDI`,
+    description: card.about || `Conecta directamente con ${card.title} en un solo clic por WhatsApp o redes.`,
+    openGraph: {
+      title: `${card.title} | ${card.profession}`,
+      description: card.about || `Tarjeta interactiva profesional.`,
+      url: `https://indi.bio/c/${card.slug}`,
+      siteName: 'INDI Digital Identity',
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: card.title }],
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${card.title} | ${card.profession}`,
+      description: card.about || `Tarjeta interactiva profesional.`,
+      images: [ogImageUrl],
+    },
+  };
+}
+
+export default async function PublicCardPage({ params }: PageProps) {
+  const { slug } = await params;
+
+  // Mock interactivo para visualización instantánea demo
+  if (slug === 'demo') {
+    return (
+      <div className="relative min-h-screen py-16 px-4 flex flex-col items-center justify-center overflow-hidden">
+        {/* Luces volumétricas de fondo */}
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[130px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-cyan-500/15 blur-[120px] pointer-events-none" />
+
+        <DigitalCard
+          card={{
+            slug: 'demo',
+            title: 'Matías Riquelme',
+            profession: 'Ingeniero de Software & Fundador',
+            about: 'Especialista en arquitecturas web distribuidas, Edge computing y sistemas de alta concurrencia.',
+            whatsapp: '+56912345678',
+            emailContact: 'contacto@matiasriquelme.dev',
+            websiteUrl: 'https://matiasriquelme.dev',
+            linkedinUrl: 'https://linkedin.com',
+            instagramUrl: 'https://instagram.com',
+            photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+            themeConfig: {
+              themeId: 'stellar',
+              primaryColorOklch: '#6366f1',
+              particleBehavior: 'interactive',
+              particleIntensity: 'balanced',
+            },
+          }}
+        />
+      </div>
+    );
+  }
+
+  const card = await db.query.cards.findFirst({
+    where: eq(cards.slug, slug),
+  });
+
+  if (!card) notFound();
+
+  return (
+    <div className="relative min-h-screen py-16 px-4 flex flex-col items-center justify-center overflow-hidden">
+      {/* Luces volumétricas de fondo */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-cyan-500/15 blur-[120px] pointer-events-none" />
+
+      <DigitalCard card={card} />
+    </div>
+  );
+}

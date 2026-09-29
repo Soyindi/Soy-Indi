@@ -1,0 +1,114 @@
+/* Contenedor relativo para SmartParticles */
+.smart-particles-container {
+  position: relative;
+  overflow: visible;
+}
+
+.smart-particles-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.smart-particles-content {
+  position: relative;
+  z-index: 3;
+}
+
+/* Partícula individual */
+.smart-particle {
+  position: absolute;
+  width: var(--particle-size, 8px);
+  height: var(--particle-size, 8px);
+  pointer-events: none;
+  will-change: transform, opacity;
+  z-index: 4;
+}
+
+/* Núcleo de la partícula */
+.smart-particle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.9),
+    var(--particle-color, #60a5fa) 40%,
+    var(--particle-color, #60a5fa) 100%
+  );
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.4);
+}
+
+/* Halo de luz (Glow) */
+.smart-particle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(var(--particle-size, 8px) * 3);
+  height: calc(var(--particle-size, 8px) * 3);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--particle-color, #60a5fa) 0%,
+    transparent 70%
+  );
+  opacity: 0.6;
+}
+
+/* Comportamiento Ambient (Pulso suave) */
+.smart-particle-ambient {
+  animation: ambientFloat var(--particle-duration, 4s) ease-in-out infinite var(--particle-delay, 0s);
+}
+
+@keyframes ambientFloat {
+  0%, 100% {
+    transform: translateY(0px) scale(0.9);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-8px) scale(1.15);
+    opacity: 0.9;
+  }
+}
+
+/* Comportamiento Interactivo (Respuesta viva) */
+.smart-particle-interactive {
+  animation: interactivePulse var(--particle-duration, 3.5s) ease-in-out infinite var(--particle-delay, 0s);
+}
+
+@keyframes interactivePulse {
+  0%, 100% {
+    transform: translate(0, 0) scale(0.85);
+    opacity: 0.5;
+  }
+  33% {
+    transform: translate(4px, -6px) scale(1.1);
+    opacity: 0.95;
+  }
+  66% {
+    transform: translate(-4px, 4px) scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+/* Comportamiento Static (Elegancia minimalista) */
+.smart-particle-static {
+  animation: staticGlow var(--particle-duration, 5s) ease-in-out infinite var(--particle-delay, 0s);
+}
+
+@keyframes staticGlow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}

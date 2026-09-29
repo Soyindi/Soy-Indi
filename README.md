@@ -1,0 +1,166 @@
+<div align="center">
+
+# 🌐 INDI Platform (2026 SaaS)
+### **Ecosistema de Identidad Digital, Networking Profesional & Suite Todo-en-Uno**
+
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
+[![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
+[![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](#)
+
+<p align="center">
+  <b>Reemplaza las tarjetas de papel obsoletas por una identidad digital viva, audita tu currículum frente a filtros ATS de RRHH y proyecta presentaciones cinematográficas 16:9 con Inteligencia Artificial.</b>
+</p>
+
+[Explorar Landing Page](#-características-principales) • [Arquitectura Técnica](#-arquitectura-de-clase-mundial) • [Modelo Comercial](#-modelo-comercial-inteligente) • [Instalación Local](#-puesta-en-marcha-local)
+
+---
+
+</div>
+
+## 📌 ¿Qué es INDI?
+
+**INDI** es una plataforma SaaS moderna diseñada para profesionales independientes, ejecutivos, empresas y creadores que buscan maximizar su impacto comercial y laboral. 
+
+A diferencia de las tarjetas de visita de papel tradicionales —que el 88% de las personas pierde o desecha en menos de una semana—, INDI proporciona un **enlace vivo de alta conversión** con código QR dinámico, botón directo a WhatsApp y analíticas en tiempo real, respaldado por una suite de productividad con **Smart CV (ATS)** y **Presentaciones Cinemáticas**.
+
+---
+
+## 🚀 Características Principales
+
+### 1. 📇 Tarjetas Digitales de Presentación (Glassmorphism 2.0)
+- **Perfil Profesional Vivo**: Nombre, especialidad, biografía, enlaces a redes sociales y contacto directo.
+- **Botón de WhatsApp Pre-redactado**: Inicia conversaciones comerciales con un mensaje personalizado en 1 toque.
+- **Código QR Dinámico Integrado**: Listo para escanear en pantalla, imprimir en stickers o proyectar.
+- **Web Share API**: Comparte instantáneamente en el menú nativo de iOS y Android.
+- **Open Graph Dinámico en el Edge (`/api/og`)**: Previews visuales automáticos y de alta definición al enviar el enlace por WhatsApp, LinkedIn o Telegram.
+- **Analíticas en Tiempo Real**: Contador de visitas y clicks por tarjeta desde el panel de control.
+
+### 2. 📄 Smart CV ATS Optimizer
+- **Auditoría Algorítmica (0 a 100)**: Evalúa estructura, densidad de palabras clave, impacto de métricas y longitud para superar filtros de software de Recursos Humanos (ATS).
+- **Feedback Accionable**: Detecta fortalezas del perfil y sugiere oportunidades de mejora concretas.
+- **Vista Imprimible A4**: Maquetación limpia lista para exportar a PDF con calidad de imprenta.
+
+### 3. 📽️ Orbital Presentations (16:9)
+- **Estudio Cinemático**: Diapositivas interactivas en relación de aspecto 16:9 para pantallas y videollamadas.
+- **Asistente Generador con IA**: Estructura títulos, contenidos y notas del orador a partir de una simple idea o propuesta comercial.
+- **Temas de Alto Impacto**: Paletas oscuras inmersivas (*Orbital Cyber*, *Emerald Aurora*, *Deep Space*) con iluminación volumétrica reactiva.
+
+### 4. 🚪 Onboarding Hub Guiado (`/start`)
+- Al iniciar la prueba de 15 días, el usuario accede a un selector interactivo (*Job-to-be-Done*) que le permite elegir por dónde empezar (Tarjeta, CV o Presentación) con estimaciones de tiempo (2 a 4 minutos).
+
+---
+
+## 💎 Modelo Comercial Inteligente
+
+INDI implementa un modelo **Todo-en-Uno sin restricciones ocultas**:
+
+| Plan | Inversión | Beneficios Incluidos |
+| :--- | :--- | :--- |
+| **Prueba VIP** | **Gratis 15 Días** (Sin tarjeta requerida) | Acceso total a los 3 productos + 30 créditos de IA. |
+| **Plan Semestral (Recomendado)** | **$6.000 CLP / 6 meses** (~$1.000 CLP/mes) o **$7 USD** | **60% de Ahorro**. Tarjetas, visitas y QR ilimitados + 30 créditos IA/mes. |
+| **Plan Mensual** | **$2.500 CLP / mes** o **$3 USD** | Máxima flexibilidad sin permanencia + 30 créditos IA/mes. |
+
+---
+
+## 🏛️ Arquitectura de Clase Mundial
+
+El proyecto está construido bajo una arquitectura **100% Free-Tier Serverless** que garantiza cero pausas por inactividad, lecturas sub-milisegundo y costo de infraestructura prácticamente nulo:
+
+```
+src/
+├── app/                         # Next.js 16 App Router (Rutas y Edge Handlers)
+│   ├── api/                     # Handlers de Autenticación y Open Graph
+│   │   ├── auth/[...all]/route.ts # Better-Auth universal
+│   │   └── og/route.tsx         # Generador de Open Graph en Edge con @vercel/og
+│   ├── c/[slug]/page.tsx        # Vista pública Server Component de tarjeta
+│   ├── cards/                   # Dashboard de gestión (/cards) y Creador (/cards/new)
+│   ├── cv/                      # Optimizador de Smart CV ATS
+│   ├── presentations/           # Estudio cinematográfico de presentaciones 16:9
+│   ├── pricing/                 # Página comercial con comparativa, FAQ y garantías
+│   ├── start/                   # Onboarding Hub interactivo (Prueba 15 días)
+│   └── page.tsx                 # Landing Page de alta conversión en 7 bloques
+├── features/                    # Módulos de lógica de negocio (FSD)
+│   ├── card-builder/            # Formularios reactivos, dashboard actions y temas
+│   ├── ai-smart-cv/             # Auditoría heurística ATS y maquetador A4
+│   ├── orbital-presentations/   # Visor de diapositivas 16:9 y generador IA
+│   ├── visual-effects/          # SmartParticles v3.0 anti-colisión acelerado por GPU
+│   ├── onboarding/              # Grid interactivo de selección de proyectos
+│   └── pricing/                 # Actions de suscripción, FaqAccordion y TrialBanner
+├── entities/                    # Modelos de dominio y acceso a datos
+│   ├── schema.ts                # Esquemas Drizzle SQLite (users, cards, cvs, presentations)
+│   └── subscription/            # Tipos de membresía y entitlements
+└── shared/                      # Primitivas transversales reutilizables
+    ├── api/db.ts                # Cliente unificado Turso LibSQL (dual local/nube)
+    └── lib/auth.ts              # Configuración Better-Auth
+```
+
+### Tecnologías Clave:
+- **Framework**: [Next.js 16 (Turbopack)](https://nextjs.org/) con React 19 y Server Actions tipadas.
+- **Base de Datos**: [Turso (LibSQL Serverless SQLite)](https://turso.tech/) con soporte dual: `file:local.db` (desarrollo local offline sin Docker) y conexión HTTP distribuida en la nube.
+- **ORM**: [Drizzle ORM](https://orm.drizzle.team/) con validación de esquemas Zod y migraciones declarativas.
+- **Estilos & Diseño**: Tailwind CSS v4 con espacio de color **OKLCH**, modo oscuro nativo y acabados Glassmorphism 2.0.
+- **Motor Visual**: `SmartParticles v3.0` con aceleración GPU (`will-change: transform, opacity`) y zonas seguras anti-colisión.
+- **Autenticación**: [Better-Auth](https://better-auth.com/) montado sobre Drizzle SQLite (sesiones seguras HttpOnly).
+
+---
+
+## 🛠️ Puesta en Marcha Local
+
+### Prerrequisitos:
+- [Node.js](https://nodejs.org/) v20.18 o superior.
+- Gestor de paquetes `npm` o `pnpm`.
+
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/Soyindi/Soy-Indi.git
+cd Soy-Indi
+```
+
+### 2. Instalar dependencias
+```bash
+npm install
+```
+
+### 3. Configurar variables de entorno
+El proyecto incluye soporte local out-of-the-box con SQLite local (`local.db`):
+```bash
+cp .env.example .env.local
+```
+
+### 4. Ejecutar migraciones de la base de datos
+```bash
+npx drizzle-kit push
+```
+
+### 5. Iniciar el servidor de desarrollo
+```bash
+npm run dev
+```
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la plataforma en vivo.
+
+---
+
+## 🧪 Comandos Disponibles
+
+- `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
+- `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
+- `npm run start`: Inicia el servidor de producción.
+- `npx drizzle-kit generate`: Genera archivos de migración SQL basados en el esquema.
+- `npx drizzle-kit push`: Aplica las migraciones directamente sobre la base de datos Turso SQLite.
+- `npx drizzle-kit studio`: Abre la interfaz visual de Drizzle Studio para explorar tablas y registros.
+
+---
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo los términos de la licencia MIT.
+
+---
+
+<div align="center">
+  <b>Diseñado con pasión para Punta Arenas y toda Latinoamérica • INDI 2026</b>
+</div>

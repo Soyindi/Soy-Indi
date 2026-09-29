@@ -1,0 +1,31 @@
+<svg width="512" height="512" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="indi-prism-grad" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818CF8" />
+      <stop offset="50%" stop-color="#22D3EE" />
+      <stop offset="100%" stop-color="#2DD4BF" />
+    </linearGradient>
+    <linearGradient id="indi-glass-back" x1="12" y1="8" x2="52" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0.12" />
+    </linearGradient>
+    <linearGradient id="indi-rim-light" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65" />
+      <stop offset="45%" stop-color="#22D3EE" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0.1" />
+    </linearGradient>
+    <radialGradient id="indi-node-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#A5F3FC" stop-opacity="1" />
+      <stop offset="55%" stop-color="#22D3EE" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="rgba(10, 12, 24, 0.45)" stroke="url(#indi-rim-light)" stroke-width="1.5" />
+  <ellipse cx="32" cy="32" rx="23" ry="11" transform="rotate(-32 32 32)" stroke="url(#indi-prism-grad)" stroke-width="1.75" stroke-dasharray="4 3" stroke-opacity="0.55" />
+  <path d="M24 15C24 12.7909 25.7909 11 28 11H43C45.2091 11 47 12.7909 47 15V41C47 43.2091 45.2091 45 43 45H28C25.7909 45 24 43.2091 24 41V15Z" fill="url(#indi-glass-back)" stroke="url(#indi-prism-grad)" stroke-width="1.2" stroke-opacity="0.6" />
+  <rect x="17" y="24" width="8" height="25" rx="4" fill="url(#indi-prism-grad)" />
+  <path d="M21 27L41 46" stroke="url(#indi-prism-grad)" stroke-width="6.5" stroke-linecap="round" />
+  <rect x="37" y="20" width="8" height="29" rx="4" fill="url(#indi-prism-grad)" fill-opacity="0.9" />
+  <circle cx="21" cy="15.5" r="7" fill="url(#indi-node-glow)" />
+  <circle cx="21" cy="15.5" r="3.8" fill="#F8FAFC" stroke="#22D3EE" stroke-width="1.5" />
+</svg>
