@@ -214,7 +214,13 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                             {edu.credentialType === 'DEGREE' && (
                               <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                                 <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                                Validado
+                                Título Validado
+                              </span>
+                            )}
+                            {edu.credentialType === 'CERTIFICATION' && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+                                <ShieldCheck className="w-3 h-3 text-indigo-600" />
+                                Certificado Oficial
                               </span>
                             )}
                           </div>
@@ -345,7 +351,13 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                           {edu.credentialType === 'DEGREE' && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                               <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                              Validado
+                              Título Validado
+                            </span>
+                          )}
+                          {edu.credentialType === 'CERTIFICATION' && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+                              <ShieldCheck className="w-3 h-3 text-indigo-600" />
+                              Certificado Oficial
                             </span>
                           )}
                         </div>

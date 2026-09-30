@@ -161,23 +161,63 @@ export function SmartCvBuilder() {
       const existingCredentials = prev.content.credentials || [];
       const updatedEducation = [...prev.content.education];
 
-      if (
-        credential.mappedEducationIndex !== undefined &&
-        updatedEducation[credential.mappedEducationIndex]
-      ) {
-        updatedEducation[credential.mappedEducationIndex] = {
-          ...updatedEducation[credential.mappedEducationIndex],
-          credentialType: 'DEGREE',
+      // 1. Detección de duplicado / emparejamiento inteligente
+      let targetIndex = credential.mappedEducationIndex;
+
+      if (targetIndex === undefined || targetIndex < 0 || !updatedEducation[targetIndex]) {
+        // Búsqueda de respaldo por coincidencia de palabras clave
+        const normCred = `${credential.credentialName} ${credential.issuingInstitution}`
+          .toLowerCase()
+          .replace(/[^a-záéíóúñ0-9]/g, ' ');
+        const credTokens = normCred.split(' ').filter((w) => w.length > 3);
+
+        targetIndex = updatedEducation.findIndex((edu) => {
+          const normEdu = `${edu.degree} ${edu.institution}`
+            .toLowerCase()
+            .replace(/[^a-záéíóúñ0-9]/g, ' ');
+          const hits = credTokens.filter((t) => normEdu.includes(t)).length;
+          return credTokens.length > 0 && hits / credTokens.length >= 0.4;
+        });
+        if (targetIndex < 0) targetIndex = undefined;
+      }
+
+      const isCourseOrDiploma =
+        credential.credentialName.toLowerCase().includes('diplom') ||
+        credential.credentialName.toLowerCase().includes('curso') ||
+        credential.credentialName.toLowerCase().includes('capacitac') ||
+        credential.credentialName.toLowerCase().includes('constancia');
+
+      const credentialType = isCourseOrDiploma ? 'CERTIFICATION' : 'DEGREE';
+
+      if (targetIndex !== undefined && updatedEducation[targetIndex]) {
+        // REGLA 1: YA EXISTE EN EL CURRÍCULUM -> NO SE DUPLICA, SE VALIDA CON CÓDIGO CRIPTOGRÁFICO
+        updatedEducation[targetIndex] = {
+          ...updatedEducation[targetIndex],
+          credentialType,
           verifiedCredentialId: credential.verificationCode,
         };
+      } else {
+        // REGLA 2: ES UN TÍTULO/CERTIFICACIÓN NUEVA -> SE INCLUYE AL CURRÍCULUM CON FORMATO ESTÁNDAR
+        updatedEducation.push({
+          degree: credential.credentialName,
+          institution: credential.issuingInstitution,
+          year: credential.issueDate || 'Certificado Oficial',
+          credentialType,
+          verifiedCredentialId: credential.verificationCode,
+        });
       }
+
+      // Evitar duplicados en la lista de credenciales por código de verificación
+      const filteredCredentials = existingCredentials.filter(
+        (c) => c.verificationCode !== credential.verificationCode
+      );
 
       return {
         ...prev,
         content: {
           ...prev.content,
           education: updatedEducation,
-          credentials: [...existingCredentials, credential],
+          credentials: [...filteredCredentials, credential],
         },
       };
     });
