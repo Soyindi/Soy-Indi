@@ -3,6 +3,7 @@
 import { db } from '@/shared/api/db';
 import { cards, user } from '@/entities/schema';
 import { cardFormSchema, CardFormValues } from '@/entities/card/schemas';
+import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -26,29 +27,12 @@ export async function upsertCardAction(
 
     const data = validated.data;
 
-    // 2. Si no viene userId autenticado, asegurar o crear usuario demo/invitado
-    let targetUserId = userId;
-    if (!targetUserId) {
-      // Buscar usuario demo existente o crearlo
-      const existingUser = await db.query.user.findFirst({
-        where: eq(user.email, 'demo@indi.bio'),
-      });
-
-      if (existingUser) {
-        targetUserId = existingUser.id;
-      } else {
-        const [newUser] = await db
-          .insert(user)
-          .values({
-            id: crypto.randomUUID(),
-            name: data.title || 'Usuario INDI',
-            email: 'demo@indi.bio',
-            status: 'ACTIVE',
-          })
-          .returning();
-        targetUserId = newUser.id;
-      }
+    // 2. Resolver usuario autenticado con guardrail de seguridad
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
     }
+    const targetUserId = sessionResult.userId;
 
     // 3. Verificar si el slug ya existe
     const existingCard = await db.query.cards.findFirst({

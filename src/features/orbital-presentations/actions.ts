@@ -3,6 +3,7 @@
 import { db } from '@/shared/api/db';
 import { presentations, user } from '@/entities/schema';
 import { presentationFormSchema, PresentationFormValues } from '@/entities/presentation/schemas';
+import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -73,7 +74,8 @@ export async function generateAiSlidesAction(topic: string, slidesCount: number 
  */
 export async function upsertPresentationAction(
   values: PresentationFormValues,
-  presentationId?: string
+  presentationId?: string,
+  userId?: string
 ) {
   try {
     const validated = presentationFormSchema.safeParse(values);
@@ -83,19 +85,12 @@ export async function upsertPresentationAction(
 
     const data = validated.data;
 
-    // Obtener usuario demo o primer usuario existente
-    const defaultUser = await db.query.user.findFirst();
-    let targetUserId = defaultUser?.id;
-
-    if (!targetUserId) {
-      const [newUser] = await db.insert(user).values({
-        id: crypto.randomUUID(),
-        name: 'Usuario INDI',
-        email: 'demo@indi.bio',
-        status: 'ACTIVE',
-      }).returning();
-      targetUserId = newUser.id;
+    // Resolver usuario autenticado con guardrail de seguridad
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
     }
+    const targetUserId = sessionResult.userId;
 
     if (presentationId) {
       await db

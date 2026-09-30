@@ -5,7 +5,8 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Tests](https://img.shields.io/badge/Tests-17_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -15,7 +16,7 @@
   <b>Reemplaza las tarjetas de papel obsoletas por una identidad digital viva, audita tu currículum frente a filtros ATS de RRHH y proyecta presentaciones cinematográficas 16:9 con Inteligencia Artificial.</b>
 </p>
 
-[Explorar Landing Page](#-características-principales) • [Arquitectura Técnica](#-arquitectura-de-clase-mundial) • [Modelo Comercial](#-modelo-comercial-inteligente) • [Instalación Local](#-puesta-en-marcha-local)
+[Explorar Landing Page](#-características-principales) • [Arquitectura Técnica](#-arquitectura-de-clase-mundial) • [Documentación Oficial](#-documentación-técnica-y-gobernanza) • [Pruebas & Calidad](#-pruebas-unitarias-y-calidad) • [Instalación Local](#-puesta-en-marcha-local)
 
 ---
 
@@ -76,35 +77,51 @@ INDI implementa un modelo **Todo-en-Uno sin restricciones ocultas**:
 El proyecto está construido bajo una arquitectura **100% Free-Tier Serverless** que garantiza cero pausas por inactividad, lecturas sub-milisegundo y costo de infraestructura prácticamente nulo:
 
 ```
-src/
-├── app/                         # Next.js 16 App Router (Rutas y Edge Handlers)
-│   ├── api/                     # Handlers de Autenticación y Open Graph
-│   │   ├── auth/[...all]/route.ts # Better-Auth universal
-│   │   └── og/route.tsx         # Generador de Open Graph en Edge con @vercel/og
-│   ├── c/[slug]/page.tsx        # Vista pública Server Component de tarjeta con barra de retorno
-│   ├── cards/                   # Redirección a /dashboard?tab=cards
-│   ├── cards/new/               # Creador en tiempo real con AppEditorHeader
-│   ├── cv/                      # Optimizador de Smart CV ATS con AppEditorHeader
-│   ├── dashboard/               # Panel central unificado con pestañas (/dashboard)
-│   ├── presentations/           # Estudio cinematográfico 16:9 con AppEditorHeader
-│   ├── pricing/                 # Página comercial con comparativa, FAQ y garantías
-│   ├── start/                   # Onboarding Hub interactivo (Prueba 15 días)
-│   └── page.tsx                 # Landing Page de alta conversión en 7 bloques
-├── features/                    # Módulos de lógica de negocio (FSD)
-│   ├── card-builder/            # Formularios reactivos, dashboard actions y temas
-│   ├── ai-smart-cv/             # Auditoría heurística ATS y maquetador A4
-│   ├── dashboard/               # UnifiedDashboardView (Tarjetas, CVs y Presentaciones)
-│   ├── orbital-presentations/   # Visor de diapositivas 16:9 y generador IA
-│   ├── visual-effects/          # SmartParticles v3.0 anti-colisión acelerado por GPU
-│   ├── onboarding/              # Grid interactivo de selección de proyectos
-│   └── pricing/                 # Actions de suscripción, FaqAccordion y TrialBanner
-├── entities/                    # Modelos de dominio y acceso a datos
-│   ├── schema.ts                # Esquemas Drizzle SQLite (users, cards, cvs, presentations)
-│   └── subscription/            # Tipos de membresía y entitlements
-└── shared/                      # Primitivas transversales reutilizables
-    ├── api/db.ts                # Cliente unificado Turso LibSQL (dual local/nube)
-    ├── lib/auth.ts              # Configuración Better-Auth
-    └── ui/                      # AppEditorHeader (navegación continua), logos y componentes atómicos
+INDI/
+├── .github/workflows/ci.yml     # Pipeline automatizado (Typecheck, Vitest, Build)
+├── docs/                        # Documentación técnica oficial y gobernanza
+│   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
+│   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
+│   └── archive/                 # RFCs y propuestas históricas archivadas
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest)
+│   ├── card-schema.test.ts      # Validación Zod de tarjetas de presentación
+│   ├── cv-schema.test.ts        # Contratos de datos CV y guardrails EU AI Act
+│   ├── ats-audit.test.ts        # Motor algorítmico de scoring ATS
+│   ├── entitlements.test.ts     # Planes comerciales y 15 días de prueba
+│   └── security-guardrails.test.ts # Protección multi-tenant de Server Actions
+├── src/
+│   ├── app/                     # Next.js 16 App Router (Rutas y Edge Handlers)
+│   │   ├── api/                 # Handlers de Autenticación y Open Graph
+│   │   │   ├── auth/[...all]/route.ts # Better-Auth universal
+│   │   │   └── og/route.tsx     # Generador de Open Graph en Edge con @vercel/og
+│   │   ├── c/[slug]/page.tsx    # Vista pública de tarjeta con métricas atómicas
+│   │   ├── p/[slug]/page.tsx    # Vista pública interactiva de presentaciones 16:9
+│   │   ├── cards/               # Redirección a /dashboard?tab=cards
+│   │   ├── cards/new/           # Creador en tiempo real con AppEditorHeader
+│   │   ├── cv/                  # Optimizador de Smart CV ATS con AppEditorHeader
+│   │   ├── dashboard/           # Panel central unificado con pestañas (/dashboard)
+│   │   ├── presentations/       # Estudio cinematográfico 16:9 con AppEditorHeader
+│   │   ├── pricing/             # Página comercial con comparativa, FAQ y garantías
+│   │   ├── start/               # Onboarding Hub interactivo (Prueba 15 días)
+│   │   └── page.tsx             # Landing Page de alta conversión en 7 bloques
+│   ├── features/                # Módulos de lógica de negocio (FSD)
+│   │   ├── card-builder/        # Formularios reactivos, dashboard actions y temas
+│   │   ├── ai-smart-cv/         # Auditoría heurística ATS y motor vectorial jsPDF
+│   │   ├── dashboard/           # UnifiedDashboardView (Tarjetas, CVs y Presentaciones)
+│   │   ├── orbital-presentations/ # Visor y generador de diapositivas 16:9
+│   │   ├── visual-effects/      # SmartParticles v3.0 anti-colisión acelerado por GPU
+│   │   ├── onboarding/          # Grid interactivo de selección de proyectos
+│   │   └── pricing/             # Actions de suscripción, FaqAccordion y TrialBanner
+│   ├── entities/                # Modelos de dominio y acceso a datos
+│   │   ├── schema.ts            # Esquemas Drizzle SQLite (user, session, cards, cvs, presentations)
+│   │   └── subscription/        # Tipos de membresía y entitlements
+│   └── shared/                  # Primitivas transversales reutilizables
+│       ├── api/db.ts            # Cliente unificado Turso LibSQL (dual local/nube)
+│       ├── lib/auth.ts          # Configuración Better-Auth
+│       ├── lib/session.ts       # Guardrail de seguridad multi-tenant para Server Actions
+│       └── ui/                  # AppEditorHeader (navegación continua) y componentes atómicos
+├── AGENTS.md                    # Guía corporativa de orquestación agéntica
+└── SECURITY.md                  # Política de seguridad y reporte de vulnerabilidades
 ```
 
 ### Tecnologías Clave:
@@ -114,6 +131,43 @@ src/
 - **Estilos & Diseño**: Tailwind CSS v4 con espacio de color **OKLCH**, modo oscuro nativo y acabados Glassmorphism 2.0.
 - **Motor Visual**: `SmartParticles v3.0` con aceleración GPU (`will-change: transform, opacity`) y zonas seguras anti-colisión.
 - **Autenticación**: [Better-Auth](https://better-auth.com/) montado sobre Drizzle SQLite (sesiones seguras HttpOnly).
+- **Testing Unitario**: [Vitest](https://vitest.dev/) con suite exhaustiva de esquemas, seguridad y algoritmos ATS.
+
+---
+
+## 📚 Documentación Técnica y Gobernanza
+
+La documentación del proyecto se encuentra estructurada y sincronizada en el directorio [`/docs`](docs/):
+
+- 🏛️ [Blueprint de Arquitectura 2026](docs/architecture/BLUEPRINT_2026.md): Visión técnica, rendimiento perimetral y stack serverless.
+- 📄 [Especificación de Motor de CV & ATS](docs/specifications/SMART_CV_ENGINE.md): Procesamiento documental IDP, fórmulas Google XYZ y cumplimiento EU AI Act.
+- 🤖 [Guía de Agentes y Convenciones de Código](AGENTS.md): Reglas de arquitectura FSD, seguridad en Server Actions y flujo de trabajo.
+- 🔒 [Política de Seguridad](SECURITY.md): Prácticas de aislamiento multi-tenant y reporte responsable de vulnerabilidades.
+- 📜 [Archivo Histórico (RFC Fase 1 - Supabase)](docs/archive/RFC_LEGACY_SUPABASE.md): Registro archivado de la propuesta de base de datos previa.
+
+---
+
+## 🧪 Pruebas Unitarias y Calidad
+
+El proyecto cuenta con una suite automatizada de pruebas unitarias con **Vitest**:
+
+```bash
+# Ejecutar todas las pruebas unitarias
+npm test
+
+# Modo observador (Watch Mode)
+npm run test:watch
+
+# Verificación estricta de tipos TypeScript
+npm run typecheck
+```
+
+Las pruebas validan de forma continua:
+1. La integridad de esquemas de datos Zod y restricciones de slugs.
+2. Los contratos de datos de currículums y la mitigación de alucinaciones (`needs_metric`).
+3. El motor heurístico y ponderación algorítmica de puntaje ATS.
+4. Las reglas comerciales de suscripción y 15 días de prueba.
+5. El aislamiento multi-tenant y bloqueo de llamadas no autorizadas en producción.
 
 ---
 
@@ -153,11 +207,13 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la 
 
 ---
 
-## 🧪 Comandos Disponibles
+## ⚡ Comandos Disponibles
 
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest.
+- `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
 - `npx drizzle-kit generate`: Genera archivos de migración SQL basados en el esquema.
 - `npx drizzle-kit push`: Aplica las migraciones directamente sobre la base de datos Turso SQLite.
 - `npx drizzle-kit studio`: Abre la interfaz visual de Drizzle Studio para explorar tablas y registros.

@@ -4,6 +4,7 @@ import { db } from '@/shared/api/db';
 import { smartCvs, user } from '@/entities/schema';
 import { cvFormSchema, CVFormValues, AtsAuditResult, VerifiedCredential } from '@/entities/cv/schemas';
 import { parseCvDocumentMultimodal, parseCredentialDocumentMultimodal } from '@/features/ai-smart-cv/lib/multimodal-parser';
+import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq, desc } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -221,7 +222,8 @@ export async function auditAtsScoreAction(
  */
 export async function upsertSmartCvAction(
   values: CVFormValues,
-  cvId?: string
+  cvId?: string,
+  userId?: string
 ) {
   try {
     const validated = cvFormSchema.safeParse(values);
@@ -231,23 +233,16 @@ export async function upsertSmartCvAction(
 
     const data = validated.data;
 
+    // Resolver usuario autenticado con guardrail de seguridad
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
+    }
+    const targetUserId = sessionResult.userId;
+
     // Calcular score ATS actualizado
     const audit = await auditAtsScoreAction(data);
     const calculatedScore = audit.data.score;
-
-    // Obtener usuario demo o primer usuario existente
-    const defaultUser = await db.query.user.findFirst();
-    let targetUserId = defaultUser?.id;
-
-    if (!targetUserId) {
-      const [newUser] = await db.insert(user).values({
-        id: crypto.randomUUID(),
-        name: data.content.fullName || 'Usuario INDI',
-        email: data.content.email || 'demo@indi.bio',
-        status: 'ACTIVE',
-      }).returning();
-      targetUserId = newUser.id;
-    }
 
     if (cvId) {
       await db

@@ -1,0 +1,38 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality-check:
+    name: Typecheck, Unit Tests & Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar Dependencias
+        run: npm ci
+
+      - name: Verificación Estricta de Tipos (TypeScript)
+        run: npm run typecheck
+
+      - name: Ejecución de Pruebas Unitarias (Vitest)
+        run: npm test
+
+      - name: Compilación de Producción (Next.js Build)
+        env:
+          TURSO_DATABASE_URL: 'file:local.db'
+          BETTER_AUTH_SECRET: 'ci-pipeline-secure-key-2026-indi-random-token'
+          BETTER_AUTH_URL: 'http://localhost:3000'
+        run: npm run build

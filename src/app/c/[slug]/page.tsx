@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { db } from '@/shared/api/db';
 import { cards } from '@/entities/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { DigitalCard } from '@/entities/card/components/DigitalCard';
 
 interface PageProps {
@@ -125,6 +125,16 @@ export default async function PublicCardPage({ params }: PageProps) {
   });
 
   if (!card) notFound();
+
+  // Incrementar métricas de visitas reales de forma atómica
+  try {
+    await db
+      .update(cards)
+      .set({ viewsCount: sql`${cards.viewsCount} + 1` })
+      .where(eq(cards.id, card.id));
+  } catch (err) {
+    console.error('Error actualizando contador de visitas:', err);
+  }
 
   return (
     <div className="relative min-h-screen py-16 px-4 flex flex-col items-center justify-center overflow-hidden">

@@ -8,8 +8,10 @@ node_modules
 .yarn/install-state.gz
 .pnp.*
 
-# Testing
+# Testing & Coverage
 /coverage
+/.vitest
+tsconfig.tsbuildinfo
 
 # Next.js build output
 /.next/
