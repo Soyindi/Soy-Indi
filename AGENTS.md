@@ -82,6 +82,10 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 2. **Glassmorphism 2.0:**
    - Utilizar las clases utilitarias `.glass-panel` y `.glass-pill`.
    - Efectos de partículas deben emplear `SmartParticles.tsx` con aceleración por hardware (`will-change: transform, opacity`).
+3. **Ergonomía Táctil & Retícula Base 8 (Mobile-First):**
+   - **Touch Targets:** Todos los elementos interactivos (botones, enlaces, iconos de redes) deben tener un tamaño mínimo de **$44 \times 44\text{ px}$** (`min-h-[44px] min-w-[44px]` o `w-11 h-11`).
+   - **Thumb Zone Móvil:** En vistas y editores extensos, las acciones primarias deben contar con barras de acción fijas inferiores (`fixed bottom-4 inset-x-4 sm:hidden`) para garantizar operabilidad con una sola mano.
+   - **Espaciados:** Todos los márgenes, paddings y gaps deben regirse por múltiplos matemáticos de **8px** (8, 16, 24, 32, 48, 64px) para mantener armonía visual y consistencia de layout.
 
 ---
 

@@ -119,16 +119,17 @@ INDI/
 │       ├── api/db.ts            # Cliente unificado Turso LibSQL (dual local/nube)
 │       ├── lib/auth.ts          # Configuración Better-Auth
 │       ├── lib/session.ts       # Guardrail de seguridad multi-tenant para Server Actions
-│       └── ui/                  # AppEditorHeader (navegación continua) y componentes atómicos
-├── AGENTS.md                    # Guía corporativa de orquestación agéntica
+│       └── ui/                  # UI Kit (AppEditorHeader, MobileNavDrawer, PublicContextualHeader)
+├── AGENTS.md                    # Guía corporativa de orquestación agéntica (FSD, WCAG, Base-8)
 └── SECURITY.md                  # Política de seguridad y reporte de vulnerabilidades
 ```
 
-### Tecnologías Clave:
+### Tecnologías & Estándares Clave:
 - **Framework**: [Next.js 16 (Turbopack)](https://nextjs.org/) con React 19 y Server Actions tipadas.
 - **Base de Datos**: [Turso (LibSQL Serverless SQLite)](https://turso.tech/) con soporte dual: `file:local.db` (desarrollo local offline sin Docker) y conexión HTTP distribuida en la nube.
 - **ORM**: [Drizzle ORM](https://orm.drizzle.team/) con validación de esquemas Zod y migraciones declarativas.
-- **Estilos & Diseño**: Tailwind CSS v4 con espacio de color **OKLCH**, modo oscuro nativo y acabados Glassmorphism 2.0.
+- **Estilos & Diseño**: Tailwind CSS v4 con espacio de color **OKLCH**, modo oscuro nativo, acabados Glassmorphism 2.0 y retícula matemática **Base 8**.
+- **Ergonomía Móvil & Accesibilidad**: Directrices WCAG 2.2 AA con touch targets mínimos de **$44\text{px}$** y optimización para el pulgar (**Thumb Zone**).
 - **Motor Visual**: `SmartParticles v3.0` con aceleración GPU (`will-change: transform, opacity`) y zonas seguras anti-colisión.
 - **Autenticación**: [Better-Auth](https://better-auth.com/) montado sobre Drizzle SQLite (sesiones seguras HttpOnly).
 - **Testing Unitario**: [Vitest](https://vitest.dev/) con suite exhaustiva de esquemas, seguridad y algoritmos ATS.

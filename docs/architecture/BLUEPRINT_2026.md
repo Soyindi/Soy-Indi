@@ -456,4 +456,17 @@ export default async function PublicCardPage({ params }: PageProps) {
 5. **Arquitectura Dual-Target ATS**:
    - Generación de capa semántica lineal serializada en el AST del documento para parseo determinista en sistemas ATS globales (Workday, Greenhouse, Lever, Taleo) combinada con visualización tipográfica de alta fidelidad.
 
+### ✅ Fase 9: Ergonomía Táctil Móvil, Retícula Base 8 y Navegación Matemática (COMPLETADA)
+1. **Drawer de Navegación Móvil (`MobileNavDrawer.tsx`)**:
+   - Menú lateral deslizante con desenfoque de fondo (`backdrop-blur-2xl`) y target táctil accesible de 44x44px en la Landing Page.
+   - Acceso universal a todos los productos y planes comerciales desde pantallas reducidas.
+2. **Ergonomía de Pulgar (Thumb Zone) en Editores**:
+   - Barras de acción flotantes fijas (`fixed bottom-4 inset-x-4 sm:hidden`) en `CardBuilder` y `SmartCvBuilder` para guardar y descargar sin scroll repetitivo.
+3. **Normalización a Retícula Base 8 y Touch Targets $\ge 44\text{px}$**:
+   - Redimensionamiento de iconos sociales a 44x44px (`w-11 h-11`) y botones de contacto a `min-h-[44px]` / `min-h-[48px]`.
+   - Conversión de paddings a múltiplos de 8 (`p-6 sm:p-8`, `gap-4`).
+4. **Cabecera Contextual Adaptativa de Conversión (`PublicContextualHeader.tsx`)**:
+   - Enrutamiento inteligente en tarjetas públicas: visitantes anónimos ven CTA de conversión viral (*"Crea tu perfil gratis →"*), mientras que el propietario autenticado ve acceso rápido a su panel (*"← Panel"*).
+
+
 
