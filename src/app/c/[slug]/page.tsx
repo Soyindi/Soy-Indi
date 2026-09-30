@@ -4,6 +4,7 @@ import { db } from '@/shared/api/db';
 import { cards } from '@/entities/schema';
 import { eq, sql } from 'drizzle-orm';
 import { DigitalCard } from '@/entities/card/components/DigitalCard';
+import { PublicContextualHeader } from '@/shared/ui/PublicContextualHeader';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -72,50 +73,36 @@ export default async function PublicCardPage({ params }: PageProps) {
   // Mock interactivo para visualización instantánea demo
   if (slug === 'demo') {
     return (
-      <div className="relative min-h-screen py-16 px-4 flex flex-col items-center justify-center overflow-hidden">
-        {/* Barra superior flotante de retorno al panel */}
-        <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30 flex items-center gap-2">
-          <a
-            href="/dashboard"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 shadow-lg"
-          >
-            <span>← Panel</span>
-          </a>
-        </div>
-
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 flex items-center gap-2">
-          <a
-            href="/"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-panel text-[11px] font-mono text-zinc-400 hover:text-white transition-all border border-white/5"
-          >
-            <span>INDI • 2026</span>
-          </a>
-        </div>
+      <div className="relative min-h-screen pb-16 flex flex-col justify-between overflow-hidden">
+        {/* Cabecera contextual ergonómica */}
+        <PublicContextualHeader ownerMode={false} />
 
         {/* Luces volumétricas de fondo */}
         <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[130px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-cyan-500/15 blur-[120px] pointer-events-none" />
 
-        <DigitalCard
-          card={{
-            slug: 'demo',
-            title: 'Matías Riquelme',
-            profession: 'Ingeniero de Software & Fundador',
-            about: 'Especialista en arquitecturas web distribuidas, Edge computing y sistemas de alta concurrencia.',
-            whatsapp: '+56912345678',
-            emailContact: 'contacto@matiasriquelme.dev',
-            websiteUrl: 'https://matiasriquelme.dev',
-            linkedinUrl: 'https://linkedin.com',
-            instagramUrl: 'https://instagram.com',
-            photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
-            themeConfig: {
-              themeId: 'stellar',
-              primaryColorOklch: '#6366f1',
-              particleBehavior: 'interactive',
-              particleIntensity: 'balanced',
-            },
-          }}
-        />
+        <div className="my-auto px-4">
+          <DigitalCard
+            card={{
+              slug: 'demo',
+              title: 'Matías Riquelme',
+              profession: 'Ingeniero de Software & Fundador',
+              about: 'Especialista en arquitecturas web distribuidas, Edge computing y sistemas de alta concurrencia.',
+              whatsapp: '+56912345678',
+              emailContact: 'contacto@matiasriquelme.dev',
+              websiteUrl: 'https://matiasriquelme.dev',
+              linkedinUrl: 'https://linkedin.com',
+              instagramUrl: 'https://instagram.com',
+              photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+              themeConfig: {
+                themeId: 'stellar',
+                primaryColorOklch: '#6366f1',
+                particleBehavior: 'interactive',
+                particleIntensity: 'balanced',
+              },
+            }}
+          />
+        </div>
       </div>
     );
   }
@@ -137,31 +124,17 @@ export default async function PublicCardPage({ params }: PageProps) {
   }
 
   return (
-    <div className="relative min-h-screen py-16 px-4 flex flex-col items-center justify-center overflow-hidden">
-      {/* Barra superior flotante de retorno al panel */}
-      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-30 flex items-center gap-2">
-        <a
-          href="/dashboard"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 shadow-lg"
-        >
-          <span>← Panel</span>
-        </a>
-      </div>
-
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30 flex items-center gap-2">
-        <a
-          href="/"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-panel text-[11px] font-mono text-zinc-400 hover:text-white transition-all border border-white/5"
-        >
-          <span>INDI • 2026</span>
-        </a>
-      </div>
+    <div className="relative min-h-screen pb-16 flex flex-col justify-between overflow-hidden">
+      {/* Cabecera contextual ergonómica */}
+      <PublicContextualHeader ownerMode={false} />
 
       {/* Luces volumétricas de fondo */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[130px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-cyan-500/15 blur-[120px] pointer-events-none" />
 
-      <DigitalCard card={card} />
+      <div className="my-auto px-4">
+        <DigitalCard card={card} />
+      </div>
     </div>
   );
 }

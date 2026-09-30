@@ -1085,6 +1085,41 @@ export function SmartCvBuilder() {
           </div>
         )}
       </div>
+
+      {/* Barra de acción móvil fija (Thumb Zone ergonómica) */}
+      <div className="fixed bottom-4 inset-x-4 z-40 sm:hidden">
+        <div className="glass-panel p-2.5 rounded-2xl flex items-center justify-between gap-2 shadow-2xl border border-white/10 backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={handleSaveCv}
+            disabled={isPending}
+            className="flex-1 min-h-[44px] px-3 py-2 rounded-xl bg-slate-800 text-white font-medium text-xs flex items-center justify-center gap-1.5 border border-white/10 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+            ) : savedSuccess ? (
+              <CheckCircle className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <Sparkles className="w-4 h-4 text-cyan-400" />
+            )}
+            <span>{savedSuccess ? 'Guardado' : 'Guardar'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            disabled={isDownloading}
+            className="flex-1 min-h-[44px] px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-medium text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-500/25 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {isDownloading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            <span>PDF Vectorial</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -467,6 +467,41 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
           <DigitalCard card={formData} isInteractive={false} />
         </div>
       </div>
+
+      {/* Barra de acción flotante para móviles (Thumb Zone ergonómica) */}
+      <div className="fixed bottom-4 inset-x-4 z-40 sm:hidden">
+        <div className="glass-panel p-2.5 rounded-2xl flex items-center justify-between gap-3 shadow-2xl border border-white/10 backdrop-blur-xl">
+          <div className="flex items-center gap-2 pl-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs font-mono font-medium text-zinc-300">
+              {savedSuccess ? '¡Guardado!' : 'Sin guardar'}
+            </span>
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={isPending}
+            className="flex-1 max-w-[200px] min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Guardando...</span>
+              </>
+            ) : savedSuccess ? (
+              <>
+                <Check className="w-4 h-4 text-white" />
+                <span>Guardado</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>Guardar Tarjeta</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

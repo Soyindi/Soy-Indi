@@ -92,7 +92,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         whileHover={isInteractive ? { y: -4, scale: 1.01 } : undefined}
-        className="glass-panel relative rounded-[2rem] p-7 text-white shadow-2xl overflow-hidden border border-white/10"
+        className="glass-panel relative rounded-[2rem] p-6 sm:p-8 text-white shadow-2xl overflow-hidden border border-white/10"
       >
         {/* Glow Superior */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-20 bg-gradient-to-b from-indigo-500/25 to-transparent blur-2xl pointer-events-none" />
@@ -139,7 +139,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-emerald-500/90 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all"
+              className="w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-emerald-500/90 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all"
             >
               <Phone className="w-4 h-4" />
               <span>Conectar por WhatsApp</span>
@@ -149,7 +149,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           {card.emailContact && (
             <a
               href={`mailto:${card.emailContact}`}
-              className="w-full inline-flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl glass-pill text-zinc-200 hover:text-white font-medium text-xs hover:bg-white/10 active:scale-[0.98] transition-all"
+              className="w-full min-h-[44px] inline-flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl glass-pill text-zinc-200 hover:text-white font-medium text-xs hover:bg-white/10 active:scale-[0.98] transition-all"
             >
               <Mail className="w-3.5 h-3.5 text-indigo-400" />
               <span>{card.emailContact}</span>
@@ -157,14 +157,14 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           )}
         </div>
 
-        {/* Redes Sociales y Enlaces Externos */}
+        {/* Redes Sociales y Enlaces Externos con Touch Target ergonómico >= 44x44px */}
         <div className="relative z-10 flex items-center justify-center gap-3 mb-6 pt-4 border-t border-white/5">
           {card.websiteUrl && (
             <a
               href={card.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:border-cyan-400/40 hover:scale-105 transition-all"
+              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:border-cyan-400/40 hover:scale-105 active:scale-95 transition-all"
               title="Sitio Web"
             >
               <Globe className="w-4 h-4" />
@@ -175,7 +175,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               href={card.linkedinUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:border-blue-400/40 hover:scale-105 transition-all"
+              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:border-blue-400/40 hover:scale-105 active:scale-95 transition-all"
               title="LinkedIn"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -188,7 +188,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               href={card.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:border-pink-400/40 hover:scale-105 transition-all"
+              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:border-pink-400/40 hover:scale-105 active:scale-95 transition-all"
               title="Instagram"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">

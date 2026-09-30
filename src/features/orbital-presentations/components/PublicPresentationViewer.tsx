@@ -68,7 +68,7 @@ export function PublicPresentationViewer({
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard?tab=presentations"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 shadow-lg"
+            className="min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 shadow-lg active:scale-95"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Panel</span>
@@ -79,9 +79,16 @@ export function PublicPresentationViewer({
         </div>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/start"
+            className="hidden sm:inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold transition-all active:scale-95"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Crear Presentación</span>
+          </Link>
           <button
             onClick={toggleFullscreen}
-            className="p-2 rounded-xl glass-pill text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl glass-pill text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 active:scale-95"
             title="Pantalla completa"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -105,24 +112,24 @@ export function PublicPresentationViewer({
           Usa las flechas ← y → del teclado para navegar
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <button
             onClick={prevSlide}
             disabled={currentSlideIndex === 0}
-            className="px-4 py-2 rounded-xl glass-pill text-xs font-semibold flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all border border-white/10"
+            className="min-h-[44px] px-4 py-2.5 rounded-xl glass-pill text-xs font-semibold flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 active:scale-95 transition-all border border-white/10"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Anterior</span>
           </button>
 
-          <span className="text-xs font-mono font-medium text-cyan-300 px-3 py-1 rounded-lg bg-white/5 border border-white/10">
+          <span className="min-h-[44px] inline-flex items-center text-xs font-mono font-medium text-cyan-300 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10">
             {currentSlideIndex + 1} / {total}
           </span>
 
           <button
             onClick={nextSlide}
             disabled={currentSlideIndex === total - 1}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-xs font-semibold flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-all shadow-lg shadow-indigo-500/20"
+            className="min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-xs font-semibold flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-indigo-500/20"
           >
             <span>Siguiente</span>
             <ChevronRight className="w-4 h-4" />

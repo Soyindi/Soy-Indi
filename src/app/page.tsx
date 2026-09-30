@@ -18,6 +18,7 @@ import {
 import { DigitalCard } from '@/entities/card/components/DigitalCard';
 import { PricingSection } from '@/features/pricing/components/PricingSection';
 import { FaqAccordion } from '@/features/pricing/components/FaqAccordion';
+import { MobileNavDrawer } from '@/shared/ui/MobileNavDrawer';
 
 export default function HomePage() {
   return (
@@ -53,16 +54,17 @@ export default function HomePage() {
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href="/pricing"
-            className="hidden sm:inline-flex text-xs font-semibold px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/5 text-zinc-300 hover:text-white transition-all"
+            className="hidden sm:inline-flex min-h-[44px] items-center text-xs font-semibold px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/5 text-zinc-300 hover:text-white transition-all"
           >
             Ver Planes
           </Link>
           <Link
             href="/start"
-            className="text-xs font-semibold px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 transition-all text-center"
+            className="min-h-[44px] inline-flex items-center text-xs font-semibold px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 transition-all text-center"
           >
             Prueba 15 Días
           </Link>
+          <MobileNavDrawer />
         </div>
       </header>
 

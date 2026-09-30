@@ -22,10 +22,10 @@ export function AppEditorHeader({
   return (
     <header className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
       <div className="flex items-start gap-4">
-        {/* Botón de Retroceso con micro-animación */}
+        {/* Botón de Retroceso ergonómico con micro-animación (>= 44x44px) */}
         <Link
           href={categoryHref}
-          className="group inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white transition-all hover:scale-105 shrink-0 mt-0.5"
+          className="group inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white transition-all hover:scale-105 shrink-0"
           title="Volver al Panel"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
