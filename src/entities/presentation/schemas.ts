@@ -34,6 +34,20 @@ export const semanticIntentSchema = z.enum([
   'hero_statement',
 ]);
 
+export const targetAudienceSchema = z.enum([
+  'investors',
+  'b2b_clients',
+  'engineering',
+  'general',
+]);
+
+export const presentationToneSchema = z.enum([
+  'orbital_cyber',
+  'emerald_aurora',
+  'deep_space',
+  'solar_obsidian',
+]);
+
 export const metricItemSchema = z.object({
   label: z.string().min(1, 'La etiqueta es requerida'),
   value: z.string().min(1, 'El valor métrico es requerido'),
@@ -72,6 +86,8 @@ export const presentationSlideSchema = z.object({
   keyPoints: z.array(z.string()).default([]),
   speakerNotes: z.string().optional(),
   badgeText: z.string().optional(),
+  estimatedDurationSeconds: z.number().default(60).optional(),
+  keyTakeaway: z.string().optional(),
   metricsData: z.array(metricItemSchema).optional(),
   quoteData: quoteDataSchema.optional(),
   comparisonData: comparisonDataSchema.optional(),
@@ -98,13 +114,29 @@ export const presentationFormSchema = z.object({
     .regex(/^[a-z0-9-]+$/, 'Solo se permiten letras minúsculas, números y guiones'),
   isPublic: z.boolean().default(true),
   templateCategory: z.string().optional(),
+  targetDurationMinutes: z.number().min(1).max(60).default(5).optional(),
+  targetAudience: targetAudienceSchema.default('investors').optional(),
+  presentationTone: presentationToneSchema.default('orbital_cyber').optional(),
   themeSettings: presentationThemeSchema,
   slidesData: z.array(presentationSlideSchema).min(1, 'Debe haber al menos 1 diapositiva'),
+});
+
+/**
+ * Esquema para solicitudes de descomposición e ingesta multimodal
+ */
+export const presentationDecompositionRequestSchema = z.object({
+  rawContent: z.string().min(5, 'Se requiere contenido suficiente para estructurar la presentación'),
+  fileName: z.string().optional(),
+  durationMinutes: z.number().min(1).max(60).default(5),
+  targetAudience: targetAudienceSchema.default('investors'),
+  presentationTone: presentationToneSchema.default('orbital_cyber'),
 });
 
 export type PresentationVisualType = z.infer<typeof presentationVisualTypeSchema>;
 export type PresentationLayout = z.infer<typeof presentationLayoutSchema>;
 export type SemanticIntent = z.infer<typeof semanticIntentSchema>;
+export type TargetAudience = z.infer<typeof targetAudienceSchema>;
+export type PresentationTone = z.infer<typeof presentationToneSchema>;
 export type MetricItem = z.infer<typeof metricItemSchema>;
 export type QuoteData = z.infer<typeof quoteDataSchema>;
 export type ComparisonData = z.infer<typeof comparisonDataSchema>;
@@ -112,3 +144,4 @@ export type TimelineItem = z.infer<typeof timelineItemSchema>;
 export type PresentationSlide = z.infer<typeof presentationSlideSchema>;
 export type PresentationTheme = z.infer<typeof presentationThemeSchema>;
 export type PresentationFormValues = z.infer<typeof presentationFormSchema>;
+export type PresentationDecompositionRequest = z.infer<typeof presentationDecompositionRequestSchema>;

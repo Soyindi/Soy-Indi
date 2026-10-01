@@ -21,6 +21,7 @@ interface PublicPresentationViewerProps {
   slides: PresentationSlide[];
   theme: PresentationTheme;
   slug: string;
+  onExit?: () => void;
 }
 
 export function PublicPresentationViewer({
@@ -28,6 +29,7 @@ export function PublicPresentationViewer({
   slides,
   theme,
   slug,
+  onExit,
 }: PublicPresentationViewerProps) {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -129,13 +131,23 @@ export function PublicPresentationViewer({
       {/* Barra Superior */}
       <header className="flex items-center justify-between z-20 pb-4">
         <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard?tab=presentations"
-            className="min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 shadow-lg active:scale-95"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Panel</span>
-          </Link>
+          {onExit ? (
+            <button
+              onClick={onExit}
+              className="min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 shadow-lg active:scale-95 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Volver al Estudio</span>
+            </button>
+          ) : (
+            <Link
+              href="/dashboard?tab=presentations"
+              className="min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 shadow-lg active:scale-95"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Panel</span>
+            </Link>
+          )}
           <span className="text-sm sm:text-base font-bold tracking-tight text-white line-clamp-1">
             {title}
           </span>

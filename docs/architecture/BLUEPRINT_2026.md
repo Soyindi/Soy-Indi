@@ -493,9 +493,28 @@ export default async function PublicCardPage({ params }: PageProps) {
    - **Ergonomía Táctil Móvil (Thumb Zone)**: Barra de acción inferior flotante fija (`fixed bottom-4 inset-x-4 sm:hidden`) con touch targets $\ge 44\text{px}$.
 5. **Suite de Pruebas Unitarias Automatizadas (`tests/unit/`)**:
    - `presentation-schema.test.ts` (9 tests) y `presentation-heuristics.test.ts` (6 tests).
-   - 100% de cobertura en contratos de diapositivas, validación de slugs, plantillas y reglas del motor heurístico (32 de 32 tests aprobados en todo el proyecto).
 6. **Especificación Técnica Completa**:
    - Preservada y documentada en [`docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md`](../specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md).
+
+### ✅ Fase 11: Deconstrucción Multimodal SCQA, Modelos de Frontera NVIDIA NIM y Presentación en Vivo Resiliente (COMPLETADA)
+1. **Cliente de Inferencia NVIDIA NIM (`src/shared/api/nvidia-nim.ts`)**:
+   - Conexión a la red de microservicios de aceleración de NVIDIA NIM (`integrate.api.nvidia.com/v1/chat/completions`).
+   - Soporte para modelos de frontera: `meta/llama-3.3-70b-instruct` y `deepseek-ai/deepseek-r1`.
+   - Sistema de failover inteligente: si no existe API key o falla la red, conmuta de forma transparente al motor determinista SCQA local, garantizando 100% de disponibilidad sin caídas de cara al usuario.
+2. **Asistente Multimodal y Dropzone Inteligente (`SmartPresentationDropzone.tsx`)**:
+   - Procesamiento directo de archivos fuente: PDF, TXT, Markdown, CSV, Word o capturas de datos.
+   - Calibración de ritmo (*pacing*) según tiempo de exposición:
+     - **3 min**: 3 diapositivas (~40-60s por diapositiva) - Lightning / Elevator pitch.
+     - **5 min**: 5 diapositivas (~60s por diapositiva) - Reunión ejecutiva.
+     - **10 min**: 8 diapositivas (~75s por diapositiva) - Keynote / Demo Day.
+     - **20 min**: 12 diapositivas (~100s por diapositiva) - Masterclass / Deep Dive.
+   - Modulación por audiencia (*investors*, *b2b_clients*, *engineering*, *general*) y tono visual (*orbital_cyber*, *emerald_aurora*, *deep_space*, *solar_obsidian*).
+3. **Resolución Resiliente de Presentación en Vivo (Cero Errores 404)**:
+   - **Modo In-Situ en el Estudio**: Proyección directa en pantalla completa desde el estado reactivo en memoria mediante `<PublicPresentationViewer onExit={...}>`, permitiendo proyectar sin obligar a guardar primero en la base de datos.
+   - **Multi-Source Resolver en `/p/[slug]`**: Resolución en cascada: (1) Entidades persistidas en Turso SQLite $\rightarrow$ (2) Plantillas curadas `PRESENTATION_TEMPLATES` $\rightarrow$ (3) Vista elegante de borrador en vivo en lugar de pantalla de error 404.
+4. **Validación y Suite de Pruebas**:
+   - Nuevos tests unitarios en `tests/unit/presentation-decomposition.test.ts` (11 tests adicionales, totalizando 43 tests pasando al 100%).
+   - Chequeo de tipos estricto (`npm run typecheck`) con 0 errores TypeScript.
 
 
 

@@ -6,6 +6,8 @@ import { eq, sql } from 'drizzle-orm';
 import { PublicPresentationViewer } from '@/features/orbital-presentations/components/PublicPresentationViewer';
 import { PresentationSlide, PresentationTheme } from '@/entities/presentation/schemas';
 
+import { PRESENTATION_TEMPLATES } from '@/entities/presentation/templates';
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -27,12 +29,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  // 1. Verificar si coincide con una plantilla curada (por ej. pitch-deck-inversionistas)
+  const templateMatch = PRESENTATION_TEMPLATES.find((t) => t.data.slug === slug || t.id === slug);
+  if (templateMatch) {
+    return {
+      title: `${templateMatch.name} — Presentación Orbital | INDI`,
+      description: templateMatch.description,
+      openGraph: {
+        title: templateMatch.name,
+        description: templateMatch.description,
+        url: `https://indi.bio/p/${slug}`,
+        siteName: 'INDI Orbital Studio',
+        type: 'article',
+      },
+    };
+  }
+
   const presentation = await db.query.presentations.findFirst({
     where: eq(presentations.slug, slug),
   });
 
   if (!presentation) {
-    return { title: 'Presentación No Encontrada | INDI' };
+    return { title: 'Presentación en Vivo | INDI Orbital Studio' };
   }
 
   return {
@@ -107,12 +125,59 @@ export default async function PublicPresentationPage({ params }: PageProps) {
     );
   }
 
+  // 2. Verificar si coincide con una plantilla curada de alta conversión
+  const templateMatch = PRESENTATION_TEMPLATES.find((t) => t.data.slug === slug || t.id === slug);
+  if (templateMatch) {
+    return (
+      <PublicPresentationViewer
+        title={templateMatch.name}
+        slides={templateMatch.data.slidesData}
+        theme={templateMatch.data.themeSettings}
+        slug={templateMatch.data.slug}
+      />
+    );
+  }
+
   const presentation = await db.query.presentations.findFirst({
     where: eq(presentations.slug, slug),
   });
 
   if (!presentation) {
-    notFound();
+    // Si la presentación no se ha persistido todavía, mostrar una vista de borrador en vivo en vez de romper con 404
+    const draftSlides: PresentationSlide[] = [
+      {
+        id: 'draft-1',
+        title: 'Presentación en Preparación',
+        subtitle: `El slug "${slug}" aún no ha sido publicado o sincronizado con la nube.`,
+        visualType: 'concept',
+        layout: 'standard',
+        badgeText: 'ESTUDIO EN VIVO',
+        keyPoints: [
+          'Guarda tu presentación en el Editor de INDI para habilitar este enlace público permanente.',
+          'Puedes usar el botón "Presentar en Vivo" directamente dentro del editor sin esperas.',
+          'Arquitectura Edge Serverless con latencia sub-milisegundo.',
+        ],
+      },
+    ];
+
+    const draftTheme: PresentationTheme = {
+      id: 'orbital-cyber',
+      name: 'Cyber Draft',
+      primaryColor: '#6366f1',
+      accentColor: '#06b6d4',
+      backgroundGradient: 'radial-gradient(ellipse at 50% 0%, #1e1b4b 0%, #090a10 70%)',
+      enableParticles: true,
+      fontFamily: 'sans',
+    };
+
+    return (
+      <PublicPresentationViewer
+        title="Borrador Orbital • INDI"
+        slides={draftSlides}
+        theme={draftTheme}
+        slug={slug}
+      />
+    );
   }
 
   // Incrementar métricas de visitas reales

@@ -13,6 +13,8 @@ import {
   PRESENTATION_THEMES,
 } from '@/entities/presentation/templates';
 import { SlideViewer } from '@/features/orbital-presentations/components/SlideViewer';
+import { PublicPresentationViewer } from '@/features/orbital-presentations/components/PublicPresentationViewer';
+import { SmartPresentationDropzone } from '@/features/orbital-presentations/components/SmartPresentationDropzone';
 import {
   generateAiSlidesAction,
   upsertPresentationAction,
@@ -39,6 +41,7 @@ import {
   Zap,
   Clock,
   Quote,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 export function PresentationStudio() {
@@ -48,6 +51,8 @@ export function PresentationStudio() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [showSpeakerNotes, setShowSpeakerNotes] = useState(false);
   const [activeTab, setActiveTab] = useState<'editor' | 'templates' | 'theme'>('editor');
+  const [isLivePresenting, setIsLivePresenting] = useState(false);
+  const [showDecomposerModal, setShowDecomposerModal] = useState(false);
 
   const [aiTopicPrompt, setAiTopicPrompt] = useState('Arquitectura Serverless 2026');
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState('pitch-deck');
@@ -157,6 +162,39 @@ export function PresentationStudio() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-8">
+      {/* Modal / Overlay de Deconstrucción Inteligente SCQA con NVIDIA NIM */}
+      {showDecomposerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto my-auto custom-scrollbar">
+            <SmartPresentationDropzone
+              onDecomposed={(newSlides, meta) => {
+                setPresentation((prev) => ({
+                  ...prev,
+                  title: meta.title || prev.title,
+                  slidesData: newSlides,
+                }));
+                setCurrentSlideIndex(0);
+                setShowDecomposerModal(false);
+              }}
+              onClose={() => setShowDecomposerModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Modo Presentación en Vivo In-Situ (Cero 404, Directo desde Memoria) */}
+      {isLivePresenting && (
+        <div className="fixed inset-0 z-50 bg-black animate-fade-in">
+          <PublicPresentationViewer
+            title={presentation.title}
+            slides={presentation.slidesData}
+            theme={presentation.themeSettings}
+            slug={presentation.slug || 'live-preview'}
+            onExit={() => setIsLivePresenting(false)}
+          />
+        </div>
+      )}
+
       {/* Header universal con retroceso al Dashboard */}
       <AppEditorHeader
         sectionTitle="Editor de Presentaciones"
@@ -165,14 +203,24 @@ export function PresentationStudio() {
         badgeText="Orbital Studio 16:9"
       >
         <div className="flex items-center gap-2">
-          <Link
-            href={`/p/${presentation.slug || 'demo'}`}
-            target="_blank"
-            className="min-h-[44px] hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-semibold transition-all active:scale-[0.98]"
+          {/* Botón Deconstrucción Inteligente SCQA */}
+          <button
+            onClick={() => setShowDecomposerModal(true)}
+            className="min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 border border-cyan-400/40 text-cyan-300 hover:text-white hover:bg-cyan-500/30 text-xs font-semibold transition-all active:scale-[0.98]"
+            title="Sube archivos o conceptos para desestructurar con IA"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+            <span className="hidden sm:inline">Descomponer con IA</span>
+          </button>
+
+          {/* Botón Presentar en Vivo In-Situ */}
+          <button
+            onClick={() => setIsLivePresenting(true)}
+            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-zinc-200 hover:text-white border border-white/15 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
           >
             <Play className="w-3.5 h-3.5 text-cyan-400" />
             <span>Presentar en Vivo</span>
-          </Link>
+          </button>
 
           <button
             onClick={handleSave}
@@ -228,13 +276,13 @@ export function PresentationStudio() {
         </button>
       </div>
 
-      {/* Barra de Asistente IA Generador */}
+      {/* Barra de Asistente IA Generador Rápido */}
       <div className="mb-8 glass-panel rounded-2xl p-4 flex flex-col lg:flex-row items-center justify-between gap-3 border border-indigo-500/20">
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Wand2 className="w-4 h-4 text-cyan-400 shrink-0" />
             <span className="text-xs font-mono font-semibold text-white shrink-0">
-              Generar con IA:
+              Tema Rápido:
             </span>
           </div>
           <input
@@ -248,6 +296,14 @@ export function PresentationStudio() {
 
         <div className="flex items-center gap-2 w-full lg:w-auto">
           <button
+            onClick={() => setShowDecomposerModal(true)}
+            className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 text-xs font-semibold transition-all"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span>Modo Avanzado (SCQA / Archivos)</span>
+          </button>
+
+          <button
             onClick={handleGenerateAi}
             disabled={aiGenerating}
             className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-cyan-300 hover:bg-indigo-600/50 text-xs font-semibold transition-all disabled:opacity-50"
@@ -260,7 +316,7 @@ export function PresentationStudio() {
             ) : (
               <>
                 <Sparkles className="w-4 h-4 text-cyan-300" />
-                <span>Generar Diapositivas con IA</span>
+                <span>Generación Directa</span>
               </>
             )}
           </button>
