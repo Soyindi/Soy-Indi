@@ -14,11 +14,13 @@ import {
   X,
   FileCode,
   Image as ImageIcon,
+  LayoutTemplate,
 } from 'lucide-react';
 import {
   PresentationSlide,
   TargetAudience,
   PresentationTone,
+  DocumentArchetype,
   PresentationDecompositionRequest,
 } from '@/entities/presentation/schemas';
 import {
@@ -52,6 +54,15 @@ const TONES: { id: PresentationTone; label: string }[] = [
   { id: 'solar_obsidian', label: 'Solar Obsidian (Corporativo / Premium)' },
 ];
 
+const ARCHETYPES: { id: DocumentArchetype | 'auto'; label: string; desc: string }[] = [
+  { id: 'auto', label: 'Auto-Adaptativo (Recomendado)', desc: 'Detecta si es técnico, negocio o auditoría' },
+  { id: 'business_pitch', label: 'Pitch Deck & Negocio', desc: 'Problema, mercado, modelo y tracción' },
+  { id: 'technical_architecture', label: 'Arquitectura Técnica', desc: 'Topología, APIs, resiliencia y datos' },
+  { id: 'audit_report', label: 'Informe & Auditoría', desc: 'Hallazgos, métricas y mitigación' },
+  { id: 'executive_strategy', label: 'Estrategia Ejecutiva', desc: 'Pilares, visión y hoja de ruta' },
+  { id: 'narrative_educational', label: 'Educacional / Guía', desc: 'Fundamentos, lecciones y conceptos' },
+];
+
 export function SmartPresentationDropzone({
   onDecomposed,
   onClose,
@@ -60,6 +71,7 @@ export function SmartPresentationDropzone({
   const [targetDurationMinutes, setTargetDurationMinutes] = useState<number>(5);
   const [targetAudience, setTargetAudience] = useState<TargetAudience>('investors');
   const [tone, setTone] = useState<PresentationTone>('orbital_cyber');
+  const [archetype, setArchetype] = useState<DocumentArchetype | 'auto'>('auto');
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -150,6 +162,7 @@ export function SmartPresentationDropzone({
         durationMinutes: targetDurationMinutes,
         targetAudience,
         presentationTone: tone,
+        documentArchetype: archetype !== 'auto' ? archetype : undefined,
       };
 
       const res = await decomposeAndGeneratePresentationAction(payload);
@@ -282,13 +295,13 @@ export function SmartPresentationDropzone({
           />
         </div>
 
-        {/* Parámetros: Duración, Audiencia y Tono */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Parámetros: Duración, Arquetipo, Audiencia y Tono */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Pacing / Duración */}
           <div className="space-y-2">
             <label className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
               <Clock className="w-4 h-4 text-indigo-400" />
-              <span>Tiempo de Presentación</span>
+              <span>Tiempo de Exposición</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               {PACING_OPTIONS.map((opt) => (
@@ -310,6 +323,28 @@ export function SmartPresentationDropzone({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Arquetipo del Documento */}
+          <div className="space-y-2">
+            <label className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+              <LayoutTemplate className="w-4 h-4 text-purple-400" />
+              <span>Arquetipo / Formato</span>
+            </label>
+            <select
+              value={archetype}
+              onChange={(e) => setArchetype(e.target.value as any)}
+              className="w-full min-h-[44px] rounded-xl bg-black/60 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-sans cursor-pointer"
+            >
+              {ARCHETYPES.map((arch) => (
+                <option key={arch.id} value={arch.id} className="bg-zinc-900 text-white">
+                  {arch.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-zinc-500">
+              Adapta la jerarquía y los tipos de diapositiva al estilo del material.
+            </p>
           </div>
 
           {/* Audiencia Objetivo */}

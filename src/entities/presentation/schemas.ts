@@ -48,6 +48,14 @@ export const presentationToneSchema = z.enum([
   'solar_obsidian',
 ]);
 
+export const documentArchetypeSchema = z.enum([
+  'business_pitch',
+  'technical_architecture',
+  'audit_report',
+  'narrative_educational',
+  'executive_strategy',
+]);
+
 export const metricItemSchema = z.object({
   label: z.string().min(1, 'La etiqueta es requerida'),
   value: z.string().min(1, 'El valor métrico es requerido'),
@@ -130,6 +138,7 @@ export const presentationDecompositionRequestSchema = z.object({
   durationMinutes: z.number().min(1).max(60).default(5),
   targetAudience: targetAudienceSchema.default('investors'),
   presentationTone: presentationToneSchema.default('orbital_cyber'),
+  documentArchetype: documentArchetypeSchema.optional(),
 });
 
 export type PresentationVisualType = z.infer<typeof presentationVisualTypeSchema>;
@@ -137,6 +146,7 @@ export type PresentationLayout = z.infer<typeof presentationLayoutSchema>;
 export type SemanticIntent = z.infer<typeof semanticIntentSchema>;
 export type TargetAudience = z.infer<typeof targetAudienceSchema>;
 export type PresentationTone = z.infer<typeof presentationToneSchema>;
+export type DocumentArchetype = z.infer<typeof documentArchetypeSchema>;
 export type MetricItem = z.infer<typeof metricItemSchema>;
 export type QuoteData = z.infer<typeof quoteDataSchema>;
 export type ComparisonData = z.infer<typeof comparisonDataSchema>;

@@ -95,20 +95,31 @@ export async function decomposeAndGeneratePresentationAction(
     const { rawContent, durationMinutes, targetAudience, presentationTone, fileName } =
       validated.data;
 
-    // 2. Calcular pacing y número de diapositivas según duración
+    // 2. Analizar semánticamente el documento o texto recibido (SAP Engine)
+    const docAnalysis = analyzeDocumentContent(rawContent, fileName);
+    const resolvedArchetype = validated.data.documentArchetype || docAnalysis.detectedArchetype;
+
+    // 3. Calcular pacing y número de diapositivas según duración
     const { slidesCount, pacingSecondsPerSlide } = calculateSlidePacingAndCount(durationMinutes);
 
-    // 3. Seleccionar tema visual según el tono solicitado
+    // 4. Seleccionar tema visual según el tono solicitado
     const matchedTheme =
       PRESENTATION_THEMES.find((th) => th.id.replace('-', '_') === presentationTone) ||
       PRESENTATION_THEMES[0];
 
-    // 4. Intentar inferencia de frontera con NVIDIA NIM (deepseek-ai/deepseek-r1 o llama-3.3-70b)
+    // 5. Intentar inferencia de frontera con NVIDIA NIM (deepseek-ai/deepseek-r1 o llama-3.3-70b)
     const nimPrompt = `
 Eres un Principal Executive Presentation Designer y consultor de estrategia empresarial.
 Analiza la siguiente información de entrada y descompón el contenido en una presentación ejecutiva de EXACTAMENTE ${slidesCount} diapositivas.
 
-INFORMACIÓN DE ENTRADA:
+PERFIL SEMÁNTICO DETECTADO:
+- Arquetipo de Documento: ${resolvedArchetype} (Confianza: ${(docAnalysis.archetypeConfidence * 100).toFixed(0)}%)
+- Título Sugerido: "${docAnalysis.titleSuggestion}"
+- Contiene Métricas Reales: ${docAnalysis.hasMetrics ? 'SÍ (' + docAnalysis.detectedMetrics.map(m => m.label + ': ' + m.value).join(', ') + ')' : 'NO (PROHIBIDO inventar métricas si no están en el texto)'}
+- Contiene Contraste/Dolores: ${docAnalysis.hasContrast ? 'SÍ (' + docAnalysis.contrastBlocks.length + ' bloques detectados)' : 'NO'}
+- Contiene Pasos/Secuencias: ${docAnalysis.hasSequence ? 'SÍ (' + docAnalysis.sequenceSteps.length + ' pasos detectados)' : 'NO'}
+
+INFORMACIÓN DE ENTRADA (TEXTO REAL DEL USUARIO):
 """
 ${rawContent.slice(0, 10000)}
 """
@@ -118,21 +129,27 @@ PARÁMETROS DE LA PRESENTACIÓN:
 - Audiencia: ${targetAudience} (adapta el vocabulario, nivel de detalle y enfoque).
 - Tono: ${presentationTone}.
 
-REGLAS DE DISEÑO:
-1. Aplica el Principio de la Pirámide de McKinsey (SCQA):
+REGLAS DE ADAPTACIÓN SEMÁNTICA ESTRICTAS:
+1. FIDELIDAD ABSOLUTA AL TEXTO:
+   - CADA viñeta en "keyPoints" DEBE parafrasear o citar un hecho, argumento o conclusión presente en el texto de entrada.
+   - NUNCA uses texto de relleno genérico como "análisis deductivo perimetral" o "optimización sostenida".
+   - Si el texto carece de números, NO crees diapositivas de tipo "metrics"; utiliza "concept", "architecture" o "comparison".
+   - Si el texto tiene bloques de contraste, prioriza un slide de tipo "comparison" con beforeItems y afterItems extraídos del texto.
+   - Si el texto tiene pasos o cronogramas, prioriza un slide de tipo "timeline" con los pasos reales.
+2. Aplica el Principio de la Pirámide de McKinsey (SCQA):
    - Diapositiva 1: Situación y Respuesta Ejecutiva principal.
    - Diapositivas intermedias: Argumentos clave con evidencia cuantificable (MECE).
-   - Diapositiva final: Plan de acción y próximos hitos concretos.
-2. Cada diapositiva DEBE tener:
-   - "title": Título temático limpio.
-   - "actionTitle": Titular activo asertivo de máximo 15 palabras que resume la conclusión clave.
-   - "subtitle": Bajada explicativa.
+   - Diapositiva final: Plan de acción y próximos hitos concretos basados en las conclusiones reales.
+3. Cada diapositiva DEBE tener:
+   - "title": Título temático limpio y representativo del tema específico.
+   - "actionTitle": Titular activo asertivo de máximo 15 palabras que sintetiza la conclusión clave de ese punto.
+   - "subtitle": Bajada explicativa basada en el texto.
    - "visualType": uno entre ["concept", "metrics", "comparison", "timeline", "quote", "architecture"].
-   - "keyPoints": arreglo de 2 a 4 puntos concisos.
-   - "speakerNotes": notas privadas para el orador guiando la exposición en este slide (~${pacingSecondsPerSlide}s).
-   - Si es "metrics", incluye "metricsData" con [{ "label": string, "value": string, "change": string, "trend": "up"|"down"|"neutral" }].
-   - Si es "comparison", incluye "comparisonData" con { "beforeTitle": string, "beforeItems": string[], "afterTitle": string, "afterItems": string[] }.
-   - Si es "timeline", incluye "timelineData" con [{ "step": string, "title": string, "description": string }].
+   - "keyPoints": arreglo de 2 a 4 puntos concisos directamente relacionados con el texto.
+   - "speakerNotes": notas privadas para el orador guiando la exposición (~${pacingSecondsPerSlide}s).
+   - Solo incluir "metricsData" si hay métricas numéricas verificables en el texto original.
+   - Solo incluir "comparisonData" con puntos contrastantes extraídos del texto.
+   - Solo incluir "timelineData" con fases y pasos descritos en el texto.
 
 RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 {
@@ -205,6 +222,9 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
       const sections = docAnalysis.semanticSections;
       const metricsFound = docAnalysis.detectedMetrics;
       const takeaways = docAnalysis.keyTakeaways;
+      const contrast = docAnalysis.contrastBlocks;
+      const sequences = docAnalysis.sequenceSteps;
+      const concepts = docAnalysis.conceptDefinitions;
 
       const fallbackSlides: PresentationSlide[] = [];
 
@@ -212,7 +232,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         const isFirst = i === 0;
         const isLast = i === slidesCount - 1;
         const isMetric = i === 1 && metricsFound.length > 0;
-        const isComparison = (i === 2 || (i === 1 && metricsFound.length === 0)) && slidesCount >= 4;
+        const isComparison = (i === 2 || (i === 1 && metricsFound.length === 0)) && contrast.length > 0;
+        const isConceptArchitecture = concepts.length > 0 && !isFirst && !isLast && !isMetric && !isComparison;
         const sectionData = sections[i % Math.max(1, sections.length)];
 
         if (isFirst) {
@@ -220,7 +241,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             ? takeaways.slice(0, 3) 
             : [
                 `Síntesis analítica del contenido provisto en ${fileName || 'el documento'}.`,
-                `Enfoque estratégico calibrado para audiencia ${targetAudience}.`,
+                `Enfoque ${resolvedArchetype} calibrado para audiencia ${targetAudience}.`,
                 `Pacing estructurado para ${durationMinutes} minutos de exposición efectiva.`,
               ];
 
@@ -295,12 +316,15 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             ? sectionData.points.slice(0, 2)
             : ['Diferenciación sustantiva respecto al estado previo reportado.'];
 
+          const beforeItems = contrast.map((c) => c.problemAspect);
+          const afterItems = contrast.map((c) => c.solutionAspect);
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
             title: 'Diferenciación y Ruptura de Paradigma',
             actionTitle: (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
               ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
-              : 'Superar las limitaciones del modelo convencional mediante la propuesta actual',
+              : 'Superar las limitaciones del modelo convencional mediante la propuesta analizada',
             subtitle: 'Comparativa de capacidades y propuesta de valor única',
             semanticIntent: 'comparison_delta',
             visualType: 'comparison',
@@ -309,16 +333,10 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             estimatedDurationSeconds: pacingSecondsPerSlide,
             keyPoints: compPoints,
             comparisonData: {
-              beforeTitle: 'Enfoque Inicial / Problema',
-              beforeItems: [
-                'Procesos fragmentados y desarticulados',
-                'Falta de visibilidad de resultados en tiempo real',
-                'Tiempos de respuesta lentos',
-              ],
-              afterTitle: 'Solución Propuesta en Documento',
-              afterItems: sectionData?.points && sectionData.points.length >= 2
-                ? sectionData.points.slice(0, 3)
-                : ['Estructuración sistemática', 'Impacto cuantificable directo', 'Escalabilidad comprobada'],
+              beforeTitle: 'Situación Actual / Dolores',
+              beforeItems: beforeItems.length > 0 ? beforeItems : ['Limitaciones del modelo analógico previo'],
+              afterTitle: 'Solución & Capacidades',
+              afterItems: afterItems.length > 0 ? afterItems : sectionData?.points || ['Transformación y eficiencia'],
             },
             speakerNotes: `Contrastar con claridad la situación previa con los hallazgos del documento.`,
           });
@@ -336,6 +354,14 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             ? takeaways.slice(-2)
             : ['Hitos secuenciales para garantizar la ejecución de lo expuesto en el documento.'];
 
+          const timelineData = sequences.length >= 2
+            ? sequences.map((s) => ({ step: `Paso 0${s.stepIndex}`, title: s.title, description: s.detail }))
+            : [
+                { step: 'Fase 1', title: 'Alineación & Setup', description: 'Revisión con stakeholders e integración del material expuesto.' },
+                { step: 'Fase 2', title: 'Despliegue & Validación', description: 'Presentación oficial y recolección de feedback.' },
+                { step: 'Fase 3', title: 'Escala y Consolidación', description: 'Monitoreo de resultados y consolidación del objetivo.' },
+              ];
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
             title: 'Plan de Acción y Conclusiones',
@@ -347,12 +373,31 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             badgeText: 'PLAN DE EJECUCIÓN',
             estimatedDurationSeconds: pacingSecondsPerSlide,
             keyPoints: closingPoints,
-            timelineData: [
-              { step: 'Fase 1', title: 'Alineación & Setup', description: 'Revisión con stakeholders e integración del material expuesto.' },
-              { step: 'Fase 2', title: 'Despliegue & Validación', description: 'Presentación oficial y recolección de feedback.' },
-              { step: 'Fase 3', title: 'Escala y Consolidación', description: 'Monitoreo de resultados y consolidación del objetivo.' },
-            ],
+            timelineData,
             speakerNotes: `Cerrar con una llamada a la acción enérgica y abrir espacio para preguntas y respuestas.`,
+          });
+        } else if (isConceptArchitecture) {
+          // Slide dedicado a conceptos clave o arquitectura técnica
+          const abstract: AbstractSlide = {
+            intent: 'executive_scqa',
+            supportNodes: concepts.slice(0, 3).map(() => ({
+              nodeType: 'qualitative_prose',
+              visualWeightDominance: 4,
+            })),
+          };
+
+          fallbackSlides.push({
+            id: crypto.randomUUID(),
+            title: resolvedArchetype === 'technical_architecture' ? 'Arquitectura y Componentes Clave' : 'Conceptos y Fundamentos',
+            actionTitle: sectionData?.actionSummary || 'Estructura modular de los conceptos fundamentales',
+            subtitle: 'Definiciones y pilares extraídos del documento',
+            semanticIntent: 'executive_scqa',
+            visualType: resolvedArchetype === 'technical_architecture' ? 'architecture' : 'concept',
+            layout: inferOptimalLayoutStrategy(abstract),
+            badgeText: 'FUNDAMENTOS',
+            estimatedDurationSeconds: pacingSecondsPerSlide,
+            keyPoints: concepts.slice(0, 3).map((c) => `${c.term}: ${c.definition}`),
+            speakerNotes: `Explicar los términos y la arquitectura descrita. Tiempo asignado: ${pacingSecondsPerSlide} segundos.`,
           });
         } else {
           // Diapositivas intermedias mapeadas con el contenido específico de cada sección

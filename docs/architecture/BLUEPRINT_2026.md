@@ -548,6 +548,21 @@ export default async function PublicCardPage({ params }: PageProps) {
 4. **Gobernanza de Calidad y Tests**:
    - 49 pruebas unitarias pasando al 100% en Vitest con 0 errores TypeScript.
 
+### ✅ Fase 14: Pipeline Semántico Adaptativo (SAP Engine) y Clasificación de Arquetipos (COMPLETADA)
+1. **Profiler Semántico y Detección de Arquetipos (`document-parser.ts`)**:
+   - Clasificación probabilística del tipo de documento: `technical_architecture`, `business_pitch`, `audit_report`, `narrative_educational`, o `executive_strategy`.
+   - Extracción de polaridad de contrastes: mapeo de oraciones de problemas/dolores frente a soluciones reales extraídas del texto.
+   - Extracción de secuencias cronológicas y etapas del proyecto.
+   - Extracción de conceptos clave y definiciones para diapositivas de arquitectura o fundamentos técnicos.
+2. **Generación con Cero Hardcoding y Fidelidad Extrema al Texto**:
+   - Eliminación de la suposición de métricas: si un texto no contiene números, el motor prohíbe generar diapositivas Bento ficticias y adapta la topología a *Conceptos*, *Arquitectura*, *Comparativas* o *Hero Statement*.
+   - El selector del Dropzone permite modo `Auto-Adaptativo` o selección explícita del arquetipo.
+   - El Meta-Prompt para NVIDIA NIM exige que cada viñeta parafrasee un hecho real del texto y prohíbe textos de relleno.
+3. **Validación Exhaustiva con 57 Pruebas Unitarias**:
+   - Nueva suite `tests/unit/presentation-adaptive-pipeline.test.ts` con 8 pruebas específicas de arquetipos, contrastes y generación adaptativa.
+   - 10 suites de prueba aprobadas al 100% (57/57 tests en Vitest).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
 
 
 
