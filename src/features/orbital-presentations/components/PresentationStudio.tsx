@@ -44,6 +44,8 @@ import {
   SlidersHorizontal,
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
+  X,
 } from 'lucide-react';
 
 interface PresentationStudioProps {
@@ -77,15 +79,44 @@ export function PresentationStudio({
   const activeSlide =
     presentation.slidesData[currentSlideIndex] || presentation.slidesData[0];
 
-  // Aplicar plantilla curada completa
+  const [templateToConfirm, setTemplateToConfirm] = useState<string | null>(null);
+
+  // Aplicar plantilla curada completa (con confirmación de seguridad para no perder contenido)
   const handleApplyTemplate = (templateId: string) => {
+    // Si ya tiene contenido cargado, pedir confirmación antes de sobreescribir
     const tmpl = PRESENTATION_TEMPLATES.find((t) => t.id === templateId);
+    if (!tmpl) return;
+    setTemplateToConfirm(templateId);
+  };
+
+  const confirmApplyTemplate = (replaceContent: boolean) => {
+    if (!templateToConfirm) return;
+    const tmpl = PRESENTATION_TEMPLATES.find((t) => t.id === templateToConfirm);
     if (tmpl) {
-      setPresentation({
-        ...tmpl.data,
-      });
+      if (replaceContent) {
+        // Reemplazo completo (diseño + contenido de ejemplo de la plantilla)
+        setPresentation({
+          ...tmpl.data,
+        });
+      } else {
+        // Adaptación inteligente: Conservar el contenido y adaptar la estética y categoría
+        setPresentation((prev) => ({
+          ...prev,
+          templateCategory: tmpl.data.templateCategory,
+          themeSettings: tmpl.data.themeSettings,
+          slidesData: prev.slidesData.map((slide, idx) => {
+            const templateSlide = tmpl.data.slidesData[idx % tmpl.data.slidesData.length];
+            return {
+              ...slide,
+              visualType: templateSlide?.visualType || slide.visualType,
+              layout: templateSlide?.layout || slide.layout,
+            };
+          }),
+        }));
+      }
       setCurrentSlideIndex(0);
     }
+    setTemplateToConfirm(null);
   };
 
   // Generar diapositivas con IA
@@ -220,6 +251,54 @@ export function PresentationStudio({
               }}
               onClose={() => setShowDecomposerModal(false)}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación al Cambiar Plantilla (Guardrail anti-pérdida de contenido) */}
+      {templateToConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md bg-zinc-950 border border-white/10 rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-in">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-300" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">¿Cómo deseas aplicar esta plantilla?</h3>
+                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                  Puedes conservar los textos y diapositivas que ya tienes (adaptando solo el estilo visual), o reemplazar todo por los datos de demostración de la plantilla.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2.5 pt-2">
+              <button
+                onClick={() => confirmApplyTemplate(false)}
+                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-semibold text-xs transition-all shadow-lg shadow-indigo-500/20 flex flex-col items-center justify-center cursor-pointer"
+              >
+                <span>Conservar mi contenido actual</span>
+                <span className="text-[10px] font-normal text-cyan-100 opacity-90">
+                  (Aplica el estilo, tipología y colores de la plantilla sin borrar tus textos)
+                </span>
+              </button>
+
+              <button
+                onClick={() => confirmApplyTemplate(true)}
+                className="w-full min-h-[44px] px-4 py-2 rounded-xl bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 text-zinc-300 hover:text-rose-200 text-xs font-medium transition-all flex flex-col items-center justify-center cursor-pointer"
+              >
+                <span>Reemplazar todo con el ejemplo de la plantilla</span>
+                <span className="text-[10px] text-zinc-500">
+                  (Carga las diapositivas y textos predeterminados de la plantilla)
+                </span>
+              </button>
+
+              <button
+                onClick={() => setTemplateToConfirm(null)}
+                className="w-full min-h-[40px] px-4 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-300 text-xs font-mono transition-all cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}
