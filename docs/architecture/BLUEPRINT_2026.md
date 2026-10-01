@@ -592,3 +592,16 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Nuevos tests de auditoría en `tests/unit/presentation-flow-audit.test.ts` para validar el enriquecimiento de temas escuetos.
    - 60 pruebas unitarias aprobadas al 100% en Vitest.
    - 0 errores en verificación de tipos TypeScript (`npm run typecheck`).
+
+### ✅ Fase 17: Modo Ampliación Profesional de Diapositiva Individual y Sincronización Web API (COMPLETADA)
+1. **Ampliación Profesional de Diapositiva Individual (`SlideViewer.tsx`)**:
+   - Integración de control dedicado de pantalla completa a nivel de contenedor de diapositiva (`slideRef.current.requestFullscreen()`), permitiendo expandir exclusivamente el lienzo 16:9 sin mostrar la barra de navegación del navegador, controles de estudio ni elementos ajenos.
+   - Sincronización bidireccional reactiva con el evento nativo `fullscreenchange` de la Web API (`isSlideFullscreen`), adaptando dinámicamente el layout a `w-full h-screen` con paddings ergonómicos y bordes optimizados para proyecciones corporativas.
+   - Botón accesible con touch target $\ge 44 \times 44\text{ px}$ (`min-h-[44px] min-w-[44px]`), micro-animación de escala en hover/active, icono contextual (`Maximize2` / `Minimize2`) y label adaptativo para pantallas de escritorio.
+2. **Robustez y Resiliencia en CI/CD**:
+   - Validación integral del pipeline de GitHub Actions (`.github/workflows/ci.yml`): chequeo de tipos estricto (`tsc --noEmit`), compilación de producción con Next.js 16 Turbopack y suite completa de pruebas unitarias.
+3. **Validación y Suite de Pruebas (61 Tests Passing)**:
+   - Nuevos tests de contrato y ergonomía en `tests/unit/presentation-flow-audit.test.ts`.
+   - 61 pruebas unitarias aprobadas al 100% en Vitest (10 suites pasando).
+   - 0 errores en verificación de tipos TypeScript (`npm run typecheck`).
+
