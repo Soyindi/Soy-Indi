@@ -14,6 +14,8 @@ import {
   Clock,
   FileText,
   Vibrate,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 interface PublicPresentationViewerProps {
@@ -35,6 +37,8 @@ export function PublicPresentationViewer({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showPresenterNotes, setShowPresenterNotes] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const total = slides.length;
   const currentSlide = slides[currentSlideIndex] || slides[0];
@@ -61,6 +65,34 @@ export function PublicPresentationViewer({
     if (currentSlideIndex > 0) {
       setCurrentSlideIndex((prev) => prev - 1);
       triggerHaptic();
+    }
+  };
+
+  // Detección de gestos táctiles (Swipe horizontal)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+
+    // Umbral de 50px para registrar swipe
+    if (diff > 50) {
+      nextSlide();
+    } else if (diff < -50) {
+      prevSlide();
+    }
+    setTouchStartX(null);
+  };
+
+  const handleCopyLink = () => {
+    if (typeof window !== 'undefined') {
+      const url = `${window.location.origin}/p/${slug}`;
+      navigator.clipboard.writeText(url);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2200);
     }
   };
 
@@ -103,12 +135,14 @@ export function PublicPresentationViewer({
         prevSlide();
       } else if (e.key === 'f' || e.key === 'F') {
         toggleFullscreen();
+      } else if (e.key === 'Escape' && onExit) {
+        onExit();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSlideIndex, total]);
+  }, [currentSlideIndex, total, onExit]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -126,8 +160,21 @@ export function PublicPresentationViewer({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const progressPercentage = Math.min(100, Math.round(((currentSlideIndex + 1) / total) * 100));
+
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col justify-between p-4 sm:p-8 select-none">
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="min-h-screen bg-black text-white flex flex-col justify-between p-4 sm:p-8 select-none relative"
+    >
+      {/* Barra de Progreso Cinemática Superior */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 z-30">
+        <div
+          className="h-full bg-gradient-to-r from-indigo-500 via-cyan-400 to-emerald-400 transition-all duration-300 shadow-sm shadow-cyan-400/50"
+          style={{ width: `${progressPercentage}%` }}
+        />
+      </div>
       {/* Barra Superior */}
       <header className="flex items-center justify-between z-20 pb-4">
         <div className="flex items-center gap-3">
@@ -172,6 +219,25 @@ export function PublicPresentationViewer({
           >
             <FileText className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Notas</span>
+          </button>
+
+          {/* Botón Copiar Enlace Público */}
+          <button
+            onClick={handleCopyLink}
+            className="min-h-[44px] px-3.5 py-2 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 flex items-center gap-1.5 active:scale-95 cursor-pointer"
+            title="Copiar enlace permanente"
+          >
+            {copiedLink ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-300 hidden sm:inline">¡Copiado!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="hidden sm:inline">Copiar Link</span>
+              </>
+            )}
           </button>
 
           <Link

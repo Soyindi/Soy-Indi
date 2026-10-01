@@ -561,10 +561,12 @@ export async function upsertPresentationAction(
     }
     const targetUserId = sessionResult.userId;
 
-    if (presentationId) {
+    let finalPresentationId = presentationId;
+
+    if (finalPresentationId) {
       // Verificar propiedad estricta para evitar sobreescritura entre tenants
       const existing = await db.query.presentations.findFirst({
-        where: and(eq(presentations.id, presentationId), eq(presentations.userId, targetUserId)),
+        where: and(eq(presentations.id, finalPresentationId), eq(presentations.userId, targetUserId)),
       });
 
       if (!existing) {
@@ -581,20 +583,42 @@ export async function upsertPresentationAction(
           themeSettings: data.themeSettings,
           updatedAt: new Date(),
         })
-        .where(and(eq(presentations.id, presentationId), eq(presentations.userId, targetUserId)));
+        .where(and(eq(presentations.id, finalPresentationId), eq(presentations.userId, targetUserId)));
     } else {
-      await db.insert(presentations).values({
-        id: crypto.randomUUID(),
-        userId: targetUserId,
-        title: data.title,
-        slug: data.slug,
-        isPublic: data.isPublic,
-        slidesData: data.slidesData,
-        themeSettings: data.themeSettings,
-        viewsCount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      // Si no viene presentationId, verificar si ya existe una presentación con este slug perteneciente al usuario
+      const existingBySlug = await db.query.presentations.findFirst({
+        where: and(eq(presentations.slug, data.slug), eq(presentations.userId, targetUserId)),
       });
+
+      if (existingBySlug) {
+        finalPresentationId = existingBySlug.id;
+        await db
+          .update(presentations)
+          .set({
+            title: data.title,
+            slug: data.slug,
+            isPublic: data.isPublic,
+            slidesData: data.slidesData,
+            themeSettings: data.themeSettings,
+            updatedAt: new Date(),
+          })
+          .where(and(eq(presentations.id, finalPresentationId), eq(presentations.userId, targetUserId)));
+      } else {
+        const newId = crypto.randomUUID();
+        finalPresentationId = newId;
+        await db.insert(presentations).values({
+          id: newId,
+          userId: targetUserId,
+          title: data.title,
+          slug: data.slug,
+          isPublic: data.isPublic,
+          slidesData: data.slidesData,
+          themeSettings: data.themeSettings,
+          viewsCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
     }
 
     revalidatePath('/presentations');
@@ -602,7 +626,7 @@ export async function upsertPresentationAction(
     if (data.slug) {
       revalidatePath(`/p/${data.slug}`);
     }
-    return { success: true, slug: data.slug };
+    return { success: true, id: finalPresentationId, slug: data.slug };
   } catch (err: any) {
     console.error('Error guardando presentación:', err);
     return { success: false, error: err.message || 'Error guardando presentación' };

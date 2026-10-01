@@ -42,9 +42,19 @@ import {
   Clock,
   Quote,
   SlidersHorizontal,
+  ArrowLeft,
+  ArrowRight,
 } from 'lucide-react';
 
-export function PresentationStudio() {
+interface PresentationStudioProps {
+  initialData?: PresentationFormValues;
+  initialPresentationId?: string;
+}
+
+export function PresentationStudio({
+  initialData,
+  initialPresentationId,
+}: PresentationStudioProps = {}) {
   const [isPending, startTransition] = useTransition();
   const [aiGenerating, startAiTransition] = useTransition();
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -53,13 +63,16 @@ export function PresentationStudio() {
   const [activeTab, setActiveTab] = useState<'editor' | 'templates' | 'theme'>('editor');
   const [isLivePresenting, setIsLivePresenting] = useState(false);
   const [showDecomposerModal, setShowDecomposerModal] = useState(false);
+  const [presentationId, setPresentationId] = useState<string | null>(initialPresentationId || null);
 
   const [aiTopicPrompt, setAiTopicPrompt] = useState('Arquitectura Serverless 2026');
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState('pitch-deck');
 
-  // Inicializar con la plantilla de Pitch Deck de alta conversión
+  // Inicializar con la plantilla de Pitch Deck o la data cargada
   const defaultTemplate = PRESENTATION_TEMPLATES[0];
-  const [presentation, setPresentation] = useState<PresentationFormValues>(defaultTemplate.data);
+  const [presentation, setPresentation] = useState<PresentationFormValues>(
+    initialData || defaultTemplate.data
+  );
 
   const activeSlide =
     presentation.slidesData[currentSlideIndex] || presentation.slidesData[0];
@@ -89,15 +102,39 @@ export function PresentationStudio() {
     });
   };
 
-  // Guardar en la base de datos Turso
+  // Guardar en la base de datos Turso de forma idempotente
   const handleSave = () => {
     startTransition(async () => {
-      const res = await upsertPresentationAction(presentation);
+      const res = await upsertPresentationAction(presentation, presentationId || undefined);
       if (res.success) {
+        if (res.id) {
+          setPresentationId(res.id);
+        }
         setSavedSuccess(true);
         setTimeout(() => setSavedSuccess(false), 2500);
       }
     });
+  };
+
+  // Reordenar diapositivas
+  const moveSlideLeft = (index: number) => {
+    if (index <= 0) return;
+    const newSlides = [...presentation.slidesData];
+    const temp = newSlides[index];
+    newSlides[index] = newSlides[index - 1];
+    newSlides[index - 1] = temp;
+    setPresentation((prev) => ({ ...prev, slidesData: newSlides }));
+    setCurrentSlideIndex(index - 1);
+  };
+
+  const moveSlideRight = (index: number) => {
+    if (index >= presentation.slidesData.length - 1) return;
+    const newSlides = [...presentation.slidesData];
+    const temp = newSlides[index];
+    newSlides[index] = newSlides[index + 1];
+    newSlides[index + 1] = temp;
+    setPresentation((prev) => ({ ...prev, slidesData: newSlides }));
+    setCurrentSlideIndex(index + 1);
   };
 
   // Navegación
@@ -383,13 +420,35 @@ export function PresentationStudio() {
               </button>
 
               {presentation.slidesData.length > 1 && (
-                <button
-                  onClick={handleDeleteSlide}
-                  className="min-h-[44px] min-w-[44px] p-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 text-xs font-semibold transition-all flex items-center justify-center"
-                  title="Eliminar diapositiva actual"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <>
+                  {/* Botones de reordenamiento de diapositiva */}
+                  <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 ml-1">
+                    <button
+                      onClick={() => moveSlideLeft(currentSlideIndex)}
+                      disabled={currentSlideIndex === 0}
+                      className="min-h-[38px] min-w-[38px] p-2 rounded-lg text-zinc-400 hover:text-white disabled:opacity-20 hover:bg-white/10 transition-all flex items-center justify-center cursor-pointer"
+                      title="Mover diapositiva hacia la izquierda (anterior posición)"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => moveSlideRight(currentSlideIndex)}
+                      disabled={currentSlideIndex === presentation.slidesData.length - 1}
+                      className="min-h-[38px] min-w-[38px] p-2 rounded-lg text-zinc-400 hover:text-white disabled:opacity-20 hover:bg-white/10 transition-all flex items-center justify-center cursor-pointer"
+                      title="Mover diapositiva hacia la derecha (siguiente posición)"
+                    >
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleDeleteSlide}
+                    className="min-h-[44px] min-w-[44px] p-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 text-xs font-semibold transition-all flex items-center justify-center cursor-pointer"
+                    title="Eliminar diapositiva actual"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -454,6 +513,21 @@ export function PresentationStudio() {
                 </div>
               </div>
 
+              {/* Action Title (Principio de la Pirámide de McKinsey) */}
+              <div>
+                <label className="block text-[11px] font-mono text-cyan-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>Action Title (Pirámide McKinsey)</span>
+                  <span className="text-[10px] text-zinc-500">Asertivo &lt;15 palabras</span>
+                </label>
+                <input
+                  type="text"
+                  value={activeSlide.actionTitle || ''}
+                  onChange={(e) => updateActiveSlide('actionTitle', e.target.value)}
+                  placeholder="Conclusión clave y asertiva de la diapositiva..."
+                  className="w-full min-h-[44px] rounded-xl bg-black/50 border border-cyan-500/30 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-medium"
+                />
+              </div>
+
               {/* Título de la diapositiva */}
               <div>
                 <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
@@ -493,6 +567,213 @@ export function PresentationStudio() {
                   className="w-full min-h-[44px] rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
                 />
               </div>
+
+              {/* Puntos Clave / Key Points (Viñetas Argumentales) */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                    Puntos Clave ({activeSlide.keyPoints?.length || 0})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = [...(activeSlide.keyPoints || []), 'Nuevo punto argumental'];
+                      updateActiveSlide('keyPoints', updated);
+                    }}
+                    className="text-[10px] font-mono text-cyan-300 hover:text-cyan-200 flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" /> Añadir Viñeta
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {(activeSlide.keyPoints || []).map((kp, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={kp}
+                        onChange={(e) => {
+                          const updated = [...activeSlide.keyPoints];
+                          updated[idx] = e.target.value;
+                          updateActiveSlide('keyPoints', updated);
+                        }}
+                        className="flex-1 min-h-[38px] rounded-xl bg-black/50 border border-white/10 px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-cyan-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = activeSlide.keyPoints.filter((_, i) => i !== idx);
+                          updateActiveSlide('keyPoints', updated);
+                        }}
+                        className="p-2 text-zinc-500 hover:text-rose-400 transition cursor-pointer"
+                        title="Eliminar punto"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Editores Contextuales por Tipología Visual */}
+              {activeSlide.visualType === 'metrics' && (
+                <div className="p-3.5 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono font-bold text-cyan-300 uppercase">
+                      Tarjetas de Métricas / KPIs
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = activeSlide.metricsData || [];
+                        updateActiveSlide('metricsData', [
+                          ...current,
+                          { label: 'Nueva Métrica', value: '100%', change: '+10%', trend: 'up' },
+                        ]);
+                      }}
+                      className="text-[10px] font-mono text-cyan-300 hover:text-cyan-200 flex items-center gap-1"
+                    >
+                      <Plus className="w-3 h-3" /> Métrica
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {(activeSlide.metricsData || []).map((m, idx) => (
+                      <div key={idx} className="p-2.5 rounded-xl bg-black/50 border border-white/10 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <input
+                            type="text"
+                            value={m.label}
+                            onChange={(e) => {
+                              const updated = [...(activeSlide.metricsData || [])];
+                              updated[idx] = { ...updated[idx], label: e.target.value };
+                              updateActiveSlide('metricsData', updated);
+                            }}
+                            placeholder="Etiqueta"
+                            className="flex-1 rounded-lg bg-black/60 border border-white/10 px-2 py-1 text-xs text-white"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = (activeSlide.metricsData || []).filter((_, i) => i !== idx);
+                              updateActiveSlide('metricsData', updated);
+                            }}
+                            className="text-zinc-500 hover:text-rose-400 p-1"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={m.value}
+                            onChange={(e) => {
+                              const updated = [...(activeSlide.metricsData || [])];
+                              updated[idx] = { ...updated[idx], value: e.target.value };
+                              updateActiveSlide('metricsData', updated);
+                            }}
+                            placeholder="Valor (ej: 42.8%)"
+                            className="rounded-lg bg-black/60 border border-white/10 px-2 py-1 text-xs text-cyan-300 font-bold"
+                          />
+                          <input
+                            type="text"
+                            value={m.change || ''}
+                            onChange={(e) => {
+                              const updated = [...(activeSlide.metricsData || [])];
+                              updated[idx] = { ...updated[idx], change: e.target.value };
+                              updateActiveSlide('metricsData', updated);
+                            }}
+                            placeholder="Delta (ej: +340%)"
+                            className="rounded-lg bg-black/60 border border-white/10 px-2 py-1 text-xs text-emerald-400 font-mono"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeSlide.visualType === 'comparison' && activeSlide.comparisonData && (
+                <div className="p-3.5 rounded-2xl bg-rose-950/20 border border-rose-500/20 space-y-3">
+                  <span className="text-[11px] font-mono font-bold text-rose-300 uppercase block">
+                    Títulos de Comparativa
+                  </span>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-[10px] font-mono text-zinc-400 block mb-1">Antes / Tradicional</label>
+                      <input
+                        type="text"
+                        value={activeSlide.comparisonData.beforeTitle}
+                        onChange={(e) => {
+                          updateActiveSlide('comparisonData', {
+                            ...activeSlide.comparisonData,
+                            beforeTitle: e.target.value,
+                          });
+                        }}
+                        className="w-full rounded-lg bg-black/60 border border-white/10 px-2.5 py-1.5 text-xs text-rose-300 font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-mono text-zinc-400 block mb-1">Después / INDI 2026</label>
+                      <input
+                        type="text"
+                        value={activeSlide.comparisonData.afterTitle}
+                        onChange={(e) => {
+                          updateActiveSlide('comparisonData', {
+                            ...activeSlide.comparisonData,
+                            afterTitle: e.target.value,
+                          });
+                        }}
+                        className="w-full rounded-lg bg-black/60 border border-white/10 px-2.5 py-1.5 text-xs text-emerald-300 font-semibold"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSlide.visualType === 'quote' && activeSlide.quoteData && (
+                <div className="p-3.5 rounded-2xl bg-amber-950/20 border border-amber-500/20 space-y-2">
+                  <span className="text-[11px] font-mono font-bold text-amber-300 uppercase block">
+                    Contenido del Testimonio
+                  </span>
+                  <textarea
+                    rows={2}
+                    value={activeSlide.quoteData.quote}
+                    onChange={(e) => {
+                      updateActiveSlide('quoteData', {
+                        ...activeSlide.quoteData,
+                        quote: e.target.value,
+                      });
+                    }}
+                    placeholder="Cita textual..."
+                    className="w-full rounded-lg bg-black/60 border border-white/10 p-2 text-xs text-zinc-200"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={activeSlide.quoteData.author}
+                      onChange={(e) => {
+                        updateActiveSlide('quoteData', {
+                          ...activeSlide.quoteData,
+                          author: e.target.value,
+                        });
+                      }}
+                      placeholder="Autor"
+                      className="rounded-lg bg-black/60 border border-white/10 px-2 py-1 text-xs text-white"
+                    />
+                    <input
+                      type="text"
+                      value={activeSlide.quoteData.role || ''}
+                      onChange={(e) => {
+                        updateActiveSlide('quoteData', {
+                          ...activeSlide.quoteData,
+                          role: e.target.value,
+                        });
+                      }}
+                      placeholder="Cargo / Entidad"
+                      className="rounded-lg bg-black/60 border border-white/10 px-2 py-1 text-xs text-cyan-300 font-mono"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Notas del orador */}
               <div>

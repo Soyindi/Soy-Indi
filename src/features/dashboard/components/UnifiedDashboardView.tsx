@@ -28,6 +28,7 @@ import {
   Play
 } from 'lucide-react';
 import { deleteCardAction, toggleCardActiveAction } from '@/features/card-builder/dashboard-actions';
+import { deletePresentationAction } from '@/features/orbital-presentations/actions';
 
 interface CardItem {
   id: string;
@@ -79,8 +80,10 @@ export function UnifiedDashboardView({
 }: UnifiedDashboardViewProps) {
   const [activeTab, setActiveTab] = useState<'cards' | 'cvs' | 'presentations'>(initialTab);
   const [cardsList, setCardsList] = useState<CardItem[]>(initialCards);
+  const [presentationsList, setPresentationsList] = useState<any[]>(initialPresentations);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [copiedPresSlug, setCopiedPresSlug] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Filtrado de tarjetas
@@ -103,6 +106,13 @@ export function UnifiedDashboardView({
     setTimeout(() => setCopiedSlug(null), 2500);
   };
 
+  const handleCopyPresentationLink = (slug: string) => {
+    const url = `${window.location.origin}/p/${slug}`;
+    navigator.clipboard.writeText(url);
+    setCopiedPresSlug(slug);
+    setTimeout(() => setCopiedPresSlug(null), 2500);
+  };
+
   const handleDeleteCard = (id: string, title: string) => {
     if (!confirm(`¿Estás seguro de que deseas eliminar la tarjeta "${title}"?`)) return;
 
@@ -110,6 +120,17 @@ export function UnifiedDashboardView({
       const res = await deleteCardAction(id);
       if (res.success) {
         setCardsList((prev) => prev.filter((c) => c.id !== id));
+      }
+    });
+  };
+
+  const handleDeletePresentation = (id: string, title: string) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar la presentación "${title}"?`)) return;
+
+    startTransition(async () => {
+      const res = await deletePresentationAction(id);
+      if (res.success) {
+        setPresentationsList((prev) => prev.filter((p) => p.id !== id));
       }
     });
   };
@@ -513,7 +534,7 @@ export function UnifiedDashboardView({
       {/* ================= PESTAÑA 3: PRESENTACIONES ================= */}
       {activeTab === 'presentations' && (
         <div className="space-y-6 animate-fade-in">
-          {initialPresentations.length === 0 ? (
+          {presentationsList.length === 0 ? (
             <div className="text-center py-16 glass-panel rounded-3xl border border-white/5">
               <MonitorPlay className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
               <h3 className="text-lg font-bold text-white mb-1">No hay presentaciones registradas</h3>
@@ -530,7 +551,7 @@ export function UnifiedDashboardView({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {initialPresentations.map((pres) => {
+              {presentationsList.map((pres) => {
                 const slidesCount = Array.isArray(pres.slidesData) ? pres.slidesData.length : 4;
                 return (
                   <div
@@ -563,21 +584,48 @@ export function UnifiedDashboardView({
                     </div>
 
                     <div className="flex items-center gap-2 pt-3 border-t border-white/5">
-                      <Link
-                        href={`/p/${pres.slug || 'demo'}`}
-                        target="_blank"
-                        className="min-h-[44px] min-w-[44px] px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition flex items-center justify-center text-xs font-semibold"
-                        title="Ver presentación en vivo"
+                      <button
+                        onClick={() => handleCopyPresentationLink(pres.slug)}
+                        className="min-h-[44px] px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition flex items-center gap-1.5 cursor-pointer"
+                        title="Copiar enlace de presentación"
                       >
-                        <Play className="w-3.5 h-3.5 text-cyan-400" />
-                      </Link>
+                        {copiedPresSlug === pres.slug ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="text-emerald-300">Copiado</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Copiar Link</span>
+                          </>
+                        )}
+                      </button>
+
                       <Link
-                        href="/presentations"
+                        href={`/presentations?slug=${pres.slug || ''}`}
                         className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-sm hover:opacity-95 transition"
                       >
                         <MonitorPlay className="w-3.5 h-3.5" />
                         <span>Abrir Estudio</span>
                       </Link>
+
+                      <Link
+                        href={`/p/${pres.slug || 'demo'}`}
+                        target="_blank"
+                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition flex items-center justify-center text-xs font-semibold"
+                        title="Ver presentación en vivo"
+                      >
+                        <Play className="w-3.5 h-3.5 text-cyan-400" />
+                      </Link>
+
+                      <button
+                        onClick={() => handleDeletePresentation(pres.id, pres.title)}
+                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition flex items-center justify-center cursor-pointer"
+                        title="Eliminar presentación"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 );

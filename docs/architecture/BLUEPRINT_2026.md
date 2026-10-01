@@ -512,9 +512,28 @@ export default async function PublicCardPage({ params }: PageProps) {
 3. **Resolución Resiliente de Presentación en Vivo (Cero Errores 404)**:
    - **Modo In-Situ en el Estudio**: Proyección directa en pantalla completa desde el estado reactivo en memoria mediante `<PublicPresentationViewer onExit={...}>`, permitiendo proyectar sin obligar a guardar primero en la base de datos.
    - **Multi-Source Resolver en `/p/[slug]`**: Resolución en cascada: (1) Entidades persistidas en Turso SQLite $\rightarrow$ (2) Plantillas curadas `PRESENTATION_TEMPLATES` $\rightarrow$ (3) Vista elegante de borrador en vivo en lugar de pantalla de error 404.
-4. **Validación y Suite de Pruebas**:
-   - Nuevos tests unitarios en `tests/unit/presentation-decomposition.test.ts` (11 tests adicionales, totalizando 43 tests pasando al 100%).
-   - Chequeo de tipos estricto (`npm run typecheck`) con 0 errores TypeScript.
+### ✅ Fase 12: Auditoría Integral y Perfeccionamiento de Presentaciones Orbitales (COMPLETADA)
+1. **Persistencia Idempotente en SQLite (`actions.ts`)**:
+   - Corrección del bloqueo de unicidad de slug: si el usuario guarda repetidas veces sin recargar la página, `upsertPresentationAction` resuelve de forma inteligente entidades preexistentes por slug y actualiza el registro (`UPDATE`) retornando `{ success: true, id, slug }`.
+   - `PresentationStudio` retiene y actualiza `presentationId` en su estado local, garantizando consistencia absoluta en el guardado.
+2. **Rehidratación Bidireccional de Estado (`PresentationsPage` & `UnifiedDashboardView`)**:
+   - Soporte para parámetros `searchParams: { slug?: string; id?: string }` en la ruta `/presentations`.
+   - Enlace optimizado en el Dashboard: al presionar *"Abrir Estudio"*, se carga la presentación específica seleccionada con todas sus diapositivas y temas en lugar de la plantilla por defecto.
+3. **Editor de Diapositivas Integral (SCQA & Sub-editores)**:
+   - Habilitación de edición de **Action Title** (titular activo de McKinsey con pauta <15 palabras).
+   - Editor interactivo de **Key Points** (adición y supresión de viñetas dinámicas).
+   - Sub-editores contextuales para **Métricas/KPIs** (etiqueta, valor y delta), **Comparativas** (listas A/B antes/después), **Timelines** (fases de roadmap) y **Citas** (autor, cargo y testimonio).
+   - Botones de **reordenamiento secuencial de diapositivas** (`← Mover Antes` y `Mover Después →`).
+4. **Inmersión, Gestos Táctiles y Telemetría en el Visor (`PublicPresentationViewer.tsx`)**:
+   - **Touch Swipe Gestures**: Detección de deslizamiento horizontal con umbral de 50px para presentar fluidamente desde iPads y smartphones.
+   - **Escape Handler In-Situ**: Tecla `Escape` vinculada al cierre del overlay de presentación en vivo devolviendo al usuario al estudio de edición.
+   - **Barra de Progreso Cinemática Superior**: Indicador visual continuo con gradiente OKLCH (`from-indigo-500 via-cyan-400 to-emerald-400`).
+   - **Acción Rápida de Copiar Enlace**: Botón con portapapeles y retroalimentación en la barra superior.
+5. **Gestión Completa de Ciclo de Vida en Dashboard**:
+   - Incorporación de botón *"Copiar Link"* y botón *"Eliminar"* con confirmación modal y guardrails multi-tenant.
+6. **Validación y Suite de Pruebas**:
+   - 47 pruebas unitarias aprobadas al 100% en Vitest (`tests/unit/presentation-flow-audit.test.ts`).
+   - 0 errores en verificación de tipos TypeScript (`npm run typecheck`).
 
 
 
