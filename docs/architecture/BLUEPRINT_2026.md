@@ -599,7 +599,8 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Sincronización bidireccional reactiva con el evento nativo `fullscreenchange` de la Web API (`isSlideFullscreen`), adaptando dinámicamente el layout a `w-full h-screen` con paddings ergonómicos y bordes optimizados para proyecciones corporativas.
    - Botón accesible con touch target $\ge 44 \times 44\text{ px}$ (`min-h-[44px] min-w-[44px]`), micro-animación de escala en hover/active, icono contextual (`Maximize2` / `Minimize2`) y label adaptativo para pantallas de escritorio.
 2. **Robustez y Resiliencia en CI/CD**:
-   - Validación integral del pipeline de GitHub Actions (`.github/workflows/ci.yml`): chequeo de tipos estricto (`tsc --noEmit`), compilación de producción con Next.js 16 Turbopack y suite completa de pruebas unitarias.
+   - Corrección y blindaje del runner de GitHub Actions (`.github/workflows/ci.yml`): incorporación del paso de inicialización de esquema SQLite (`npx drizzle-kit push --force`) previo a los tests unitarios.
+   - Refactorización de resiliencia en `getSafeAuthenticatedUserId` (`src/shared/lib/session.ts`) y `checkUserEntitlementAction` (`src/features/pricing/actions.ts`) con bloques `try/catch` deterministas, evitando que errores de tablas no creadas bloqueen suites aisladas en runners de CI o entornos de desarrollo en frío.
 3. **Validación y Suite de Pruebas (61 Tests Passing)**:
    - Nuevos tests de contrato y ergonomía en `tests/unit/presentation-flow-audit.test.ts`.
    - 61 pruebas unitarias aprobadas al 100% en Vitest (10 suites pasando).

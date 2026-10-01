@@ -27,7 +27,14 @@ jobs:
       - name: Verificación Estricta de Tipos (TypeScript)
         run: npm run typecheck
 
+      - name: Inicializar Esquema SQLite Local
+        env:
+          TURSO_DATABASE_URL: 'file:local.db'
+        run: npx drizzle-kit push --force
+
       - name: Ejecución de Pruebas Unitarias (Vitest)
+        env:
+          TURSO_DATABASE_URL: 'file:local.db'
         run: npm test
 
       - name: Compilación de Producción (Next.js Build)
@@ -36,3 +43,4 @@ jobs:
           BETTER_AUTH_SECRET: 'ci-pipeline-secure-key-2026-indi-random-token'
           BETTER_AUTH_URL: 'http://localhost:3000'
         run: npm run build
+

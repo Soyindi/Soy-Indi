@@ -84,8 +84,10 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
       daysRemaining: 0,
       aiCredits: targetUser.aiCredits ?? 0,
     };
-  } catch (err) {
-    console.error('Error verificando entitlement:', err);
+  } catch (err: any) {
+    if (process.env.NODE_ENV !== 'test' && !err?.message?.includes('no such table')) {
+      console.error('Error verificando entitlement:', err);
+    }
     return {
       hasAccess: true,
       isTrial: true,
