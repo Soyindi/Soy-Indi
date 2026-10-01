@@ -239,11 +239,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         if (isFirst) {
           const mainKeyPoints = takeaways.length >= 2 
             ? takeaways.slice(0, 3) 
-            : [
-                `Síntesis analítica del contenido provisto en ${fileName || 'el documento'}.`,
-                `Enfoque ${resolvedArchetype} calibrado para audiencia ${targetAudience}.`,
-                `Pacing estructurado para ${durationMinutes} minutos de exposición efectiva.`,
-              ];
+            : (sectionData?.points && sectionData.points.length > 0 ? sectionData.points.slice(0, 3) : [rawContent.slice(0, 120).trim()]);
 
           const abstract: AbstractSlide = {
             intent: 'executive_scqa',
@@ -253,20 +249,22 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             ],
           };
 
+          const firstActionTitle = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
+            ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+            : (takeaways[0] || docAnalysis.titleSuggestion);
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: `Resumen Ejecutivo & Visión`,
-            actionTitle: (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
-              : `Consolidar las conclusiones estratégicas a partir del análisis del documento`,
-            subtitle: `Marco SCQA adaptado para ${targetAudience} (${durationMinutes} min)`,
+            title: sectionData?.heading || docAnalysis.titleSuggestion,
+            actionTitle: firstActionTitle,
+            subtitle: fileName ? `Fuente: ${fileName}` : `Síntesis ejecutiva del documento`,
             semanticIntent: 'executive_scqa',
             visualType: 'concept',
             layout: inferOptimalLayoutStrategy(abstract),
-            badgeText: 'RESPUESTA EJECUTIVA',
+            badgeText: 'VISIÓN & SÍNTESIS',
             estimatedDurationSeconds: pacingSecondsPerSlide,
             keyPoints: mainKeyPoints,
-            speakerNotes: `Introducir la tesis principal del documento captando la atención en los primeros ${pacingSecondsPerSlide} segundos.`,
+            speakerNotes: `Exponer los fundamentos iniciales del documento analizado.`,
           });
         } else if (isMetric) {
           const metricsForSlide = metricsFound.slice(0, 3).map((m) => ({
@@ -287,17 +285,17 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
           const keyMetricPoints = sectionData?.points && sectionData.points.length > 0
             ? sectionData.points.slice(0, 2)
-            : ['Evidencia cuantitativa extraída directamente del material analizado.'];
+            : [takeaways[1] || takeaways[0] || 'Datos cuantitativos extraídos del documento.'];
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: 'Indicadores Clave y Evidencia',
-            actionTitle: 'Validar el impacto con métricas extraídas directamente del documento',
+            title: sectionData?.heading || 'Evidencia Cuantitativa & Métricas',
+            actionTitle: sectionData?.actionSummary || 'Validar el impacto con métricas extraídas directamente del documento',
             subtitle: 'Evidencia cuantitativa descompuesta del contenido base',
             semanticIntent: 'bento_dashboard',
             visualType: 'metrics',
             layout: inferOptimalLayoutStrategy(abstract),
-            badgeText: 'EVIDENCIA CUANTITATIVA',
+            badgeText: 'MÉTRICAS DEL DOCUMENTO',
             estimatedDurationSeconds: pacingSecondsPerSlide,
             keyPoints: keyMetricPoints,
             metricsData: metricsForSlide,
@@ -314,31 +312,31 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
           const compPoints = sectionData?.points && sectionData.points.length > 0
             ? sectionData.points.slice(0, 2)
-            : ['Diferenciación sustantiva respecto al estado previo reportado.'];
+            : [takeaways[2] || takeaways[0] || 'Comparativa de factores extraídos del texto.'];
 
-          const beforeItems = contrast.map((c) => c.problemAspect);
-          const afterItems = contrast.map((c) => c.solutionAspect);
+          const beforeItems = contrast.length > 0 ? contrast.map((c) => c.problemAspect) : [sectionData?.points[0] || 'Punto de partida del documento'];
+          const afterItems = contrast.length > 0 ? contrast.map((c) => c.solutionAspect) : [sectionData?.points[1] || takeaways[1] || 'Propuesta y conclusiones'];
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: 'Diferenciación y Ruptura de Paradigma',
+            title: sectionData?.heading || 'Contraste y Diferenciación',
             actionTitle: (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
               ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
-              : 'Superar las limitaciones del modelo convencional mediante la propuesta analizada',
-            subtitle: 'Comparativa de capacidades y propuesta de valor única',
+              : (takeaways[1] || 'Contraste entre los puntos analizados'),
+            subtitle: 'Comparativa basada en el texto subido',
             semanticIntent: 'comparison_delta',
             visualType: 'comparison',
             layout: inferOptimalLayoutStrategy(abstract),
-            badgeText: 'VENTAJA COMPETITIVA',
+            badgeText: 'CONTRASTE DOCUMENTAL',
             estimatedDurationSeconds: pacingSecondsPerSlide,
             keyPoints: compPoints,
             comparisonData: {
-              beforeTitle: 'Situación Actual / Dolores',
-              beforeItems: beforeItems.length > 0 ? beforeItems : ['Limitaciones del modelo analógico previo'],
-              afterTitle: 'Solución & Capacidades',
-              afterItems: afterItems.length > 0 ? afterItems : sectionData?.points || ['Transformación y eficiencia'],
+              beforeTitle: 'Situación Previa / Diagnóstico',
+              beforeItems,
+              afterTitle: 'Resolución / Hallazgos Clave',
+              afterItems,
             },
-            speakerNotes: `Contrastar con claridad la situación previa con los hallazgos del documento.`,
+            speakerNotes: `Contrastar con claridad los puntos analizados en el documento.`,
           });
         } else if (isLast) {
           const abstract: AbstractSlide = {
@@ -352,29 +350,37 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
           const closingPoints = takeaways.length > 2
             ? takeaways.slice(-2)
-            : ['Hitos secuenciales para garantizar la ejecución de lo expuesto en el documento.'];
+            : (sectionData?.points && sectionData.points.length > 0 ? sectionData.points : [takeaways[0] || 'Conclusiones finales del documento.']);
 
           const timelineData = sequences.length >= 2
             ? sequences.map((s) => ({ step: `Paso 0${s.stepIndex}`, title: s.title, description: s.detail }))
-            : [
-                { step: 'Fase 1', title: 'Alineación & Setup', description: 'Revisión con stakeholders e integración del material expuesto.' },
-                { step: 'Fase 2', title: 'Despliegue & Validación', description: 'Presentación oficial y recolección de feedback.' },
-                { step: 'Fase 3', title: 'Escala y Consolidación', description: 'Monitoreo de resultados y consolidación del objetivo.' },
-              ];
+            : (sectionData?.points && sectionData.points.length >= 2
+                ? sectionData.points.slice(0, 3).map((pt, pIdx) => ({
+                    step: `Punto 0${pIdx + 1}`,
+                    title: pt.slice(0, 30),
+                    description: pt,
+                  }))
+                : takeaways.slice(0, 3).map((tk, tIdx) => ({
+                    step: `Hito 0${tIdx + 1}`,
+                    title: tk.slice(0, 30),
+                    description: tk,
+                  })));
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: 'Plan de Acción y Conclusiones',
-            actionTitle: 'Ejecutar los siguientes pasos de adopción con cronograma riguroso',
-            subtitle: `Cierre de la presentación (${durationMinutes} min totales)`,
+            title: sectionData?.heading || 'Conclusiones y Próximos Pasos',
+            actionTitle: (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
+              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+              : (takeaways[takeaways.length - 1] || 'Conclusiones determinantes del documento'),
+            subtitle: `Cierre del análisis (${durationMinutes} min totales)`,
             semanticIntent: 'timeline_roadmap',
             visualType: 'timeline',
             layout: inferOptimalLayoutStrategy(abstract),
-            badgeText: 'PLAN DE EJECUCIÓN',
+            badgeText: 'CONCLUSIONES',
             estimatedDurationSeconds: pacingSecondsPerSlide,
             keyPoints: closingPoints,
             timelineData,
-            speakerNotes: `Cerrar con una llamada a la acción enérgica y abrir espacio para preguntas y respuestas.`,
+            speakerNotes: `Cerrar con los puntos de conclusión extraídos directamente del documento.`,
           });
         } else if (isConceptArchitecture) {
           // Slide dedicado a conceptos clave o arquitectura técnica
@@ -539,131 +545,53 @@ export async function generateAiSlidesAction(
       };
     }
 
-    // 2. Generación semántica adaptativa orientada al Principio de Pirámide (SCQA & MECE)
-    const slide1Abstract: AbstractSlide = {
-      intent: 'executive_scqa',
-      supportNodes: [
-        { nodeType: 'qualitative_prose', visualWeightDominance: 5 },
-        { nodeType: 'qualitative_prose', visualWeightDominance: 4 },
-      ],
-    };
-    const slide1Layout = inferOptimalLayoutStrategy(slide1Abstract);
+    // 2. Procesar el input del usuario mediante el analizador semántico real (SAP Engine)
+    const docAnalysis = analyzeDocumentContent(cleanTopic);
+    const sections = docAnalysis.semanticSections;
+    const takeaways = docAnalysis.keyTakeaways;
 
-    const slide2Abstract: AbstractSlide = {
-      intent: 'bento_dashboard',
-      supportNodes: [
-        { nodeType: 'quantitative_metric', visualWeightDominance: 5 },
-        { nodeType: 'quantitative_metric', visualWeightDominance: 5 },
-        { nodeType: 'quantitative_metric', visualWeightDominance: 5 },
-        { nodeType: 'qualitative_prose', visualWeightDominance: 2 },
-      ],
-    };
-    const slide2Layout = inferOptimalLayoutStrategy(slide2Abstract);
+    const dynamicSlides: PresentationSlide[] = [];
+    const count = Math.min(Math.max(2, slidesCount), 6);
 
-    const slide3Abstract: AbstractSlide = {
-      intent: 'comparison_delta',
-      supportNodes: [
-        { nodeType: 'qualitative_prose', visualWeightDominance: 4 },
-        { nodeType: 'chart_vector', visualWeightDominance: 4 },
-      ],
-    };
-    const slide3Layout = inferOptimalLayoutStrategy(slide3Abstract);
+    for (let i = 0; i < count; i++) {
+      const isFirst = i === 0;
+      const isLast = i === count - 1;
+      const section = sections[i % Math.max(1, sections.length)];
+      
+      const abstract: AbstractSlide = {
+        intent: isFirst ? 'executive_scqa' : isLast ? 'timeline_roadmap' : 'executive_scqa',
+        supportNodes: [{ nodeType: 'qualitative_prose', visualWeightDominance: 4 }],
+      };
 
-    const slide4Abstract: AbstractSlide = {
-      intent: 'timeline_roadmap',
-      supportNodes: [
-        { nodeType: 'qualitative_prose', visualWeightDominance: 3 },
-        { nodeType: 'qualitative_prose', visualWeightDominance: 3 },
-        { nodeType: 'qualitative_prose', visualWeightDominance: 3 },
-      ],
-    };
-    const slide4Layout = inferOptimalLayoutStrategy(slide4Abstract);
+      const title = section?.heading || (isFirst ? `Visión: ${cleanTopic}` : `Eje Clave 0${i + 1}`);
+      const actionTitle = (section?.actionSummary && section.actionSummary.length > 15)
+        ? (section.actionSummary.length > 150 ? `${section.actionSummary.slice(0, 147)}...` : section.actionSummary)
+        : (takeaways[i] || `Conclusión estratégica sobre ${cleanTopic}`);
 
-    const dynamicSlides: PresentationSlide[] = [
-      {
+      const points = section?.points && section.points.length > 0
+        ? section.points
+        : [takeaways[i] || `Desarrollo analítico de ${cleanTopic}`];
+
+      dynamicSlides.push({
         id: crypto.randomUUID(),
-        title: `Visión Estratégica: ${cleanTopic}`,
-        actionTitle: `Transformar ${cleanTopic} mediante descentralización perimetral y latencia <10ms`,
-        subtitle: 'Marco SCQA: Situación actual y respuesta ejecutiva directa',
-        semanticIntent: 'executive_scqa',
-        visualType: 'concept',
-        layout: slide1Layout,
-        badgeText: 'RESPUESTA EJECUTIVA (SCQA)',
-        keyPoints: [
-          `Innovación estructural para liderar el ecosistema de ${cleanTopic}.`,
-          'Descentralización de la computación perimetral a <10ms de latencia global.',
-          'Cero cuellos de botella de sockets bajo picos intensivos de concurrencia.',
-        ],
-        speakerNotes: 'Introducir el problema actual del mercado, la oportunidad y la respuesta deductiva según el Principio de la Pirámide.',
-      },
-      {
-        id: crypto.randomUUID(),
-        title: 'Métricas de Impacto y Rendimiento',
-        actionTitle: 'Acelerar la conversión comercial en +290% con alta disponibilidad garantizada',
-        subtitle: 'Evidencia cuantitativa y auditoría en tiempo real en el Edge',
-        semanticIntent: 'bento_dashboard',
-        visualType: 'metrics',
-        layout: slide2Layout,
-        badgeText: 'EVIDENCIA CUANTITATIVA',
-        keyPoints: [
-          'Score de 95+ garantizado en Google Lighthouse y Core Web Vitals.',
-          'Reducción drástica del costo de inferencia mediante prompt caching efímero.',
-        ],
-        metricsData: [
-          { label: 'Conversión Directa', value: '38.4%', change: '+290%', trend: 'up', visualWeightDominance: 5 },
-          { label: 'Tiempo de Respuesta', value: '18ms', change: '-75%', trend: 'up', visualWeightDominance: 5 },
-          { label: 'Disponibilidad SLA', value: '99.99%', change: 'Zero Downtime', trend: 'neutral', visualWeightDominance: 4 },
-        ],
-        speakerNotes: 'Hacer énfasis en los números cuantitativos de conversión y eficiencia técnica.',
-      },
-      {
-        id: crypto.randomUUID(),
-        title: 'Ventaja Competitiva y Comparativa',
-        actionTitle: 'Erradicar tarifas ocultas y cuellos de botella mediante arquitectura Serverless',
-        subtitle: 'Contraste riguroso frente a monolitos y modelos heredados',
-        semanticIntent: 'comparison_delta',
-        visualType: 'comparison',
-        layout: slide3Layout,
-        badgeText: 'RUPTURA DE PARADIGMA',
-        keyPoints: [
-          'Eliminación de dependencias pesadas y costos ocultos por usuario activo.',
-        ],
-        comparisonData: {
-          beforeTitle: 'Solución Convencional',
-          beforeItems: [
-            'Saturación de conexiones de base de datos en picos de tráfico.',
-            'Altas tarifas mensuales por usuarios activos (MAU).',
-            'Tiempos de carga lentos y renderizado bloqueante.',
-          ],
-          afterTitle: `Ecosistema ${cleanTopic}`,
-          afterItems: [
-            'Arquitectura serverless en Turso SQLite con réplicas mundiales.',
-            'Autenticación autónoma sin cobro por volumen de usuarios.',
-            'Carga instantánea a 60 FPS con diseño Glassmorphism 2.0.',
-          ],
-        },
-        speakerNotes: 'Demostrar el retorno de inversión y la robustez del nuevo enfoque sin ambigüedades.',
-      },
-      {
-        id: crypto.randomUUID(),
-        title: 'Hoja de Ruta y Próximos Pasos',
-        actionTitle: 'Desplegar la estrategia en tres fases secuenciales con riesgo operacional nulo',
-        subtitle: 'Plan secuencial de implementación y escalabilidad',
-        semanticIntent: 'timeline_roadmap',
-        visualType: 'timeline',
-        layout: slide4Layout,
-        badgeText: 'PLAN DE EJECUCIÓN MECE',
-        keyPoints: [
-          'Hitos clave para garantizar el despliegue continuo sin regresiones.',
-        ],
-        timelineData: [
-          { step: 'Fase 1', title: 'Fundación & MVP', description: 'Despliegue perimetral y validación con usuarios de prueba.' },
-          { step: 'Fase 2', title: 'Escala y Automatización', description: 'Integración de analíticas en tiempo real y generación IA.' },
-          { step: 'Fase 3', title: 'Adopción Global', description: 'Alianzas comerciales y soporte multi-región distribuido.' },
-        ],
-        speakerNotes: 'Cerrar con una llamada a la acción clara para inversionistas o líderes de producto.',
-      },
-    ];
+        title,
+        actionTitle,
+        subtitle: isFirst ? 'Resumen Ejecutivo' : `Módulo temático 0${i + 1}`,
+        semanticIntent: isFirst ? 'executive_scqa' : isLast ? 'timeline_roadmap' : 'executive_scqa',
+        visualType: isLast ? 'timeline' : 'concept',
+        layout: inferOptimalLayoutStrategy(abstract),
+        badgeText: isFirst ? 'VISIÓN ESTRATÉGICA' : `PUNTO 0${i + 1}`,
+        keyPoints: points,
+        speakerNotes: `Exposición sobre ${title}.`,
+        timelineData: isLast
+          ? points.slice(0, 3).map((pt, pIdx) => ({
+              step: `Hito 0${pIdx + 1}`,
+              title: pt.slice(0, 30),
+              description: pt,
+            }))
+          : undefined,
+      });
+    }
 
     return {
       success: true,

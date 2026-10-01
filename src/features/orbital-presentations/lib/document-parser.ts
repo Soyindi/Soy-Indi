@@ -327,29 +327,22 @@ export function analyzeDocumentContent(
       points.push(blockSentences[0]);
     }
 
-    // Deducir el encabezado del bloque a partir de su contenido
-    let heading = `Eje Temático 0${semanticSections.length + 1}`;
-    if (detectedArchetype === 'technical_architecture') {
-      heading = semanticSections.length === 0 ? 'Topología & Capas de Sistema'
-        : semanticSections.length === 1 ? 'Flujo de Datos y Resiliencia'
-        : semanticSections.length === 2 ? 'Seguridad y Escalabilidad'
-        : `Módulo Técnico 0${semanticSections.length + 1}`;
-    } else if (detectedArchetype === 'business_pitch') {
-      heading = semanticSections.length === 0 ? 'Oportunidad y Problema de Mercado'
-        : semanticSections.length === 1 ? 'Propuesta de Valor & Solución'
-        : semanticSections.length === 2 ? 'Ventaja Competitiva y Tracción'
-        : `Eje de Expansión 0${semanticSections.length + 1}`;
-    } else if (detectedArchetype === 'audit_report') {
-      heading = semanticSections.length === 0 ? 'Alcance y Diagnóstico General'
-        : semanticSections.length === 1 ? 'Hallazgos de Mayor Severidad'
-        : semanticSections.length === 2 ? 'Medidas de Mitigación'
-        : `Punto de Control 0${semanticSections.length + 1}`;
+    // Deducir el encabezado del bloque directamente a partir del texto real
+    let heading = '';
+    const headingMatch = combinedBlock.match(/^(?:#+\s*|(?:\d+\.|\w\))\s*|\*\*)([^\n.:]{4,55})/m);
+    if (headingMatch && headingMatch[1].trim().length >= 4) {
+      heading = headingMatch[1].replace(/[*_#]/g, '').trim();
+    } else {
+      // Tomar las primeras palabras clave de la primera oración real del bloque
+      const cleanFirst = firstSentence.replace(/^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+/, '');
+      const words = cleanFirst.split(/\s+/).slice(0, 5).join(' ');
+      heading = words.length > 5 ? words : `Sección 0${semanticSections.length + 1}`;
     }
 
     semanticSections.push({
       heading,
       actionSummary,
-      points: points.length > 0 ? points : ['Profundización en las conclusiones del documento.'],
+      points: points.length > 0 ? points : [firstSentence],
     });
 
     if (semanticSections.length >= 8) break;
