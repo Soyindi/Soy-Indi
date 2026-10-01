@@ -99,3 +99,17 @@ Todo cambio debe registrarse siguiendo la convención de [Conventional Commits](
 - `test:` Inclusión o actualización de pruebas unitarias.
 - `docs:` Modificaciones en documentación o blueprints.
 - `chore:` Tareas de mantenimiento de configuración o dependencias.
+
+---
+
+## 📚 7. Gobernanza Documental Obligatoria ("Doc-as-Code")
+
+**Principio de Cero Deuda Documental:**
+Ninguna tarea que involucre cambios de arquitectura, nuevas entidades, nuevos componentes reutilizables en `src/shared/ui/` o nuevas funcionalidades de usuario se considera terminada sin actualizar la documentación correspondiente antes del commit/push:
+
+1. **Sincronización en Cascada Obligatoria:**
+   - **[README.md](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/README.md):** Actualizar si se crean nuevas rutas públicas, componentes compartidos o se altera el árbol de directorios FSD.
+   - **[docs/architecture/BLUEPRINT_2026.md](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/docs/architecture/BLUEPRINT_2026.md):** Actualizar la fase correspondiente o registrar una nueva fase completada con sus especificaciones técnicas.
+   - **[AGENTS.md](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/AGENTS.md):** Actualizar si el cambio introduce un nuevo estándar de codificación, regla de diseño o protocolo de testing.
+2. **Atomicidad:**
+   - Los cambios de código y sus respectivas actualizaciones documentales deben incluirse en el mismo ciclo de trabajo o commitearse bajo el prefijo `docs:` inmediatamente después.
