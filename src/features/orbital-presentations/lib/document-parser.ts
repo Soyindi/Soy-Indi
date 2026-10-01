@@ -186,10 +186,11 @@ export function analyzeDocumentContent(
   const { archetype: detectedArchetype, confidence: archetypeConfidence } =
     detectDocumentArchetype(cleanContent, fileName);
 
-  const paragraphs = cleanContent
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    .filter((p) => p.length > 20);
+  // Dividir párrafos por doble salto o salto simple de longitud sustancial
+  const rawParagraphs = cleanContent.split(/\n+/).map((p) => p.trim()).filter((p) => p.length > 20);
+  const paragraphs = rawParagraphs.length >= 2
+    ? rawParagraphs
+    : cleanContent.split(/\n\s*\n/).map((p) => p.trim()).filter((p) => p.length > 20);
 
   const sentences = cleanContent
     .split(/[.!?]\s+/)
@@ -313,18 +314,19 @@ export function analyzeDocumentContent(
     
     const blockSentences = combinedBlock
       .split(/[.!?]\s+/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 20 && s.length < 180);
+      .map((s) => s.replace(/^#+\s*/, '').trim())
+      .filter((s) => s.length > 15 && s.length < 200);
 
-    const firstSentence = blockSentences[0] || 'Análisis temático del documento';
-    const actionSummary = firstSentence.length > 120 ? `${firstSentence.slice(0, 117)}...` : firstSentence;
+    const rawFirst = blockSentences[0] || 'Análisis temático del documento';
+    const firstSentence = rawFirst.replace(/^#+\s*/, '').trim();
+    const actionSummary = firstSentence.length > 130 ? `${firstSentence.slice(0, 127)}...` : firstSentence;
 
     const points = blockSentences.slice(1, 4).map((pt) => {
-      return pt.replace(/^[-•*]\s*/, '').trim();
+      return pt.replace(/^[-•*#]\s*/, '').trim();
     });
 
     if (points.length === 0 && blockSentences.length > 0) {
-      points.push(blockSentences[0]);
+      points.push(firstSentence);
     }
 
     // Deducir el encabezado del bloque directamente a partir del texto real
@@ -333,9 +335,9 @@ export function analyzeDocumentContent(
     if (headingMatch && headingMatch[1].trim().length >= 4) {
       heading = headingMatch[1].replace(/[*_#]/g, '').trim();
     } else {
-      // Tomar las primeras palabras clave de la primera oración real del bloque
+      // Extraer una frase concisa de la primera oración
       const cleanFirst = firstSentence.replace(/^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+/, '');
-      const words = cleanFirst.split(/\s+/).slice(0, 5).join(' ');
+      const words = cleanFirst.split(/\s+/).slice(0, 6).join(' ');
       heading = words.length > 5 ? words : `Sección 0${semanticSections.length + 1}`;
     }
 

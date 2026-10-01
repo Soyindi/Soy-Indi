@@ -183,9 +183,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         { role: 'user', content: nimPrompt },
       ],
       {
-        model: 'meta/llama-3.3-70b-instruct',
+        model: 'meta/llama-3.2-11b-vision-instruct',
         temperature: 0.2,
-        responseFormat: { type: 'json_object' },
       }
     );
 
@@ -194,7 +193,13 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
     if (nimResult.success && nimResult.content) {
       try {
-        generatedData = JSON.parse(nimResult.content);
+        // Limpiar posibles fences de markdown ```json ... ``` devueltos por el LLM
+        let cleanJson = nimResult.content.trim();
+        const jsonMatch = cleanJson.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) {
+          cleanJson = jsonMatch[1].trim();
+        }
+        generatedData = JSON.parse(cleanJson);
       } catch (parseErr) {
         console.warn('Fallo parseando JSON de NVIDIA NIM, usando fallback heurístico:', parseErr);
       }

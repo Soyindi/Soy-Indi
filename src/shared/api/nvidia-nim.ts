@@ -26,7 +26,7 @@ export async function callNvidiaNimChat(
   options: NvidiaNimOptions = {}
 ): Promise<{ success: boolean; content?: string; error?: string; modelUsed?: string }> {
   const apiKey = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY;
-  const defaultModel = options.model || 'meta/llama-3.3-70b-instruct';
+  const defaultModel = options.model || 'meta/llama-3.2-11b-vision-instruct';
 
   // Si no hay API key configurada de NVIDIA, retornar inmediatamente para ejecutar failover
   if (!apiKey) {
