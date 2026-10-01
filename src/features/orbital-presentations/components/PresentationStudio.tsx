@@ -65,7 +65,7 @@ export function PresentationStudio({
   const [showDecomposerModal, setShowDecomposerModal] = useState(false);
   const [presentationId, setPresentationId] = useState<string | null>(initialPresentationId || null);
 
-  const [aiTopicPrompt, setAiTopicPrompt] = useState('Arquitectura Serverless 2026');
+  const [aiTopicPrompt, setAiTopicPrompt] = useState('');
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState('pitch-deck');
 
   // Inicializar con la plantilla de Pitch Deck o la data cargada
@@ -90,11 +90,16 @@ export function PresentationStudio({
 
   // Generar diapositivas con IA
   const handleGenerateAi = () => {
+    if (!aiTopicPrompt.trim()) {
+      setShowDecomposerModal(true);
+      return;
+    }
     startAiTransition(async () => {
       const res = await generateAiSlidesAction(aiTopicPrompt, selectedTemplateCategory, 4);
       if (res.success && res.data) {
         setPresentation((prev) => ({
           ...prev,
+          title: aiTopicPrompt.trim(),
           slidesData: res.data,
         }));
         setCurrentSlideIndex(0);
