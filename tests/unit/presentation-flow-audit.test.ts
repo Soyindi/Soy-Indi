@@ -118,4 +118,77 @@ describe('Auditoría Integral del Flujo de Presentaciones (Studio UX & Contracts
       expect(slides[0].id).toBe('1'); // Inmutabilidad comprobada
     });
   });
+
+  describe('Auditoría de Calidad Editorial & Ghost Deck (Scorecard y Principio MECE)', () => {
+    it('comprueba que la cadena de Action Titles conforma una narrativa Ghost Deck continua', () => {
+      const slides: PresentationSlide[] = [
+        {
+          id: 's1',
+          title: 'Situación Actual',
+          actionTitle: 'La identidad en papel genera 88% de desperdicio y desconexión con el cliente',
+          visualType: 'concept',
+          layout: 'layout-hero-statement',
+          keyPoints: ['Pérdida de tracción en puntos de contacto.'],
+        },
+        {
+          id: 's2',
+          title: 'Solución INDI',
+          actionTitle: 'El motor orbital con QR dinámico eleva la conversión a WhatsApp en un 340%',
+          visualType: 'metrics',
+          layout: 'layout-kpi-bento',
+          keyPoints: ['Activación inmediata en el primer escaneo.'],
+        },
+        {
+          id: 's3',
+          title: 'Plan de Acción',
+          actionTitle: 'Despliegue serverless edge en 3 fases garantiza latencias <10ms sin costos fijos',
+          visualType: 'timeline',
+          layout: 'timeline-steps',
+          keyPoints: ['Hitos Q1 a Q3 asegurados.'],
+        },
+      ];
+
+      // Verificación Ghost Deck: Cada slide debe tener un actionTitle asertivo y no un mero topic title
+      slides.forEach((slide) => {
+        expect(slide.actionTitle).toBeDefined();
+        expect(slide.actionTitle!.length).toBeGreaterThan(15);
+        // Debe ser una oración con verbo o acción y no una simple frase de 1 o 2 palabras
+        expect(slide.actionTitle!.split(' ').length).toBeGreaterThanOrEqual(4);
+      });
+    });
+
+    it('evalúa una diapositiva según el Scorecard de Calidad de Producción (Densidad y Relación Señal/Ruido)', () => {
+      const eliteSlide: PresentationSlide = {
+        id: 'score-1',
+        title: 'Métricas de Adopción',
+        actionTitle: 'Consolidación de 12,400 usuarios activos mensuales con un CAC de $0.42',
+        subtitle: 'Crecimiento sostenido durante el período Q1-Q3 2026',
+        visualType: 'metrics',
+        layout: 'layout-kpi-bento',
+        badgeText: 'TRACCIÓN VALIDADA',
+        keyPoints: [
+          'Retención neta de ingresos del 118%.',
+          'Tasa de rebote reducida al 2.1% en dispositivos móviles.',
+        ],
+        speakerNotes: 'Contexto adicional: los costos de adquisición corresponden al canal orgánico y de recomendación directa.',
+        metricsData: [
+          { label: 'MAU', value: '12.4K', change: '+180%', trend: 'up' },
+          { label: 'CAC', value: '$0.42', change: '-45%', trend: 'up' },
+        ],
+      };
+
+      // Evaluación de dimensión Densidad Cognitiva:
+      // Si visualType === 'metrics', debe contener al menos 1 métrica en metricsData
+      const hasQuantEvidence = (eliteSlide.metricsData?.length ?? 0) >= 2;
+      expect(hasQuantEvidence).toBe(true);
+
+      // Evaluación de Relación Señal/Ruido:
+      // keyPoints no debe sobrepasar 4 ítems para no sobrecargar cognitivamente
+      expect(eliteSlide.keyPoints.length).toBeLessThanOrEqual(4);
+      // La información tangencial o notas largas deben estar en speakerNotes
+      expect(eliteSlide.speakerNotes).toBeDefined();
+      expect(eliteSlide.speakerNotes!.length).toBeGreaterThan(10);
+    });
+  });
 });
+

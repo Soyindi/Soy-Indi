@@ -426,18 +426,18 @@ export function PresentationStudio({
                     <button
                       onClick={() => moveSlideLeft(currentSlideIndex)}
                       disabled={currentSlideIndex === 0}
-                      className="min-h-[38px] min-w-[38px] p-2 rounded-lg text-zinc-400 hover:text-white disabled:opacity-20 hover:bg-white/10 transition-all flex items-center justify-center cursor-pointer"
+                      className="min-h-[44px] min-w-[44px] p-2 rounded-lg text-zinc-400 hover:text-white disabled:opacity-20 hover:bg-white/10 transition-all flex items-center justify-center cursor-pointer"
                       title="Mover diapositiva hacia la izquierda (anterior posición)"
                     >
-                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <ArrowLeft className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => moveSlideRight(currentSlideIndex)}
                       disabled={currentSlideIndex === presentation.slidesData.length - 1}
-                      className="min-h-[38px] min-w-[38px] p-2 rounded-lg text-zinc-400 hover:text-white disabled:opacity-20 hover:bg-white/10 transition-all flex items-center justify-center cursor-pointer"
+                      className="min-h-[44px] min-w-[44px] p-2 rounded-lg text-zinc-400 hover:text-white disabled:opacity-20 hover:bg-white/10 transition-all flex items-center justify-center cursor-pointer"
                       title="Mover diapositiva hacia la derecha (siguiente posición)"
                     >
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
 
@@ -604,10 +604,10 @@ export function PresentationStudio({
                           const updated = activeSlide.keyPoints.filter((_, i) => i !== idx);
                           updateActiveSlide('keyPoints', updated);
                         }}
-                        className="p-2 text-zinc-500 hover:text-rose-400 transition cursor-pointer"
+                        className="min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-500 hover:text-rose-400 transition cursor-pointer rounded-xl hover:bg-rose-500/10"
                         title="Eliminar punto"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
@@ -656,9 +656,10 @@ export function PresentationStudio({
                               const updated = (activeSlide.metricsData || []).filter((_, i) => i !== idx);
                               updateActiveSlide('metricsData', updated);
                             }}
-                            className="text-zinc-500 hover:text-rose-400 p-1"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-500 hover:text-rose-400 p-1 rounded-xl hover:bg-rose-500/10 cursor-pointer"
+                            title="Eliminar métrica"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
