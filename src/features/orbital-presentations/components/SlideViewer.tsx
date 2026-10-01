@@ -3,108 +3,282 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PresentationSlide, PresentationTheme } from '@/entities/presentation/schemas';
-import { Sparkles, BarChart3, Code2, Quote, Layers, CheckCircle2 } from 'lucide-react';
+import {
+  Sparkles,
+  BarChart3,
+  Code2,
+  Quote,
+  Layers,
+  CheckCircle2,
+  TrendingUp,
+  ArrowRight,
+  Clock,
+  XCircle,
+  Cpu,
+  Zap,
+} from 'lucide-react';
 
 interface SlideViewerProps {
   slide: PresentationSlide;
   theme: PresentationTheme;
   slideNumber: number;
   totalSlides: number;
+  showNotes?: boolean;
 }
 
-export function SlideViewer({ slide, theme, slideNumber, totalSlides }: SlideViewerProps) {
-  // Íconos representativos según tipo de diapositiva
+export function SlideViewer({
+  slide,
+  theme,
+  slideNumber,
+  totalSlides,
+  showNotes = false,
+}: SlideViewerProps) {
+  // Ícono de cabecera contextual según tipo de diapositiva
   const renderVisualIcon = () => {
     switch (slide.visualType) {
       case 'metrics':
-        return <BarChart3 className="w-8 h-8 text-cyan-400" />;
+        return <BarChart3 className="w-5 h-5 text-cyan-400" />;
       case 'code':
-        return <Code2 className="w-8 h-8 text-emerald-400" />;
+        return <Code2 className="w-5 h-5 text-emerald-400" />;
       case 'quote':
-        return <Quote className="w-8 h-8 text-amber-400" />;
+        return <Quote className="w-5 h-5 text-amber-400" />;
       case 'architecture':
-        return <Layers className="w-8 h-8 text-indigo-400" />;
+        return <Layers className="w-5 h-5 text-indigo-400" />;
+      case 'comparison':
+        return <Zap className="w-5 h-5 text-rose-400" />;
+      case 'timeline':
+        return <Clock className="w-5 h-5 text-cyan-300" />;
       default:
-        return <Sparkles className="w-8 h-8 text-cyan-300" />;
+        return <Sparkles className="w-5 h-5 text-cyan-300" />;
     }
   };
 
   return (
     <div
-      className="relative w-full aspect-[16/9] min-h-[460px] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between p-8 sm:p-12 border border-white/10 select-none"
+      className="relative w-full aspect-[16/9] min-h-[440px] sm:min-h-[500px] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between p-6 sm:p-10 border border-white/10 select-none transition-all duration-500"
       style={{
         background: theme.backgroundGradient,
       }}
     >
-      {/* Luz volumétrica de ambientación */}
+      {/* Luz volumétrica perimetral con aceleración por GPU */}
       <div
-        className="absolute top-0 right-0 w-96 h-96 rounded-full blur-[120px] pointer-events-none opacity-25"
+        className="absolute top-0 right-0 w-96 h-96 rounded-full blur-[130px] pointer-events-none opacity-25 will-change-transform"
         style={{ backgroundColor: theme.accentColor }}
       />
       <div
-        className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-[120px] pointer-events-none opacity-20"
+        className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-[130px] pointer-events-none opacity-20 will-change-transform"
         style={{ backgroundColor: theme.primaryColor }}
       />
 
-      {/* Cabecera de la diapositiva */}
-      <div className="relative z-10 flex items-center justify-between">
+      {/* 1. Cabecera de la diapositiva */}
+      <div className="relative z-10 flex items-center justify-between pb-3 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shadow-lg">
+          <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
             {renderVisualIcon()}
           </div>
-          <span className="text-xs font-mono font-semibold tracking-wider text-zinc-400 uppercase">
-            INDI ORBITAL • SLIDE {slideNumber} / {totalSlides}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono font-semibold tracking-wider text-zinc-400 uppercase">
+              INDI ORBITAL
+            </span>
+            <span className="text-zinc-600">•</span>
+            <span className="text-[11px] font-mono text-cyan-300 font-bold">
+              {slide.badgeText || `SLIDE ${slideNumber} / ${totalSlides}`}
+            </span>
+          </div>
         </div>
 
-        <span className="text-xs font-mono px-3 py-1 rounded-full bg-white/5 border border-white/10 text-cyan-300">
-          {theme.name}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300">
+            {theme.name}
+          </span>
+          <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold">
+            16:9 HD
+          </span>
+        </div>
       </div>
 
-      {/* Contenido Central */}
-      <div className="relative z-10 my-auto max-w-4xl">
-        <motion.div
-          key={slide.id}
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-3 leading-tight">
-            {slide.title}
-          </h2>
-
-          {slide.subtitle && (
-            <p className="text-base sm:text-lg text-cyan-200/90 font-medium mb-8">
-              {slide.subtitle}
-            </p>
-          )}
-
-          {/* Puntos Clave */}
-          {slide.keyPoints.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-              {slide.keyPoints.map((pt, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-3 p-4 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md"
-                >
-                  <CheckCircle2 className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
-                  <span className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-normal">
-                    {pt}
-                  </span>
-                </div>
-              ))}
+      {/* 2. Área Central con Renderizado Específico por Tipología */}
+      <div className="relative z-10 my-auto py-4 max-w-5xl w-full mx-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={slide.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="w-full"
+          >
+            {/* Título y Subtítulo Universales */}
+            <div className="mb-6">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-2 leading-tight">
+                {slide.title}
+              </h2>
+              {slide.subtitle && (
+                <p className="text-sm sm:text-base lg:text-lg text-cyan-200/90 font-medium">
+                  {slide.subtitle}
+                </p>
+              )}
             </div>
-          )}
-        </motion.div>
+
+            {/* A. LAYOUT: METRICS / KPI CARDS */}
+            {slide.visualType === 'metrics' && slide.metricsData && slide.metricsData.length > 0 && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {slide.metricsData.map((m, idx) => (
+                    <div
+                      key={idx}
+                      className="p-5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md flex flex-col justify-between"
+                    >
+                      <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider mb-1">
+                        {m.label}
+                      </span>
+                      <div className="flex items-baseline gap-2 my-2">
+                        <span className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-cyan-300">
+                          {m.value}
+                        </span>
+                      </div>
+                      {m.change && (
+                        <div className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-emerald-400">
+                          <TrendingUp className="w-3.5 h-3.5" />
+                          <span>{m.change}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {slide.keyPoints.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {slide.keyPoints.map((pt, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 border border-white/5 text-xs text-zinc-300"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <span>{pt}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* B. LAYOUT: COMPARISON / BEFORE & AFTER */}
+            {slide.visualType === 'comparison' && slide.comparisonData && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* Columna Tradicional / Antes */}
+                <div className="p-5 rounded-2xl bg-rose-950/20 border border-rose-500/20 backdrop-blur-md flex flex-col">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-rose-500/20">
+                    <XCircle className="w-4 h-4 text-rose-400" />
+                    <span className="text-xs font-mono font-bold text-rose-300 uppercase tracking-wider">
+                      {slide.comparisonData.beforeTitle}
+                    </span>
+                  </div>
+                  <ul className="space-y-2.5 flex-1">
+                    {slide.comparisonData.beforeItems.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-zinc-400">
+                        <span className="text-rose-400/80 font-mono mt-0.5">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Columna Nuevo / INDI 2026 */}
+                <div className="p-5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 backdrop-blur-md flex flex-col shadow-lg shadow-emerald-950/30">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-emerald-500/30">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-wider">
+                      {slide.comparisonData.afterTitle}
+                    </span>
+                  </div>
+                  <ul className="space-y-2.5 flex-1">
+                    {slide.comparisonData.afterItems.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-zinc-200">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* C. LAYOUT: TIMELINE / ROADMAP STEPS */}
+            {slide.visualType === 'timeline' && slide.timelineData && slide.timelineData.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {slide.timelineData.map((step, idx) => (
+                  <div
+                    key={idx}
+                    className="p-5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md relative flex flex-col justify-between"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono font-bold text-xs">
+                        {step.step}
+                      </span>
+                      <span className="text-[10px] font-mono text-zinc-500">HITOS 0{idx + 1}</span>
+                    </div>
+                    <h3 className="text-base font-bold text-white mb-1.5">{step.title}</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed">{step.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* D. LAYOUT: QUOTE / TESTIMONIAL FOCUS */}
+            {slide.visualType === 'quote' && slide.quoteData && (
+              <div className="p-8 rounded-3xl bg-black/50 border border-white/10 backdrop-blur-md relative max-w-4xl mx-auto text-center">
+                <Quote className="w-10 h-10 text-amber-400/30 mx-auto mb-4" />
+                <p className="text-lg sm:text-2xl font-medium text-white italic leading-relaxed mb-6">
+                  &ldquo;{slide.quoteData.quote}&rdquo;
+                </p>
+                <div className="inline-flex flex-col items-center">
+                  <span className="text-sm font-bold text-white">{slide.quoteData.author}</span>
+                  {slide.quoteData.role && (
+                    <span className="text-xs font-mono text-cyan-300 mt-0.5">{slide.quoteData.role}</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* E. LAYOUT: ARCHITECTURE / BENTO GRID OR DEFAULT CONCEPT */}
+            {(slide.visualType === 'concept' ||
+              slide.visualType === 'architecture' ||
+              slide.visualType === 'code' ||
+              (!slide.metricsData && !slide.comparisonData && !slide.timelineData && !slide.quoteData)) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {slide.keyPoints.map((pt, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md hover:border-white/20 transition-all"
+                  >
+                    <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                    </div>
+                    <span className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-normal">
+                      {pt}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* Pie de diapositiva */}
-      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-4 text-[11px] font-mono text-zinc-500">
-        <span>PRESENTACIÓN CINEMATOGRÁFICA INTERACTIVA</span>
-        <div className="flex items-center gap-1.5 text-zinc-400">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span>ESTADO ACTIVO</span>
+      {/* 3. Pie de Diapositiva & Notas del Orador Opcionales */}
+      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-3 text-[11px] font-mono text-zinc-400">
+        <div className="flex items-center gap-2">
+          <span>PRESENTACIÓN CINEMATOGRÁFICA INTERACTIVA</span>
+          {showNotes && slide.speakerNotes && (
+            <span className="text-amber-300/90 font-sans italic truncate max-w-md hidden sm:inline-block">
+              Notas: {slide.speakerNotes}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-zinc-300 font-semibold">ESTADO ACTIVO</span>
         </div>
       </div>
     </div>

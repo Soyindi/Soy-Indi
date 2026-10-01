@@ -1,12 +1,64 @@
 import { z } from 'zod';
 
+export const presentationVisualTypeSchema = z.enum([
+  'concept',
+  'metrics',
+  'code',
+  'quote',
+  'architecture',
+  'comparison',
+  'timeline',
+  'bento',
+]);
+
+export const presentationLayoutSchema = z.enum([
+  'standard',
+  'split-2col',
+  'bento-grid',
+  'kpi-cards',
+  'quote-focus',
+  'timeline-steps',
+]);
+
+export const metricItemSchema = z.object({
+  label: z.string().min(1, 'La etiqueta es requerida'),
+  value: z.string().min(1, 'El valor métrico es requerido'),
+  change: z.string().optional(),
+  trend: z.enum(['up', 'down', 'neutral']).default('up'),
+});
+
+export const quoteDataSchema = z.object({
+  quote: z.string().min(1, 'La cita es requerida'),
+  author: z.string().min(1, 'El autor es requerido'),
+  role: z.string().optional(),
+});
+
+export const comparisonDataSchema = z.object({
+  beforeTitle: z.string().default('Enfoque Tradicional'),
+  beforeItems: z.array(z.string()).default([]),
+  afterTitle: z.string().default('INDI 2026'),
+  afterItems: z.array(z.string()).default([]),
+});
+
+export const timelineItemSchema = z.object({
+  step: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().min(1),
+});
+
 export const presentationSlideSchema = z.object({
   id: z.string(),
   title: z.string().min(1, 'El título de la diapositiva es obligatorio'),
   subtitle: z.string().optional(),
-  visualType: z.enum(['concept', 'metrics', 'code', 'quote', 'architecture']).default('concept'),
+  visualType: presentationVisualTypeSchema.default('concept'),
+  layout: presentationLayoutSchema.default('standard'),
   keyPoints: z.array(z.string()).default([]),
   speakerNotes: z.string().optional(),
+  badgeText: z.string().optional(),
+  metricsData: z.array(metricItemSchema).optional(),
+  quoteData: quoteDataSchema.optional(),
+  comparisonData: comparisonDataSchema.optional(),
+  timelineData: z.array(timelineItemSchema).optional(),
 });
 
 export const presentationThemeSchema = z.object({
@@ -14,8 +66,9 @@ export const presentationThemeSchema = z.object({
   name: z.string().default('Orbital Cyber'),
   primaryColor: z.string().default('#6366f1'),
   accentColor: z.string().default('#22d3ee'),
-  backgroundGradient: z.string().default('radial-gradient(ellipse at 50% 0%, #1e1b4b 0%, #090a10 70%)'),
+  backgroundGradient: z.string().default('radial-gradient(ellipse at 50% 0%, #1e1b4b 0%, #090a10 75%)'),
   enableParticles: z.boolean().default(true),
+  fontFamily: z.string().default('sans').optional(),
 });
 
 export const presentationFormSchema = z.object({
@@ -25,10 +78,17 @@ export const presentationFormSchema = z.object({
     .min(3, 'El enlace debe tener al menos 3 caracteres')
     .regex(/^[a-z0-9-]+$/, 'Solo se permiten letras minúsculas, números y guiones'),
   isPublic: z.boolean().default(true),
+  templateCategory: z.string().optional(),
   themeSettings: presentationThemeSchema,
   slidesData: z.array(presentationSlideSchema).min(1, 'Debe haber al menos 1 diapositiva'),
 });
 
+export type PresentationVisualType = z.infer<typeof presentationVisualTypeSchema>;
+export type PresentationLayout = z.infer<typeof presentationLayoutSchema>;
+export type MetricItem = z.infer<typeof metricItemSchema>;
+export type QuoteData = z.infer<typeof quoteDataSchema>;
+export type ComparisonData = z.infer<typeof comparisonDataSchema>;
+export type TimelineItem = z.infer<typeof timelineItemSchema>;
 export type PresentationSlide = z.infer<typeof presentationSlideSchema>;
 export type PresentationTheme = z.infer<typeof presentationThemeSchema>;
 export type PresentationFormValues = z.infer<typeof presentationFormSchema>;

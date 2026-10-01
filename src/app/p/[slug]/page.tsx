@@ -59,6 +59,8 @@ export default async function PublicPresentationPage({ params }: PageProps) {
         title: 'INDI: El Nuevo Estándar de Identidad Digital',
         subtitle: 'Networking de Alto Impacto, Smart CVs y Presentaciones Cinemáticas',
         visualType: 'concept',
+        layout: 'standard',
+        badgeText: 'VISIÓN 2026',
         keyPoints: [
           '88% de las tarjetas de papel se desechan en menos de una semana.',
           'Enlace vivo de alta conversión con QR y botón de WhatsApp.',
@@ -70,10 +72,17 @@ export default async function PublicPresentationPage({ params }: PageProps) {
         title: 'Métricas de Conversión y Rendimiento',
         subtitle: 'Resultados comparativos frente a soluciones tradicionales',
         visualType: 'metrics',
+        layout: 'kpi-cards',
+        badgeText: 'TELEMETRÍA EN VIVO',
         keyPoints: [
           '3.4x más interacciones por contacto vía WhatsApp directo.',
           'Score de 95+ garantizado en Google Lighthouse.',
           'Cero costos de infraestructura base bajo arquitectura LibSQL Serverless.',
+        ],
+        metricsData: [
+          { label: 'Conversión a WhatsApp', value: '42.8%', change: '+340%', trend: 'up' },
+          { label: 'Score Lighthouse', value: '98/100', change: 'Top 1%', trend: 'up' },
+          { label: 'Latencia Edge', value: '<20ms', change: '-85%', trend: 'up' },
         ],
       },
     ];
@@ -85,6 +94,7 @@ export default async function PublicPresentationPage({ params }: PageProps) {
       accentColor: '#22d3ee',
       backgroundGradient: 'radial-gradient(ellipse at 50% 0%, #1e1b4b 0%, #090a10 70%)',
       enableParticles: true,
+      fontFamily: 'sans',
     };
 
     return (

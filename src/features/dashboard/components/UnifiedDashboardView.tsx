@@ -24,7 +24,8 @@ import {
   Printer,
   Calendar,
   CheckCircle2,
-  Clock
+  Clock,
+  Play
 } from 'lucide-react';
 import { deleteCardAction, toggleCardActiveAction } from '@/features/card-builder/dashboard-actions';
 
@@ -563,8 +564,16 @@ export function UnifiedDashboardView({
 
                     <div className="flex items-center gap-2 pt-3 border-t border-white/5">
                       <Link
+                        href={`/p/${pres.slug || 'demo'}`}
+                        target="_blank"
+                        className="min-h-[44px] min-w-[44px] px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition flex items-center justify-center text-xs font-semibold"
+                        title="Ver presentación en vivo"
+                      >
+                        <Play className="w-3.5 h-3.5 text-cyan-400" />
+                      </Link>
+                      <Link
                         href="/presentations"
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-sm hover:opacity-95 transition"
+                        className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-sm hover:opacity-95 transition"
                       >
                         <MonitorPlay className="w-3.5 h-3.5" />
                         <span>Abrir Estudio</span>

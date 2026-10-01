@@ -1,5 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+import type { PresentationSlide, PresentationTheme } from './presentation/schemas';
 
 // ============================================================================
 // 1. USUARIOS Y AUTENTICACIÓN OFICIAL BETTER-AUTH
@@ -165,14 +166,8 @@ export const presentations = sqliteTable('presentations', {
   title: text('title').notNull(),
   slug: text('slug').unique(),
   isPublic: integer('is_public', { mode: 'boolean' }).default(false).notNull(),
-  slidesData: text('slides_data', { mode: 'json' }).$type<Array<{
-    id: string;
-    title: string;
-    keyPoints: string[];
-    visualType: string;
-    speakerNotes: string;
-  }>>().notNull(),
-  themeSettings: text('theme_settings', { mode: 'json' }).notNull(),
+  slidesData: text('slides_data', { mode: 'json' }).$type<PresentationSlide[]>().notNull(),
+  themeSettings: text('theme_settings', { mode: 'json' }).$type<PresentationTheme>().notNull(),
   viewsCount: integer('views_count').default(0).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)

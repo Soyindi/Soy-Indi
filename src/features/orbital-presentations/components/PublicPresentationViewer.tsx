@@ -108,7 +108,7 @@ export function PublicPresentationViewer({
 
       {/* Barra Inferior de Navegación */}
       <footer className="flex items-center justify-between max-w-6xl w-full mx-auto pt-6 z-20">
-        <div className="text-xs font-mono text-zinc-400">
+        <div className="text-xs font-mono text-zinc-400 hidden sm:block">
           Usa las flechas ← y → del teclado para navegar
         </div>
 

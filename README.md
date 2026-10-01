@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-17_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-26_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -45,10 +45,13 @@ A diferencia de las tarjetas de visita de papel tradicionales —que el 88% de l
 - **Feedback Accionable**: Detecta fortalezas del perfil y sugiere oportunidades de mejora concretas.
 - **Vista Imprimible A4**: Maquetación limpia lista para exportar a PDF con calidad de imprenta.
 
-### 3. 📽️ Orbital Presentations (16:9)
-- **Estudio Cinemático**: Diapositivas interactivas en relación de aspecto 16:9 para pantallas y videollamadas.
-- **Asistente Generador con IA**: Estructura títulos, contenidos y notas del orador a partir de una simple idea o propuesta comercial.
-- **Temas de Alto Impacto**: Paletas oscuras inmersivas (*Orbital Cyber*, *Emerald Aurora*, *Deep Space*) con iluminación volumétrica reactiva.
+### 3. 📽️ Orbital Presentations Pro (16:9)
+- **Estudio Cinemático Profesional**: Diapositivas interactivas en relación 16:9 para reuniones de alto impacto, conferencias y videollamadas.
+- **Catálogo de Plantillas Profesionales 2026**: Acceso instantáneo a Pitch Decks estilo YC, Lanzamientos de Producto (Keynote), Revisiones de Arquitectura de Sistemas y Balances Trimestrales (QBR).
+- **Motor Multi-Layout Reactivo**: Visualización diferenciada según tipología: tarjetas KPI con métricas cuantitativas, comparativas Antes/Después, líneas de tiempo secuenciales, citas destacadas y diagramas de arquitectura.
+- **Asistente Generador con IA**: Estructuración semántica automática de diapositivas, notas privadas del orador y jerarquía de contenidos.
+- **Ergonomía Móvil & Thumb Zone**: Barra de acción flotante inferior (`fixed bottom-4`) y touch targets $\ge 44\text{px}$ para presentar y editar fluidamente desde smartphones.
+- **Temas Volumétricos OKLCH**: Paletas oscuras inmersivas (*Orbital Cyber*, *Emerald Aurora*, *Deep Space*, *Solar Obsidian*) con iluminación reactiva acelerada por GPU.
 
 ### 4. 🎛️ Dashboard Unificado Multientidad (`/dashboard`)
 - **Gestión Centralizada con Pestañas**: Monitorea y administra en un solo panel tus Tarjetas Digitales, Smart CVs y Presentaciones.
@@ -86,6 +89,7 @@ INDI/
 ├── tests/unit/                  # Suite de pruebas unitarias (Vitest)
 │   ├── card-schema.test.ts      # Validación Zod de tarjetas de presentación
 │   ├── cv-schema.test.ts        # Contratos de datos CV y guardrails EU AI Act
+│   ├── presentation-schema.test.ts # Contratos de diapositivas, layouts y plantillas
 │   ├── ats-audit.test.ts        # Motor algorítmico de scoring ATS
 │   ├── entitlements.test.ts     # Planes comerciales y 15 días de prueba
 │   └── security-guardrails.test.ts # Protección multi-tenant de Server Actions
@@ -108,11 +112,14 @@ INDI/
 │   │   ├── card-builder/        # Formularios reactivos, dashboard actions y temas
 │   │   ├── ai-smart-cv/         # Auditoría heurística ATS y motor vectorial jsPDF
 │   │   ├── dashboard/           # UnifiedDashboardView (Tarjetas, CVs y Presentaciones)
-│   │   ├── orbital-presentations/ # Visor y generador de diapositivas 16:9
+│   │   ├── orbital-presentations/ # Estudio 16:9, multi-layout viewer y actions con guardrails
 │   │   ├── visual-effects/      # SmartParticles v3.0 anti-colisión acelerado por GPU
 │   │   ├── onboarding/          # Grid interactivo de selección de proyectos
 │   │   └── pricing/             # Actions de suscripción, FaqAccordion y TrialBanner
 │   ├── entities/                # Modelos de dominio y acceso a datos
+│   │   ├── card/                # Entidad DigitalCard y temas
+│   │   ├── cv/                  # Tipado de Smart CV y contratos
+│   │   ├── presentation/        # Schemas Zod de diapositivas y catálogo de plantillas 2026
 │   │   ├── schema.ts            # Esquemas Drizzle SQLite (user, session, cards, cvs, presentations)
 │   │   └── subscription/        # Tipos de membresía y entitlements
 │   └── shared/                  # Primitivas transversales reutilizables
