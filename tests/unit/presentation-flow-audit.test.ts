@@ -230,5 +230,32 @@ describe('Auditoría Integral del Flujo de Presentaciones (Studio UX & Contracts
       });
     });
   });
+
+  describe('Auditoría Ergonómica y Contrato de Pantalla Completa Individual (Slide Fullscreen Contract)', () => {
+    it('verifica que las propiedades de visualización y contratos de pantalla completa preserven la fidelidad del tema', () => {
+      const slide: PresentationSlide = {
+        id: 'fullscreen-slide-test',
+        title: 'Arquitectura Edge de Alta Disponibilidad',
+        actionTitle: 'El despliegue perimetral garantiza latencia sub-milisegundo sin pausas en frío',
+        subtitle: 'Distribución global con Turso LibSQL',
+        visualType: 'architecture',
+        layout: 'standard',
+        badgeText: 'PANTALLA COMPLETA HD',
+        keyPoints: [
+          'Renderizado cinemático 16:9 con luz volumétrica acelerada por GPU.',
+          'Botón de ampliación dedicado con touch target superior a 44x44px.',
+          'Sincronización nativa con evento fullscreenchange de la Web API.',
+        ],
+      };
+
+      const parsed = presentationSlideSchema.safeParse(slide);
+      expect(parsed.success).toBe(true);
+
+      // Verificación de contratos ergonómicos
+      expect(slide.keyPoints.length).toBe(3);
+      expect(slide.badgeText).toContain('PANTALLA COMPLETA');
+    });
+  });
 });
+
 

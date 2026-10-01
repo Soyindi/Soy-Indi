@@ -16,6 +16,8 @@ import {
   XCircle,
   Cpu,
   Zap,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 
 interface SlideViewerProps {
@@ -24,6 +26,7 @@ interface SlideViewerProps {
   slideNumber: number;
   totalSlides: number;
   showNotes?: boolean;
+  allowSlideFullscreen?: boolean;
 }
 
 export function SlideViewer({
@@ -32,7 +35,40 @@ export function SlideViewer({
   slideNumber,
   totalSlides,
   showNotes = false,
+  allowSlideFullscreen = true,
 }: SlideViewerProps) {
+  const slideRef = React.useRef<HTMLDivElement>(null);
+  const [isSlideFullscreen, setIsSlideFullscreen] = React.useState(false);
+
+  // Escuchar cambios de pantalla completa del navegador para sincronizar el estado
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      const activeElement = document.fullscreenElement;
+      setIsSlideFullscreen(activeElement === slideRef.current);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleSlideFullscreen = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    try {
+      if (!document.fullscreenElement) {
+        if (slideRef.current?.requestFullscreen) {
+          await slideRef.current.requestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      }
+    } catch {
+      // Ignorar restricciones o cancelaciones de permisos del navegador
+    }
+  };
   // Ícono de cabecera contextual según tipo de diapositiva
   const renderVisualIcon = () => {
     switch (slide.visualType) {
@@ -55,7 +91,10 @@ export function SlideViewer({
 
   return (
     <div
-      className="relative w-full aspect-[16/9] min-h-[440px] sm:min-h-[500px] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between p-6 sm:p-10 border border-white/10 select-none transition-all duration-500"
+      ref={slideRef}
+      className={`relative w-full aspect-[16/9] min-h-[440px] sm:min-h-[500px] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between p-6 sm:p-10 border border-white/10 select-none transition-all duration-500 ${
+        isSlideFullscreen ? '!rounded-none !min-h-screen !aspect-auto !p-8 sm:!p-14' : ''
+      }`}
       style={{
         background: theme.backgroundGradient,
       }}
@@ -88,12 +127,33 @@ export function SlideViewer({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300">
+          <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 hidden sm:inline-block">
             {theme.name}
           </span>
           <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold">
             16:9 HD
           </span>
+
+          {allowSlideFullscreen && (
+            <button
+              onClick={toggleSlideFullscreen}
+              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 active:scale-95 text-zinc-300 hover:text-white border border-white/10 hover:border-cyan-400/40 transition-all cursor-pointer shadow-sm group"
+              title={isSlideFullscreen ? 'Salir de pantalla completa de la diapositiva (Esc)' : 'Ampliar solo esta diapositiva a pantalla completa'}
+              aria-label={isSlideFullscreen ? 'Salir de pantalla completa de la diapositiva' : 'Ampliar solo esta diapositiva a pantalla completa'}
+            >
+              {isSlideFullscreen ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-[11px] font-mono font-semibold text-cyan-300 hidden md:inline">Restaurar</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-[11px] font-mono font-semibold text-zinc-300 group-hover:text-cyan-300 hidden md:inline">Ampliar</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
