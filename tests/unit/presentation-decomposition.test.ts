@@ -132,4 +132,52 @@ describe('Motor de Deconstrucción y Pacing Orbital (SCQA + Pacing)', () => {
       expect(layout).toBe(LayoutHeuristic.SEQUENTIAL_TIMELINE);
     });
   });
+
+  describe('Motor de Extracción y Análisis Semántico de Documentos (IDP)', () => {
+    it('extrae métricas numéricas, título y secciones desde texto plano o markdown', async () => {
+      const { analyzeDocumentContent } = await import('@/features/orbital-presentations/lib/document-parser');
+
+      const sampleDoc = `
+# Propuesta Estratégica INDI 2026
+
+Nuestra plataforma permite digitalizar identidades corporativas con un crecimiento del 340% en retención.
+El costo de infraestructura se redujo a $12k mensuales manteniendo un SLA del 99.98%.
+
+## Diagnóstico y Situación de Mercado
+Las soluciones analógicas presentan una tasa de abandono del 88%.
+Al integrar códigos QR dinámicos y analítica en tiempo real, transformamos la interacción con el cliente.
+El retorno sobre la inversión se amortiza en menos de 14 dias para equipos B2B.
+
+## Conclusiones y Próximos Hitos
+Iniciaremos la fase de despliegue en Punta Arenas con 50 clientes piloto.
+Consolidaremos la integración con Turso LibSQL y modelos de visión de NVIDIA NIM.
+`;
+
+      const analysis = analyzeDocumentContent(sampleDoc, 'propuesta-indi-2026.md');
+
+      expect(analysis.charCount).toBeGreaterThan(100);
+      expect(analysis.wordCount).toBeGreaterThan(30);
+      expect(analysis.titleSuggestion).toBe('Propuesta Estratégica INDI 2026');
+      expect(analysis.detectedMetrics.length).toBeGreaterThanOrEqual(1);
+
+      // Verificar que detectó métricas reales como 340% o 99.98%
+      const values = analysis.detectedMetrics.map((m) => m.value);
+      expect(values.some((v) => v.includes('%') || v.includes('$'))).toBe(true);
+
+      // Verificar que las secciones semánticas no están vacías
+      expect(analysis.semanticSections.length).toBeGreaterThan(0);
+      expect(analysis.semanticSections[0].actionSummary.length).toBeGreaterThan(10);
+    });
+
+    it('decodifica texto plano desde base64 con extractTextFromDocument', async () => {
+      const { extractTextFromDocument } = await import('@/features/orbital-presentations/lib/document-parser');
+
+      const text = 'Plan de Expansión Corporativa y Estrategia Tecnológica INDI';
+      const base64 = Buffer.from(text, 'utf-8').toString('base64');
+
+      const extracted = await extractTextFromDocument(base64, 'estrategia.txt', 'text/plain');
+      expect(extracted).toBe(text);
+    });
+  });
 });
+

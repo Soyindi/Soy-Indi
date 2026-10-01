@@ -19,9 +19,55 @@ import {
 } from '@/entities/presentation/heuristics';
 import { PRESENTATION_TEMPLATES, PRESENTATION_THEMES } from '@/entities/presentation/templates';
 import { callNvidiaNimChat } from '@/shared/api/nvidia-nim';
+import { extractTextFromDocument, analyzeDocumentContent } from '@/features/orbital-presentations/lib/document-parser';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+
+/**
+ * Server Action: Ingesta y Extracción de Texto Real desde Archivos (PDF, TXT, MD, CSV, DOC)
+ * Convierte el archivo adjunto en texto plano y metadatos estructurados.
+ */
+export async function parsePresentationDocumentAction(formData: FormData): Promise<{
+  success: boolean;
+  extractedText?: string;
+  fileName?: string;
+  charCount?: number;
+  error?: string;
+}> {
+  try {
+    const file = formData.get('file') as File | null;
+    if (!file) {
+      return { success: false, error: 'No se ha adjuntado ningún archivo.' };
+    }
+
+    const buffer = await file.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    const mimeType = file.type || 'application/pdf';
+
+    const extractedText = await extractTextFromDocument(base64, file.name, mimeType);
+
+    if (!extractedText || extractedText.trim().length === 0) {
+      return {
+        success: false,
+        error: `No se pudo extraer texto legible del archivo "${file.name}". Si es un PDF escaneado como imagen pura, transcribe los puntos clave.`,
+      };
+    }
+
+    return {
+      success: true,
+      extractedText,
+      fileName: file.name,
+      charCount: extractedText.length,
+    };
+  } catch (err: any) {
+    console.error('Error extrayendo texto del documento de presentación:', err);
+    return {
+      success: false,
+      error: err.message || 'Error procesando el documento adjunto.',
+    };
+  }
+}
 
 /**
  * Server Action: Descomposición Inteligente con Modelos de Frontera (NVIDIA NIM / Fallbacks)
@@ -137,13 +183,16 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
       }
     }
 
-    // 5. Si falló NIM (o no hay API key configurada), activar el pipeline heurístico determinista de respaldo
+    // 5. Si falló NIM (o no hay API key configurada), activar el pipeline semántico heurístico alimentado del contenido real
     if (!generatedData || !Array.isArray(generatedData.slides) || generatedData.slides.length === 0) {
-      modelName = 'INDI Local SCQA Heuristics Engine';
-      const cleanSnippet = rawContent.slice(0, 40).replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]/g, '').trim();
-      const presentationTitle = fileName
+      modelName = 'INDI Semantic Heuristics Engine';
+      
+      // Analizar semánticamente el documento o texto recibido
+      const docAnalysis = analyzeDocumentContent(rawContent, fileName);
+
+      const presentationTitle = docAnalysis.titleSuggestion || (fileName
         ? `Análisis de Documento: ${fileName.replace(/\.[^/.]+$/, '')}`
-        : `Presentación Ejecutiva: ${cleanSnippet || 'Estrategia 2026'}`;
+        : `Presentación Ejecutiva: ${rawContent.slice(0, 35).trim() || 'Estrategia 2026'}`);
       
       const safeSlug = presentationTitle
         .toLowerCase()
@@ -152,16 +201,29 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '') || `presentacion-${Date.now()}`;
 
-      // Generar diapositivas según el número calculado por duración
+      // Extraer oraciones y secciones reales del documento
+      const sections = docAnalysis.semanticSections;
+      const metricsFound = docAnalysis.detectedMetrics;
+      const takeaways = docAnalysis.keyTakeaways;
+
       const fallbackSlides: PresentationSlide[] = [];
 
       for (let i = 0; i < slidesCount; i++) {
         const isFirst = i === 0;
         const isLast = i === slidesCount - 1;
-        const isMetric = i === 1;
-        const isComparison = i === 2 && slidesCount >= 4;
+        const isMetric = i === 1 && metricsFound.length > 0;
+        const isComparison = (i === 2 || (i === 1 && metricsFound.length === 0)) && slidesCount >= 4;
+        const sectionData = sections[i % Math.max(1, sections.length)];
 
         if (isFirst) {
+          const mainKeyPoints = takeaways.length >= 2 
+            ? takeaways.slice(0, 3) 
+            : [
+                `Síntesis analítica del contenido provisto en ${fileName || 'el documento'}.`,
+                `Enfoque estratégico calibrado para audiencia ${targetAudience}.`,
+                `Pacing estructurado para ${durationMinutes} minutos de exposición efectiva.`,
+              ];
+
           const abstract: AbstractSlide = {
             intent: 'executive_scqa',
             supportNodes: [
@@ -169,52 +231,56 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
               { nodeType: 'qualitative_prose', visualWeightDominance: 4 },
             ],
           };
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
             title: `Resumen Ejecutivo & Visión`,
-            actionTitle: `Transformar la estrategia mediante análisis deductivo y ejecución perimetral`,
+            actionTitle: (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
+              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+              : `Consolidar las conclusiones estratégicas a partir del análisis del documento`,
             subtitle: `Marco SCQA adaptado para ${targetAudience} (${durationMinutes} min)`,
             semanticIntent: 'executive_scqa',
             visualType: 'concept',
             layout: inferOptimalLayoutStrategy(abstract),
             badgeText: 'RESPUESTA EJECUTIVA',
             estimatedDurationSeconds: pacingSecondsPerSlide,
-            keyPoints: [
-              `Descomposición estructural del contenido provisto (${rawContent.slice(0, 80)}...).`,
-              `Foco estratégico adaptado al perfil de audiencia: ${targetAudience}.`,
-              'Pacing calibrado para una exposición fluida y sin sobrecarga cognitiva.',
-            ],
-            speakerNotes: `Introducir el propósito principal y captar la atención de la audiencia en los primeros ${pacingSecondsPerSlide} segundos.`,
+            keyPoints: mainKeyPoints,
+            speakerNotes: `Introducir la tesis principal del documento captando la atención en los primeros ${pacingSecondsPerSlide} segundos.`,
           });
         } else if (isMetric) {
+          const metricsForSlide = metricsFound.slice(0, 3).map((m) => ({
+            label: m.label,
+            value: m.value,
+            change: m.change || (m.trend === 'up' ? '+100%' : undefined),
+            trend: m.trend,
+            visualWeightDominance: 5,
+          }));
+
           const abstract: AbstractSlide = {
             intent: 'bento_dashboard',
-            supportNodes: [
-              { nodeType: 'quantitative_metric', visualWeightDominance: 5 },
-              { nodeType: 'quantitative_metric', visualWeightDominance: 5 },
-              { nodeType: 'quantitative_metric', visualWeightDominance: 4 },
-            ],
+            supportNodes: metricsForSlide.map((m) => ({
+              nodeType: 'quantitative_metric',
+              visualWeightDominance: m.visualWeightDominance,
+            })),
           };
+
+          const keyMetricPoints = sectionData?.points && sectionData.points.length > 0
+            ? sectionData.points.slice(0, 2)
+            : ['Evidencia cuantitativa extraída directamente del material analizado.'];
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: 'Indicadores Clave y Tracción',
-            actionTitle: 'Consolidar el impacto con métricas verificadas y alta eficiencia operacional',
+            title: 'Indicadores Clave y Evidencia',
+            actionTitle: 'Validar el impacto con métricas extraídas directamente del documento',
             subtitle: 'Evidencia cuantitativa descompuesta del contenido base',
             semanticIntent: 'bento_dashboard',
             visualType: 'metrics',
             layout: inferOptimalLayoutStrategy(abstract),
             badgeText: 'EVIDENCIA CUANTITATIVA',
             estimatedDurationSeconds: pacingSecondsPerSlide,
-            keyPoints: [
-              'Optimización sostenida de costos e infraestructura.',
-              'Incremento del engagement y tasa de conversión directa.',
-            ],
-            metricsData: [
-              { label: 'Conversión Objetivo', value: '38.4%', change: '+240%', trend: 'up', visualWeightDominance: 5 },
-              { label: 'Tiempo de Pacing', value: `${pacingSecondsPerSlide}s`, change: 'Óptimo', trend: 'neutral', visualWeightDominance: 4 },
-              { label: 'Disponibilidad SLA', value: '99.98%', change: 'Zero Faults', trend: 'up', visualWeightDominance: 5 },
-            ],
-            speakerNotes: `Explicar con firmeza los números clave. Dedicar aproximadamente ${pacingSecondsPerSlide} segundos a esta diapositiva.`,
+            keyPoints: keyMetricPoints,
+            metricsData: metricsForSlide,
+            speakerNotes: `Detallar las cifras y deltas extraídos del archivo durante aproximadamente ${pacingSecondsPerSlide} segundos.`,
           });
         } else if (isComparison) {
           const abstract: AbstractSlide = {
@@ -224,26 +290,37 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
               { nodeType: 'chart_vector', visualWeightDominance: 4 },
             ],
           };
+
+          const compPoints = sectionData?.points && sectionData.points.length > 0
+            ? sectionData.points.slice(0, 2)
+            : ['Diferenciación sustantiva respecto al estado previo reportado.'];
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
             title: 'Diferenciación y Ruptura de Paradigma',
-            actionTitle: 'Superar las limitaciones del modelo convencional mediante la suite INDI',
+            actionTitle: (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
+              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+              : 'Superar las limitaciones del modelo convencional mediante la propuesta actual',
             subtitle: 'Comparativa de capacidades y propuesta de valor única',
             semanticIntent: 'comparison_delta',
             visualType: 'comparison',
             layout: inferOptimalLayoutStrategy(abstract),
             badgeText: 'VENTAJA COMPETITIVA',
             estimatedDurationSeconds: pacingSecondsPerSlide,
-            keyPoints: [
-              'Reemplazo de procesos lentos y costosos por soluciones automatizadas.',
-            ],
+            keyPoints: compPoints,
             comparisonData: {
-              beforeTitle: 'Enfoque Tradicional',
-              beforeItems: ['Procesamiento manual fragmentado', 'Opacidad de métricas', 'Costos recurrentes elevados'],
-              afterTitle: 'Enfoque INDI 2026',
-              afterItems: ['Estructuración con IA en segundos', 'Telemetría y modo presentador en vivo', 'Tarifa plana todo-en-uno accesible'],
+              beforeTitle: 'Enfoque Inicial / Problema',
+              beforeItems: [
+                'Procesos fragmentados y desarticulados',
+                'Falta de visibilidad de resultados en tiempo real',
+                'Tiempos de respuesta lentos',
+              ],
+              afterTitle: 'Solución Propuesta en Documento',
+              afterItems: sectionData?.points && sectionData.points.length >= 2
+                ? sectionData.points.slice(0, 3)
+                : ['Estructuración sistemática', 'Impacto cuantificable directo', 'Escalabilidad comprobada'],
             },
-            speakerNotes: `Contrastar con claridad los dolores anteriores frente a los beneficios tangibles obtenidos.`,
+            speakerNotes: `Contrastar con claridad la situación previa con los hallazgos del documento.`,
           });
         } else if (isLast) {
           const abstract: AbstractSlide = {
@@ -254,6 +331,11 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
               { nodeType: 'qualitative_prose', visualWeightDominance: 3 },
             ],
           };
+
+          const closingPoints = takeaways.length > 2
+            ? takeaways.slice(-2)
+            : ['Hitos secuenciales para garantizar la ejecución de lo expuesto en el documento.'];
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
             title: 'Plan de Acción y Conclusiones',
@@ -264,33 +346,43 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             layout: inferOptimalLayoutStrategy(abstract),
             badgeText: 'PLAN DE EJECUCIÓN',
             estimatedDurationSeconds: pacingSecondsPerSlide,
-            keyPoints: ['Hitos secuenciales para garantizar el éxito del proyecto.'],
+            keyPoints: closingPoints,
             timelineData: [
-              { step: 'Fase 1', title: 'Alineación & Setup', description: 'Revisión con stakeholders e integración del material.' },
+              { step: 'Fase 1', title: 'Alineación & Setup', description: 'Revisión con stakeholders e integración del material expuesto.' },
               { step: 'Fase 2', title: 'Despliegue & Validación', description: 'Presentación oficial y recolección de feedback.' },
-              { step: 'Fase 3', title: 'Escala y Consolidación', description: 'Monitoreo de resultados y expansión de la iniciativa.' },
+              { step: 'Fase 3', title: 'Escala y Consolidación', description: 'Monitoreo de resultados y consolidación del objetivo.' },
             ],
             speakerNotes: `Cerrar con una llamada a la acción enérgica y abrir espacio para preguntas y respuestas.`,
           });
         } else {
+          // Diapositivas intermedias mapeadas con el contenido específico de cada sección
           const abstract: AbstractSlide = {
             intent: 'executive_scqa',
             supportNodes: [{ nodeType: 'qualitative_prose', visualWeightDominance: 4 }],
           };
+
+          const slideAction = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
+            ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+            : `Profundizar en la dimensión analítica y temática de la sección ${i + 1}`;
+
+          const slidePoints = sectionData?.points && sectionData.points.length > 0
+            ? sectionData.points
+            : [
+                'Análisis de los hallazgos clave reportados en el material base.',
+                'Alineación estratégica con los objetivos del equipo.',
+              ];
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: `Eje Temático 0${i + 1}`,
-            actionTitle: `Profundizar en la dimensión técnica y operativa del proyecto`,
-            subtitle: `Desglose secuencial de la propuesta de valor`,
+            title: sectionData?.heading || `Eje Temático 0${i + 1}`,
+            actionTitle: slideAction,
+            subtitle: `Desglose analítico del documento base`,
             semanticIntent: 'executive_scqa',
             visualType: 'concept',
             layout: inferOptimalLayoutStrategy(abstract),
             badgeText: `MÓDULO 0${i + 1}`,
             estimatedDurationSeconds: pacingSecondsPerSlide,
-            keyPoints: [
-              'Análisis detallado de los requerimientos y condiciones de éxito.',
-              'Alineación con los estándares arquitectónicos corporativos.',
-            ],
+            keyPoints: slidePoints,
             speakerNotes: `Mantener el ritmo. Duración estimada para este slide: ${pacingSecondsPerSlide} segundos.`,
           });
         }

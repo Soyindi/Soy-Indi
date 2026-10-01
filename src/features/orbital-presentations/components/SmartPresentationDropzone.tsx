@@ -21,7 +21,10 @@ import {
   PresentationTone,
   PresentationDecompositionRequest,
 } from '@/entities/presentation/schemas';
-import { decomposeAndGeneratePresentationAction } from '@/features/orbital-presentations/actions';
+import {
+  decomposeAndGeneratePresentationAction,
+  parsePresentationDocumentAction,
+} from '@/features/orbital-presentations/actions';
 
 interface SmartPresentationDropzoneProps {
   onDecomposed: (slides: PresentationSlide[], metadata: { title?: string; pacingSeconds?: number }) => void;
@@ -62,13 +65,16 @@ export function SmartPresentationDropzone({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(0);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileProcess = async (file: File) => {
     setErrorMessage(null);
     setUploadedFileName(file.name);
 
-    // Si es un archivo de texto o markdown o json o csv, leer directamente
+    // 1. Archivos de texto directo (TXT, MD, CSV, JSON)
     if (
       file.type.includes('text') ||
       file.name.endsWith('.txt') ||
@@ -80,15 +86,33 @@ export function SmartPresentationDropzone({
       reader.onload = (e) => {
         const text = e.target?.result as string;
         if (text) {
-          setInputText((prev) => (prev ? `${prev}\n\n--- Archivo: ${file.name} ---\n${text}` : text));
+          setInputText(text.trim());
         }
       };
       reader.readAsText(file);
-    } else if (file.type.includes('pdf') || file.type.includes('word') || file.type.includes('image')) {
-      // Para binarios como PDF, Word o Imágenes, extraemos metadatos básicos y nombre
-      // enriqueciendo el prompt semántico para que el motor SCQA lo sintetice
-      const placeholder = `Documento cargado: "${file.name}" (${(file.size / 1024).toFixed(1)} KB, tipo: ${file.type || 'binario'}).\nPor favor sintetiza y estructura una presentación cinematográfica de alto impacto basada en los conceptos centrales de este material.`;
-      setInputText((prev) => (prev ? `${prev}\n\n${placeholder}` : placeholder));
+      return;
+    }
+
+    // 2. Archivos PDF o documentos binarios que requieren extracción profunda en el servidor (unpdf)
+    setIsExtracting(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await parsePresentationDocumentAction(formData);
+
+      if (res.success && res.extractedText) {
+        setInputText(res.extractedText.trim());
+      } else {
+        setErrorMessage(
+          res.error || `No se pudo extraer texto del archivo "${file.name}". Puedes pegar el texto manualmente abajo.`
+        );
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al procesar el archivo.';
+      setErrorMessage(msg);
+    } finally {
+      setIsExtracting(false);
     }
   };
 
@@ -219,16 +243,22 @@ export function SmartPresentationDropzone({
 
             <div className="flex flex-col items-center justify-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-zinc-300">
-                {uploadedFileName ? (
+                {isExtracting ? (
+                  <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+                ) : uploadedFileName ? (
                   <FileCode className="w-5 h-5 text-emerald-400" />
                 ) : (
                   <UploadCloud className="w-5 h-5 text-cyan-400" />
                 )}
               </div>
               <div className="text-xs sm:text-sm text-zinc-200">
-                {uploadedFileName ? (
+                {isExtracting ? (
+                  <span className="font-semibold text-cyan-300 animate-pulse">
+                    Extrayendo contenido de {uploadedFileName}...
+                  </span>
+                ) : uploadedFileName ? (
                   <span className="font-semibold text-emerald-300">
-                    Archivo cargado: {uploadedFileName}
+                    Archivo procesado con éxito: {uploadedFileName}
                   </span>
                 ) : (
                   <>

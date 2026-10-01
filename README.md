@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-47_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-49_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -47,8 +47,9 @@ A diferencia de las tarjetas de visita de papel tradicionales —que el 88% de l
 
 ### 3. 📽️ Orbital Presentations Pro (16:9)
 - **Estudio Cinemático Profesional**: Diapositivas interactivas en relación 16:9 para reuniones de alto impacto, conferencias y videollamadas.
-- **Deconstrucción Inteligente Multimodal & Pacing**: Ingesta de archivos (PDF, TXT, MD, CSV, imágenes) y conceptos libres con parametrización de duración (3, 5, 10 o 20 min) que calcula el ritmo exacto por slide.
-- **Modelos de Frontera NVIDIA NIM**: Integración con endpoints de ultra-baja latencia (Llama 3.3 70B y DeepSeek-R1) asistidos por un motor heurístico local con cero tolerancia a caídas.
+- **Deconstrucción Inteligente Multimodal & Pacing**: Extracción real de texto y analítica semántica desde archivos subidos (PDF con `unpdf`, TXT, Markdown, CSV, JSON) o conceptos libres, calculando el pacing y ritmo por diapositiva (3, 5, 10 o 20 min).
+- **Procesamiento Inteligente de Documentos (IDP)**: Detección automática de métricas numéricas reales ($10M, 45%, 3x), extracción de citas y segmentación en ejes temáticos estructurados con Action Titles ejecutivos.
+- **Modelos de Frontera NVIDIA NIM**: Integración con endpoints de ultra-baja latencia (Llama 3.3 70B y DeepSeek-R1) respaldados por el motor semántico resiliente `INDI Semantic Heuristics Engine` que garantiza síntesis real del archivo aún sin conexión externa.
 - **Catálogo de Plantillas Profesionales 2026**: Acceso instantáneo a Pitch Decks estilo YC, Lanzamientos de Producto (Keynote), Revisiones de Arquitectura de Sistemas y Balances Trimestrales (QBR).
 - **Motor Heurístico y Multi-Layout**: Algoritmo determinista (`inferOptimalLayoutStrategy`) que resuelve la topología visual ideal según la entropía de datos (KPI Bento Grid, Split Comparison, Sequential Timeline, Hero Statement).
 - **Principio de la Pirámide de McKinsey (SCQA)**: Generación deductiva con *Action Titles* ejecutivos (<15 palabras activas) y argumentación estructurada.

@@ -532,8 +532,21 @@ export default async function PublicCardPage({ params }: PageProps) {
 5. **Gestión Completa de Ciclo de Vida en Dashboard**:
    - Incorporación de botón *"Copiar Link"* y botón *"Eliminar"* con confirmación modal y guardrails multi-tenant.
 6. **Validación y Suite de Pruebas**:
-   - 47 pruebas unitarias aprobadas al 100% en Vitest (`tests/unit/presentation-flow-audit.test.ts`).
+   - 49 pruebas unitarias aprobadas al 100% en Vitest (`tests/unit/presentation-flow-audit.test.ts` y `tests/unit/presentation-decomposition.test.ts`).
    - 0 errores en verificación de tipos TypeScript (`npm run typecheck`).
+
+### ✅ Fase 13: Ingesta Real de Archivos (IDP) y Motor Semántico Contextual para Presentaciones (COMPLETADA)
+1. **Extracción y Descodificación Real de Documentos (`document-parser.ts` & `unpdf`)**:
+   - Superación de placeholders estáticos: los archivos PDF, Word, Markdown, TXT, CSV y JSON son procesados extrayendo su texto íntegro en memoria mediante `extractTextFromDocument`.
+   - Nueva Server Action `parsePresentationDocumentAction(formData)` que recibe archivos multipart y extrae el texto puro en el servidor con retroalimentación visual en tiempo real en la dropzone.
+2. **Procesamiento Inteligente de Documentos (IDP) y Segmentación SCQA**:
+   - Detección algorítmica de métricas cuantitativas reales en el texto ($12k, 340%, 99.98%, 14 días) para poblar automáticamente diapositivas Bento de evidencia numérica.
+   - Extracción de títulos a partir del primer encabezado `# Título` del documento o línea principal.
+   - División en secciones semánticas coherentes y derivación de *Action Titles* concisos a partir del contenido del archivo subido.
+3. **INDI Semantic Heuristics Engine**:
+   - El motor de contingencia determinista ya no genera texto genérico: mapea las oraciones, conclusiones y métricas reales del archivo hacia los layouts SCQA (visión, evidencia, comparativa y plan de acción).
+4. **Gobernanza de Calidad y Tests**:
+   - 49 pruebas unitarias pasando al 100% en Vitest con 0 errores TypeScript.
 
 
 
