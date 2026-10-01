@@ -550,7 +550,102 @@ export async function generateAiSlidesAction(
       };
     }
 
-    // 2. Procesar el input del usuario mediante el analizador semántico real (SAP Engine)
+    // 2. Si hay conexión a NVIDIA NIM, invocar inferencia de frontera para investigación y enriquecimiento profesional del tema escueto
+    const nimPrompt = `
+Eres un Principal Executive Presentation Designer y consultor de estrategia empresarial senior.
+El usuario ha proporcionado un tema conciso o escueto: "${cleanTopic}".
+
+TU MISIÓN:
+Investiga internamente en tu base de conocimientos profesional sobre este tema y complementa con información rigurosa, hechos contrastables, terminología técnica y marcos conceptuales reconocidos (estándares de la industria, normativas relevantes, métricas plausibles y metodologías de gestión).
+
+REGLAS DE DISEÑO MCKINSEY (SCQA):
+1. Estructura una presentación ejecutiva de EXACTAMENTE ${slidesCount} diapositivas:
+   - Slide 1: Visión Estratégica & Diagnóstico del tema (Situación y Complicación).
+   - Slides intermedias: Pilares clave, requerimientos técnicos/normativos o métricas de impacto de la industria.
+   - Slide final: Hoja de ruta estratégica o próximos pasos concretos.
+2. Cada diapositiva DEBE tener:
+   - "title": Título temático limpio y representativo del tema específico.
+   - "actionTitle": Titular asertivo tipo consultoría (máximo 15 palabras) que sintetice la conclusión o tesis clave.
+   - "subtitle": Bajada explicativa que contextualice el punto.
+   - "visualType": uno entre ["concept", "metrics", "comparison", "timeline", "architecture"].
+   - "keyPoints": 2 a 4 puntos argumentales sustanciosos, elocuentes y enriquecidos profesionalmente.
+   - "speakerNotes": Guía de exposición para el orador (~60s).
+   - Opcionalmente "metricsData" (si aplica para ilustrar datos de la industria) o "timelineData" (para el cierre o roadmap).
+
+RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
+{
+  "presentationTitle": string (Título completo y profesional derivado del tema),
+  "slides": [
+    {
+      "id": string,
+      "title": string,
+      "actionTitle": string,
+      "subtitle": string,
+      "semanticIntent": "executive_scqa" | "bento_dashboard" | "comparison_delta" | "timeline_roadmap",
+      "visualType": "concept" | "metrics" | "comparison" | "timeline" | "architecture",
+      "badgeText": string,
+      "keyPoints": string[],
+      "speakerNotes": string,
+      "metricsData": optional array,
+      "comparisonData": optional object,
+      "timelineData": optional array
+    }
+  ]
+}
+`;
+
+    const nimResult = await callNvidiaNimChat(
+      [
+        {
+          role: 'system',
+          content: 'Eres un sistema de investigación ejecutiva y generación de presentaciones de alto nivel. Respondes exclusivamente en JSON estructurado.',
+        },
+        { role: 'user', content: nimPrompt },
+      ],
+      {
+        model: 'meta/llama-3.2-11b-vision-instruct',
+        temperature: 0.25,
+      }
+    );
+
+    if (nimResult.success && nimResult.content) {
+      try {
+        let cleanJson = nimResult.content.trim();
+        const jsonMatch = cleanJson.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) cleanJson = jsonMatch[1].trim();
+
+        const parsed = JSON.parse(cleanJson);
+        if (parsed.slides && Array.isArray(parsed.slides) && parsed.slides.length > 0) {
+          const aiSlides: PresentationSlide[] = parsed.slides.slice(0, slidesCount).map((s: any, idx: number) => ({
+            id: s.id || crypto.randomUUID(),
+            title: s.title || `Eje Temático 0${idx + 1}`,
+            actionTitle: s.actionTitle,
+            subtitle: s.subtitle,
+            semanticIntent: s.semanticIntent || 'executive_scqa',
+            visualType: s.visualType || (idx === parsed.slides.length - 1 ? 'timeline' : 'concept'),
+            layout: s.layout || 'standard',
+            badgeText: s.badgeText || `SLIDE ${idx + 1}`,
+            keyPoints: s.keyPoints || [],
+            speakerNotes: s.speakerNotes || '',
+            estimatedDurationSeconds: 60,
+            metricsData: s.metricsData,
+            comparisonData: s.comparisonData,
+            timelineData: s.timelineData,
+          }));
+
+          return {
+            success: true,
+            presentationTitle: parsed.presentationTitle || cleanTopic,
+            data: aiSlides,
+            modelUsed: nimResult.modelUsed || 'meta/llama-3.2-11b-vision-instruct',
+          };
+        }
+      } catch (parseErr) {
+        console.warn('[QuickTopic AI] Fallback a motor heurístico por error de parseo:', parseErr);
+      }
+    }
+
+    // 3. Fallback: Procesar el input del usuario mediante el analizador semántico heurístico (SAP Engine)
     const docAnalysis = analyzeDocumentContent(cleanTopic);
     const sections = docAnalysis.semanticSections;
     const takeaways = docAnalysis.keyTakeaways;
@@ -600,6 +695,7 @@ export async function generateAiSlidesAction(
 
     return {
       success: true,
+      presentationTitle: docAnalysis.titleSuggestion || cleanTopic,
       data: dynamicSlides.slice(0, slidesCount),
     };
   } catch (err: any) {

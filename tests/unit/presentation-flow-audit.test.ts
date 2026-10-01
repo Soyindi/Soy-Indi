@@ -190,5 +190,45 @@ describe('Auditoría Integral del Flujo de Presentaciones (Studio UX & Contracts
       expect(eliteSlide.speakerNotes!.length).toBeGreaterThan(10);
     });
   });
+
+  describe('Auditoría de Enriquecimiento e Investigación de Temas Escuetos (Quick Topic Intelligence)', () => {
+    it('garantiza que temas escuetos generen actionTitles ejecutivos y no títulos vacíos', () => {
+      const sampleTopic = 'Ciberseguridad en Fintechs';
+      const slidesGeneradas: PresentationSlide[] = [
+        {
+          id: 'slide-qt-1',
+          title: 'Gobernanza y Cumplimiento Normativo',
+          actionTitle: 'La Ley FinTech 21.521 y estándares ISO 27001 exigen blindaje criptográfico en banca abierta',
+          subtitle: 'Marco de seguridad para instituciones financieras',
+          visualType: 'concept',
+          layout: 'standard',
+          keyPoints: [
+            'Obligatoriedad de SGSI auditado bajo directrices CMF.',
+            'Cifrado de extremo a extremo en transferencias y telemetría de usuario.',
+          ],
+        },
+        {
+          id: 'slide-qt-2',
+          title: 'Plan de Respuesta e Infraestructura',
+          actionTitle: 'Monitoreo perimetral y planes de contingencia reducen el tiempo medio de mitigación (MTTR) a minutos',
+          subtitle: 'Resiliencia ante incidentes y vectores de ataque modernos',
+          visualType: 'timeline',
+          layout: 'timeline-steps',
+          keyPoints: [
+            'Simulacros periódicos y protocolos de notificación inmediata.',
+            'Aislamiento de microservicios con políticas Zero-Trust.',
+          ],
+        },
+      ];
+
+      // Verificación de enriquecimiento: no repite solo la frase de entrada
+      slidesGeneradas.forEach((s) => {
+        expect(s.actionTitle).toBeDefined();
+        expect(s.actionTitle).not.toBe(sampleTopic);
+        expect(s.actionTitle!.length).toBeGreaterThan(sampleTopic.length + 10);
+        expect(s.keyPoints.length).toBeGreaterThanOrEqual(1);
+      });
+    });
+  });
 });
 

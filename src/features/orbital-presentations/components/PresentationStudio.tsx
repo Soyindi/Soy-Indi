@@ -130,7 +130,7 @@ export function PresentationStudio({
       if (res.success && res.data) {
         setPresentation((prev) => ({
           ...prev,
-          title: aiTopicPrompt.trim(),
+          title: res.presentationTitle || aiTopicPrompt.trim(),
           slidesData: res.data,
         }));
         setCurrentSlideIndex(0);

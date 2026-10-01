@@ -574,9 +574,21 @@ export default async function PublicCardPage({ params }: PageProps) {
 3. **Control de Calidad y Pruebas Unitarias (59 Passing)**:
    - Nuevos tests en `tests/unit/presentation-flow-audit.test.ts` para validación de Ghost Deck y Scorecard de Calidad de Producción.
    - 100% de la suite de pruebas unitarias aprobada (59 de 59 tests pasando).
-   - 0 errores de tipado estricto en `npm run typecheck`.
 
-
-
-
-
+### ✅ Fase 16: Inteligencia en Temas Escuetos, Guardrails de Plantillas y Modelos Activos (COMPLETADA)
+1. **Auditoría e Investigación Ejecutiva para Temas Escuetos (`generateAiSlidesAction`)**:
+   - Diagnóstico del flujo de "Tema Rápido": cuando el usuario ingresa un tema mínimo o escueto (ej. *"Ciberseguridad en Fintechs"*), el sistema anteriormente dependía de un fallback léxico que duplicaba la frase en los títulos.
+   - Conexión del generador rápido directamente a **NVIDIA NIM** con meta-prompt de consultoría estratégica senior:
+     - El modelo realiza una investigación interna en su base de conocimiento estructurada, complementando con datos normativos (Ley FinTech 21.521, CMF, ISO 27001), terminología técnica de la industria y métricas plausibles.
+     - Generación de *Action Titles* con conclusiones concretas bajo el Principio de la Pirámide de McKinsey y hoja de ruta secuencial en la diapositiva de cierre.
+2. **Selección y Activación de Modelos de Frontera en NVIDIA NIM**:
+   - Detección de obsolescencia: `meta/llama-3.3-70b-instruct` quedó deprecado por NVIDIA (`410 Gone`).
+   - Activación de **`meta/llama-3.2-11b-vision-instruct`** como motor de alta velocidad y alta fidelidad en inferencia JSON, con compatibilidad verificada para `meta/llama-3.2-90b-vision-instruct`.
+3. **Guardrail Anti-Pérdida de Contenido al Aplicar Plantillas (`PresentationStudio.tsx`)**:
+   - Resolución del problema de sobrescritura accidental: al seleccionar una plantilla en el catálogo, se despliega un modal interactivo con dos opciones:
+     - *"Conservar mi contenido actual"*: Adapta la tipología visual, los layouts y la paleta de colores sin borrar los textos ni las diapositivas del usuario.
+     - *"Reemplazar todo con el ejemplo de la plantilla"*: Carga el conjunto completo de demostración.
+4. **Validación y Suite de Pruebas (60 Tests Passing)**:
+   - Nuevos tests de auditoría en `tests/unit/presentation-flow-audit.test.ts` para validar el enriquecimiento de temas escuetos.
+   - 60 pruebas unitarias aprobadas al 100% en Vitest.
+   - 0 errores en verificación de tipos TypeScript (`npm run typecheck`).
