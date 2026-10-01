@@ -89,3 +89,22 @@ export function inferOptimalLayoutStrategy(slide: AbstractSlide): LayoutHeuristi
   // Protocolo a prueba de fallos priorizando reflow automático responsivo.
   return LayoutHeuristic.KPI_BENTO_GRID;
 }
+
+/**
+ * Mapeo de duración en minutos a cantidad óptima de diapositivas y pacing
+ */
+export function calculateSlidePacingAndCount(durationMinutes: number): {
+  slidesCount: number;
+  pacingSecondsPerSlide: number;
+} {
+  if (durationMinutes <= 3) {
+    return { slidesCount: 3, pacingSecondsPerSlide: Math.round((durationMinutes * 60) / 3) };
+  } else if (durationMinutes <= 5) {
+    return { slidesCount: 5, pacingSecondsPerSlide: Math.round((durationMinutes * 60) / 5) };
+  } else if (durationMinutes <= 10) {
+    return { slidesCount: 8, pacingSecondsPerSlide: Math.round((durationMinutes * 60) / 8) };
+  } else {
+    return { slidesCount: 12, pacingSecondsPerSlide: Math.round((durationMinutes * 60) / 12) };
+  }
+}
+

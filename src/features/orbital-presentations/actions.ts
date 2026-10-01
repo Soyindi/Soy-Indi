@@ -13,6 +13,7 @@ import {
 } from '@/entities/presentation/schemas';
 import {
   inferOptimalLayoutStrategy,
+  calculateSlidePacingAndCount,
   LayoutHeuristic,
   AbstractSlide,
 } from '@/entities/presentation/heuristics';
@@ -21,24 +22,6 @@ import { callNvidiaNimChat } from '@/shared/api/nvidia-nim';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-
-/**
- * Mapeo de duración en minutos a cantidad óptima de diapositivas y pacing
- */
-export function calculateSlidePacingAndCount(durationMinutes: number): {
-  slidesCount: number;
-  pacingSecondsPerSlide: number;
-} {
-  if (durationMinutes <= 3) {
-    return { slidesCount: 3, pacingSecondsPerSlide: Math.round((durationMinutes * 60) / 3) };
-  } else if (durationMinutes <= 5) {
-    return { slidesCount: 5, pacingSecondsPerSlide: Math.round((durationMinutes * 60) / 5) };
-  } else if (durationMinutes <= 10) {
-    return { slidesCount: 8, pacingSecondsPerSlide: Math.round((durationMinutes * 60) / 8) };
-  } else {
-    return { slidesCount: 12, pacingSecondsPerSlide: Math.round((durationMinutes * 60) / 12) };
-  }
-}
 
 /**
  * Server Action: Descomposición Inteligente con Modelos de Frontera (NVIDIA NIM / Fallbacks)

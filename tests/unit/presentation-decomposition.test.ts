@@ -5,8 +5,6 @@ import {
 } from '@/entities/presentation/schemas';
 import {
   calculateSlidePacingAndCount,
-} from '@/features/orbital-presentations/actions';
-import {
   inferOptimalLayoutStrategy,
   AbstractSlide,
   LayoutHeuristic,
