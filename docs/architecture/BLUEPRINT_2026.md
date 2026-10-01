@@ -469,28 +469,33 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Enrutamiento inteligente en tarjetas públicas: visitantes anónimos ven CTA de conversión viral (*"Crea tu perfil gratis →"*), mientras que el propietario autenticado ve acceso rápido a su panel (*"← Panel"*).
 
 ### ✅ Fase 10: Estudio Cinemático de Presentaciones Orbitales Pro, Plantillas y Generación IA (COMPLETADA)
-1. **Motor Multi-Layout Reactivo (`SlideViewer.tsx`)**:
-   - Renderizado condicional especializado por tipología de diapositiva:
-     - `metrics` / `kpi-cards`: Tarjetas cuantitativas de alto impacto con badges de tendencia positiva/negativa y deltas porcentuales.
-     - `comparison` / `split-2col`: Contraste cara a cara "Enfoque Tradicional" vs "Solución Disruptiva INDI 2026" con contrastes semánticos rojo/esmeralda.
-     - `timeline` / `timeline-steps`: Hitos y roadmap secuencial con tarjetas de progreso.
-     - `quote` / `quote-focus`: Citas de clientes y testimonios con tipografía editorial de alto contraste y pastilla de autor.
-     - `architecture` / `bento-grid`: Desglose modular de componentes técnicos con diagramación limpia.
+1. **Motor Multi-Layout Reactivo y Heurístico (`SlideViewer.tsx` & `heuristics.ts`)**:
+   - Implementación del algoritmo determinista `inferOptimalLayoutStrategy(slide)` derivado de la investigación profunda de arquitectura:
+     - `HERO_STATEMENT`: Síntesis ejecutiva de alto impacto (SCQA) con $\le 2$ nodos.
+     - `KPI_BENTO_GRID`: Cuadros de mando cuantitativos para $\ge 3$ métricas con deltas de crecimiento.
+     - `SPLIT_COMPARISON`: Tensión semántica o comparativa A/B (Antes vs Después / Solución Tradicional vs INDI 2026).
+     - `SEQUENTIAL_TIMELINE`: Continuidad histórica y roadmaps secuenciales con progreso visual.
+     - `MASONRY_DYNAMIC`: Topología asimétrica mixta de alta entropía.
+   - Renderizado condicional con soporte de *Action Titles* (máximo 15 palabras activas según el Principio de la Pirámide de McKinsey) y relaciones de aspecto 16:9 y 9:16 responsivas.
 2. **Catálogo de Plantillas Profesionales 2026 (`templates.ts`)**:
    - 4 plantillas completas curadas listas para usar:
      - *Pitch Deck para Inversionistas* (YC Style, 5 diapositivas).
      - *Lanzamiento de Producto & Keynote* (Apple/Linear Style, 4 diapositivas).
      - *Revisión de Arquitectura de Software* (Staff Lead, 4 diapositivas).
      - *Revisión Trimestral de Negocio (QBR)* (Estrategia & OKRs, 4 diapositivas).
-3. **Generación Adaptativa por IA y Server Actions Seguras (`actions.ts`)**:
-   - `generateAiSlidesAction`: Generación semántica adaptativa con tipologías de layout avanzadas según el tema y categoría.
+3. **Malla de Generación IA con Principio de Pirámide (`actions.ts`)**:
+   - `generateAiSlidesAction`: Orquestación semántica adaptativa que formula problemas y respuestas bajo el marco deductivo SCQA (Situación, Complicación, Pregunta, Respuesta) y regla MECE (Mutuamente Excluyentes, Colectivamente Exhaustivos).
    - `upsertPresentationAction` y `deletePresentationAction`: Protección multi-tenant con validación estricta de propiedad contra `getSafeAuthenticatedUserId` y contratos Zod.
-4. **Ergonomía Táctil Móvil & Thumb Zone en el Estudio (`PresentationStudio.tsx`)**:
-   - Barra de acción flotante inferior fija (`fixed bottom-4 inset-x-4 sm:hidden`) con botones de guardado y navegación táctil rápida.
-   - Touch targets $\ge 44\text{px}$ en todos los selectores, mini-pills de navegación y paletas de color OKLCH.
-   - Acceso directo a presentación pública a pantalla completa en `/p/[slug]`.
-5. **Suite de Pruebas Unitarias Automatizadas (`tests/unit/presentation-schema.test.ts`)**:
-   - 9 nuevas pruebas con Vitest validando contratos Zod de diapositivas, integridad del catálogo de plantillas, restricciones de slug y temas visuales (100% pasando: 26/26 tests).
+4. **Modo Presentador y Web APIs Nativas (`PublicPresentationViewer.tsx`)**:
+   - **Screen Wake Lock API**: Mantiene la pantalla activa durante disertaciones sin suspensión inoportuna.
+   - **Vibration API**: Retroalimentación háptica en smartphones del orador al avanzar diapositivas.
+   - **Fullscreen API & Cronómetro en Vivo**: Vista de telemetría con notas confidenciales del orador desplegables.
+   - **Ergonomía Táctil Móvil (Thumb Zone)**: Barra de acción inferior flotante fija (`fixed bottom-4 inset-x-4 sm:hidden`) con touch targets $\ge 44\text{px}$.
+5. **Suite de Pruebas Unitarias Automatizadas (`tests/unit/`)**:
+   - `presentation-schema.test.ts` (9 tests) y `presentation-heuristics.test.ts` (6 tests).
+   - 100% de cobertura en contratos de diapositivas, validación de slugs, plantillas y reglas del motor heurístico (32 de 32 tests aprobados en todo el proyecto).
+6. **Especificación Técnica Completa**:
+   - Preservada y documentada en [`docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md`](../specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md).
 
 
 

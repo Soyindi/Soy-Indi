@@ -7,6 +7,11 @@ import {
   PresentationFormValues,
   PresentationSlide,
 } from '@/entities/presentation/schemas';
+import {
+  inferOptimalLayoutStrategy,
+  LayoutHeuristic,
+  AbstractSlide,
+} from '@/entities/presentation/heuristics';
 import { PRESENTATION_TEMPLATES } from '@/entities/presentation/templates';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq, desc, and } from 'drizzle-orm';
@@ -14,6 +19,7 @@ import { revalidatePath } from 'next/cache';
 
 /**
  * Generador Estructurado de Diapositivas según Objetivo/Tema o Plantilla
+ * Implementa el Principio de la Pirámide de McKinsey (SCQA) y el Motor Heurístico de Layouts.
  */
 export async function generateAiSlidesAction(
   topic: string,
@@ -36,47 +42,92 @@ export async function generateAiSlidesAction(
       };
     }
 
-    // 2. Generación semántica adaptativa con tipologías de layout avanzadas
+    // 2. Generación semántica adaptativa orientada al Principio de Pirámide (SCQA & MECE)
+    const slide1Abstract: AbstractSlide = {
+      intent: 'executive_scqa',
+      supportNodes: [
+        { nodeType: 'qualitative_prose', visualWeightDominance: 5 },
+        { nodeType: 'qualitative_prose', visualWeightDominance: 4 },
+      ],
+    };
+    const slide1Layout = inferOptimalLayoutStrategy(slide1Abstract);
+
+    const slide2Abstract: AbstractSlide = {
+      intent: 'bento_dashboard',
+      supportNodes: [
+        { nodeType: 'quantitative_metric', visualWeightDominance: 5 },
+        { nodeType: 'quantitative_metric', visualWeightDominance: 5 },
+        { nodeType: 'quantitative_metric', visualWeightDominance: 5 },
+        { nodeType: 'qualitative_prose', visualWeightDominance: 2 },
+      ],
+    };
+    const slide2Layout = inferOptimalLayoutStrategy(slide2Abstract);
+
+    const slide3Abstract: AbstractSlide = {
+      intent: 'comparison_delta',
+      supportNodes: [
+        { nodeType: 'qualitative_prose', visualWeightDominance: 4 },
+        { nodeType: 'chart_vector', visualWeightDominance: 4 },
+      ],
+    };
+    const slide3Layout = inferOptimalLayoutStrategy(slide3Abstract);
+
+    const slide4Abstract: AbstractSlide = {
+      intent: 'timeline_roadmap',
+      supportNodes: [
+        { nodeType: 'qualitative_prose', visualWeightDominance: 3 },
+        { nodeType: 'qualitative_prose', visualWeightDominance: 3 },
+        { nodeType: 'qualitative_prose', visualWeightDominance: 3 },
+      ],
+    };
+    const slide4Layout = inferOptimalLayoutStrategy(slide4Abstract);
+
     const dynamicSlides: PresentationSlide[] = [
       {
         id: crypto.randomUUID(),
         title: `Visión Estratégica: ${cleanTopic}`,
-        subtitle: 'Paradigma de Alto Rendimiento y Descentralización 2026',
+        actionTitle: `Transformar ${cleanTopic} mediante descentralización perimetral y latencia <10ms`,
+        subtitle: 'Marco SCQA: Situación actual y respuesta ejecutiva directa',
+        semanticIntent: 'executive_scqa',
         visualType: 'concept',
-        layout: 'standard',
-        badgeText: 'VISIÓN PRINCIPAL',
+        layout: slide1Layout,
+        badgeText: 'RESPUESTA EJECUTIVA (SCQA)',
         keyPoints: [
-          `Transformación de la experiencia de usuario centrada en ${cleanTopic}.`,
+          `Innovación estructural para liderar el ecosistema de ${cleanTopic}.`,
           'Descentralización de la computación perimetral a <10ms de latencia global.',
           'Cero cuellos de botella de sockets bajo picos intensivos de concurrencia.',
         ],
-        speakerNotes: 'Introducir el problema actual del mercado, la oportunidad y la ruptura del paradigma.',
+        speakerNotes: 'Introducir el problema actual del mercado, la oportunidad y la respuesta deductiva según el Principio de la Pirámide.',
       },
       {
         id: crypto.randomUUID(),
         title: 'Métricas de Impacto y Rendimiento',
-        subtitle: 'Resultados comparativos cuantificables y auditoría en tiempo real',
+        actionTitle: 'Acelerar la conversión comercial en +290% con alta disponibilidad garantizada',
+        subtitle: 'Evidencia cuantitativa y auditoría en tiempo real en el Edge',
+        semanticIntent: 'bento_dashboard',
         visualType: 'metrics',
-        layout: 'kpi-cards',
-        badgeText: 'KPIs CLAVE',
+        layout: slide2Layout,
+        badgeText: 'EVIDENCIA CUANTITATIVA',
         keyPoints: [
           'Score de 95+ garantizado en Google Lighthouse y Core Web Vitals.',
-          'Reducción drástica del costo de inferencia mediante prompt caching.',
+          'Reducción drástica del costo de inferencia mediante prompt caching efímero.',
         ],
         metricsData: [
-          { label: 'Conversión Directa', value: '38.4%', change: '+290%', trend: 'up' },
-          { label: 'Tiempo de Respuesta', value: '18ms', change: '-75%', trend: 'up' },
-          { label: 'Disponibilidad SLA', value: '99.99%', change: 'Zero Downtime', trend: 'neutral' },
+          { label: 'Conversión Directa', value: '38.4%', change: '+290%', trend: 'up', visualWeightDominance: 5 },
+          { label: 'Tiempo de Respuesta', value: '18ms', change: '-75%', trend: 'up', visualWeightDominance: 5 },
+          { label: 'Disponibilidad SLA', value: '99.99%', change: 'Zero Downtime', trend: 'neutral', visualWeightDominance: 4 },
         ],
         speakerNotes: 'Hacer énfasis en los números cuantitativos de conversión y eficiencia técnica.',
       },
       {
         id: crypto.randomUUID(),
         title: 'Ventaja Competitiva y Comparativa',
-        subtitle: 'Diferenciación radical frente a arquitecturas monolíticas legadas',
+        actionTitle: 'Erradicar tarifas ocultas y cuellos de botella mediante arquitectura Serverless',
+        subtitle: 'Contraste riguroso frente a monolitos y modelos heredados',
+        semanticIntent: 'comparison_delta',
         visualType: 'comparison',
-        layout: 'split-2col',
-        badgeText: 'DIFERENCIACIÓN',
+        layout: slide3Layout,
+        badgeText: 'RUPTURA DE PARADIGMA',
         keyPoints: [
           'Eliminación de dependencias pesadas y costos ocultos por usuario activo.',
         ],
@@ -94,15 +145,17 @@ export async function generateAiSlidesAction(
             'Carga instantánea a 60 FPS con diseño Glassmorphism 2.0.',
           ],
         },
-        speakerNotes: 'Demostrar el retorno de inversión y la robustez del nuevo enfoque.',
+        speakerNotes: 'Demostrar el retorno de inversión y la robustez del nuevo enfoque sin ambigüedades.',
       },
       {
         id: crypto.randomUUID(),
         title: 'Hoja de Ruta y Próximos Pasos',
+        actionTitle: 'Desplegar la estrategia en tres fases secuenciales con riesgo operacional nulo',
         subtitle: 'Plan secuencial de implementación y escalabilidad',
+        semanticIntent: 'timeline_roadmap',
         visualType: 'timeline',
-        layout: 'timeline-steps',
-        badgeText: 'PLAN DE EJECUCIÓN',
+        layout: slide4Layout,
+        badgeText: 'PLAN DE EJECUCIÓN MECE',
         keyPoints: [
           'Hitos clave para garantizar el despliegue continuo sin regresiones.',
         ],

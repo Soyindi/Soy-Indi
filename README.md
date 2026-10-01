@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-26_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-32_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -48,10 +48,11 @@ A diferencia de las tarjetas de visita de papel tradicionales —que el 88% de l
 ### 3. 📽️ Orbital Presentations Pro (16:9)
 - **Estudio Cinemático Profesional**: Diapositivas interactivas en relación 16:9 para reuniones de alto impacto, conferencias y videollamadas.
 - **Catálogo de Plantillas Profesionales 2026**: Acceso instantáneo a Pitch Decks estilo YC, Lanzamientos de Producto (Keynote), Revisiones de Arquitectura de Sistemas y Balances Trimestrales (QBR).
-- **Motor Multi-Layout Reactivo**: Visualización diferenciada según tipología: tarjetas KPI con métricas cuantitativas, comparativas Antes/Después, líneas de tiempo secuenciales, citas destacadas y diagramas de arquitectura.
-- **Asistente Generador con IA**: Estructuración semántica automática de diapositivas, notas privadas del orador y jerarquía de contenidos.
+- **Motor Heurístico y Multi-Layout**: Algoritmo determinista (`inferOptimalLayoutStrategy`) que resuelve la topología visual ideal según la entropía de datos (KPI Bento Grid, Split Comparison, Sequential Timeline, Hero Statement).
+- **Principio de la Pirámide de McKinsey (SCQA)**: Generación deductiva con *Action Titles* ejecutivos (<15 palabras activas) y argumentación estructurada.
+- **Modo Presentador y Web APIs**: Sincronización en vivo, cronómetro del orador, notas confidenciales, soporte de *Screen Wake Lock API* y hápticos móviles (*Vibration API*).
 - **Ergonomía Móvil & Thumb Zone**: Barra de acción flotante inferior (`fixed bottom-4`) y touch targets $\ge 44\text{px}$ para presentar y editar fluidamente desde smartphones.
-- **Temas Volumétricos OKLCH**: Paletas oscuras inmersivas (*Orbital Cyber*, *Emerald Aurora*, *Deep Space*, *Solar Obsidian*) con iluminación reactiva acelerada por GPU.
+- **Temas Volumétricos OKLCH**: Paletas oscuras inmersivas (*Orbital Cyber*, *Emerald Aurora*, *Deep Space*, *Solar Obsidian*) con iluminación reactiva acelerada por GPU y ratios APCA.
 
 ### 4. 🎛️ Dashboard Unificado Multientidad (`/dashboard`)
 - **Gestión Centralizada con Pestañas**: Monitorea y administra en un solo panel tus Tarjetas Digitales, Smart CVs y Presentaciones.
@@ -90,6 +91,7 @@ INDI/
 │   ├── card-schema.test.ts      # Validación Zod de tarjetas de presentación
 │   ├── cv-schema.test.ts        # Contratos de datos CV y guardrails EU AI Act
 │   ├── presentation-schema.test.ts # Contratos de diapositivas, layouts y plantillas
+│   ├── presentation-heuristics.test.ts # Motor heurístico determinista y Principio de Pirámide
 │   ├── ats-audit.test.ts        # Motor algorítmico de scoring ATS
 │   ├── entitlements.test.ts     # Planes comerciales y 15 días de prueba
 │   └── security-guardrails.test.ts # Protección multi-tenant de Server Actions
@@ -149,6 +151,7 @@ La documentación del proyecto se encuentra estructurada y sincronizada en el di
 
 - 🏛️ [Blueprint de Arquitectura 2026](docs/architecture/BLUEPRINT_2026.md): Visión técnica, rendimiento perimetral y stack serverless.
 - 📄 [Especificación de Motor de CV & ATS](docs/specifications/SMART_CV_ENGINE.md): Procesamiento documental IDP, fórmulas Google XYZ y cumplimiento EU AI Act.
+- 📽️ [Especificación de Motor de Presentaciones 2026](docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md): AST semántico, heurísticas de layout, McKinsey SCQA y telemetría edge.
 - 🤖 [Guía de Agentes y Convenciones de Código](AGENTS.md): Reglas de arquitectura FSD, seguridad en Server Actions y flujo de trabajo.
 - 🔒 [Política de Seguridad](SECURITY.md): Prácticas de aislamiento multi-tenant y reporte responsable de vulnerabilidades.
 - 📜 [Archivo Histórico (RFC Fase 1 - Supabase)](docs/archive/RFC_LEGACY_SUPABASE.md): Registro archivado de la propuesta de base de datos previa.

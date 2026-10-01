@@ -18,6 +18,20 @@ export const presentationLayoutSchema = z.enum([
   'kpi-cards',
   'quote-focus',
   'timeline-steps',
+  'layout-hero-statement',
+  'layout-kpi-bento',
+  'layout-split-comparison',
+  'layout-sequential-timeline',
+  'layout-masonry-dynamic',
+]);
+
+export const semanticIntentSchema = z.enum([
+  'executive_scqa',
+  'bento_dashboard',
+  'timeline_roadmap',
+  'testimonial',
+  'comparison_delta',
+  'hero_statement',
 ]);
 
 export const metricItemSchema = z.object({
@@ -25,6 +39,7 @@ export const metricItemSchema = z.object({
   value: z.string().min(1, 'El valor métrico es requerido'),
   change: z.string().optional(),
   trend: z.enum(['up', 'down', 'neutral']).default('up'),
+  visualWeightDominance: z.number().min(1).max(5).default(3).optional(),
 });
 
 export const quoteDataSchema = z.object({
@@ -49,7 +64,9 @@ export const timelineItemSchema = z.object({
 export const presentationSlideSchema = z.object({
   id: z.string(),
   title: z.string().min(1, 'El título de la diapositiva es obligatorio'),
+  actionTitle: z.string().max(160, 'El Action Title debe ser conciso (máximo 160 caracteres)').optional(),
   subtitle: z.string().optional(),
+  semanticIntent: semanticIntentSchema.default('executive_scqa').optional(),
   visualType: presentationVisualTypeSchema.default('concept'),
   layout: presentationLayoutSchema.default('standard'),
   keyPoints: z.array(z.string()).default([]),
@@ -69,6 +86,8 @@ export const presentationThemeSchema = z.object({
   backgroundGradient: z.string().default('radial-gradient(ellipse at 50% 0%, #1e1b4b 0%, #090a10 75%)'),
   enableParticles: z.boolean().default(true),
   fontFamily: z.string().default('sans').optional(),
+  apcaReadabilityTarget: z.number().default(75).optional(),
+  oklchHueLock: z.number().min(0).max(360).optional(),
 });
 
 export const presentationFormSchema = z.object({
@@ -85,6 +104,7 @@ export const presentationFormSchema = z.object({
 
 export type PresentationVisualType = z.infer<typeof presentationVisualTypeSchema>;
 export type PresentationLayout = z.infer<typeof presentationLayoutSchema>;
+export type SemanticIntent = z.infer<typeof semanticIntentSchema>;
 export type MetricItem = z.infer<typeof metricItemSchema>;
 export type QuoteData = z.infer<typeof quoteDataSchema>;
 export type ComparisonData = z.infer<typeof comparisonDataSchema>;

@@ -4,7 +4,17 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SlideViewer } from '@/features/orbital-presentations/components/SlideViewer';
 import { PresentationSlide, PresentationTheme } from '@/entities/presentation/schemas';
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Sparkles, ArrowLeft } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  Minimize2,
+  Sparkles,
+  ArrowLeft,
+  Clock,
+  FileText,
+  Vibrate,
+} from 'lucide-react';
 
 interface PublicPresentationViewerProps {
   title: string;
@@ -21,21 +31,66 @@ export function PublicPresentationViewer({
 }: PublicPresentationViewerProps) {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showPresenterNotes, setShowPresenterNotes] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const total = slides.length;
   const currentSlide = slides[currentSlideIndex] || slides[0];
 
+  // Retroalimentación háptica (Vibration API) para dispositivos móviles
+  const triggerHaptic = () => {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate?.([30, 20, 30]);
+      } catch {
+        // Ignorar si el navegador restringe la vibración
+      }
+    }
+  };
+
   const nextSlide = () => {
     if (currentSlideIndex < total - 1) {
       setCurrentSlideIndex((prev) => prev + 1);
+      triggerHaptic();
     }
   };
 
   const prevSlide = () => {
     if (currentSlideIndex > 0) {
       setCurrentSlideIndex((prev) => prev - 1);
+      triggerHaptic();
     }
   };
+
+  // Cronómetro del orador
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedSeconds((sec) => sec + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Screen Wake Lock API: Previene que la pantalla se apague durante la presentación
+  useEffect(() => {
+    let wakeLock: any = null;
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await (navigator as any).wakeLock.request('screen');
+        }
+      } catch {
+        // Política de seguridad o inactividad del navegador
+      }
+    };
+
+    requestWakeLock();
+
+    return () => {
+      if (wakeLock) {
+        wakeLock.release().catch(() => {});
+      }
+    };
+  }, []);
 
   // Atajos de teclado para presentaciones
   useEffect(() => {
@@ -44,6 +99,8 @@ export function PublicPresentationViewer({
         nextSlide();
       } else if (e.key === 'ArrowLeft') {
         prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
       }
     };
 
@@ -59,6 +116,12 @@ export function PublicPresentationViewer({
       document.exitFullscreen().catch(() => {});
       setIsFullscreen(false);
     }
+  };
+
+  const formatTime = (totalSeconds: number) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -79,6 +142,26 @@ export function PublicPresentationViewer({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Cronómetro en vivo */}
+          <div className="min-h-[44px] hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-cyan-300">
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{formatTime(elapsedSeconds)}</span>
+          </div>
+
+          {/* Toggle de Notas del Orador */}
+          <button
+            onClick={() => setShowPresenterNotes(!showPresenterNotes)}
+            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-mono font-medium transition-all border flex items-center gap-1.5 ${
+              showPresenterNotes
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                : 'glass-pill text-zinc-300 hover:text-white border-white/10'
+            }`}
+            title="Alternar notas del orador"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Notas</span>
+          </button>
+
           <Link
             href="/start"
             className="hidden sm:inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold transition-all active:scale-95"
@@ -86,10 +169,11 @@ export function PublicPresentationViewer({
             <Sparkles className="w-3.5 h-3.5" />
             <span>Crear Presentación</span>
           </Link>
+
           <button
             onClick={toggleFullscreen}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl glass-pill text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 active:scale-95"
-            title="Pantalla completa"
+            title="Pantalla completa (F)"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
@@ -97,19 +181,33 @@ export function PublicPresentationViewer({
       </header>
 
       {/* Contenedor Principal de la Diapositiva */}
-      <main className="flex-1 flex items-center justify-center max-w-6xl w-full mx-auto my-auto">
+      <main className="flex-1 flex flex-col items-center justify-center max-w-6xl w-full mx-auto my-auto py-2">
         <SlideViewer
           slide={currentSlide}
           theme={theme}
           slideNumber={currentSlideIndex + 1}
           totalSlides={total}
+          showNotes={showPresenterNotes}
         />
+
+        {/* Panel Desplegable de Notas del Orador */}
+        {showPresenterNotes && currentSlide.speakerNotes && (
+          <div className="w-full mt-4 p-4 rounded-2xl bg-amber-950/20 border border-amber-500/30 backdrop-blur-md animate-fade-in">
+            <div className="flex items-center gap-2 mb-1.5 text-xs font-mono font-bold text-amber-400">
+              <FileText className="w-3.5 h-3.5" />
+              <span>Notas Confidenciales del Orador:</span>
+            </div>
+            <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-sans">
+              {currentSlide.speakerNotes}
+            </p>
+          </div>
+        )}
       </main>
 
       {/* Barra Inferior de Navegación */}
       <footer className="flex items-center justify-between max-w-6xl w-full mx-auto pt-6 z-20">
         <div className="text-xs font-mono text-zinc-400 hidden sm:block">
-          Usa las flechas ← y → del teclado para navegar
+          Usa ← y → para diapositivas • F para pantalla completa • Hápticos activos
         </div>
 
         <div className="flex items-center gap-3">

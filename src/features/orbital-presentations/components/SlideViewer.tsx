@@ -108,11 +108,25 @@ export function SlideViewer({
             transition={{ duration: 0.35, ease: 'easeOut' }}
             className="w-full"
           >
-            {/* Título y Subtítulo Universales */}
+            {/* Título, Action Title (McKinsey Pyramid Principle) y Subtítulo */}
             <div className="mb-6">
-              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-2 leading-tight">
-                {slide.title}
-              </h2>
+              {slide.actionTitle ? (
+                <div>
+                  <div className="inline-flex items-center gap-2 mb-2 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-mono text-cyan-300 font-semibold tracking-wider uppercase">
+                    <span>Action Title • Principio de Pirámide</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white mb-1.5 leading-snug">
+                    {slide.actionTitle}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-zinc-400 font-mono mb-2">
+                    {slide.title}
+                  </p>
+                </div>
+              ) : (
+                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-2 leading-tight">
+                  {slide.title}
+                </h2>
+              )}
               {slide.subtitle && (
                 <p className="text-sm sm:text-base lg:text-lg text-cyan-200/90 font-medium">
                   {slide.subtitle}
