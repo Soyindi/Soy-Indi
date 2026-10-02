@@ -26,34 +26,56 @@ export function SmartParticles({
     const counts = { subtle: 4, balanced: 8, prominent: 14 };
     const count = counts[intensity] || 8;
 
-    // Zonas seguras periféricas con dispersión envolvente
-    const safeZones = [
-      { left: '6%', top: '8%' },
-      { left: '92%', top: '10%' },
-      { left: '4%', top: '35%' },
-      { left: '95%', top: '42%' },
-      { left: '8%', top: '80%' },
-      { left: '92%', top: '82%' },
-      { left: '14%', top: '60%' },
-      { left: '86%', top: '65%' },
-      { left: '48%', top: '4%' },
-      { left: '52%', top: '96%' },
-      { left: '2%', top: '20%' },
-      { left: '96%', top: '22%' },
-      { left: '10%', top: '92%' },
-      { left: '90%', top: '94%' },
+    // Geometría Estratégica por Capas (Proporción Áurea & Eye-Tracking)
+    // 1. Anillo Orbital de Avatar (Aura de identidad focal)
+    // 2. Vértices Áureos Perimetrales (Guías de contorno de tarjeta)
+    // 3. Anclas de Base (Soporte visual inferior sin oclusión)
+    const strategicAnchors = [
+      // Cuadrante 1: Corona de Avatar (Acento superior de identidad)
+      { left: '22%', top: '14%', size: '6px', depth: '0.85' },
+      { left: '78%', top: '15%', size: '7px', depth: '0.9' },
+      { left: '50%', top: '2%', size: '8px', depth: '1' },
+
+      // Cuadrante 2: Vértices Áureos Superiores
+      { left: '3%', top: '8%', size: '9px', depth: '0.75' },
+      { left: '97%', top: '9%', size: '8px', depth: '0.8' },
+
+      // Cuadrante 3: Flancos de Lectura (Alineados con el espacio vacío entre Avatar y Botones)
+      { left: '-1%', top: '38%', size: '7px', depth: '0.65' },
+      { left: '101%', top: '42%', size: '9px', depth: '0.7' },
+
+      // Cuadrante 4: Flancos de Acción (Alineados con los extremos del botón vCard)
+      { left: '1%', top: '56%', size: '6px', depth: '0.7' },
+      { left: '99%', top: '58%', size: '8px', depth: '0.85' },
+
+      // Cuadrante 5: Periferia Inferior & Bento Blocks
+      { left: '4%', top: '78%', size: '8px', depth: '0.75' },
+      { left: '96%', top: '80%', size: '7px', depth: '0.8' },
+
+      // Cuadrante 6: Zócalo de Cierre (Borde inferior)
+      { left: '16%', top: '96%', size: '6px', depth: '0.6' },
+      { left: '84%', top: '95%', size: '8px', depth: '0.7' },
+      { left: '50%', top: '99%', size: '7px', depth: '0.85' },
     ];
 
-    return Array.from({ length: count }).map((_, i) => {
-      const pos = safeZones[i % safeZones.length];
-      const delay = (i * 0.3).toFixed(2);
+    // Selección armónica de anclas según intensidad:
+    // subtle: 4 esquinas áureas periféricas
+    // balanced: 8 anclas (avatar + flancos + base)
+    // prominent: 14 anclas (órbita completa)
+    const selectedIndices = intensity === 'subtle'
+      ? [0, 4, 9, 13]
+      : intensity === 'balanced'
+      ? [0, 1, 2, 5, 6, 7, 10, 13]
+      : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+
+    return selectedIndices.map((anchorIdx, i) => {
+      const anchor = strategicAnchors[anchorIdx];
+      const delay = (i * 0.28).toFixed(2);
       const duration = behavior === 'static' 
         ? '5s' 
         : behavior === 'interactive' 
-        ? (2.8 + (i % 3) * 0.6).toFixed(2) + 's' 
-        : (3.8 + (i % 3) * 0.7).toFixed(2) + 's';
-      
-      const size = behavior === 'static' ? '10px' : behavior === 'interactive' ? '9px' : '7px';
+        ? (2.6 + (i % 3) * 0.5).toFixed(2) + 's' 
+        : (3.6 + (i % 3) * 0.6).toFixed(2) + 's';
 
       return (
         <div
@@ -61,12 +83,13 @@ export function SmartParticles({
           className={`smart-particle smart-particle-${behavior}`}
           style={
             {
-              left: pos.left,
-              top: pos.top,
+              left: anchor.left,
+              top: anchor.top,
+              opacity: anchor.depth,
               '--particle-color': color,
               '--particle-delay': `${delay}s`,
               '--particle-duration': duration,
-              '--particle-size': size,
+              '--particle-size': anchor.size,
             } as React.CSSProperties
           }
         />
