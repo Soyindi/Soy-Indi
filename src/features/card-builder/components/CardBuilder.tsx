@@ -556,20 +556,24 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
                   Comportamiento SmartParticles v3.0
                 </label>
                 <div className="grid grid-cols-3 gap-2.5">
-                  {(['ambient', 'interactive', 'static'] as const).map((b) => (
-                    <button
-                      key={b}
-                      type="button"
-                      onClick={() => handleThemeChange('particleBehavior', b)}
-                      className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold capitalize transition-all ${
-                        formData.themeConfig?.particleBehavior === b
-                          ? 'bg-indigo-600/30 border-indigo-500 text-white shadow-lg'
-                          : 'glass-pill text-zinc-400 hover:text-white border-white/5'
-                      }`}
-                    >
-                      {b === 'ambient' ? 'Flotación' : b === 'interactive' ? 'Interactivo' : 'Estático'}
-                    </button>
-                  ))}
+                  {(['ambient', 'interactive', 'static'] as const).map((b) => {
+                    const isSelected = (formData.themeConfig?.particleBehavior || 'ambient') === b;
+                    return (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => handleThemeChange('particleBehavior', b)}
+                        className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold capitalize transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                          isSelected
+                            ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-lg shadow-indigo-500/20 ring-1 ring-indigo-400/40'
+                            : 'glass-pill text-zinc-400 hover:text-white border-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3.5 h-3.5 text-indigo-400 stroke-[3]" />}
+                        <span>{b === 'ambient' ? 'Flotación' : b === 'interactive' ? 'Interactivo' : 'Estático'}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -579,20 +583,24 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
                   Intensidad de Partículas
                 </label>
                 <div className="grid grid-cols-3 gap-2.5">
-                  {(['subtle', 'balanced', 'prominent'] as const).map((lvl) => (
-                    <button
-                      key={lvl}
-                      type="button"
-                      onClick={() => handleThemeChange('particleIntensity', lvl)}
-                      className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold capitalize transition-all ${
-                        formData.themeConfig?.particleIntensity === lvl
-                          ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg'
-                          : 'glass-pill text-zinc-400 hover:text-white border-white/5'
-                      }`}
-                    >
-                      {lvl === 'subtle' ? 'Sutil' : lvl === 'balanced' ? 'Equilibrado' : 'Prominente'}
-                    </button>
-                  ))}
+                  {(['subtle', 'balanced', 'prominent'] as const).map((lvl) => {
+                    const isSelected = (formData.themeConfig?.particleIntensity || 'balanced') === lvl;
+                    return (
+                      <button
+                        key={lvl}
+                        type="button"
+                        onClick={() => handleThemeChange('particleIntensity', lvl)}
+                        className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold capitalize transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                          isSelected
+                            ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/40'
+                            : 'glass-pill text-zinc-400 hover:text-white border-white/5 hover:border-white/20'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3.5 h-3.5 text-cyan-400 stroke-[3]" />}
+                        <span>{lvl === 'subtle' ? 'Sutil' : lvl === 'balanced' ? 'Equilibrado' : 'Prominente'}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
