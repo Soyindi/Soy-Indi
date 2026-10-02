@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { DigitalCard, CardData } from '@/entities/card/components/DigitalCard';
 import { upsertCardAction } from '@/features/card-builder/actions';
+import { generateBioVariantsAction } from '@/features/card-builder/ai-bio-actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { CARD_DESIGN_PRESETS, CardDesignPreset } from '@/entities/card/themes';
 import { 
@@ -32,6 +33,8 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
   const [activeTab, setActiveTab] = useState<'profile' | 'contact' | 'social' | 'theme'>('profile');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [bioVariants, setBioVariants] = useState<Array<{ tone: string; label: string; bio: string }>>([]);
+  const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
   // Estado reactivo del formulario
   const [formData, setFormData] = useState<CardData>({
@@ -119,12 +122,23 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
     });
   };
 
-  // Sugerencia inteligente rescatada del proyecto legacy
-  const applySmartBioSuggestion = () => {
-    handleChange(
-      'about',
-      `Impulso el crecimiento estratégico en ${formData.profession || 'mi área'}, combinando metodologías ágiles y orientación a resultados de alto impacto.`
-    );
+  // Generación inteligente de 3 variantes con IA
+  const handleGenerateAiBios = async () => {
+    if (!formData.title || !formData.profession) return;
+    setIsGeneratingBio(true);
+    try {
+      const res = await generateBioVariantsAction({
+        title: formData.title,
+        profession: formData.profession,
+      });
+      if (res.success && res.data) {
+        setBioVariants(res.data);
+      }
+    } catch (e) {
+      console.error('Error generando variantes de bio:', e);
+    } finally {
+      setIsGeneratingBio(false);
+    }
   };
 
   return (
@@ -271,11 +285,21 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
                   </label>
                   <button
                     type="button"
-                    onClick={applySmartBioSuggestion}
-                    className="inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
+                    disabled={isGeneratingBio}
+                    onClick={handleGenerateAiBios}
+                    className="inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300 font-medium transition-colors disabled:opacity-50"
                   >
-                    <Lightbulb className="w-3.5 h-3.5" />
-                    <span>Sugerencia Inteligente</span>
+                    {isGeneratingBio ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Generando con IA...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Generar con IA (3 Opciones)</span>
+                      </>
+                    )}
                   </button>
                 </div>
                 <textarea
@@ -285,6 +309,30 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
                   className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors resize-none"
                   placeholder="Una breve descripción de tu propuesta de valor..."
                 />
+
+                {/* Variantes de IA generadas en tiempo real */}
+                {bioVariants.length > 0 && (
+                  <div className="mt-3 p-3.5 rounded-2xl bg-white/[0.04] border border-cyan-500/20 space-y-2 animate-fade-in">
+                    <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider block font-semibold">
+                      Opciones sugeridas por IA:
+                    </span>
+                    <div className="grid grid-cols-1 gap-2">
+                      {bioVariants.map((opt) => (
+                        <button
+                          key={opt.tone}
+                          type="button"
+                          onClick={() => handleChange('about', opt.bio)}
+                          className="p-2.5 rounded-xl bg-black/40 hover:bg-white/10 border border-white/5 hover:border-cyan-400/40 text-left transition-all group"
+                        >
+                          <span className="text-[10px] font-mono font-bold text-zinc-400 group-hover:text-cyan-300 uppercase block mb-1">
+                            {opt.label}
+                          </span>
+                          <p className="text-xs text-zinc-300 leading-snug">{opt.bio}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

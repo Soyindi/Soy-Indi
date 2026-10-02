@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-72_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-79_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -35,6 +35,8 @@ A diferencia de las tarjetas de visita de papel tradicionales —que el 88% de l
 ### 1. 📇 Tarjetas Digitales de Presentación (Glassmorphism 2.0 & Living Identity)
 - **Presets de Diseño de Lujo**: 5 arquetipos curados (*Cyber Nebula*, *Executive Titanium*, *Emerald Botanical*, *Solar Obsidian*, *Swiss Monochrome*) con paletas OKLCH y Gamut P3.
 - **Acabados de Material & Texturas**: Acabados *Classic Glass*, *Holographic*, *Titanium*, *Obsidian* y *Minimal*, combinados con textura *Dot Matrix Grid* y halo de resplandor radial reactivo.
+- **Motor de Contraste Perceptual WCAG 2.2 AA**: Cálculo algorítmico de luminancia W3C para garantizar texto nítido y legible (`#ffffff` vs `#0f172a`) en cualquier tono primario.
+- **Asistente de Biografía con IA Multi-Tono**: Generación instantánea de bios con IA en 3 registros profesionales (*Ejecutivo*, *Innovador*, *Cercano*) directamente en el editor.
 - **Perfil Profesional Vivo**: Nombre, especialidad, biografía, enlaces a redes sociales y contacto directo.
 - **Botón Guardar Contacto (vCard 4.0 / RFC 6350 One-Tap)**: Descarga instantánea de archivo `.vcf` compatible con iOS Contacts, Google Contacts y Microsoft Outlook con codificación estricta UTF-8.
 - **Bloques Bento Modulares**: Vitrina interactiva para destacar proyectos, métricas cuantitativas (+150 clientes, +25% YoY), enlaces externos y testimonios.
@@ -42,7 +44,7 @@ A diferencia de las tarjetas de visita de papel tradicionales —que el 88% de l
 - **Código QR Dinámico Integrado**: Listo para escanear en pantalla, imprimir en stickers o proyectar.
 - **Web Share API**: Comparte instantáneamente en el menú nativo de iOS y Android.
 - **Open Graph Dinámico en el Edge (`/api/og`)**: Previews visuales automáticos y de alta definición al enviar el enlace por WhatsApp, LinkedIn o Telegram.
-- **Analíticas en Tiempo Real**: Contador de visitas y clicks por tarjeta desde el panel de control.
+- **Telemetría Atómica en Turso**: Registro granular de eventos (`view`, `contact_save`, `whatsapp_click`, `share`, `qr_scan`) y Tasa de Conversión en tiempo real.
 
 ### 2. 📄 Smart CV ATS Optimizer
 - **Auditoría Algorítmica (0 a 100)**: Evalúa estructura, densidad de palabras clave, impacto de métricas y longitud para superar filtros de software de Recursos Humanos (ATS).

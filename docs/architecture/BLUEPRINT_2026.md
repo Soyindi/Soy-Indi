@@ -650,3 +650,24 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 72 pruebas unitarias aprobadas al 100% en Vitest (13 suites pasando).
    - 0 errores de compilación TypeScript (`npm run typecheck`).
 
+### ✅ Fase 20: Telemetría Atómica de Eventos, Asistente de Biografías con IA y Motor de Contraste WCAG 2.2 AA (COMPLETADA)
+1. **Auditoría e Integración de Tecnologías Clave de `matiquelmec/indi`**:
+   - Extracción y modernización de patrones de telemetría de eventos y generación de copys profesionales adaptados a la arquitectura FSD (Turso + Drizzle + Zod).
+2. **Persistencia Atómica de Eventos de Conversión (`src/entities/schema.ts` & `analytics-actions.ts`)**:
+   - Creación de la tabla `card_events` en Turso con soporte para eventos granulares (`view`, `contact_save`, `whatsapp_click`, `share`, `qr_scan`).
+   - Índices optimizados para agregaciones temporales por tarjeta (`card_events_card_idx`, `card_events_card_type_idx`).
+   - Server Action `trackCardEventAction` resiliente con validación estricta Zod y fallback silencioso para no degradar la experiencia de usuario.
+   - Cálculo automático de Tasa de Conversión en el dashboard unificado (`UnifiedDashboardView.tsx`).
+3. **Generador Multi-Variante de Biografías con IA (`src/features/card-builder/ai-bio-actions.ts`)**:
+   - Server Action `generateBioVariantsAction` con soporte dual para Google Gemini / OpenRouter y motor heurístico determinista de alta calidad.
+   - Generación instantánea de 3 arquetipos de tono: *Ejecutivo C-Level*, *Innovador Tech* y *Cercano Consultivo*.
+   - Integración fluida en `CardBuilder.tsx` con cards interactivas y selección en un toque.
+4. **Motor Perceptual de Contraste WCAG 2.2 AA (`src/shared/lib/colorContrast.ts`)**:
+   - Algoritmo matemático según la especificación W3C para luminancia relativa y ratio de contraste (1:21).
+   - Función `getAccessibleTextColor` que garantiza legibilidad óptima (`#ffffff` vs `#0f172a`) en botones primarios, badges y acentos interactivos sin importar el color elegido.
+   - Sincronización en `DigitalCard.tsx` para el botón de contacto vCard One-Tap.
+5. **Suite de Pruebas Unitarias y Aseguramiento de Calidad (79 Tests Passing)**:
+   - Nuevas suites de pruebas: `tests/unit/color-contrast.test.ts` (5 pruebas) y `tests/unit/ai-bio-generator.test.ts` (2 pruebas).
+   - 100% de las pruebas aprobadas en Vitest (79 de 79 tests en 15 suites).
+   - 0 errores de compilación TypeScript (`npm run typecheck`).
+

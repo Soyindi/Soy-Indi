@@ -76,9 +76,9 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 
 ## 🎨 5. Sistema Visual y Estándares UI/UX
 
-1. **Espacio de Color OKLCH:**
+1. **Espacio de Color OKLCH & Contraste Perceptual WCAG 2.2 AA:**
    - Utilizar las variables `@theme` definidas en [src/app/globals.css](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/app/globals.css) con Tailwind CSS v4.
-   - Garantizar ratios de contraste accesibles acordes a las directrices WCAG 2.2 Nivel AA/AAA.
+   - En componentes dinámicos con selección de color de usuario, utilizar el motor perceptual de luminancia relativa `@/shared/lib/colorContrast` (`getAccessibleTextColor`) para garantizar ratio $\ge 4.5:1$ en todo botón o badge interactivo.
 2. **Glassmorphism 2.0:**
    - Utilizar las clases utilitarias `.glass-panel` y `.glass-pill`.
    - Efectos de partículas deben emplear `SmartParticles.tsx` con aceleración por hardware (`will-change: transform, opacity`).

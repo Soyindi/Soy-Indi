@@ -299,8 +299,8 @@ export function UnifiedDashboardView({
       {/* ================= PESTAÑA 1: TARJETAS DIGITALES ================= */}
       {activeTab === 'cards' && (
         <div className="space-y-8 animate-fade-in">
-          {/* Métricas rápidas */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {/* Métricas rápidas calculadas con Telemetría en Tiempo Real */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div className="glass-panel rounded-2xl p-5 flex items-center justify-between border border-cyan-500/20">
               <div>
                 <span className="text-xs font-mono font-medium text-zinc-400 uppercase tracking-wider">
@@ -320,13 +320,31 @@ export function UnifiedDashboardView({
             <div className="glass-panel rounded-2xl p-5 flex items-center justify-between border border-indigo-500/20">
               <div>
                 <span className="text-xs font-mono font-medium text-zinc-400 uppercase tracking-wider">
-                  Clicks & WhatsApp
+                  Clicks & vCard
                 </span>
                 <p className="text-3xl font-black text-white mt-1">{totalClicks.toLocaleString()}</p>
-                <span className="text-[11px] text-indigo-400 font-mono mt-1 block">Interacciones directas</span>
+                <span className="text-[11px] text-indigo-400 font-mono mt-1 block">Contactos & WhatsApp</span>
               </div>
               <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
                 <MousePointerClick className="w-6 h-6" />
+              </div>
+            </div>
+
+            <div className="glass-panel rounded-2xl p-5 flex items-center justify-between border border-purple-500/20">
+              <div>
+                <span className="text-xs font-mono font-medium text-zinc-400 uppercase tracking-wider">
+                  Conversión
+                </span>
+                <p className="text-3xl font-black text-white mt-1">
+                  {totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0.0'}%
+                </p>
+                <span className="text-[11px] text-purple-400 font-mono flex items-center gap-1 mt-1">
+                  <Sparkles className="w-3 h-3" />
+                  Efectividad vCard
+                </span>
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                <TrendingUp className="w-6 h-6" />
               </div>
             </div>
 

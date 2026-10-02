@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { downloadVCard } from '@/shared/lib/vcard';
+import { getAccessibleTextColor } from '@/shared/lib/colorContrast';
+import { trackCardEventAction } from '@/features/card-builder/analytics-actions';
 
 // Importar QRCode dinámicamente para SSR seguro
 const QRCodeSVG = dynamic(
@@ -149,7 +151,12 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
     ? `${window.location.origin}/c/${card.slug}`
     : `https://indi.bio/c/${card.slug}`;
 
+  const buttonTextColor = getAccessibleTextColor(primaryColor);
+
   const handleShare = async () => {
+    // Telemetría silently
+    trackCardEventAction({ slug: card.slug, eventType: 'share' }).catch(() => {});
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -168,6 +175,9 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   };
 
   const handleDownloadContact = () => {
+    // Telemetría silently
+    trackCardEventAction({ slug: card.slug, eventType: 'contact_save' }).catch(() => {});
+
     downloadVCard({
       slug: card.slug,
       title: card.title,
@@ -306,11 +316,12 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
         {/* Acciones Principales (Banda de Contacto & vCard) */}
         <div className="relative z-10 flex flex-col gap-2.5 mb-6">
-          {/* Botón Guardar en Contactos (vCard 4.0 One-Tap con Color Reactivo) */}
+          {/* Botón Guardar en Contactos (vCard 4.0 One-Tap con Color Reactivo y Contraste WCAG 2.2 AA) */}
           <button
             onClick={handleDownloadContact}
-            className="w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl text-white font-semibold text-sm shadow-xl active:scale-[0.98] transition-all duration-300"
+            className="w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl font-semibold text-sm shadow-xl active:scale-[0.98] transition-all duration-300"
             style={{
+              color: buttonTextColor,
               background: `linear-gradient(135deg, ${primaryColor} 0%, color-mix(in srgb, ${primaryColor} 70%, #000000) 100%)`,
               boxShadow: `0 10px 25px -5px ${primaryColor}55`,
             }}
@@ -333,6 +344,9 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => {
+                trackCardEventAction({ slug: card.slug, eventType: 'whatsapp_click' }).catch(() => {});
+              }}
               className="w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-emerald-500/90 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all"
             >
               <Phone className="w-4 h-4" />

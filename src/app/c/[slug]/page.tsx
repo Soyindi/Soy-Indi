@@ -50,13 +50,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${card.title} — ${card.profession} | INDI`,
     description: card.about || `Conecta directamente con ${card.title} en un solo clic por WhatsApp o redes.`,
+    alternates: {
+      canonical: `https://indi.bio/c/${card.slug}`,
+    },
     openGraph: {
-      title: `${card.title} | ${card.profession}`,
-      description: card.about || `Tarjeta interactiva profesional.`,
+      title: `${card.title} — ${card.profession}`,
+      description: card.about || `Conecta directamente con ${card.title} en un solo clic por WhatsApp o redes.`,
       url: `https://indi.bio/c/${card.slug}`,
       siteName: 'INDI Digital Identity',
-      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: card.title }],
+      locale: 'es_LA',
       type: 'profile',
+      images: [
+        {
+          url: ogImageUrl,
+          secureUrl: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${card.title} — ${card.profession}`,
+          type: 'image/png',
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
@@ -113,12 +126,21 @@ export default async function PublicCardPage({ params }: PageProps) {
 
   if (!card) notFound();
 
-  // Incrementar métricas de visitas reales de forma atómica
+  // Incrementar métricas de visitas reales y registrar evento atómico de telemetría
   try {
-    await db
-      .update(cards)
-      .set({ viewsCount: sql`${cards.viewsCount} + 1` })
-      .where(eq(cards.id, card.id));
+    const { cardEvents } = await import('@/entities/schema');
+    await Promise.all([
+      db
+        .update(cards)
+        .set({ viewsCount: sql`${cards.viewsCount} + 1` })
+        .where(eq(cards.id, card.id)),
+      db.insert(cardEvents).values({
+        cardId: card.id,
+        eventType: 'view',
+        source: 'direct',
+        device: 'mobile',
+      }),
+    ]);
   } catch (err) {
     console.error('Error actualizando contador de visitas:', err);
   }
