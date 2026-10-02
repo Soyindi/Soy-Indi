@@ -2,6 +2,7 @@
 
 import { db } from '@/shared/api/db';
 import { user } from '@/entities/schema';
+import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -24,7 +25,12 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
         where: eq(user.id, userId),
       });
     } else {
-      targetUser = await db.query.user.findFirst();
+      const sessionResult = await getSafeAuthenticatedUserId();
+      if (sessionResult.userId) {
+        targetUser = await db.query.user.findFirst({
+          where: eq(user.id, sessionResult.userId),
+        });
+      }
     }
 
     if (!targetUser) {
@@ -42,8 +48,10 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
     const subscriptionEndsAt = targetUser.subscriptionEndsAt ? new Date(targetUser.subscriptionEndsAt) : null;
 
     // Si tiene suscripción activa vigente
-    if (targetUser.status === 'ACTIVE' && subscriptionEndsAt && now <= subscriptionEndsAt) {
-      const days = Math.ceil((subscriptionEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (targetUser.status === 'ACTIVE') {
+      const days = subscriptionEndsAt && now <= subscriptionEndsAt
+        ? Math.ceil((subscriptionEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        : 30;
       return {
         hasAccess: true,
         isTrial: false,

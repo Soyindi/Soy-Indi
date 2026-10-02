@@ -1,25 +1,18 @@
 'use server';
 
 import { db } from '@/shared/api/db';
-import { cards, user } from '@/entities/schema';
-import { eq, desc } from 'drizzle-orm';
+import { cards } from '@/entities/schema';
+import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
+import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 export async function getUserCardsAction(userId?: string) {
   try {
-    let targetUserId = userId;
-
-    if (!targetUserId) {
-      // Buscar usuario demo o el primer usuario disponible
-      const defaultUser = await db.query.user.findFirst();
-      if (defaultUser) {
-        targetUserId = defaultUser.id;
-      }
-    }
-
-    if (!targetUserId) {
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
       return { success: true, data: [] };
     }
+    const targetUserId = sessionResult.userId;
 
     const userCards = await db.query.cards.findMany({
       where: eq(cards.userId, targetUserId),
@@ -33,10 +26,20 @@ export async function getUserCardsAction(userId?: string) {
   }
 }
 
-export async function deleteCardAction(cardId: string) {
+export async function deleteCardAction(cardId: string, userId?: string) {
   try {
-    await db.delete(cards).where(eq(cards.id, cardId));
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
+    }
+    const targetUserId = sessionResult.userId;
+
+    await db
+      .delete(cards)
+      .where(and(eq(cards.id, cardId), eq(cards.userId, targetUserId)));
+
     revalidatePath('/cards');
+    revalidatePath('/dashboard');
     return { success: true };
   } catch (err: any) {
     console.error('Error deleting card:', err);
@@ -44,13 +47,21 @@ export async function deleteCardAction(cardId: string) {
   }
 }
 
-export async function toggleCardActiveAction(cardId: string, currentStatus: boolean) {
+export async function toggleCardActiveAction(cardId: string, currentStatus: boolean, userId?: string) {
   try {
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
+    }
+    const targetUserId = sessionResult.userId;
+
     await db
       .update(cards)
       .set({ isActive: !currentStatus, updatedAt: new Date() })
-      .where(eq(cards.id, cardId));
+      .where(and(eq(cards.id, cardId), eq(cards.userId, targetUserId)));
+
     revalidatePath('/cards');
+    revalidatePath('/dashboard');
     return { success: true, newStatus: !currentStatus };
   } catch (err: any) {
     console.error('Error toggling card active status:', err);

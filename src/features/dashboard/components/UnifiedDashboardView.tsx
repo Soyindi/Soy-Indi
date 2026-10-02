@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { deleteCardAction, toggleCardActiveAction } from '@/features/card-builder/dashboard-actions';
 import { deletePresentationAction } from '@/features/orbital-presentations/actions';
+import { deleteSmartCvAction } from '@/features/ai-smart-cv/actions';
 
 interface CardItem {
   id: string;
@@ -80,6 +81,7 @@ export function UnifiedDashboardView({
 }: UnifiedDashboardViewProps) {
   const [activeTab, setActiveTab] = useState<'cards' | 'cvs' | 'presentations'>(initialTab);
   const [cardsList, setCardsList] = useState<CardItem[]>(initialCards);
+  const [cvsList, setCvsList] = useState<CvItem[]>(initialCvs);
   const [presentationsList, setPresentationsList] = useState<any[]>(initialPresentations);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
@@ -120,6 +122,17 @@ export function UnifiedDashboardView({
       const res = await deleteCardAction(id);
       if (res.success) {
         setCardsList((prev) => prev.filter((c) => c.id !== id));
+      }
+    });
+  };
+
+  const handleDeleteCv = (id: string, title: string) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar el currículum "${title}"?`)) return;
+
+    startTransition(async () => {
+      const res = await deleteSmartCvAction(id);
+      if (res.success) {
+        setCvsList((prev) => prev.filter((c) => c.id !== id));
       }
     });
   };
@@ -410,7 +423,7 @@ export function UnifiedDashboardView({
                       </div>
                       <button
                         onClick={() => handleToggleActiveCard(card.id, card.isActive)}
-                        className={`p-2 rounded-xl transition ${
+                        className={`min-h-[44px] min-w-[44px] p-2.5 rounded-xl transition flex items-center justify-center cursor-pointer ${
                           card.isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-800 text-zinc-500'
                         }`}
                         title={card.isActive ? 'Desactivar Tarjeta' : 'Activar Tarjeta'}
@@ -438,7 +451,7 @@ export function UnifiedDashboardView({
                   <div className="flex items-center gap-2 pt-2 border-t border-white/5">
                     <button
                       onClick={() => handleCopyLink(card.slug)}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition"
+                      className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition cursor-pointer"
                     >
                       {copiedSlug === card.slug ? (
                         <>
@@ -456,7 +469,7 @@ export function UnifiedDashboardView({
                     <Link
                       href={`/c/${card.slug}`}
                       target="_blank"
-                      className="p-2 rounded-xl bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition"
+                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition flex items-center justify-center"
                       title="Ver Tarjeta en Vivo"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -464,7 +477,7 @@ export function UnifiedDashboardView({
 
                     <button
                       onClick={() => handleDeleteCard(card.id, card.title)}
-                      className="p-2 rounded-xl hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition"
+                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition flex items-center justify-center cursor-pointer"
                       title="Eliminar Tarjeta"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -480,7 +493,7 @@ export function UnifiedDashboardView({
       {/* ================= PESTAÑA 2: SMART CVS (ATS) ================= */}
       {activeTab === 'cvs' && (
         <div className="space-y-6 animate-fade-in">
-          {initialCvs.length === 0 ? (
+          {cvsList.length === 0 ? (
             <div className="text-center py-16 glass-panel rounded-3xl border border-white/5">
               <BrainCircuit className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
               <h3 className="text-lg font-bold text-white mb-1">Aún no tienes Currículums creados</h3>
@@ -489,7 +502,7 @@ export function UnifiedDashboardView({
               </p>
               <Link
                 href="/cv"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-xs shadow-lg shadow-emerald-500/20"
+                className="inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-xs shadow-lg shadow-emerald-500/20"
               >
                 <Plus className="w-4 h-4" />
                 <span>Optimizar mi CV con IA</span>
@@ -497,7 +510,7 @@ export function UnifiedDashboardView({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {initialCvs.map((cv) => {
+              {cvsList.map((cv) => {
                 const score = cv.atsScore ?? 75;
                 const scoreColor =
                   score >= 80 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' :
@@ -535,11 +548,19 @@ export function UnifiedDashboardView({
                     <div className="flex items-center gap-2 pt-3 border-t border-white/5">
                       <Link
                         href="/cv"
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-xs shadow-sm hover:opacity-95 transition"
+                        className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-xs shadow-sm hover:opacity-95 transition"
                       >
                         <FileText className="w-3.5 h-3.5" />
                         <span>Abrir Editor A4</span>
                       </Link>
+
+                      <button
+                        onClick={() => handleDeleteCv(cv.id, cv.title)}
+                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition flex items-center justify-center cursor-pointer"
+                        title="Eliminar Currículum"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 );

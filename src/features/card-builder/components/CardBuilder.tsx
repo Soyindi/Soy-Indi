@@ -97,6 +97,7 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
         linkedinUrl: formData.linkedinUrl,
         instagramUrl: formData.instagramUrl,
         photoUrl: formData.photoUrl,
+        address: formData.address,
         themeConfig: {
           themeId: formData.themeConfig?.themeId || 'stellar',
           primaryColorOklch: formData.themeConfig?.primaryColorOklch || '#6366f1',
@@ -155,7 +156,7 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
         <button
           onClick={handleSave}
           disabled={isPending}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
         >
           {isPending ? (
             <>
@@ -190,7 +191,7 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
           <div className="flex items-center gap-2 mb-8 p-1.5 rounded-2xl bg-black/40 border border-white/5 overflow-x-auto">
             <button
               onClick={() => setActiveTab('profile')}
-              className={`flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'profile'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-zinc-400 hover:text-white'
@@ -201,7 +202,7 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
             </button>
             <button
               onClick={() => setActiveTab('contact')}
-              className={`flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'contact'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-zinc-400 hover:text-white'
@@ -212,7 +213,7 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
             </button>
             <button
               onClick={() => setActiveTab('social')}
-              className={`flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'social'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-zinc-400 hover:text-white'
@@ -223,7 +224,7 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
             </button>
             <button
               onClick={() => setActiveTab('theme')}
-              className={`flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'theme'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-zinc-400 hover:text-white'

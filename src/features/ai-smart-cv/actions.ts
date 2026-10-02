@@ -5,7 +5,7 @@ import { smartCvs, user } from '@/entities/schema';
 import { cvFormSchema, CVFormValues, AtsAuditResult, VerifiedCredential } from '@/entities/cv/schemas';
 import { parseCvDocumentMultimodal, parseCredentialDocumentMultimodal } from '@/features/ai-smart-cv/lib/multimodal-parser';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -245,6 +245,15 @@ export async function upsertSmartCvAction(
     const calculatedScore = audit.data.score;
 
     if (cvId) {
+      // Verificar propiedad estricta para evitar sobreescritura entre tenants
+      const existing = await db.query.smartCvs.findFirst({
+        where: and(eq(smartCvs.id, cvId), eq(smartCvs.userId, targetUserId)),
+      });
+
+      if (!existing) {
+        return { success: false, error: 'Currículum no encontrado o no pertenece al usuario autenticado' };
+      }
+
       await db
         .update(smartCvs)
         .set({
@@ -255,7 +264,7 @@ export async function upsertSmartCvAction(
           templateId: data.templateId,
           updatedAt: new Date(),
         })
-        .where(eq(smartCvs.id, cvId));
+        .where(and(eq(smartCvs.id, cvId), eq(smartCvs.userId, targetUserId)));
     } else {
       await db.insert(smartCvs).values({
         id: crypto.randomUUID(),
@@ -271,6 +280,7 @@ export async function upsertSmartCvAction(
     }
 
     revalidatePath('/cv');
+    revalidatePath('/dashboard');
     return { success: true, score: calculatedScore };
   } catch (err: any) {
     console.error('Error guardando Smart CV:', err);
@@ -279,17 +289,48 @@ export async function upsertSmartCvAction(
 }
 
 /**
- * Listar CVs del usuario
+ * Listar CVs del usuario autenticado con aislamiento multi-tenant
  */
-export async function getUserSmartCvsAction() {
+export async function getUserSmartCvsAction(userId?: string) {
   try {
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: true, data: [] };
+    }
+    const targetUserId = sessionResult.userId;
+
     const userCvList = await db.query.smartCvs.findMany({
+      where: eq(smartCvs.userId, targetUserId),
       orderBy: [desc(smartCvs.createdAt)],
     });
     return { success: true, data: userCvList };
   } catch (err: any) {
     console.error('Error listando CVs:', err);
     return { success: false, data: [] };
+  }
+}
+
+/**
+ * Eliminar Smart CV con verificación estricta de propiedad
+ */
+export async function deleteSmartCvAction(cvId: string, userId?: string) {
+  try {
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
+    }
+    const targetUserId = sessionResult.userId;
+
+    await db
+      .delete(smartCvs)
+      .where(and(eq(smartCvs.id, cvId), eq(smartCvs.userId, targetUserId)));
+
+    revalidatePath('/cv');
+    revalidatePath('/dashboard');
+    return { success: true };
+  } catch (err: any) {
+    console.error('Error eliminando Smart CV:', err);
+    return { success: false, error: err.message };
   }
 }
 

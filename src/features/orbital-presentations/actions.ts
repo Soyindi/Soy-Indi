@@ -726,8 +726,26 @@ export async function upsertPresentationAction(
       return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
     }
     const targetUserId = sessionResult.userId;
-
     let finalPresentationId = presentationId;
+
+    // Verificar si el slug ya está en uso por otro usuario (Unicidad global de URL)
+    if (data.slug) {
+      const existingWithSlug = await db.query.presentations.findFirst({
+        where: eq(presentations.slug, data.slug),
+      });
+
+      if (existingWithSlug) {
+        if (finalPresentationId && existingWithSlug.id !== finalPresentationId) {
+          return { success: false, error: 'Este enlace personalizado de presentación ya está en uso por otro proyecto.' };
+        }
+        if (!finalPresentationId && existingWithSlug.userId !== targetUserId) {
+          return { success: false, error: 'Este enlace personalizado ya pertenece a otro usuario. Por favor elige otro slug.' };
+        }
+        if (!finalPresentationId && existingWithSlug.userId === targetUserId) {
+          finalPresentationId = existingWithSlug.id;
+        }
+      }
+    }
 
     if (finalPresentationId) {
       // Verificar propiedad estricta para evitar sobreescritura entre tenants
@@ -751,40 +769,20 @@ export async function upsertPresentationAction(
         })
         .where(and(eq(presentations.id, finalPresentationId), eq(presentations.userId, targetUserId)));
     } else {
-      // Si no viene presentationId, verificar si ya existe una presentación con este slug perteneciente al usuario
-      const existingBySlug = await db.query.presentations.findFirst({
-        where: and(eq(presentations.slug, data.slug), eq(presentations.userId, targetUserId)),
+      const newId = crypto.randomUUID();
+      finalPresentationId = newId;
+      await db.insert(presentations).values({
+        id: newId,
+        userId: targetUserId,
+        title: data.title,
+        slug: data.slug,
+        isPublic: data.isPublic,
+        slidesData: data.slidesData,
+        themeSettings: data.themeSettings,
+        viewsCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
-
-      if (existingBySlug) {
-        finalPresentationId = existingBySlug.id;
-        await db
-          .update(presentations)
-          .set({
-            title: data.title,
-            slug: data.slug,
-            isPublic: data.isPublic,
-            slidesData: data.slidesData,
-            themeSettings: data.themeSettings,
-            updatedAt: new Date(),
-          })
-          .where(and(eq(presentations.id, finalPresentationId), eq(presentations.userId, targetUserId)));
-      } else {
-        const newId = crypto.randomUUID();
-        finalPresentationId = newId;
-        await db.insert(presentations).values({
-          id: newId,
-          userId: targetUserId,
-          title: data.title,
-          slug: data.slug,
-          isPublic: data.isPublic,
-          slidesData: data.slidesData,
-          themeSettings: data.themeSettings,
-          viewsCount: 0,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }
     }
 
     revalidatePath('/presentations');
