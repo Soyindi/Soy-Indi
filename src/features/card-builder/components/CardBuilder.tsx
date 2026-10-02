@@ -26,9 +26,10 @@ import {
 
 interface CardBuilderProps {
   initialData?: Partial<CardData>;
+  cardId?: string;
 }
 
-export function CardBuilder({ initialData }: CardBuilderProps) {
+export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<'profile' | 'contact' | 'social' | 'theme'>('profile');
@@ -37,9 +38,16 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
   const [bioVariants, setBioVariants] = useState<Array<{ tone: string; label: string; bio: string }>>([]);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
+  // Generador de slug inicial seguro para evitar colisiones accidentales
+  const [initialSlug] = useState(() => {
+    if (initialData?.slug) return initialData.slug;
+    const randomSuffix = Math.random().toString(36).substring(2, 7);
+    return `tarjeta-${randomSuffix}`;
+  });
+
   // Estado reactivo del formulario
   const [formData, setFormData] = useState<CardData>({
-    slug: initialData?.slug || 'mi-tarjeta',
+    slug: initialData?.slug || initialSlug,
     title: initialData?.title || 'Carlos Mendoza',
     profession: initialData?.profession || 'Especialista en Marketing Digital',
     about: initialData?.about || 'Ayudo a marcas y empresas a escalar sus ventas mediante estrategias de adquisición y analítica de datos.',
@@ -85,41 +93,44 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
     setSavedSuccess(false);
 
     startTransition(async () => {
-      const res = await upsertCardAction({
-        slug: formData.slug,
-        title: formData.title,
-        profession: formData.profession,
-        about: formData.about,
-        phone: formData.phone,
-        whatsapp: formData.whatsapp,
-        emailContact: formData.emailContact,
-        websiteUrl: formData.websiteUrl,
-        linkedinUrl: formData.linkedinUrl,
-        instagramUrl: formData.instagramUrl,
-        photoUrl: formData.photoUrl,
-        address: formData.address,
-        themeConfig: {
-          themeId: formData.themeConfig?.themeId || 'stellar',
-          primaryColorOklch: formData.themeConfig?.primaryColorOklch || '#6366f1',
-          backgroundColorOklch: formData.themeConfig?.backgroundColorOklch || '#090a10',
-          particleBehavior: formData.themeConfig?.particleBehavior || 'ambient',
-          particleIntensity: formData.themeConfig?.particleIntensity || 'balanced',
-          fontFamily: 'Inter',
-          enableGlassRefraction: true,
-          cardFinish: formData.themeConfig?.cardFinish || 'classic',
-          surfaceTexture: formData.themeConfig?.surfaceTexture || 'radial-glow',
-          badgeText: formData.themeConfig?.badgeText || null,
-          ctaLabel: formData.themeConfig?.ctaLabel || null,
+      const res = await upsertCardAction(
+        {
+          slug: formData.slug,
+          title: formData.title,
+          profession: formData.profession,
+          about: formData.about,
+          phone: formData.phone,
+          whatsapp: formData.whatsapp,
+          emailContact: formData.emailContact,
+          websiteUrl: formData.websiteUrl,
+          linkedinUrl: formData.linkedinUrl,
+          instagramUrl: formData.instagramUrl,
+          photoUrl: formData.photoUrl,
+          address: formData.address,
+          themeConfig: {
+            themeId: formData.themeConfig?.themeId || 'stellar',
+            primaryColorOklch: formData.themeConfig?.primaryColorOklch || '#6366f1',
+            backgroundColorOklch: formData.themeConfig?.backgroundColorOklch || '#090a10',
+            particleBehavior: formData.themeConfig?.particleBehavior || 'ambient',
+            particleIntensity: formData.themeConfig?.particleIntensity || 'balanced',
+            fontFamily: 'Inter',
+            enableGlassRefraction: true,
+            cardFinish: formData.themeConfig?.cardFinish || 'classic',
+            surfaceTexture: formData.themeConfig?.surfaceTexture || 'radial-glow',
+            badgeText: formData.themeConfig?.badgeText || null,
+            ctaLabel: formData.themeConfig?.ctaLabel || null,
+          },
+          bentoBlocks: formData.bentoBlocks || [],
         },
-        bentoBlocks: formData.bentoBlocks || [],
-      });
+        cardId
+      );
 
       if (!res.success) {
         setErrorMsg(res.error || 'Ocurrió un error');
       } else {
         setSavedSuccess(true);
         setTimeout(() => {
-          router.push(`/dashboard?created=true&slug=${res.data?.slug}`);
+          router.push(`/dashboard?${cardId ? 'updated=true' : 'created=true'}&slug=${res.data?.slug}`);
         }, 900);
       }
     });
@@ -148,10 +159,10 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
       {/* Barra superior con botón de retorno al Dashboard */}
       <AppEditorHeader
-        sectionTitle="Diseñador de Tarjeta INDI"
+        sectionTitle={cardId ? "Editar Tarjeta INDI" : "Crear Tarjeta INDI"}
         categoryName="Tarjetas Digitales"
         categoryHref="/dashboard"
-        badgeText="Sincronización 60 FPS"
+        badgeText={cardId ? "Modo Edición" : "Sincronización 60 FPS"}
       >
         <button
           onClick={handleSave}

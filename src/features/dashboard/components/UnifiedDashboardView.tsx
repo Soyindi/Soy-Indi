@@ -25,7 +25,8 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  Play
+  Play,
+  Edit3
 } from 'lucide-react';
 import { deleteCardAction, toggleCardActiveAction } from '@/features/card-builder/dashboard-actions';
 import { deletePresentationAction } from '@/features/orbital-presentations/actions';
@@ -473,6 +474,14 @@ export function UnifiedDashboardView({
                       title="Ver Tarjeta en Vivo"
                     >
                       <ExternalLink className="w-4 h-4" />
+                    </Link>
+
+                    <Link
+                      href={`/cards/new?id=${card.id}`}
+                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 transition flex items-center justify-center"
+                      title="Editar Tarjeta"
+                    >
+                      <Edit3 className="w-4 h-4" />
                     </Link>
 
                     <button

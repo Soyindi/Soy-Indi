@@ -705,5 +705,21 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada en Vitest (85 de 85 tests en 16 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
 
+### ✅ Fase 23: Independencia Multi-Tarjeta y Flujo Explícito de Edición (COMPLETADA)
+1. **Resolución de Causa Raíz de Reemplazo Involuntario de Tarjetas**:
+   - Eliminación del slug fijo `'mi-tarjeta'` en `CardBuilder.tsx`. Incorporación de generador dinámico aleatorio (`tarjeta-[hash]`) para tarjetas nuevas, impidiendo colisiones involuntarias.
+   - Refactorización de `upsertCardAction` en [src/features/card-builder/actions.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/card-builder/actions.ts) diferenciando formalmente entre Creación (`INSERT` con UUID nuevo y verificación de slug libre) y Edición (`UPDATE` con validación estricta de propiedad `and(eq(cards.id, cardId), eq(cards.userId, targetUserId))` y verificación de no-colisión de slug `ne(cards.id, cardId)`).
+2. **Arquitectura de Edición Bidireccional (`App Router + Server Actions`)**:
+   - Soporte de consulta segura `getCardByIdAction` en [src/features/card-builder/dashboard-actions.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/card-builder/dashboard-actions.ts) validando pertenencia multi-tenant.
+   - Habilitación del parámetro de consulta `?id=[cardId]` en [src/app/cards/new/page.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/app/cards/new/page.tsx) con soporte asíncrono para Next.js 15 (`searchParams: Promise<{ id?: string }>`).
+   - Actualización dinámica de encabezados en `CardBuilder.tsx` ("Modo Edición" vs "Crear Tarjeta INDI").
+3. **UX & Ergonomía Táctil en Dashboard Unificado**:
+   - Incorporación de botón interactivo "Editar Tarjeta" con icono `Edit3` (`lucide-react`) en cada tarjeta de [UnifiedDashboardView.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/dashboard/components/UnifiedDashboardView.tsx), con touch target garantizado $\ge 44 \times 44\text{ px}$ (`min-h-[44px] min-w-[44px]`).
+4. **Aseguramiento de Calidad y Suite de Pruebas Unitarias (90 Tests Passing)**:
+   - Nueva suite de pruebas: `tests/unit/card-builder-independence.test.ts` (5 pruebas).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (90 de 90 tests en 17 suites).
+   - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
+
 
 

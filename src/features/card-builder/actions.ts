@@ -4,7 +4,7 @@ import { db } from '@/shared/api/db';
 import { cards, user } from '@/entities/schema';
 import { cardFormSchema, CardFormValues, CardFormInput } from '@/entities/card/schemas';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
-import { eq } from 'drizzle-orm';
+import { eq, and, ne } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 export type ActionResponse<T = any> = {
@@ -15,8 +15,9 @@ export type ActionResponse<T = any> = {
 
 export async function upsertCardAction(
   values: CardFormInput,
+  cardId?: string,
   userId?: string
-): Promise<ActionResponse<{ slug: string }>> {
+): Promise<ActionResponse<{ slug: string; id: string }>> {
   try {
     // 1. Validar datos estrictamente con Zod
     const validated = cardFormSchema.safeParse(values);
@@ -34,20 +35,32 @@ export async function upsertCardAction(
     }
     const targetUserId = sessionResult.userId;
 
-    // 3. Verificar si el slug ya existe
-    const existingCard = await db.query.cards.findFirst({
-      where: eq(cards.slug, data.slug),
-    });
+    if (cardId) {
+      // ================= MODO EDICIÓN EXPLÍCITA =================
+      // 3a. Verificar propiedad de la tarjeta (Anti-IDOR)
+      const existingCard = await db.query.cards.findFirst({
+        where: and(eq(cards.id, cardId), eq(cards.userId, targetUserId)),
+      });
 
-    if (existingCard && existingCard.userId !== targetUserId) {
-      return { success: false, error: 'Este enlace personalizado ya está en uso. Por favor elige otro.' };
-    }
+      if (!existingCard) {
+        return { success: false, error: 'La tarjeta a editar no existe o no tienes permisos sobre ella.' };
+      }
 
-    if (existingCard) {
-      // Actualizar
+      // 3b. Si el slug cambió, verificar que no esté ocupado por otra tarjeta
+      if (existingCard.slug !== data.slug) {
+        const slugCollision = await db.query.cards.findFirst({
+          where: and(eq(cards.slug, data.slug), ne(cards.id, cardId)),
+        });
+        if (slugCollision) {
+          return { success: false, error: 'Este enlace personalizado ya está en uso por otra tarjeta. Por favor elige otro.' };
+        }
+      }
+
+      // 3c. Actualizar la tarjeta existente
       await db
         .update(cards)
         .set({
+          slug: data.slug,
           title: data.title,
           profession: data.profession,
           about: data.about || null,
@@ -62,11 +75,32 @@ export async function upsertCardAction(
           themeConfig: data.themeConfig,
           updatedAt: new Date(),
         })
-        .where(eq(cards.id, existingCard.id));
+        .where(and(eq(cards.id, cardId), eq(cards.userId, targetUserId)));
+
+      revalidatePath(`/c/${data.slug}`);
+      if (existingCard.slug !== data.slug) {
+        revalidatePath(`/c/${existingCard.slug}`);
+      }
+      revalidatePath('/cards');
+      revalidatePath('/dashboard');
+
+      return { success: true, data: { slug: data.slug, id: cardId } };
     } else {
-      // Crear nueva tarjeta
+      // ================= MODO CREACIÓN NUEVA =================
+      // 4a. Verificar si el slug ya existe globalmente
+      const slugCollision = await db.query.cards.findFirst({
+        where: eq(cards.slug, data.slug),
+      });
+
+      if (slugCollision) {
+        return { success: false, error: 'Este enlace personalizado ya está en uso. Por favor elige otro nombre o slug.' };
+      }
+
+      const newId = crypto.randomUUID();
+
+      // 4b. Insertar nueva tarjeta con UUID propio
       await db.insert(cards).values({
-        id: crypto.randomUUID(),
+        id: newId,
         userId: targetUserId,
         slug: data.slug,
         title: data.title,
@@ -87,14 +121,16 @@ export async function upsertCardAction(
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+
+      revalidatePath(`/c/${data.slug}`);
+      revalidatePath('/cards');
+      revalidatePath('/dashboard');
+
+      return { success: true, data: { slug: data.slug, id: newId } };
     }
-
-    revalidatePath(`/c/${data.slug}`);
-    revalidatePath('/cards');
-
-    return { success: true, data: { slug: data.slug } };
   } catch (err: any) {
     console.error('Error en upsertCardAction:', err);
     return { success: false, error: err.message || 'Error al guardar la tarjeta' };
   }
 }
+
