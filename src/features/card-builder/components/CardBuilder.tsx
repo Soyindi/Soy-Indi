@@ -50,6 +50,8 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
       primaryColorOklch: initialData?.themeConfig?.primaryColorOklch || '#6366f1',
       particleBehavior: initialData?.themeConfig?.particleBehavior || 'ambient',
       particleIntensity: initialData?.themeConfig?.particleIntensity || 'balanced',
+      cardFinish: initialData?.themeConfig?.cardFinish || 'classic',
+      surfaceTexture: initialData?.themeConfig?.surfaceTexture || 'radial-glow',
     },
   });
 

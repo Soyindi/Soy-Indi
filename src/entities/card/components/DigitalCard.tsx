@@ -70,14 +70,77 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const texture = card.themeConfig?.surfaceTexture || 'radial-glow';
   const primaryColor = card.themeConfig?.primaryColorOklch || '#6366f1';
 
-  // Clases dinámicas según el acabado de material (Material Finish)
-  const finishClasses = {
-    classic: 'border-white/10 shadow-2xl',
-    holographic: 'border-cyan-400/30 shadow-[0_0_50px_-12px_rgba(99,102,241,0.35)] ring-1 ring-white/20',
-    titanium: 'border-slate-400/30 bg-zinc-950/80 shadow-2xl ring-1 ring-slate-400/20',
-    obsidian: 'border-amber-500/30 shadow-[0_0_50px_-15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/20',
-    minimal: 'border-white/20 shadow-xl bg-black/90',
-  }[finish];
+  // Acabados de material drásticos, visibles y diferenciados
+  const finishStyles: Record<string, {
+    containerClass: string;
+    borderStyle: React.CSSProperties;
+    glowGradient: string;
+    backgroundStyle: React.CSSProperties;
+    tagLabel: string;
+    tagColor: string;
+  }> = {
+    classic: {
+      containerClass: 'shadow-2xl',
+      borderStyle: { borderColor: 'rgba(255, 255, 255, 0.12)' },
+      glowGradient: `radial-gradient(circle at 50% 0%, ${primaryColor} 0%, transparent 75%)`,
+      backgroundStyle: {
+        background: 'radial-gradient(130% 100% at 50% 0%, oklch(0.25 0.04 260 / 0.5) 0%, oklch(0.14 0.02 260 / 0.85) 100%)',
+      },
+      tagLabel: 'Glassmorphism 2.0',
+      tagColor: 'text-zinc-400 bg-white/5 border-white/10',
+    },
+    holographic: {
+      containerClass: 'shadow-[0_0_60px_-10px_rgba(99,102,241,0.5)] ring-2 ring-cyan-400/40',
+      borderStyle: {
+        borderColor: 'rgba(34, 211, 238, 0.6)',
+        boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.4), 0 0 25px rgba(99,102,241,0.4)',
+      },
+      glowGradient: 'radial-gradient(circle at 50% 0%, #22d3ee 0%, #6366f1 40%, transparent 80%)',
+      backgroundStyle: {
+        background: 'linear-gradient(145deg, rgba(30, 27, 75, 0.75) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(8, 51, 68, 0.75) 100%)',
+      },
+      tagLabel: 'Holographic Rim',
+      tagColor: 'text-cyan-300 bg-cyan-500/20 border-cyan-400/40',
+    },
+    titanium: {
+      containerClass: 'shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] ring-1 ring-slate-300/30',
+      borderStyle: {
+        borderColor: 'rgba(148, 163, 184, 0.45)',
+        boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.35)',
+      },
+      glowGradient: 'radial-gradient(circle at 50% 0%, #94a3b8 0%, #0ea5e9 35%, transparent 75%)',
+      backgroundStyle: {
+        background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 60%, #020617 100%)',
+      },
+      tagLabel: 'Titanium Brushed',
+      tagColor: 'text-slate-300 bg-slate-400/15 border-slate-400/30',
+    },
+    obsidian: {
+      containerClass: 'shadow-[0_0_55px_-10px_rgba(245,158,11,0.4)] ring-2 ring-amber-400/50',
+      borderStyle: {
+        borderColor: 'rgba(245, 158, 11, 0.65)',
+        boxShadow: 'inset 0 1px 2px rgba(251, 191, 36, 0.4), 0 0 30px rgba(245, 158, 11, 0.3)',
+      },
+      glowGradient: 'radial-gradient(circle at 50% 0%, #f59e0b 0%, #b45309 45%, transparent 80%)',
+      backgroundStyle: {
+        background: 'linear-gradient(160deg, #1c1404 0%, #090704 60%, #170e02 100%)',
+      },
+      tagLabel: 'Obsidian Gold',
+      tagColor: 'text-amber-300 bg-amber-500/20 border-amber-400/40',
+    },
+    minimal: {
+      containerClass: 'shadow-2xl ring-1 ring-white/30',
+      borderStyle: { borderColor: 'rgba(255, 255, 255, 0.35)' },
+      glowGradient: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.2) 0%, transparent 60%)',
+      backgroundStyle: {
+        background: '#000000',
+      },
+      tagLabel: 'Swiss Monochrome',
+      tagColor: 'text-white bg-white/10 border-white/25',
+    },
+  };
+
+  const activeFinish = finishStyles[finish] || finishStyles.classic;
 
   const fullUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/c/${card.slug}`
@@ -138,38 +201,46 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         whileHover={isInteractive ? { y: -4, scale: 1.01 } : undefined}
-        className={`glass-panel relative rounded-[2rem] p-6 sm:p-8 text-white overflow-hidden transition-all duration-300 ${finishClasses}`}
+        className={`relative rounded-[2rem] p-6 sm:p-8 text-white overflow-hidden transition-all duration-500 border backdrop-blur-2xl ${activeFinish.containerClass}`}
+        style={{
+          ...activeFinish.backgroundStyle,
+          ...activeFinish.borderStyle,
+        }}
       >
-        {/* Textura de fondo Dot Grid sutil */}
+        {/* Textura de fondo Dot Grid sutil con alta nitidez */}
         {texture === 'dot-grid' && (
           <div 
-            className="absolute inset-0 opacity-[0.12] pointer-events-none"
+            className="absolute inset-0 opacity-[0.22] pointer-events-none"
             style={{
-              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px)',
-              backgroundSize: '16px 16px',
+              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.85) 1.2px, transparent 1.2px)',
+              backgroundSize: '18px 18px',
             }}
           />
         )}
 
-        {/* Glow Superior Reactivo */}
+        {/* Glow Superior Reactivo con gradiente del acabado */}
         {texture !== 'none' && (
           <div 
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-24 blur-3xl pointer-events-none opacity-40 transition-colors duration-500"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-56 h-32 blur-3xl pointer-events-none opacity-50 transition-all duration-700"
             style={{
-              background: `radial-gradient(circle, ${primaryColor} 0%, transparent 70%)`,
+              background: activeFinish.glowGradient,
             }}
           />
         )}
 
-        {/* Badge Superior Contextual */}
-        {card.themeConfig?.badgeText && (
-          <div className="relative z-10 flex justify-center mb-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase bg-white/10 border border-white/15 text-cyan-300 shadow-sm">
-              <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+        {/* Badge Superior Contextual o Indicador de Acabado */}
+        <div className="relative z-10 flex items-center justify-between gap-2 mb-3">
+          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase border shadow-sm ${activeFinish.tagColor}`}>
+            <Sparkles className="w-2.5 h-2.5" />
+            <span>{activeFinish.tagLabel}</span>
+          </span>
+
+          {card.themeConfig?.badgeText && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase bg-white/10 border border-white/15 text-cyan-300 shadow-sm">
               <span>{card.themeConfig.badgeText}</span>
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Header de la Tarjeta */}
         <div className="relative z-10 flex flex-col items-center text-center">
