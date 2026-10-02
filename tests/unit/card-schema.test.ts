@@ -118,4 +118,24 @@ describe('CardFormSchema Validation', () => {
       expect(result.data.themeConfig.badgeText).toBe('Disponibilidad Inmediata');
     }
   });
+
+  it('debe validar address opcional y rechazar si supera 200 caracteres', () => {
+    const cardWithAddress = {
+      ...validCardData,
+      address: 'Av. Providencia 1208, Oficina 702, Santiago, Chile',
+    };
+    const validResult = cardFormSchema.safeParse(cardWithAddress);
+    expect(validResult.success).toBe(true);
+    if (validResult.success) {
+      expect(validResult.data.address).toBe('Av. Providencia 1208, Oficina 702, Santiago, Chile');
+    }
+
+    const cardWithLongAddress = {
+      ...validCardData,
+      address: 'A'.repeat(201),
+    };
+    const invalidResult = cardFormSchema.safeParse(cardWithLongAddress);
+    expect(invalidResult.success).toBe(false);
+  });
 });
+

@@ -20,7 +20,8 @@ import {
   Loader2,
   ExternalLink,
   Layers,
-  ShieldCheck
+  ShieldCheck,
+  MapPin
 } from 'lucide-react';
 
 interface CardBuilderProps {
@@ -48,6 +49,7 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
     linkedinUrl: initialData?.linkedinUrl || 'https://linkedin.com/in/carlosmendoza',
     instagramUrl: initialData?.instagramUrl || 'https://instagram.com/carlosmendoza',
     photoUrl: initialData?.photoUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+    address: initialData?.address || 'Av. Providencia 1208, Oficina 702, Santiago, Chile',
     themeConfig: {
       themeId: initialData?.themeConfig?.themeId || 'stellar',
       primaryColorOklch: initialData?.themeConfig?.primaryColorOklch || '#6366f1',
@@ -380,6 +382,23 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
                   className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono"
                   placeholder="contacto@tuempresa.com"
                 />
+              </div>
+
+              <div>
+                <label className="flex items-center gap-1.5 text-xs font-mono font-semibold uppercase text-zinc-400 mb-2">
+                  <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Dirección Física u Oficina (Genera Mapa)</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.address || ''}
+                  onChange={(e) => handleChange('address', e.target.value)}
+                  className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                  placeholder="Ej. Av. Providencia 1208, Oficina 702, Santiago, Chile"
+                />
+                <p className="text-[11px] text-zinc-500 mt-1.5">
+                  Despliega automáticamente un mapa interactivo con accesos directos a Google Maps y Waze en tu tarjeta.
+                </p>
               </div>
             </div>
           )}

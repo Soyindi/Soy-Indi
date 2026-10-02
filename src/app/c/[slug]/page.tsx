@@ -107,6 +107,7 @@ export default async function PublicCardPage({ params }: PageProps) {
               linkedinUrl: 'https://linkedin.com',
               instagramUrl: 'https://instagram.com',
               photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+              address: 'Av. Providencia 1208, Providencia, Santiago, Chile',
               themeConfig: {
                 themeId: 'stellar',
                 primaryColorOklch: '#6366f1',

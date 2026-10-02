@@ -106,6 +106,7 @@ export const cards = sqliteTable('cards', {
   linkedinUrl: text('linkedin_url'),
   instagramUrl: text('instagram_url'),
   photoUrl: text('photo_url'),
+  address: text('address'),
   themeConfig: text('theme_config', { mode: 'json' }).$type<{
     themeId: string;
     primaryColorOklch: string;

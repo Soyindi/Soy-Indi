@@ -58,6 +58,7 @@ export async function upsertCardAction(
           linkedinUrl: data.linkedinUrl || null,
           instagramUrl: data.instagramUrl || null,
           photoUrl: data.photoUrl || null,
+          address: data.address || null,
           themeConfig: data.themeConfig,
           updatedAt: new Date(),
         })
@@ -78,6 +79,7 @@ export async function upsertCardAction(
         linkedinUrl: data.linkedinUrl || null,
         instagramUrl: data.instagramUrl || null,
         photoUrl: data.photoUrl || null,
+        address: data.address || null,
         themeConfig: data.themeConfig,
         isActive: true,
         viewsCount: 0,

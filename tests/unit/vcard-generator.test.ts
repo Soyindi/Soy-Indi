@@ -53,4 +53,15 @@ describe('vCard 3.0 / RFC 2426 Deterministic Generator', () => {
     expect(vcard).toContain('FN;CHARSET=UTF-8:INDI');
     expect(vcard).toContain('N;CHARSET=UTF-8:INDI;;;;');
   });
+
+  it('debe mapear correctamente dirección física en componentes ADR y LABEL según RFC 6350', () => {
+    const cardWithLocation: VCardOptions = {
+      ...sampleCard,
+      address: 'Av. Providencia 1208, Oficina 702, Santiago, Chile',
+    };
+    const vcard = generateVCardString(cardWithLocation);
+    expect(vcard).toContain('ADR;TYPE=WORK;CHARSET=UTF-8:;;Av. Providencia 1208\\, Oficina 702\\, Santiago\\, Chile;;;;');
+    expect(vcard).toContain('LABEL;TYPE=WORK;CHARSET=UTF-8:Av. Providencia 1208\\, Oficina 702\\, Santiago\\, Chile');
+  });
 });
+

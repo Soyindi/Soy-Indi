@@ -14,6 +14,7 @@ export interface VCardOptions {
   websiteUrl?: string | null;
   linkedinUrl?: string | null;
   instagramUrl?: string | null;
+  address?: string | null;
   slug: string;
 }
 
@@ -75,6 +76,12 @@ export function generateVCardString(card: VCardOptions): string {
 
   if (card.instagramUrl) {
     lines.push(`X-SOCIALPROFILE;TYPE=instagram:${card.instagramUrl.trim()}`);
+  }
+
+  if (card.address) {
+    // ADR formato: post office box; extended address; street address; locality (city); region; postal code; country
+    lines.push(`ADR;TYPE=WORK;CHARSET=UTF-8:;;${escapeVCardText(card.address.trim())};;;;`);
+    lines.push(`LABEL;TYPE=WORK;CHARSET=UTF-8:${escapeVCardText(card.address.trim())}`);
   }
 
   const profileUrl = `https://indi.bio/c/${card.slug}`;

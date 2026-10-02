@@ -671,3 +671,22 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de las pruebas aprobadas en Vitest (79 de 79 tests en 15 suites).
    - 0 errores de compilación TypeScript (`npm run typecheck`).
 
+### ✅ Fase 21: Geolocalización, Mapas Interactivos Privacy-First y vCard ADR One-Tap (COMPLETADA)
+1. **Investigación de Tendencias 2026 en Cartografía Web para Identidades Digitales**:
+   - Adopción de arquitectura *Privacy-First* sin rastreadores invasivos ni claves de API expuestas en cliente: integración de OpenStreetMap renderizado en sandbox seguro con `loading="lazy"` y `referrerPolicy="no-referrer"`.
+   - Puente multi-navegador con enlaces universales hacia las principales apps nativas de navegación (Google Maps Universal URI y Waze Deep-link) con touch targets ergonómicos $\ge 44\text{px}$.
+2. **Evolución del Modelo de Dominio y Base de Datos (`Turso + Drizzle`)**:
+   - Incorporación de columna `address` (`text('address')`) en la tabla `cards` en [src/entities/schema.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/entities/schema.ts) aplicada con `drizzle-kit push --force`.
+   - Extensión de [src/entities/card/schemas.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/entities/card/schemas.ts) con validación Zod estricta (máximo 200 caracteres, opcional y nullable).
+   - Actualización de Server Action `upsertCardAction` en [src/features/card-builder/actions.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/card-builder/actions.ts) para persistencia atómica.
+3. **Formateo Estándar vCard RFC 6350 / RFC 2426 (`ADR` y `LABEL`)**:
+   - En [src/shared/lib/vcard.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/shared/lib/vcard.ts), mapeo estandarizado de la dirección a los campos universales `ADR;TYPE=WORK` y `LABEL;TYPE=WORK` con escape estricto de caracteres especiales (comas, saltos de línea, barras invertidas).
+4. **Experiencia UI/UX en Diseñador y Tarjeta Viva**:
+   - En `CardBuilder.tsx`: nuevo campo ergonómico en la pestaña *Contacto* con icono `MapPin` e instrucciones claras.
+   - En `DigitalCard.tsx`: tarjeta de ubicación glassmorphic con vista de mapa integrada, indicador de dirección y barra de navegación táctil inferior compatible con la Thumb Zone móvil.
+5. **Aseguramiento de Calidad y Suite de Pruebas (81 Tests Passing)**:
+   - Ampliación de suites: `tests/unit/card-schema.test.ts` (7 pruebas) y `tests/unit/vcard-generator.test.ts` (6 pruebas).
+   - 100% de las pruebas aprobadas en Vitest (81 de 81 tests en 15 suites).
+   - 0 errores de compilación TypeScript (`npm run typecheck`).
+
+

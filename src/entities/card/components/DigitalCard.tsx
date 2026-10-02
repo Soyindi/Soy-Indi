@@ -11,7 +11,9 @@ import {
   QrCode, 
   Check, 
   Sparkles,
-  UserPlus
+  UserPlus,
+  MapPin,
+  Navigation
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { downloadVCard } from '@/shared/lib/vcard';
@@ -35,6 +37,7 @@ export interface CardData {
   linkedinUrl?: string | null;
   instagramUrl?: string | null;
   photoUrl?: string | null;
+  address?: string | null;
   slug: string;
   themeConfig?: {
     themeId?: string;
@@ -189,6 +192,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
       websiteUrl: card.websiteUrl,
       linkedinUrl: card.linkedinUrl,
       instagramUrl: card.instagramUrl,
+      address: card.address,
     });
     setVcardSaved(true);
     setTimeout(() => setVcardSaved(false), 2500);
@@ -365,6 +369,63 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             </a>
           )}
         </div>
+
+        {/* Sección de Ubicación y Mapa Interactivo (si se definió dirección) */}
+        {card.address && card.address.trim().length > 0 && (
+          <div className="relative z-10 mb-6 rounded-2xl overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md">
+            {/* Cabecera de Dirección */}
+            <div className="p-3.5 flex items-start gap-2.5 border-b border-white/10">
+              <div 
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                style={{ background: `${primaryColor}22`, color: primaryColor }}
+              >
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] font-mono font-semibold uppercase text-zinc-400 block tracking-wider">
+                  Ubicación & Oficina
+                </span>
+                <p className="text-xs text-white font-medium leading-snug line-clamp-2 mt-0.5">
+                  {card.address}
+                </p>
+              </div>
+            </div>
+
+            {/* Mapa Embebido con OpenStreetMap (Liviano, Privacy-First, Sin API Keys) */}
+            <div className="relative w-full h-36 bg-zinc-900 overflow-hidden">
+              <iframe
+                title={`Mapa de ${card.title}`}
+                className="w-full h-full border-0 filter contrast-[1.05] opacity-90 hover:opacity-100 transition-opacity"
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=-180%2C-85%2C180%2C85&layer=mapnik&marker=${encodeURIComponent(card.address)}`}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-white/10 rounded-b-none" />
+            </div>
+
+            {/* Botón de Navegación Rápida GPS (Google Maps / Waze / Apple Maps) con touch target >= 44px */}
+            <div className="p-2.5 bg-black/60 flex items-center justify-between gap-2">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(card.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-zinc-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all active:scale-[0.98]"
+              >
+                <Navigation className="w-3.5 h-3.5" style={{ color: primaryColor }} />
+                <span>Abrir en Google Maps</span>
+              </a>
+              <a
+                href={`https://waze.com/ul?q=${encodeURIComponent(card.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-[44px] px-3.5 py-2 inline-flex items-center justify-center rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all active:scale-[0.98]"
+                title="Abrir en Waze"
+              >
+                <span>Waze</span>
+              </a>
+            </div>
+          </div>
+        )}
 
         {/* Bloques Bento Modulares (Vitrina Interactiva) */}
         {card.bentoBlocks && card.bentoBlocks.length > 0 && (

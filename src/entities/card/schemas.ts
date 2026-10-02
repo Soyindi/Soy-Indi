@@ -26,6 +26,7 @@ export const cardFormSchema = z.object({
   linkedinUrl: z.string().url('URL de LinkedIn inválida').optional().nullable().or(z.literal('')),
   instagramUrl: z.string().url('URL de Instagram inválida').optional().nullable().or(z.literal('')),
   photoUrl: z.string().url('URL de foto inválida').optional().nullable().or(z.literal('')),
+  address: z.string().max(200, 'La dirección no puede superar los 200 caracteres').optional().nullable(),
   themeConfig: z.object({
     themeId: z.string().default('stellar'),
     primaryColorOklch: z.string().default('#6366f1'),
