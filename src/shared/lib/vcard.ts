@@ -1,0 +1,111 @@
+/**
+ * Utilidad determinista de generación de vCard 3.0 / 4.0 (RFC 6350 / RFC 2426)
+ * Genera tarjetas de contacto universales compatibles con iOS Contacts,
+ * Google Contacts y Microsoft Outlook, codificadas estrictamente en UTF-8.
+ */
+
+export interface VCardOptions {
+  title: string;
+  profession: string;
+  about?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  emailContact?: string | null;
+  websiteUrl?: string | null;
+  linkedinUrl?: string | null;
+  instagramUrl?: string | null;
+  slug: string;
+}
+
+/**
+ * Escapa caracteres reservados para campos de texto en formato vCard.
+ */
+function escapeVCardText(text: string): string {
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\n/g, '\\n');
+}
+
+/**
+ * Construye la cadena vCard en estándar RFC 2426 / 6350.
+ */
+export function generateVCardString(card: VCardOptions): string {
+  const lines: string[] = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN;CHARSET=UTF-8:${escapeVCardText(card.title)}`,
+  ];
+
+  // Separar nombre y apellido de forma heurística
+  const parts = card.title.trim().split(/\s+/);
+  if (parts.length > 1) {
+    const lastName = parts.slice(1).join(' ');
+    const firstName = parts[0];
+    lines.push(`N;CHARSET=UTF-8:${escapeVCardText(lastName)};${escapeVCardText(firstName)};;;`);
+  } else {
+    lines.push(`N;CHARSET=UTF-8:${escapeVCardText(card.title)};;;;`);
+  }
+
+  if (card.profession) {
+    lines.push(`TITLE;CHARSET=UTF-8:${escapeVCardText(card.profession)}`);
+    lines.push(`ROLE;CHARSET=UTF-8:${escapeVCardText(card.profession)}`);
+  }
+
+  if (card.phone) {
+    lines.push(`TEL;TYPE=CELL,VOICE:${card.phone.trim()}`);
+  }
+
+  if (card.whatsapp && card.whatsapp !== card.phone) {
+    lines.push(`TEL;TYPE=WORK,VOICE:${card.whatsapp.trim()}`);
+  }
+
+  if (card.emailContact) {
+    lines.push(`EMAIL;TYPE=PREF,INTERNET:${card.emailContact.trim()}`);
+  }
+
+  if (card.websiteUrl) {
+    lines.push(`URL;TYPE=WORK:${card.websiteUrl.trim()}`);
+  }
+
+  if (card.linkedinUrl) {
+    lines.push(`X-SOCIALPROFILE;TYPE=linkedin:${card.linkedinUrl.trim()}`);
+  }
+
+  if (card.instagramUrl) {
+    lines.push(`X-SOCIALPROFILE;TYPE=instagram:${card.instagramUrl.trim()}`);
+  }
+
+  const profileUrl = `https://indi.bio/c/${card.slug}`;
+  lines.push(`URL;TYPE=INDI_PROFILE:${profileUrl}`);
+
+  if (card.about) {
+    lines.push(`NOTE;CHARSET=UTF-8:${escapeVCardText(`${card.about}\nPerfil digital: ${profileUrl}`)}`);
+  } else {
+    lines.push(`NOTE;CHARSET=UTF-8:${escapeVCardText(`Perfil digital verificado: ${profileUrl}`)}`);
+  }
+
+  lines.push('REV:' + new Date().toISOString());
+  lines.push('END:VCARD');
+
+  return lines.join('\r\n');
+}
+
+/**
+ * Dispara la descarga del archivo .vcf en el navegador del cliente.
+ */
+export function downloadVCard(card: VCardOptions, filename?: string): void {
+  if (typeof window === 'undefined') return;
+
+  const vcardText = generateVCardString(card);
+  const blob = new Blob([vcardText], { type: 'text/vcard;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename || `${card.slug || 'contacto'}.vcf`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}

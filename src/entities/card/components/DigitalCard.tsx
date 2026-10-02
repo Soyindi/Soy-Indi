@@ -10,9 +10,11 @@ import {
   Share2, 
   QrCode, 
   Check, 
-  Sparkles
+  Sparkles,
+  UserPlus
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { downloadVCard } from '@/shared/lib/vcard';
 
 // Importar QRCode dinámicamente para SSR seguro
 const QRCodeSVG = dynamic(
@@ -38,7 +40,18 @@ export interface CardData {
     backgroundColorOklch?: string;
     particleBehavior?: 'static' | 'interactive' | 'ambient';
     particleIntensity?: 'subtle' | 'balanced' | 'prominent';
+    badgeText?: string | null;
+    ctaLabel?: string | null;
   };
+  bentoBlocks?: Array<{
+    id: string;
+    type: 'link' | 'metric' | 'featured_project' | 'testimonial';
+    title: string;
+    subtitle?: string | null;
+    url?: string | null;
+    metricValue?: string | null;
+    metricDelta?: string | null;
+  }>;
 }
 
 interface DigitalCardProps {
@@ -49,6 +62,7 @@ interface DigitalCardProps {
 export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const [showQR, setShowQR] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [vcardSaved, setVcardSaved] = useState(false);
 
   const fullUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/c/${card.slug}`
@@ -70,6 +84,23 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
     await navigator.clipboard.writeText(fullUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleDownloadContact = () => {
+    downloadVCard({
+      slug: card.slug,
+      title: card.title,
+      profession: card.profession,
+      about: card.about,
+      phone: card.phone,
+      whatsapp: card.whatsapp,
+      emailContact: card.emailContact,
+      websiteUrl: card.websiteUrl,
+      linkedinUrl: card.linkedinUrl,
+      instagramUrl: card.instagramUrl,
+    });
+    setVcardSaved(true);
+    setTimeout(() => setVcardSaved(false), 2500);
   };
 
   // Construir link de WhatsApp con mensaje personalizado
@@ -132,8 +163,26 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           )}
         </div>
 
-        {/* Acciones Principales (Banda de Contacto) */}
+        {/* Acciones Principales (Banda de Contacto & vCard) */}
         <div className="relative z-10 flex flex-col gap-2.5 mb-6">
+          {/* Botón Guardar en Contactos (vCard 4.0 One-Tap) */}
+          <button
+            onClick={handleDownloadContact}
+            className="w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all"
+          >
+            {vcardSaved ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-300 stroke-[3]" />
+                <span>¡Contacto Descargado!</span>
+              </>
+            ) : (
+              <>
+                <UserPlus className="w-4 h-4" />
+                <span>Guardar en Contactos</span>
+              </>
+            )}
+          </button>
+
           {whatsappUrl && (
             <a
               href={whatsappUrl}
@@ -156,6 +205,51 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             </a>
           )}
         </div>
+
+        {/* Bloques Bento Modulares (Vitrina Interactiva) */}
+        {card.bentoBlocks && card.bentoBlocks.length > 0 && (
+          <div className="relative z-10 flex flex-col gap-2.5 mb-6 pt-2">
+            {card.bentoBlocks.map((block) => (
+              <div
+                key={block.id}
+                className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all flex items-center justify-between text-left"
+              >
+                <div>
+                  <h4 className="text-xs font-semibold text-white tracking-wide">
+                    {block.title}
+                  </h4>
+                  {block.subtitle && (
+                    <p className="text-[11px] text-zinc-400 mt-0.5 leading-tight">
+                      {block.subtitle}
+                    </p>
+                  )}
+                </div>
+                {block.metricValue && (
+                  <div className="text-right">
+                    <span className="text-xs font-mono font-bold text-cyan-300">
+                      {block.metricValue}
+                    </span>
+                    {block.metricDelta && (
+                      <span className="block text-[9px] font-mono text-emerald-400">
+                        {block.metricDelta}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {block.url && (
+                  <a
+                    href={block.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Redes Sociales y Enlaces Externos con Touch Target ergonómico >= 44x44px */}
         <div className="relative z-10 flex items-center justify-center gap-3 mb-6 pt-4 border-t border-white/5">

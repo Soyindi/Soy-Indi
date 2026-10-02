@@ -34,7 +34,24 @@ export const cardFormSchema = z.object({
     particleIntensity: z.enum(['subtle', 'balanced', 'prominent']).default('balanced'),
     fontFamily: z.string().default('Inter'),
     enableGlassRefraction: z.boolean().default(true),
+    badgeText: z.string().max(40).optional().nullable(),
+    ctaLabel: z.string().max(40).optional().nullable(),
   }),
+  bentoBlocks: z
+    .array(
+      z.object({
+        id: z.string(),
+        type: z.enum(['link', 'metric', 'featured_project', 'testimonial']),
+        title: z.string().min(1).max(100),
+        subtitle: z.string().max(160).optional().nullable(),
+        url: z.string().url().optional().nullable().or(z.literal('')),
+        metricValue: z.string().max(30).optional().nullable(),
+        metricDelta: z.string().max(30).optional().nullable(),
+      })
+    )
+    .optional(),
 });
 
 export type CardFormValues = z.infer<typeof cardFormSchema>;
+export type CardFormInput = z.input<typeof cardFormSchema>;
+export type CardBentoBlock = NonNullable<CardFormValues['bentoBlocks']>[number];

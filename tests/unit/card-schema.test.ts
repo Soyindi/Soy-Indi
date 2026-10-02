@@ -83,4 +83,39 @@ describe('CardFormSchema Validation', () => {
     const result = cardFormSchema.safeParse(minimalCard);
     expect(result.success).toBe(true);
   });
+
+  it('debe validar correctamente bloques Bento modulares', () => {
+    const cardWithBento = {
+      ...validCardData,
+      themeConfig: {
+        ...validCardData.themeConfig,
+        badgeText: 'Disponibilidad Inmediata',
+        ctaLabel: 'Agendar Reunión',
+      },
+      bentoBlocks: [
+        {
+          id: 'bento-1',
+          type: 'metric' as const,
+          title: 'Clientes Satisfechos',
+          subtitle: 'Latinoamérica y Europa',
+          metricValue: '+150',
+          metricDelta: '+25% YoY',
+        },
+        {
+          id: 'bento-2',
+          type: 'link' as const,
+          title: 'Portafolio 2026',
+          subtitle: 'Ver casos de éxito',
+          url: 'https://miportafolio.dev',
+        },
+      ],
+    };
+    const result = cardFormSchema.safeParse(cardWithBento);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.bentoBlocks).toHaveLength(2);
+      expect(result.data.bentoBlocks?.[0].metricValue).toBe('+150');
+      expect(result.data.themeConfig.badgeText).toBe('Disponibilidad Inmediata');
+    }
+  });
 });

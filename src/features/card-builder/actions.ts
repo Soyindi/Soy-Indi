@@ -2,7 +2,7 @@
 
 import { db } from '@/shared/api/db';
 import { cards, user } from '@/entities/schema';
-import { cardFormSchema, CardFormValues } from '@/entities/card/schemas';
+import { cardFormSchema, CardFormValues, CardFormInput } from '@/entities/card/schemas';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -14,7 +14,7 @@ export type ActionResponse<T = any> = {
 };
 
 export async function upsertCardAction(
-  values: CardFormValues,
+  values: CardFormInput,
   userId?: string
 ): Promise<ActionResponse<{ slug: string }>> {
   try {

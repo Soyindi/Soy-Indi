@@ -606,3 +606,25 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 61 pruebas unitarias aprobadas al 100% en Vitest (10 suites pasando).
    - 0 errores en verificación de tipos TypeScript (`npm run typecheck`).
 
+### ✅ Fase 18: Investigación Profunda (Deep Research), vCard 4.0 One-Tap y Bento Blocks en Tarjetas Vivas (COMPLETADA)
+1. **Prompt Maestro de Deep Research para Gemini 2.5 / Advanced (`PROMPT_GEMINI_DEEP_RESEARCH_DIGITAL_CARDS_2026.md`)**:
+   - Formulación de especificación exhaustiva en 7 ejes estratégicos:
+     - Eje 1: Benchmark mundial (Popl, Mobilo, Blinq, HiHello, Bento.me, Linear) y evolución de la tarjeta a Hub de Conversión.
+     - Eje 2: Hardware networking, chips NFC (NTAG213/215/216), Web NFC API, Apple Wallet (`.pkpass`), Google Wallet y PWA Local-First.
+     - Eje 3: Sistema visual, Gamut P3, espacio OKLCH, algoritmos de contraste APCA y Glassmorphism 2.0 volumétrico.
+     - Eje 4: Viralidad en el Edge con `@vercel/og`, mitigación de problemas de caché en WhatsApp y Core Web Vitals (LCP < 0.6s).
+     - Eje 5: Inteligencia Artificial generativa, Elevator Pitch adaptativo, QR inteligente y agentes de captura de leads.
+     - Eje 6: Métricas avanzadas de networking y privacidad sin cookies (GDPR-compliant).
+     - Eje 7: Arquitectura de datos FSD y evolución del esquema de Drizzle SQLite.
+2. **Generador Determinista de vCard 3.0 / 4.0 (`src/shared/lib/vcard.ts`)**:
+   - Construcción de archivos `.vcf` conformes a RFC 2426 y RFC 6350 con codificación estricta UTF-8 y escape determinista de caracteres reservados.
+   - Mapeo automático de nombres, apellidos, teléfonos categorizados, correo, biografía, redes sociales y enlace directo al perfil INDI.
+   - Integración nativa de botón *"Guardar en Contactos"* (`UserPlus`) en `DigitalCard.tsx` con touch target accesible $\ge 48\text{px}$.
+3. **Evolución del Esquema Zod y Bloques Bento Modulares (`src/entities/card/schemas.ts`)**:
+   - Incorporación de `bentoBlocks` (enlaces destacados, métricas cuantitativas, proyectos y testimonios) y campos de personalización de temas (`badgeText`, `ctaLabel`).
+   - Mantenimiento estricto de retrocompatibilidad y tipado desacoplado `CardFormInput` para inserciones flexibles.
+4. **Control de Calidad y Pruebas Unitarias (67 Tests Passing)**:
+   - Nueva suite `tests/unit/vcard-generator.test.ts` (5 pruebas) y ampliación de `tests/unit/card-schema.test.ts` (6 pruebas).
+   - 100% de las pruebas aprobadas (67 de 67 tests en 11 suites en Vitest).
+   - 0 errores en verificación de tipos TypeScript (`npm run typecheck`).
+
