@@ -36,12 +36,15 @@ src/
 ## 🛡️ 2. Seguridad en Server Actions & Multi-Tenancy
 
 1. **Guardrail de Sesión Obligatorio:**
-   - Ninguna Server Action que realice mutaciones (crear, editar, eliminar) puede interactuar directamente con la base de datos sin validar el usuario mediante `getSafeAuthenticatedUserId(userId)` ubicado en `@/shared/lib/session`.
+   - Ninguna Server Action que realice mutaciones (crear, editar, eliminar) o listados de recursos de usuario puede interactuar directamente con la base de datos sin validar el usuario mediante `getSafeAuthenticatedUserId(userId)` ubicado en `@/shared/lib/session`.
    - En entorno de producción (`NODE_ENV === 'production'`), las acciones anónimas o sin sesión son bloqueadas inmediatamente con error de autorización.
-2. **Validación Estricta de Entradas con Zod:**
+2. **Aislamiento Multi-Tenant Estricto (Tenant-Level Ownership):**
+   - Toda consulta de modificación (`UPDATE`, `DELETE`) debe incluir obligatoriamente el predicado compuesto `and(eq(table.id, id), eq(table.userId, targetUserId))` para prevenir vulnerabilidades de referencia directa insegura a objetos (IDOR).
+   - En entidades con identificador público único (`slug`), se debe auditar que ningún usuario pueda sobreescribir o reclamar un slug previamente registrado por otra cuenta.
+3. **Validación Estricta de Entradas con Zod:**
    - Toda Server Action debe recibir parámetros y validarlos con `schema.safeParse()`.
    - Si la validación falla, retornar `{ success: false, error: ... }` sin exponer trazas de error internas del servidor.
-3. **Manejo de Errores Silencioso:**
+4. **Manejo de Errores Silencioso:**
    - Capturar excepciones con bloques `try/catch` y registrar en consola del servidor antes de responder al cliente.
 
 ---
