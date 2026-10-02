@@ -950,6 +950,111 @@ export function PresentationStudio({
                 ))}
               </div>
 
+              {/* Configuración de Transiciones Cinemáticas & Aura */}
+              <div className="pt-4 border-t border-white/10 space-y-4">
+                <div>
+                  <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-2">
+                    Efecto de Transición Cinemática
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'fade', label: 'Crossfade' },
+                      { id: 'slide', label: 'Slide' },
+                      { id: 'scale', label: 'Zoom Focus' },
+                    ].map((tr) => (
+                      <button
+                        key={tr.id}
+                        type="button"
+                        onClick={() =>
+                          setPresentation((prev) => ({
+                            ...prev,
+                            themeSettings: {
+                              ...prev.themeSettings,
+                              transitionEffect: tr.id as any,
+                            },
+                          }))
+                        }
+                        className={`min-h-[44px] py-2 px-2.5 rounded-xl border text-[11px] font-semibold transition-all ${
+                          (presentation.themeSettings.transitionEffect || 'fade') === tr.id
+                            ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md'
+                            : 'bg-black/30 border-white/5 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {tr.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-2">
+                    Aura Volumétrica (Backdrop Glow)
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'dramatic', label: 'Dramática' },
+                      { id: 'subtle', label: 'Sutil' },
+                      { id: 'off', label: 'Apagada' },
+                    ].map((au) => (
+                      <button
+                        key={au.id}
+                        type="button"
+                        onClick={() =>
+                          setPresentation((prev) => ({
+                            ...prev,
+                            themeSettings: {
+                              ...prev.themeSettings,
+                              ambientAuraIntensity: au.id as any,
+                            },
+                          }))
+                        }
+                        className={`min-h-[44px] py-2 px-2.5 rounded-xl border text-[11px] font-semibold transition-all ${
+                          (presentation.themeSettings.ambientAuraIntensity || 'dramatic') === au.id
+                            ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-md'
+                            : 'bg-black/30 border-white/5 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {au.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-2">
+                    Estilo Tipográfico
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'sans', label: 'Modern Sans' },
+                      { id: 'serif', label: 'Editorial' },
+                      { id: 'mono', label: 'Técnica' },
+                    ].map((fp) => (
+                      <button
+                        key={fp.id}
+                        type="button"
+                        onClick={() =>
+                          setPresentation((prev) => ({
+                            ...prev,
+                            themeSettings: {
+                              ...prev.themeSettings,
+                              fontPairing: fp.id as any,
+                            },
+                          }))
+                        }
+                        className={`min-h-[44px] py-2 px-2.5 rounded-xl border text-[11px] font-semibold transition-all ${
+                          (presentation.themeSettings.fontPairing || 'sans') === fp.id
+                            ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-md'
+                            : 'bg-black/30 border-white/5 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {fp.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Configuración de Enlace Público */}
               <div className="pt-4 border-t border-white/10">
                 <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-2">

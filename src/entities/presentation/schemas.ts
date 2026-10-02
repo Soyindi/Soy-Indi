@@ -112,6 +112,9 @@ export const presentationThemeSchema = z.object({
   fontFamily: z.string().default('sans').optional(),
   apcaReadabilityTarget: z.number().default(75).optional(),
   oklchHueLock: z.number().min(0).max(360).optional(),
+  transitionEffect: z.enum(['fade', 'slide', 'scale']).default('fade').optional(),
+  ambientAuraIntensity: z.enum(['subtle', 'dramatic', 'off']).default('dramatic').optional(),
+  fontPairing: z.enum(['sans', 'serif', 'mono']).default('sans').optional(),
 });
 
 export const presentationFormSchema = z.object({

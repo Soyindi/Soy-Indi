@@ -36,6 +36,8 @@ export const cardFormSchema = z.object({
     enableGlassRefraction: z.boolean().default(true),
     badgeText: z.string().max(40).optional().nullable(),
     ctaLabel: z.string().max(40).optional().nullable(),
+    cardFinish: z.enum(['classic', 'holographic', 'titanium', 'obsidian', 'minimal']).default('classic').optional(),
+    surfaceTexture: z.enum(['none', 'dot-grid', 'radial-glow']).default('radial-glow').optional(),
   }),
   bentoBlocks: z
     .array(

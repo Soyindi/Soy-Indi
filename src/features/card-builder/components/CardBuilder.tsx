@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { DigitalCard, CardData } from '@/entities/card/components/DigitalCard';
 import { upsertCardAction } from '@/features/card-builder/actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
+import { CARD_DESIGN_PRESETS, CardDesignPreset } from '@/entities/card/themes';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -16,7 +17,9 @@ import {
   Globe, 
   Lightbulb, 
   Loader2,
-  ExternalLink
+  ExternalLink,
+  Layers,
+  ShieldCheck
 } from 'lucide-react';
 
 interface CardBuilderProps {
@@ -90,12 +93,17 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
         themeConfig: {
           themeId: formData.themeConfig?.themeId || 'stellar',
           primaryColorOklch: formData.themeConfig?.primaryColorOklch || '#6366f1',
-          backgroundColorOklch: '#090a10',
+          backgroundColorOklch: formData.themeConfig?.backgroundColorOklch || '#090a10',
           particleBehavior: formData.themeConfig?.particleBehavior || 'ambient',
           particleIntensity: formData.themeConfig?.particleIntensity || 'balanced',
           fontFamily: 'Inter',
           enableGlassRefraction: true,
+          cardFinish: formData.themeConfig?.cardFinish || 'classic',
+          surfaceTexture: formData.themeConfig?.surfaceTexture || 'radial-glow',
+          badgeText: formData.themeConfig?.badgeText || null,
+          ctaLabel: formData.themeConfig?.ctaLabel || null,
         },
+        bentoBlocks: formData.bentoBlocks || [],
       });
 
       if (!res.success) {
@@ -370,14 +378,131 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
             </div>
           )}
 
-          {/* Tab 4: Efectos & Partículas */}
+          {/* Tab 4: Estilo, Presets & Efectos */}
           {activeTab === 'theme' && (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-7 animate-fade-in">
+              {/* Presets Curados de Diseño */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-xs font-mono font-semibold uppercase text-zinc-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Presets de Diseño Curados</span>
+                  </label>
+                  <span className="text-[10px] font-mono text-zinc-400 uppercase">OKLCH P3</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {CARD_DESIGN_PRESETS.map((preset) => {
+                    const isSelected = formData.themeConfig?.themeId === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            themeConfig: {
+                              ...prev.themeConfig,
+                              themeId: preset.id,
+                              primaryColorOklch: preset.primaryColorOklch,
+                              backgroundColorOklch: preset.backgroundColorOklch,
+                              particleBehavior: preset.particleBehavior,
+                              particleIntensity: preset.particleIntensity,
+                              cardFinish: preset.cardFinish,
+                              surfaceTexture: preset.surfaceTexture,
+                            },
+                          }));
+                        }}
+                        className={`min-h-[56px] p-3 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-white/10 border-cyan-400/80 shadow-lg shadow-cyan-500/15 ring-1 ring-cyan-400/30'
+                            : 'bg-black/30 border-white/5 hover:border-white/20 hover:bg-white/[0.04]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className="w-4 h-4 rounded-full border border-white/30 shrink-0 shadow-sm"
+                            style={{ backgroundColor: preset.primaryColorOklch }}
+                          />
+                          <div>
+                            <span className="text-xs font-bold text-white block">
+                              {preset.name}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 line-clamp-1">
+                              {preset.category}
+                            </span>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <Check className="w-4 h-4 text-cyan-400 shrink-0 stroke-[3]" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Acabado de Tarjeta (Material Finish) */}
               <div>
                 <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-3">
-                  Color de Acento & Partículas
+                  Acabado de Tarjeta (Material Finish)
                 </label>
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    { id: 'classic', label: 'Clásico Glass' },
+                    { id: 'holographic', label: 'Holográfico' },
+                    { id: 'titanium', label: 'Titanio' },
+                    { id: 'obsidian', label: 'Obsidiana' },
+                    { id: 'minimal', label: 'Monocromo' },
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => handleThemeChange('cardFinish', f.id)}
+                      className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold transition-all ${
+                        (formData.themeConfig?.cardFinish || 'classic') === f.id
+                          ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-md'
+                          : 'glass-pill text-zinc-400 hover:text-white border-white/5'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Textura de Superficie */}
+              <div>
+                <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-3">
+                  Textura de Superficie
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    { id: 'radial-glow', label: 'Resplandor' },
+                    { id: 'dot-grid', label: 'Dot Grid' },
+                    { id: 'none', label: 'Liso' },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => handleThemeChange('surfaceTexture', t.id)}
+                      className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold transition-all ${
+                        (formData.themeConfig?.surfaceTexture || 'radial-glow') === t.id
+                          ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-md'
+                          : 'glass-pill text-zinc-400 hover:text-white border-white/5'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Color Personalizado de Acento */}
+              <div>
+                <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-3">
+                  Color Personalizado de Acento
+                </label>
+                <div className="grid grid-cols-6 gap-2.5">
                   {[
                     { name: 'Índigo', color: '#6366f1' },
                     { name: 'Cian', color: '#06b6d4' },
@@ -405,17 +530,18 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
                 </div>
               </div>
 
+              {/* Comportamiento SmartParticles */}
               <div>
                 <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-3">
                   Comportamiento SmartParticles v3.0
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2.5">
                   {(['ambient', 'interactive', 'static'] as const).map((b) => (
                     <button
                       key={b}
                       type="button"
                       onClick={() => handleThemeChange('particleBehavior', b)}
-                      className={`py-3 px-4 rounded-xl border text-xs font-semibold capitalize transition-all ${
+                      className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold capitalize transition-all ${
                         formData.themeConfig?.particleBehavior === b
                           ? 'bg-indigo-600/30 border-indigo-500 text-white shadow-lg'
                           : 'glass-pill text-zinc-400 hover:text-white border-white/5'
@@ -427,17 +553,18 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
                 </div>
               </div>
 
+              {/* Intensidad de Partículas */}
               <div>
                 <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-3">
                   Intensidad de Partículas
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2.5">
                   {(['subtle', 'balanced', 'prominent'] as const).map((lvl) => (
                     <button
                       key={lvl}
                       type="button"
                       onClick={() => handleThemeChange('particleIntensity', lvl)}
-                      className={`py-3 px-4 rounded-xl border text-xs font-semibold capitalize transition-all ${
+                      className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold capitalize transition-all ${
                         formData.themeConfig?.particleIntensity === lvl
                           ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg'
                           : 'glass-pill text-zinc-400 hover:text-white border-white/5'

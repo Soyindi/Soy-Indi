@@ -42,6 +42,8 @@ export interface CardData {
     particleIntensity?: 'subtle' | 'balanced' | 'prominent';
     badgeText?: string | null;
     ctaLabel?: string | null;
+    cardFinish?: 'classic' | 'holographic' | 'titanium' | 'obsidian' | 'minimal';
+    surfaceTexture?: 'none' | 'dot-grid' | 'radial-glow';
   };
   bentoBlocks?: Array<{
     id: string;
@@ -63,6 +65,19 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const [showQR, setShowQR] = useState(false);
   const [copied, setCopied] = useState(false);
   const [vcardSaved, setVcardSaved] = useState(false);
+
+  const finish = card.themeConfig?.cardFinish || 'classic';
+  const texture = card.themeConfig?.surfaceTexture || 'radial-glow';
+  const primaryColor = card.themeConfig?.primaryColorOklch || '#6366f1';
+
+  // Clases dinámicas según el acabado de material (Material Finish)
+  const finishClasses = {
+    classic: 'border-white/10 shadow-2xl',
+    holographic: 'border-cyan-400/30 shadow-[0_0_50px_-12px_rgba(99,102,241,0.35)] ring-1 ring-white/20',
+    titanium: 'border-slate-400/30 bg-zinc-950/80 shadow-2xl ring-1 ring-slate-400/20',
+    obsidian: 'border-amber-500/30 shadow-[0_0_50px_-15px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/20',
+    minimal: 'border-white/20 shadow-xl bg-black/90',
+  }[finish];
 
   const fullUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/c/${card.slug}`
@@ -123,10 +138,38 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         whileHover={isInteractive ? { y: -4, scale: 1.01 } : undefined}
-        className="glass-panel relative rounded-[2rem] p-6 sm:p-8 text-white shadow-2xl overflow-hidden border border-white/10"
+        className={`glass-panel relative rounded-[2rem] p-6 sm:p-8 text-white overflow-hidden transition-all duration-300 ${finishClasses}`}
       >
-        {/* Glow Superior */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-20 bg-gradient-to-b from-indigo-500/25 to-transparent blur-2xl pointer-events-none" />
+        {/* Textura de fondo Dot Grid sutil */}
+        {texture === 'dot-grid' && (
+          <div 
+            className="absolute inset-0 opacity-[0.12] pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px)',
+              backgroundSize: '16px 16px',
+            }}
+          />
+        )}
+
+        {/* Glow Superior Reactivo */}
+        {texture !== 'none' && (
+          <div 
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-24 blur-3xl pointer-events-none opacity-40 transition-colors duration-500"
+            style={{
+              background: `radial-gradient(circle, ${primaryColor} 0%, transparent 70%)`,
+            }}
+          />
+        )}
+
+        {/* Badge Superior Contextual */}
+        {card.themeConfig?.badgeText && (
+          <div className="relative z-10 flex justify-center mb-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase bg-white/10 border border-white/15 text-cyan-300 shadow-sm">
+              <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+              <span>{card.themeConfig.badgeText}</span>
+            </span>
+          </div>
+        )}
 
         {/* Header de la Tarjeta */}
         <div className="relative z-10 flex flex-col items-center text-center">

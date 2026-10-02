@@ -99,15 +99,36 @@ export function SlideViewer({
         background: theme.backgroundGradient,
       }}
     >
-      {/* Luz volumétrica perimetral con aceleración por GPU */}
-      <div
-        className="absolute top-0 right-0 w-96 h-96 rounded-full blur-[130px] pointer-events-none opacity-25 will-change-transform"
-        style={{ backgroundColor: theme.accentColor }}
-      />
-      <div
-        className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-[130px] pointer-events-none opacity-20 will-change-transform"
-        style={{ backgroundColor: theme.primaryColor }}
-      />
+      {/* Luz volumétrica perimetral reactiva con aceleración por GPU */}
+      {theme.ambientAuraIntensity !== 'off' && (
+        <>
+          <div
+            className={`absolute top-0 right-0 rounded-full pointer-events-none will-change-transform transition-all duration-700 ${
+              theme.ambientAuraIntensity === 'subtle'
+                ? 'w-72 h-72 blur-[90px] opacity-15'
+                : 'w-96 h-96 blur-[130px] opacity-30'
+            }`}
+            style={{
+              backgroundColor:
+                slide.visualType === 'comparison'
+                  ? '#f43f5e'
+                  : slide.visualType === 'quote'
+                  ? '#f59e0b'
+                  : slide.visualType === 'code'
+                  ? '#10b981'
+                  : theme.accentColor,
+            }}
+          />
+          <div
+            className={`absolute bottom-0 left-0 rounded-full pointer-events-none will-change-transform transition-all duration-700 ${
+              theme.ambientAuraIntensity === 'subtle'
+                ? 'w-72 h-72 blur-[90px] opacity-15'
+                : 'w-96 h-96 blur-[130px] opacity-25'
+            }`}
+            style={{ backgroundColor: theme.primaryColor }}
+          />
+        </>
+      )}
 
       {/* 1. Cabecera de la diapositiva */}
       <div className="relative z-10 flex items-center justify-between pb-3 border-b border-white/10">
@@ -157,16 +178,34 @@ export function SlideViewer({
         </div>
       </div>
 
-      {/* 2. Área Central con Renderizado Específico por Tipología */}
+      {/* 2. Área Central con Renderizado Específico por Tipología & Transiciones Cinemáticas */}
       <div className="relative z-10 my-auto py-4 max-w-5xl w-full mx-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-            className="w-full"
+            initial={
+              theme.transitionEffect === 'slide'
+                ? { opacity: 0, x: 30 }
+                : theme.transitionEffect === 'scale'
+                ? { opacity: 0, scale: 0.96 }
+                : { opacity: 0, y: 12 }
+            }
+            animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+            exit={
+              theme.transitionEffect === 'slide'
+                ? { opacity: 0, x: -30 }
+                : theme.transitionEffect === 'scale'
+                ? { opacity: 0, scale: 1.02 }
+                : { opacity: 0, y: -12 }
+            }
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className={`w-full ${
+              theme.fontPairing === 'serif'
+                ? 'font-serif'
+                : theme.fontPairing === 'mono'
+                ? 'font-mono'
+                : 'font-sans'
+            }`}
           >
             {/* Título, Action Title (McKinsey Pyramid Principle) y Subtítulo */}
             <div className="mb-6">
