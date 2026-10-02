@@ -30,32 +30,34 @@ export function SmartParticles({
     // 1. Anillo Orbital de Avatar (Aura de identidad focal)
     // 2. Vértices Áureos Perimetrales (Guías de contorno de tarjeta)
     // 3. Anclas de Base (Soporte visual inferior sin oclusión)
+    // Geometría Estratégica Interna (Garantía Cero Desborde 4% a 96%)
+    // Todas las partículas habitan dentro de los márgenes y curvas de la tarjeta
     const strategicAnchors = [
-      // Cuadrante 1: Corona de Avatar (Acento superior de identidad)
-      { left: '22%', top: '14%', size: '6px', depth: '0.85' },
-      { left: '78%', top: '15%', size: '7px', depth: '0.9' },
-      { left: '50%', top: '2%', size: '8px', depth: '1' },
+      // Cuadrante 1: Aura del Avatar (Espacio libre alrededor de la foto sin tapar el rostro)
+      { left: '20%', top: '15%', size: '6px', depth: '0.85' },
+      { left: '80%', top: '15%', size: '7px', depth: '0.9' },
+      { left: '50%', top: '5%', size: '8px', depth: '1' },
 
-      // Cuadrante 2: Vértices Áureos Superiores
-      { left: '3%', top: '8%', size: '9px', depth: '0.75' },
-      { left: '97%', top: '9%', size: '8px', depth: '0.8' },
+      // Cuadrante 2: Vértices Superiores Curvos
+      { left: '6%', top: '7%', size: '7px', depth: '0.75' },
+      { left: '94%', top: '7%', size: '7px', depth: '0.8' },
 
-      // Cuadrante 3: Flancos de Lectura (Alineados con el espacio vacío entre Avatar y Botones)
-      { left: '-1%', top: '38%', size: '7px', depth: '0.65' },
-      { left: '101%', top: '42%', size: '9px', depth: '0.7' },
+      // Cuadrante 3: Flancos de Lectura (Zonas libres entre Nombre y Botón)
+      { left: '5%', top: '38%', size: '7px', depth: '0.65' },
+      { left: '95%', top: '40%', size: '8px', depth: '0.7' },
 
-      // Cuadrante 4: Flancos de Acción (Alineados con los extremos del botón vCard)
-      { left: '1%', top: '56%', size: '6px', depth: '0.7' },
-      { left: '99%', top: '58%', size: '8px', depth: '0.85' },
+      // Cuadrante 4: Flancos de Acción (Adyacentes al Botón de Guardar Contacto)
+      { left: '6%', top: '54%', size: '6px', depth: '0.7' },
+      { left: '94%', top: '56%', size: '7px', depth: '0.85' },
 
-      // Cuadrante 5: Periferia Inferior & Bento Blocks
-      { left: '4%', top: '78%', size: '8px', depth: '0.75' },
-      { left: '96%', top: '80%', size: '7px', depth: '0.8' },
+      // Cuadrante 5: Flancos Bento e Iconos
+      { left: '6%', top: '76%', size: '7px', depth: '0.75' },
+      { left: '94%', top: '78%', size: '6px', depth: '0.8' },
 
-      // Cuadrante 6: Zócalo de Cierre (Borde inferior)
-      { left: '16%', top: '96%', size: '6px', depth: '0.6' },
-      { left: '84%', top: '95%', size: '8px', depth: '0.7' },
-      { left: '50%', top: '99%', size: '7px', depth: '0.85' },
+      // Cuadrante 6: Zócalo de Cierre Inferior (Por encima de la barra QR / Compartir)
+      { left: '16%', top: '92%', size: '6px', depth: '0.6' },
+      { left: '84%', top: '92%', size: '7px', depth: '0.7' },
+      { left: '50%', top: '94%', size: '7px', depth: '0.85' },
     ];
 
     // Selección armónica de anclas según intensidad:
