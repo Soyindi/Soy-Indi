@@ -501,9 +501,14 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
 
               {/* Color Personalizado de Acento */}
               <div>
-                <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-3">
-                  Color Personalizado de Acento
-                </label>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-xs font-mono font-semibold uppercase text-zinc-400">
+                    Color Personalizado de Acento
+                  </label>
+                  <span className="text-[11px] font-mono font-semibold text-zinc-300">
+                    {formData.themeConfig?.primaryColorOklch}
+                  </span>
+                </div>
                 <div className="grid grid-cols-6 gap-2.5">
                   {[
                     { name: 'Índigo', color: '#6366f1' },
@@ -512,23 +517,36 @@ export function CardBuilder({ initialData }: CardBuilderProps) {
                     { name: 'Oro', color: '#f59e0b' },
                     { name: 'Rosa', color: '#ec4899' },
                     { name: 'Púrpura', color: '#8b5cf6' },
-                  ].map((c) => (
-                    <button
-                      key={c.color}
-                      type="button"
-                      onClick={() => handleThemeChange('primaryColorOklch', c.color)}
-                      className={`h-11 rounded-xl flex items-center justify-center border-2 transition-all ${
-                        formData.themeConfig?.primaryColorOklch === c.color
-                          ? 'border-white scale-105 shadow-lg'
-                          : 'border-transparent hover:scale-95'
-                      }`}
-                      style={{ backgroundColor: c.color }}
-                    >
-                      {formData.themeConfig?.primaryColorOklch === c.color && (
-                        <Check className="w-4 h-4 text-white stroke-[3]" />
-                      )}
-                    </button>
-                  ))}
+                  ].map((c) => {
+                    const isCurrent = formData.themeConfig?.primaryColorOklch === c.color;
+                    return (
+                      <button
+                        key={c.color}
+                        type="button"
+                        title={c.name}
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            themeConfig: {
+                              ...prev.themeConfig,
+                              themeId: 'custom',
+                              primaryColorOklch: c.color,
+                            },
+                          }));
+                        }}
+                        className={`h-11 rounded-xl flex items-center justify-center border-2 transition-all cursor-pointer ${
+                          isCurrent
+                            ? 'border-white scale-105 shadow-lg shadow-white/10 ring-2 ring-white/30'
+                            : 'border-transparent hover:scale-95 opacity-85 hover:opacity-100'
+                        }`}
+                        style={{ backgroundColor: c.color }}
+                      >
+                        {isCurrent && (
+                          <Check className="w-4 h-4 text-white stroke-[3] drop-shadow-md" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

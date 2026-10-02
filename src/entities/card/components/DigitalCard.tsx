@@ -81,34 +81,34 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   }> = {
     classic: {
       containerClass: 'shadow-2xl',
-      borderStyle: { borderColor: 'rgba(255, 255, 255, 0.12)' },
-      glowGradient: `radial-gradient(circle at 50% 0%, ${primaryColor} 0%, transparent 75%)`,
+      borderStyle: { borderColor: `${primaryColor}33` },
+      glowGradient: `radial-gradient(circle at 50% 0%, ${primaryColor}99 0%, ${primaryColor}22 45%, transparent 75%)`,
       backgroundStyle: {
-        background: 'radial-gradient(130% 100% at 50% 0%, oklch(0.25 0.04 260 / 0.5) 0%, oklch(0.14 0.02 260 / 0.85) 100%)',
+        background: `radial-gradient(130% 100% at 50% 0%, ${primaryColor}26 0%, oklch(0.14 0.02 260 / 0.88) 100%)`,
       },
       tagLabel: 'Glassmorphism 2.0',
-      tagColor: 'text-zinc-400 bg-white/5 border-white/10',
+      tagColor: 'text-zinc-300 bg-white/10 border-white/15',
     },
     holographic: {
-      containerClass: 'shadow-[0_0_60px_-10px_rgba(99,102,241,0.5)] ring-2 ring-cyan-400/40',
+      containerClass: 'shadow-2xl',
       borderStyle: {
-        borderColor: 'rgba(34, 211, 238, 0.6)',
-        boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.4), 0 0 25px rgba(99,102,241,0.4)',
+        borderColor: `${primaryColor}88`,
+        boxShadow: `inset 0 1px 3px rgba(255,255,255,0.4), 0 0 30px ${primaryColor}40`,
       },
-      glowGradient: 'radial-gradient(circle at 50% 0%, #22d3ee 0%, #6366f1 40%, transparent 80%)',
+      glowGradient: `radial-gradient(circle at 50% 0%, ${primaryColor} 0%, #22d3ee 40%, transparent 80%)`,
       backgroundStyle: {
-        background: 'linear-gradient(145deg, rgba(30, 27, 75, 0.75) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(8, 51, 68, 0.75) 100%)',
+        background: `linear-gradient(145deg, ${primaryColor}33 0%, rgba(15, 23, 42, 0.92) 50%, rgba(8, 51, 68, 0.8) 100%)`,
       },
       tagLabel: 'Holographic Rim',
       tagColor: 'text-cyan-300 bg-cyan-500/20 border-cyan-400/40',
     },
     titanium: {
-      containerClass: 'shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] ring-1 ring-slate-300/30',
+      containerClass: 'shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)]',
       borderStyle: {
-        borderColor: 'rgba(148, 163, 184, 0.45)',
-        boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.35)',
+        borderColor: `${primaryColor}66`,
+        boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.35), 0 0 20px ${primaryColor}25`,
       },
-      glowGradient: 'radial-gradient(circle at 50% 0%, #94a3b8 0%, #0ea5e9 35%, transparent 75%)',
+      glowGradient: `radial-gradient(circle at 50% 0%, ${primaryColor}bb 0%, #0ea5e9 35%, transparent 75%)`,
       backgroundStyle: {
         background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 60%, #020617 100%)',
       },
@@ -116,24 +116,27 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
       tagColor: 'text-slate-300 bg-slate-400/15 border-slate-400/30',
     },
     obsidian: {
-      containerClass: 'shadow-[0_0_55px_-10px_rgba(245,158,11,0.4)] ring-2 ring-amber-400/50',
+      containerClass: 'shadow-2xl',
       borderStyle: {
-        borderColor: 'rgba(245, 158, 11, 0.65)',
-        boxShadow: 'inset 0 1px 2px rgba(251, 191, 36, 0.4), 0 0 30px rgba(245, 158, 11, 0.3)',
+        borderColor: `${primaryColor}99`,
+        boxShadow: `inset 0 1px 2px rgba(255, 255, 255, 0.25), 0 0 35px ${primaryColor}4d`,
       },
-      glowGradient: 'radial-gradient(circle at 50% 0%, #f59e0b 0%, #b45309 45%, transparent 80%)',
+      glowGradient: `radial-gradient(circle at 50% 0%, ${primaryColor} 0%, ${primaryColor}66 45%, transparent 80%)`,
       backgroundStyle: {
-        background: 'linear-gradient(160deg, #1c1404 0%, #090704 60%, #170e02 100%)',
+        background: `linear-gradient(160deg, #18140e 0%, #090704 60%, ${primaryColor}1a 100%)`,
       },
       tagLabel: 'Obsidian Gold',
       tagColor: 'text-amber-300 bg-amber-500/20 border-amber-400/40',
     },
     minimal: {
-      containerClass: 'shadow-2xl ring-1 ring-white/30',
-      borderStyle: { borderColor: 'rgba(255, 255, 255, 0.35)' },
-      glowGradient: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.2) 0%, transparent 60%)',
+      containerClass: 'shadow-2xl',
+      borderStyle: { 
+        borderColor: `${primaryColor}55`,
+        boxShadow: `0 0 25px ${primaryColor}20`,
+      },
+      glowGradient: `radial-gradient(circle at 50% 0%, ${primaryColor}55 0%, transparent 60%)`,
       backgroundStyle: {
-        background: '#000000',
+        background: '#040508',
       },
       tagLabel: 'Swiss Monochrome',
       tagColor: 'text-white bg-white/10 border-white/25',
@@ -193,7 +196,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
       enabled={true}
       intensity={card.themeConfig?.particleIntensity || 'balanced'}
       behavior={card.themeConfig?.particleBehavior || 'ambient'}
-      color={card.themeConfig?.primaryColorOklch || '#6366f1'}
+      color={primaryColor}
       className="w-full max-w-sm mx-auto"
     >
       <motion.div
@@ -221,7 +224,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         {/* Glow Superior Reactivo con gradiente del acabado */}
         {texture !== 'none' && (
           <div 
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-56 h-32 blur-3xl pointer-events-none opacity-50 transition-all duration-700"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-36 blur-3xl pointer-events-none opacity-60 transition-all duration-700"
             style={{
               background: activeFinish.glowGradient,
             }}
@@ -230,13 +233,19 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
         {/* Badge Superior Contextual o Indicador de Acabado */}
         <div className="relative z-10 flex items-center justify-between gap-2 mb-3">
-          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase border shadow-sm ${activeFinish.tagColor}`}>
-            <Sparkles className="w-2.5 h-2.5" />
+          <span 
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase border shadow-sm ${activeFinish.tagColor}`}
+            style={{ borderColor: `${primaryColor}66` }}
+          >
+            <Sparkles className="w-2.5 h-2.5" style={{ color: primaryColor }} />
             <span>{activeFinish.tagLabel}</span>
           </span>
 
           {card.themeConfig?.badgeText && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase bg-white/10 border border-white/15 text-cyan-300 shadow-sm">
+            <span 
+              className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase bg-white/10 border text-white shadow-sm"
+              style={{ borderColor: `${primaryColor}55`, color: primaryColor }}
+            >
               <span>{card.themeConfig.badgeText}</span>
             </span>
           )}
@@ -244,10 +253,20 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
         {/* Header de la Tarjeta */}
         <div className="relative z-10 flex flex-col items-center text-center">
-          {/* Foto de Perfil con Anillo de Degradado */}
+          {/* Foto de Perfil con Anillo de Degradado y Glow Reactivo */}
           <div className="relative w-24 h-24 mb-5 group">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-indigo-500 via-cyan-400 to-teal-300 animate-pulse blur-sm opacity-60" />
-            <div className="relative w-full h-full rounded-full p-[2px] bg-gradient-to-tr from-indigo-500 to-cyan-400">
+            <div 
+              className="absolute inset-0 rounded-full animate-pulse blur-md opacity-75 transition-all duration-500" 
+              style={{
+                background: `radial-gradient(circle, ${primaryColor} 0%, transparent 70%)`
+              }}
+            />
+            <div 
+              className="relative w-full h-full rounded-full p-[2.5px] transition-all duration-500 shadow-lg"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}, #ffffff 40%, ${primaryColor})`
+              }}
+            >
               {card.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -256,8 +275,13 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
                   className="w-full h-full rounded-full object-cover bg-zinc-900"
                 />
               ) : (
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-indigo-900 to-zinc-900 flex items-center justify-center text-2xl font-bold text-white shadow-inner">
-                  {card.title.slice(0, 2).toUpperCase()}
+                <div 
+                  className="w-full h-full rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-inner"
+                  style={{
+                    background: `linear-gradient(145deg, #18181b 0%, #09090b 100%)`
+                  }}
+                >
+                  <span style={{ color: primaryColor }}>{card.title.slice(0, 2).toUpperCase()}</span>
                 </div>
               )}
             </div>
@@ -266,7 +290,10 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           <h2 className="text-2xl font-bold tracking-tight text-white mb-1">
             {card.title}
           </h2>
-          <p className="text-xs uppercase tracking-widest font-semibold text-cyan-300/90 mb-4 font-mono">
+          <p 
+            className="text-xs uppercase tracking-widest font-semibold mb-4 font-mono transition-colors duration-500"
+            style={{ color: primaryColor }}
+          >
             {card.profession}
           </p>
 
@@ -279,10 +306,14 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
         {/* Acciones Principales (Banda de Contacto & vCard) */}
         <div className="relative z-10 flex flex-col gap-2.5 mb-6">
-          {/* Botón Guardar en Contactos (vCard 4.0 One-Tap) */}
+          {/* Botón Guardar en Contactos (vCard 4.0 One-Tap con Color Reactivo) */}
           <button
             onClick={handleDownloadContact}
-            className="w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all"
+            className="w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl text-white font-semibold text-sm shadow-xl active:scale-[0.98] transition-all duration-300"
+            style={{
+              background: `linear-gradient(135deg, ${primaryColor} 0%, color-mix(in srgb, ${primaryColor} 70%, #000000) 100%)`,
+              boxShadow: `0 10px 25px -5px ${primaryColor}55`,
+            }}
           >
             {vcardSaved ? (
               <>
@@ -313,8 +344,9 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             <a
               href={`mailto:${card.emailContact}`}
               className="w-full min-h-[44px] inline-flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl glass-pill text-zinc-200 hover:text-white font-medium text-xs hover:bg-white/10 active:scale-[0.98] transition-all"
+              style={{ borderColor: `${primaryColor}33` }}
             >
-              <Mail className="w-3.5 h-3.5 text-indigo-400" />
+              <Mail className="w-3.5 h-3.5" style={{ color: primaryColor }} />
               <span>{card.emailContact}</span>
             </a>
           )}
@@ -326,7 +358,8 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             {card.bentoBlocks.map((block) => (
               <div
                 key={block.id}
-                className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all flex items-center justify-between text-left"
+                className="p-3.5 rounded-xl bg-white/[0.04] border hover:border-white/20 transition-all flex items-center justify-between text-left"
+                style={{ borderColor: `${primaryColor}22` }}
               >
                 <div>
                   <h4 className="text-xs font-semibold text-white tracking-wide">
@@ -340,7 +373,10 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
                 </div>
                 {block.metricValue && (
                   <div className="text-right">
-                    <span className="text-xs font-mono font-bold text-cyan-300">
+                    <span 
+                      className="text-xs font-mono font-bold"
+                      style={{ color: primaryColor }}
+                    >
                       {block.metricValue}
                     </span>
                     {block.metricDelta && (
@@ -372,7 +408,8 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               href={card.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:border-cyan-400/40 hover:scale-105 active:scale-95 transition-all"
+              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:scale-105 active:scale-95 transition-all"
+              style={{ borderColor: `${primaryColor}33` }}
               title="Sitio Web"
             >
               <Globe className="w-4 h-4" />
@@ -383,7 +420,8 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               href={card.linkedinUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:border-blue-400/40 hover:scale-105 active:scale-95 transition-all"
+              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:scale-105 active:scale-95 transition-all"
+              style={{ borderColor: `${primaryColor}33` }}
               title="LinkedIn"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -396,7 +434,8 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               href={card.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:border-pink-400/40 hover:scale-105 active:scale-95 transition-all"
+              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:scale-105 active:scale-95 transition-all"
+              style={{ borderColor: `${primaryColor}33` }}
               title="Instagram"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -426,13 +465,18 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             onClick={() => setShowQR(!showQR)}
             className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
           >
-            <QrCode className="w-4 h-4 text-cyan-400" />
+            <QrCode className="w-4 h-4" style={{ color: primaryColor }} />
             <span>{showQR ? 'Ocultar QR' : 'Ver QR'}</span>
           </button>
 
           <button
             onClick={handleShare}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 transition-all font-medium"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white font-medium transition-all"
+            style={{
+              background: `${primaryColor}26`,
+              color: primaryColor,
+              border: `1px solid ${primaryColor}44`,
+            }}
           >
             {copied ? (
               <>
@@ -454,7 +498,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             href="/"
             className="inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300 tracking-wider font-mono transition-colors"
           >
-            <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+            <Sparkles className="w-2.5 h-2.5" style={{ color: primaryColor }} />
             <span>CREADO CON INDI</span>
           </a>
         </div>
