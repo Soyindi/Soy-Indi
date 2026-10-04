@@ -50,6 +50,9 @@ src/
    - Toda resolución de sesión debe aprovechar `auth.api.getSession({ headers })` en `@/shared/lib/session` de forma transparente.
    - Todo nuevo usuario registrado con Google OAuth o credenciales locales debe recibir automáticamente 15 días de prueba (`trialEndsAt`) y 30 créditos de IA mediante el hook `databaseHooks.user.create.before`.
    - Las variables de entorno de producción (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) deben configurarse en Vercel con URIs de redirección autorizadas en Google Cloud Console.
+6. **Protección contra Open Redirect & Flujo de Autenticación Contextual:**
+   - Todo endpoint o formulario de autenticación que acepte `callbackUrl` debe validar y sanitizar el valor obligatoriamente mediante `AuthRedirectParamsSchema` o `sanitizeCallbackUrl` ubicado en `@/entities/auth/schemas`.
+   - Se prohíben estrictamente URLs absolutas o relativas al protocolo (`//`), permitiendo únicamente rutas relativas internas seguras (`/dashboard`, `/start`).
 
 ---
 

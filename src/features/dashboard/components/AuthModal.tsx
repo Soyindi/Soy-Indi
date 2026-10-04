@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { authClient, signIn } from '@/shared/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Loader2, ArrowRight, ShieldCheck, Mail, Lock, User } from 'lucide-react';
+import { sanitizeCallbackUrl } from '@/entities/auth/schemas';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export function AuthModal({
   callbackUrl = '/dashboard',
 }: AuthModalProps) {
   const router = useRouter();
+  const safeCallbackUrl = sanitizeCallbackUrl(callbackUrl, '/dashboard');
   const [mode, setMode] = useState<'login' | 'signup'>(defaultMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,7 +39,7 @@ export function AuthModal({
 
       await signIn.social({
         provider: 'google',
-        callbackURL: callbackUrl,
+        callbackURL: safeCallbackUrl,
       });
     } catch (err: any) {
       console.error('Error Google OAuth:', err);
@@ -58,13 +60,13 @@ export function AuthModal({
           email,
           password,
           name: name.trim() || email.split('@')[0],
-          callbackURL: callbackUrl,
+          callbackURL: safeCallbackUrl,
         });
 
         if (res.error) {
           setErrorMsg(res.error.message || 'Error al crear tu cuenta.');
         } else {
-          router.push(callbackUrl);
+          router.push(safeCallbackUrl);
           router.refresh();
           onClose();
         }
@@ -72,13 +74,13 @@ export function AuthModal({
         const res = await authClient.signIn.email({
           email,
           password,
-          callbackURL: callbackUrl,
+          callbackURL: safeCallbackUrl,
         });
 
         if (res.error) {
           setErrorMsg(res.error.message || 'Credenciales incorrectas.');
         } else {
-          router.push(callbackUrl);
+          router.push(safeCallbackUrl);
           router.refresh();
           onClose();
         }

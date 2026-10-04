@@ -105,7 +105,9 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 115 tests pasando)
+│   ├── auth-flow.test.ts        # Validación de flujo de login, Open Redirect guardrail y sanitización
+│   ├── oauth-multi-tenant.test.ts # Aislamiento multi-tenant y Google OAuth
 │   ├── card-schema.test.ts      # Validación Zod de tarjetas de presentación
 │   ├── cv-schema.test.ts        # Contratos de datos CV y guardrails EU AI Act
 │   ├── presentation-schema.test.ts # Contratos de diapositivas, layouts y plantillas
@@ -138,6 +140,7 @@ INDI/
 │   │   ├── onboarding/          # Grid interactivo de selección de proyectos
 │   │   └── pricing/             # Actions de suscripción, FaqAccordion y TrialBanner
 │   ├── entities/                # Modelos de dominio y acceso a datos
+│   │   ├── auth/                # Schemas Zod de redirección y Open Redirect guardrail
 │   │   ├── card/                # Entidad DigitalCard y temas
 │   │   ├── cv/                  # Tipado de Smart CV y contratos
 │   │   ├── presentation/        # Schemas Zod de diapositivas y catálogo de plantillas 2026
@@ -147,7 +150,7 @@ INDI/
 │       ├── api/db.ts            # Cliente unificado Turso LibSQL (dual local/nube)
 │       ├── lib/auth.ts          # Configuración Better-Auth
 │       ├── lib/session.ts       # Guardrail de seguridad multi-tenant para Server Actions
-│       └── ui/                  # UI Kit (AppEditorHeader, MobileNavDrawer, PublicContextualHeader)
+│       └── ui/                  # UI Kit (GlobalNavbar, AppEditorHeader, MobileNavDrawer, PublicContextualHeader)
 ├── AGENTS.md                    # Guía corporativa de orquestación agéntica (FSD, WCAG, Base-8)
 └── SECURITY.md                  # Política de seguridad y reporte de vulnerabilidades
 ```

@@ -250,8 +250,9 @@ export function UnifiedDashboardView({
                   await signOut();
                   window.location.reload();
                 }}
-                className="min-h-[36px] min-w-[36px] p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 transition-colors cursor-pointer"
+                className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 transition-colors cursor-pointer flex items-center justify-center"
                 title="Cerrar sesión"
+                aria-label="Cerrar sesión"
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
@@ -260,7 +261,7 @@ export function UnifiedDashboardView({
             <button
               type="button"
               onClick={() => setIsAuthModalOpen(true)}
-              className="min-h-[36px] inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-xs font-semibold hover:opacity-95 transition-all shadow-md shadow-indigo-500/20 cursor-pointer"
+              className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-xs font-semibold hover:opacity-95 transition-all shadow-md shadow-indigo-500/20 cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5" />
               <span>Acceder con Google</span>

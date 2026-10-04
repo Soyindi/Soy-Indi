@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, Tag, ArrowRight } from 'lucide-react';
+import { useSession, signOut } from '@/shared/lib/auth-client';
+import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, Tag, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function MobileNavDrawer() {
   const [isOpen, setIsOpen] = useState(false);
+  const { data: sessionData } = useSession();
+  const user = sessionData?.user;
 
   // Bloquear scroll del fondo cuando el menú esté abierto
   useEffect(() => {
@@ -136,27 +139,77 @@ export function MobileNavDrawer() {
 
               {/* Botón CTA inferior en Zona del Pulgar */}
               <div className="pt-6 border-t border-white/10 flex flex-col gap-3">
-                <Link
-                  href="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium text-xs active:scale-[0.98] transition-all"
-                >
-                  <span>¿Ya tienes cuenta? Iniciar Sesión</span>
-                </Link>
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 p-[1px] shrink-0">
+                        {user.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={user.image}
+                            alt={user.name || 'Usuario'}
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-xs font-bold text-white">
+                            {(user.name || 'U').slice(0, 1).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-white truncate">{user.name}</p>
+                        <p className="text-[11px] text-zinc-400 truncate">{user.email}</p>
+                      </div>
+                    </div>
 
-                <Link
-                  href="/start"
-                  onClick={() => setIsOpen(false)}
-                  className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Prueba Gratis 15 Días</span>
-                  <ArrowRight className="w-4 h-4 ml-auto" />
-                </Link>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setIsOpen(false)}
+                      className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs active:scale-[0.98] transition-all shadow-md shadow-indigo-500/20"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      <span>Ir a Mi Panel de Control</span>
+                    </Link>
 
-                <div className="text-center text-[11px] font-mono text-zinc-400">
-                  Sin tarjeta de crédito • Acceso total
-                </div>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setIsOpen(false);
+                        await signOut();
+                        window.location.reload();
+                      }}
+                      className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 text-zinc-300 hover:text-rose-300 font-medium text-xs active:scale-[0.98] transition-all cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Cerrar Sesión</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login?mode=login&callbackUrl=/dashboard"
+                      onClick={() => setIsOpen(false)}
+                      className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium text-xs active:scale-[0.98] transition-all"
+                    >
+                      <LogIn className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>¿Ya tienes cuenta? Iniciar Sesión</span>
+                    </Link>
+
+                    <Link
+                      href="/login?mode=signup&callbackUrl=/start"
+                      onClick={() => setIsOpen(false)}
+                      className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>Prueba Gratis 15 Días</span>
+                      <ArrowRight className="w-4 h-4 ml-auto" />
+                    </Link>
+
+                    <div className="text-center text-[11px] font-mono text-zinc-400">
+                      Sin tarjeta de crédito • Acceso total
+                    </div>
+                  </>
+                )}
               </div>
             </motion.div>
           </div>

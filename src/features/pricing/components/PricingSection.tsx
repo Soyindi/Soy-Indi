@@ -146,8 +146,8 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
         {/* Botón de Llamada a la Acción Principal */}
         <div className="space-y-3">
           <Link
-            href="/cards/new"
-            className="w-full inline-flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm sm:text-base shadow-xl shadow-indigo-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all"
+            href="/login?mode=signup&callbackUrl=/start"
+            className="w-full inline-flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm sm:text-base shadow-xl shadow-indigo-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all min-h-[48px]"
           >
             <span>Iniciar Prueba Gratis de 15 Días</span>
             <ArrowRight className="w-4 h-4" />

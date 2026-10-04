@@ -18,7 +18,7 @@ import {
 import { DigitalCard } from '@/entities/card/components/DigitalCard';
 import { PricingSection } from '@/features/pricing/components/PricingSection';
 import { FaqAccordion } from '@/features/pricing/components/FaqAccordion';
-import { MobileNavDrawer } from '@/shared/ui/MobileNavDrawer';
+import { GlobalNavbar } from '@/shared/ui/GlobalNavbar';
 
 export default function HomePage() {
   return (
@@ -28,51 +28,8 @@ export default function HomePage() {
       <div className="absolute top-[35%] right-[-5%] w-[500px] h-[500px] rounded-full bg-cyan-500/15 blur-[130px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[550px] h-[550px] rounded-full bg-blue-700/15 blur-[150px] pointer-events-none" />
 
-      {/* Header / Navbar Global */}
-      <header className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20">
-            <div className="w-full h-full bg-black/80 rounded-[11px] flex items-center justify-center">
-              <span className="font-black text-lg sm:text-xl tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
-                IN
-              </span>
-            </div>
-          </div>
-          <span className="text-lg sm:text-xl font-bold tracking-tight text-white">INDI</span>
-          <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono font-medium">
-            2026 SaaS
-          </span>
-        </div>
-
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-          <Link href="/dashboard" className="hover:text-white transition-colors">Panel General</Link>
-          <Link href="/cv" className="hover:text-white transition-colors">Smart CV (ATS)</Link>
-          <Link href="/presentations" className="hover:text-white transition-colors">Presentaciones</Link>
-          <Link href="/pricing" className="hover:text-white transition-colors">Precios ($1.000/mes)</Link>
-        </nav>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/login"
-            className="text-xs font-semibold px-3 py-2 text-zinc-400 hover:text-white transition-colors min-h-[44px] flex items-center"
-          >
-            Ingresar
-          </Link>
-          <Link
-            href="/pricing"
-            className="hidden sm:inline-flex min-h-[44px] items-center text-xs font-semibold px-4 py-2.5 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/5 text-zinc-300 hover:text-white transition-all"
-          >
-            Ver Planes
-          </Link>
-          <Link
-            href="/start"
-            className="min-h-[44px] inline-flex items-center text-xs font-semibold px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 transition-all text-center"
-          >
-            Prueba 15 Días
-          </Link>
-          <MobileNavDrawer />
-        </div>
-      </header>
+      {/* Header / Navbar Global Reactivo con Detección de Sesión */}
+      <GlobalNavbar />
 
       {/* BLOQUE 1: HERO SECTION CON LIVE INTERACTIVE DEMO */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 pt-8 pb-20">
@@ -99,15 +56,15 @@ export default function HomePage() {
 
             <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
               <Link
-                href="/start"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                href="/login?mode=signup&callbackUrl=/start"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all min-h-[48px]"
               >
                 <span>Comenzar Prueba de 15 Días</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/pricing"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass-panel text-zinc-300 hover:text-white font-medium text-sm transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass-panel text-zinc-300 hover:text-white font-medium text-sm transition-all min-h-[48px]"
               >
                 <span>Conocer Plan Semestral ($6.000)</span>
               </Link>
@@ -340,8 +297,8 @@ export default function HomePage() {
               Tu enlace público estará listo en 2 minutos. Comparte por WhatsApp, activa tu QR y comprueba la diferencia.
             </p>
             <Link
-              href="/start"
-              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-xl shadow-indigo-500/30 hover:scale-105 transition-all"
+              href="/login?mode=signup&callbackUrl=/start"
+              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-xl shadow-indigo-500/30 hover:scale-105 transition-all min-h-[48px]"
             >
               <span>Comenzar Prueba Gratuita Ahora</span>
               <ArrowRight className="w-4 h-4" />

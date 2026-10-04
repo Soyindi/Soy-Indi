@@ -33,7 +33,7 @@ export default async function OnboardingStartPage() {
 
         <Link
           href="/pricing"
-          className="text-xs text-zinc-400 hover:text-white font-medium transition"
+          className="text-xs text-zinc-400 hover:text-white font-medium transition min-h-[44px] px-3 py-2 rounded-xl hover:bg-white/5 flex items-center"
         >
           Detalles de Planes
         </Link>

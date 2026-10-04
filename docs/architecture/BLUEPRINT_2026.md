@@ -768,3 +768,20 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Nueva suite de pruebas unitarias: `tests/unit/oauth-multi-tenant.test.ts` (5 pruebas unitarias).
    - 100% de la suite de pruebas unitarias aprobada en Vitest (110 de 110 tests en 20 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
+### ✅ Fase 27: Flujo de Inicio de Sesión Unificado, Navbar Global Reactivo y Protección Open Redirect (COMPLETADA)
+1. **Unificación de la Experiencia de Autenticación & Detección de Sesión**:
+   - Creación del componente transversal [GlobalNavbar.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/shared/ui/GlobalNavbar.tsx) en `@/shared/ui` que sustituye el header estático por una barra reactiva consciente del estado del usuario (`useSession`).
+   - Cuando el usuario está autenticado, la barra muestra su avatar de Google, botón directo a *"Mi Panel"* (`/dashboard`), acción rápida *"Nuevo"* (`/start`) y botón ergonómico de desconexión.
+   - Cuando el usuario es visitante, `"Ingresar"` levanta `AuthModal` con modo login o redirige a `/login?mode=login&callbackUrl=/dashboard`, y `"Prueba 15 Días"` activa el registro fluido con Google dirigiendo al onboarding (`/login?mode=signup&callbackUrl=/start`).
+2. **Sincronización en Cascada de Navegación & Mobile Drawer (`MobileNavDrawer.tsx`)**:
+   - Integración de sesión Better-Auth en el menú móvil: muestra avatar y perfil del usuario, acceso directo a `/dashboard` y logout rápido táctil ($\ge 44\text{px}$). Para visitantes, ofrece botones separados para inicio de sesión y registro de prueba.
+   - Estandarización de botones de conversión en la Landing Page (`/`), sección de precios (`PricingSection.tsx`), Onboarding (`/start`) y Dashboard para redirigir contextualmente preservando el parámetro seguro de retorno `callbackUrl`.
+3. **Guardrail de Seguridad Zod contra Open Redirect (`src/entities/auth/schemas.ts`)**:
+   - Creación del contrato `AuthRedirectParamsSchema` y la función pura `sanitizeCallbackUrl`.
+   - Bloqueo estricto de redirecciones externas arbitrarias (`https://...`, `//evil.com`), garantizando que sólo se permitan rutas relativas internas validadas.
+4. **Control de Calidad, Resiliencia y Pruebas Unitarias (115 Tests Passing)**:
+   - Nueva suite de pruebas unitarias: `tests/unit/auth-flow.test.ts` (5 pruebas unitarias).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (115 de 115 tests en 21 suites).
+   - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+

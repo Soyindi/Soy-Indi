@@ -9,17 +9,21 @@ export const metadata: Metadata = {
   description: 'Inicia sesión o crea tu cuenta en INDI para gestionar tus tarjetas digitales, CVs y presentaciones con IA.',
 };
 
+import { AuthRedirectParamsSchema } from '@/entities/auth/schemas';
+
 interface LoginPageProps {
   searchParams: Promise<{
-    mode?: 'login' | 'signup';
+    mode?: string;
     callbackUrl?: string;
   }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const params = await searchParams;
-  const mode = params.mode === 'signup' ? 'signup' : 'login';
-  const callbackUrl = params.callbackUrl || '/dashboard';
+  const rawParams = await searchParams;
+  const parsed = AuthRedirectParamsSchema.safeParse(rawParams);
+  const { mode, callbackUrl } = parsed.success
+    ? parsed.data
+    : { mode: 'login' as const, callbackUrl: '/dashboard' };
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-zinc-950 flex flex-col justify-between py-8 px-4 sm:px-6">
