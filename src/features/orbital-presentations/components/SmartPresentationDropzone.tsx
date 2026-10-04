@@ -133,13 +133,23 @@ export function SmartPresentationDropzone({
       const formData = new FormData();
       formData.append('file', fileToSend);
 
-      const res = await parsePresentationDocumentAction(formData);
+      let res: { success: boolean; extractedText?: string; error?: string } | null = null;
+      try {
+        const response = await fetch('/api/presentations/parse', {
+          method: 'POST',
+          body: formData,
+        });
+        res = await response.json();
+      } catch (fetchErr) {
+        console.warn('[SmartPresentationDropzone] Fallback a Server Action:', fetchErr);
+        res = await parsePresentationDocumentAction(formData);
+      }
 
-      if (res.success && res.extractedText) {
+      if (res?.success && res.extractedText) {
         setInputText(res.extractedText.trim());
       } else {
         setErrorMessage(
-          res.error || `No se pudo extraer texto del archivo "${file.name}". Puedes pegar el texto manualmente abajo.`
+          res?.error || `No se pudo extraer texto del archivo "${file.name}". Puedes pegar el texto manualmente abajo.`
         );
       }
     } catch (err: unknown) {

@@ -944,8 +944,22 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada en Vitest (139 de 139 tests en 23 suites).
    - 0 errores de compilación estricta en TypeScript (`npm run typecheck`).
 
-
-
-
-
-
+### ✅ Fase 38: Ingesta Resiliente de Archivos Multimodales & Route Handlers Nativos (COMPLETADA)
+1. **Diagnóstico de Causa Raíz (Error "An unexpected response was received from the server")**:
+   - **Límite Estricto de 1MB en Server Actions de Next.js**: Por especificación interna de Next.js App Router, las Server Actions imponen un límite predeterminado estricto de **1MB** (`1mb`) sobre el cuerpo de la petición.
+   - **Fallo de Serialización React Flight**: Al adjuntar archivos PDF o imágenes (currículums, títulos universitarios o presentaciones) que superan comúnmente entre 2MB y 10MB, el runtime de Next.js aborta la petición con HTTP 413 (Payload Too Large) o envía una respuesta de error HTML no serializada bajo el protocolo `text/x-component`.
+   - **Excepción en el Reducer del Cliente**: Al no recibir el formato Flight esperado, el reductor de Server Actions de Next.js (`server-action-reducer.ts`) lanza la excepción genérica `Error: An unexpected response was received from the server.`, bloqueando la subida tanto en el dropzone de Smart CV como en el de Presentaciones.
+2. **Solución Arquitectural Dual (Next.js Config + Route Handlers Nativos HTTP)**:
+   - **Ampliación de Límites en `next.config.ts`**:
+     - Configuración de `experimental.serverActions.bodySizeLimit: '25mb'`.
+     - Inyección de `experimental.proxyClientMaxBodySize: '25mb'` y `middlewareClientMaxBodySize: '25mb'` para asegurar que los proxies perimetrales no recorten la carga útil.
+   - **Route Handlers Nativos Desacoplados de React Flight**:
+     - **`src/app/api/cv/parse/route.ts`**: Endpoint HTTP nativo (`export async function POST(req: NextRequest)`) que procesa `FormData` mediante streaming estándar de Node/Web Streams sin las limitaciones del protocolo Flight. Soporta tanto currículums (`type=cv`) como títulos universitarios (`type=credential`), delegando a las funciones de backend y retornando respuestas JSON limpias y predecibles.
+     - **`src/app/api/presentations/parse/route.ts`**: Endpoint HTTP nativo para la ingesta de documentos de presentación (PDF, TXT, MD, CSV, DOC), extrayendo texto y metadatos con total resiliencia.
+   - **Estrategia Client-Side con Fallback Automático**:
+     - `SmartDocumentDropzone.tsx` y `SmartPresentationDropzone.tsx` actualizados para consumir prioritariamente los Route Handlers (`fetch('/api/...', { method: 'POST', body: formData })`).
+     - En caso de contingencia o fallo de red local, se activa automáticamente el fallback a las Server Actions correspondientes.
+3. **Control de Calidad y Pruebas Unitarias (144 Tests Passing)**:
+   - Nueva suite `tests/unit/document-upload-routes.test.ts` (5 pruebas unitarias) validando la serialización de `FormData`, el manejo de archivos en `/api/cv/parse` y `/api/presentations/parse`, y los mensajes de error amigables ante peticiones incompletas.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (144 de 144 tests en 24 suites).
+   - 0 errores en verificación de tipos TypeScript (`npm run typecheck`).

@@ -110,6 +110,9 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 5. **Optimización y Compresión Client-Side de Medios (WebP First):**
    - Toda subida de imagen de usuario (foto de perfil en tarjeta, captura de currículum o soporte visual de diapositivas) debe pasar por el motor client-side `@/shared/lib/imageCompression` (`compressImageClient`) antes de enviarse al servidor o serializarse en el estado.
    - Preservar dimensiones proporcionales (`calculateAspectRatioFit`), convertir a WebP con factor de calidad balanceado (0.80 - 0.85) y garantizar retroalimentación visual al usuario en tiempo real con touch targets $\ge 44\text{px}$.
+6. **Ingesta de Archivos Grandes y Route Handlers Nativos (HTTP Streaming vs Server Actions):**
+   - Toda subida de archivos binarios o documentos que puedan superar 1MB (PDFs, presentaciones, títulos académicos) debe realizarse a través de Route Handlers dedicados (`src/app/api/.../route.ts`) consumidos mediante `fetch(..., { method: 'POST', body: formData })` con streaming HTTP nativo.
+   - Se prohíbe el envío directo de archivos pesados en `FormData` hacia React Server Actions debido al límite estricto predeterminado de 1MB y a los fallos de serialización de React Flight (`An unexpected response was received from the server`). Mantener siempre fallback automático en caso de contingencia.
 
 
 ---

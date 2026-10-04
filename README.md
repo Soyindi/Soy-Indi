@@ -118,7 +118,7 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 117 tests pasando)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 144 tests pasando)
 │   ├── auth-flow.test.ts        # Validación de flujo de login, Open Redirect guardrail y sanitización
 │   ├── oauth-multi-tenant.test.ts # Aislamiento multi-tenant y Google OAuth
 │   ├── card-schema.test.ts      # Validación Zod de tarjetas de presentación
@@ -127,11 +127,14 @@ INDI/
 │   ├── presentation-heuristics.test.ts # Motor heurístico determinista y Principio de Pirámide
 │   ├── ats-audit.test.ts        # Motor algorítmico de scoring ATS
 │   ├── entitlements.test.ts     # Planes comerciales y 3 días de prueba
+│   ├── document-upload-routes.test.ts # Handlers nativos HTTP de subida de archivos (25MB)
 │   └── security-guardrails.test.ts # Protección multi-tenant de Server Actions
 ├── src/
 │   ├── app/                     # Next.js 16 App Router (Rutas y Edge Handlers)
-│   │   ├── api/                 # Handlers de Autenticación y Open Graph
+│   │   ├── api/                 # Handlers de Autenticación, Subidas y Open Graph
 │   │   │   ├── auth/[...all]/route.ts # Better-Auth universal
+│   │   │   ├── cv/parse/route.ts      # Ingesta resiliente de CVs y títulos (25MB)
+│   │   │   ├── presentations/parse/route.ts # Ingesta de documentos para diapositivas (25MB)
 │   │   │   └── og/route.tsx     # Generador de Open Graph en Edge con @vercel/og
 │   │   ├── c/[slug]/page.tsx    # Vista pública de tarjeta con métricas atómicas
 │   │   ├── p/[slug]/page.tsx    # Vista pública interactiva de presentaciones 16:9

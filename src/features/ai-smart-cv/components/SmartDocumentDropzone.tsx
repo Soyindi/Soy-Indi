@@ -49,31 +49,53 @@ export function SmartDocumentDropzone({
       const formData = new FormData();
       formData.append('file', fileToSend);
       if (type === 'cv') {
+        formData.append('type', 'cv');
         setStatusMessage('Analizando disposición de documento con Qwen2.5-VL y aplicando sanitización EU AI Act...');
         
-        // Importación dinámica de la server action para no bloquear el bundle
-        const { parseCvDocumentAction } = await import('@/features/ai-smart-cv/actions');
-        const result = await parseCvDocumentAction(formData);
+        let result: any = null;
+        try {
+          const res = await fetch('/api/cv/parse', {
+            method: 'POST',
+            body: formData,
+          });
+          result = await res.json();
+        } catch (fetchErr) {
+          console.warn('[SmartDocumentDropzone] Fallback a Server Action:', fetchErr);
+          const { parseCvDocumentAction } = await import('@/features/ai-smart-cv/actions');
+          result = await parseCvDocumentAction(formData);
+        }
 
-        if (result.success && result.data) {
+        if (result?.success && result.data) {
           setStatusMessage('¡Extracción completada con éxito! Reescritura STAR / Google XYZ lista.');
           onCvParsed(result.data);
           setTimeout(() => setStatusMessage(null), 4000);
         } else {
-          setErrorMessage(result.error || 'No pudimos procesar el archivo.');
+          setErrorMessage(result?.error || 'No pudimos procesar el archivo.');
         }
       } else {
+        formData.append('type', 'credential');
+        formData.append('currentEducation', JSON.stringify(currentEducation));
         setStatusMessage('Inspeccionando diploma y buscando coincidencias con tu sección de Educación...');
         
-        const { parseCredentialDocumentAction } = await import('@/features/ai-smart-cv/actions');
-        const result = await parseCredentialDocumentAction(formData, currentEducation);
+        let result: any = null;
+        try {
+          const res = await fetch('/api/cv/parse', {
+            method: 'POST',
+            body: formData,
+          });
+          result = await res.json();
+        } catch (fetchErr) {
+          console.warn('[SmartDocumentDropzone] Fallback a Server Action de credencial:', fetchErr);
+          const { parseCredentialDocumentAction } = await import('@/features/ai-smart-cv/actions');
+          result = await parseCredentialDocumentAction(formData, currentEducation);
+        }
 
-        if (result.success && result.credential) {
+        if (result?.success && result.credential) {
           setStatusMessage('¡Título académico validado y vinculado semánticamente!');
           onCredentialParsed(result.credential);
           setTimeout(() => setStatusMessage(null), 4000);
         } else {
-          setErrorMessage(result.error || 'No se pudo verificar el título.');
+          setErrorMessage(result?.error || 'No se pudo verificar el título.');
         }
       }
     } catch (err: any) {
