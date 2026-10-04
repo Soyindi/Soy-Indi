@@ -42,8 +42,8 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
           </h2>
 
           <p className="text-sm sm:text-base text-zinc-300 leading-relaxed">
-            Empieza hoy con <strong>15 días de prueba gratis</strong>. Luego mantén tu tarjeta digital,
-            tu currículum y tus presentaciones activas por menos de lo que cuesta un café al mes.
+            Empieza hoy con <strong>3 días de prueba gratis</strong>. Luego mantén tu tarjeta digital,
+            tus métricas, tu currículum y tus presentaciones activas por solo <strong>$2.500 CLP al mes</strong>.
           </p>
         </div>
       )}
@@ -93,7 +93,7 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
 
           <div className="text-right">
             <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-              15 DÍAS DE PRUEBA GRATIS
+              3 DÍAS DE PRUEBA GRATIS
             </span>
           </div>
         </div>
@@ -122,7 +122,7 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
 
         <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed mb-8 pb-6 border-b border-white/10">
           Uso completo sin límites para crear tus <strong>Tarjetas con Código QR</strong>,
-          armar tu <strong>Currículum Profesional</strong> y proyectar tus <strong>Presentaciones</strong>.
+          consultar tus <strong>Métricas en Vivo</strong>, armar tu <strong>Currículum Profesional</strong> y proyectar tus <strong>Presentaciones</strong>.
         </p>
 
         {/* Lista de Características */}
@@ -149,7 +149,7 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
             href="/login?mode=signup&callbackUrl=/start"
             className="w-full inline-flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm sm:text-base shadow-xl shadow-indigo-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all min-h-[48px]"
           >
-            <span>Empezar Gratis por 15 Días</span>
+            <span>Empezar Gratis por 3 Días</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
 

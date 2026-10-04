@@ -51,7 +51,6 @@ export default async function OnboardingStartPage() {
       <main className="relative z-10 flex-1 flex items-center">
         <OnboardingChoiceGrid
           daysRemaining={entitlement.daysRemaining}
-          aiCredits={entitlement.aiCredits}
         />
       </main>
 

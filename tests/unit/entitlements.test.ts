@@ -10,12 +10,11 @@ describe('Subscription & Entitlements Logic', () => {
     expect(PRICING_PLANS.semiannual.monthlyEquivalentClp).toBe(1000);
   });
 
-  it('debe otorgar 15 días de prueba gratuita y 30 créditos de IA por defecto a nuevos usuarios', async () => {
+  it('debe otorgar 3 días de prueba gratuita por defecto a nuevos usuarios', async () => {
     // Si no se pasa userId o no existe usuario registrado
     const entitlement = await checkUserEntitlementAction('usuario-inexistente-uuid');
     expect(entitlement.hasAccess).toBe(true);
     expect(entitlement.isTrial).toBe(true);
-    expect(entitlement.daysRemaining).toBeGreaterThanOrEqual(1);
-    expect(entitlement.aiCredits).toBe(30);
+    expect(entitlement.daysRemaining).toBe(3);
   }, 15000);
 });

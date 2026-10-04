@@ -11,7 +11,6 @@ export interface UserEntitlement {
   isTrial: boolean;
   status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
   daysRemaining: number;
-  aiCredits: number;
 }
 
 /**
@@ -38,8 +37,7 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
         hasAccess: true,
         isTrial: true,
         status: 'TRIAL',
-        daysRemaining: 15,
-        aiCredits: 30,
+        daysRemaining: 3,
       };
     }
 
@@ -57,11 +55,10 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
         isTrial: false,
         status: 'ACTIVE',
         daysRemaining: days,
-        aiCredits: targetUser.aiCredits ?? 30,
       };
     }
 
-    // Si está en período de prueba (15 días)
+    // Si está en período de prueba (3 días)
     if (targetUser.status === 'TRIAL' && trialEndsAt && now <= trialEndsAt) {
       const days = Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
       return {
@@ -69,7 +66,6 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
         isTrial: true,
         status: 'TRIAL',
         daysRemaining: days,
-        aiCredits: targetUser.aiCredits ?? 30,
       };
     }
 
@@ -79,8 +75,7 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
         hasAccess: true,
         isTrial: true,
         status: 'TRIAL',
-        daysRemaining: 15,
-        aiCredits: targetUser.aiCredits ?? 30,
+        daysRemaining: 3,
       };
     }
 
@@ -90,7 +85,6 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
       isTrial: false,
       status: 'EXPIRED',
       daysRemaining: 0,
-      aiCredits: targetUser.aiCredits ?? 0,
     };
   } catch (err: any) {
     if (process.env.NODE_ENV !== 'test' && !err?.message?.includes('no such table')) {
@@ -100,42 +94,8 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
       hasAccess: true,
       isTrial: true,
       status: 'TRIAL',
-      daysRemaining: 15,
-      aiCredits: 30,
+      daysRemaining: 3,
     };
-  }
-}
-
-/**
- * Consumir créditos de IA de forma atómica
- */
-export async function consumeAiCreditsAction(userId: string, creditsToConsume: number) {
-  try {
-    const targetUser = await db.query.user.findFirst({
-      where: eq(user.id, userId),
-    });
-
-    if (!targetUser) return { success: false, error: 'Usuario no encontrado' };
-
-    const currentCredits = targetUser.aiCredits ?? 30;
-    if (currentCredits < creditsToConsume) {
-      return {
-        success: false,
-        error: `Créditos insuficientes (${currentCredits} disponibles, requieres ${creditsToConsume}).`,
-      };
-    }
-
-    await db
-      .update(user)
-      .set({
-        aiCredits: currentCredits - creditsToConsume,
-        updatedAt: new Date(),
-      })
-      .where(eq(user.id, userId));
-
-    return { success: true, remainingCredits: currentCredits - creditsToConsume };
-  } catch (err: any) {
-    return { success: false, error: err.message };
   }
 }
 

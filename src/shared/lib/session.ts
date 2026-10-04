@@ -72,7 +72,6 @@ export async function getSafeAuthenticatedUserId(providedUserId?: string): Promi
         name: 'Usuario Demo INDI',
         email: demoEmail,
         status: 'ACTIVE',
-        aiCredits: 30,
       })
       .returning();
 

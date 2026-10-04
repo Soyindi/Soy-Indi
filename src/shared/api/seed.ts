@@ -25,8 +25,7 @@ export async function seedDatabase() {
       emailVerified: true,
       image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
       status: 'ACTIVE',
-      aiCredits: 100,
-      trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      trialEndsAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       subscriptionEndsAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     });
     console.log('✅ Usuario demo creado:', demoEmail);

@@ -27,13 +27,12 @@ export const auth = betterAuth({
     user: {
       create: {
         before: async (userData) => {
-          const fifteenDaysMs = 15 * 24 * 60 * 60 * 1000;
+          const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
           return {
             data: {
               ...userData,
               status: (userData as any).status || 'TRIAL',
-              aiCredits: (userData as any).aiCredits ?? 30,
-              trialEndsAt: (userData as any).trialEndsAt || new Date(Date.now() + fifteenDaysMs),
+              trialEndsAt: (userData as any).trialEndsAt || new Date(Date.now() + threeDaysMs),
             },
           };
         },

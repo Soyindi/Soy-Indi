@@ -18,10 +18,9 @@ import {
 
 interface OnboardingChoiceGridProps {
   daysRemaining: number;
-  aiCredits: number;
 }
 
-export function OnboardingChoiceGrid({ daysRemaining, aiCredits }: OnboardingChoiceGridProps) {
+export function OnboardingChoiceGrid({ daysRemaining }: OnboardingChoiceGridProps) {
   const options = [
     {
       id: 'card',
@@ -82,7 +81,7 @@ export function OnboardingChoiceGrid({ daysRemaining, aiCredits }: OnboardingCho
       <div className="mb-10 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-pill border border-indigo-500/30 text-xs font-semibold text-indigo-300 mb-4 shadow-lg shadow-indigo-500/10">
           <Sparkles className="w-4 h-4 text-cyan-400 animate-spin-slow" />
-          <span>Prueba VIP Activada: {daysRemaining} Días de Acceso Total • {aiCredits} Créditos IA Disponibles</span>
+          <span>Prueba Gratuita Activada: {daysRemaining} Días de Acceso Total Ilimitado</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">

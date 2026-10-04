@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Precios & Membresía | INDI — Plataforma SaaS 2026',
-  description: '15 días de prueba gratis. Luego solo $6.000 CLP cada 6 meses ($1.000/mes) para desbloquear Tarjetas Digitales, Smart CV y Presentaciones.',
+  description: '3 días de prueba gratis. Luego solo $2.500 CLP al mes o $6.000 cada 6 meses para desbloquear Tarjetas Digitales, Métricas, Smart CV y Presentaciones.',
 };
 
 export default function PricingPage() {
@@ -37,7 +37,7 @@ export default function PricingPage() {
             Preguntas Frecuentes
           </h3>
           <p className="text-xs sm:text-sm text-zinc-400 mt-2">
-            Todo lo que necesitas saber sobre la membresía, los 15 días de prueba y los pagos.
+            Todo lo que necesitas saber sobre la membresía, los 3 días de prueba y los pagos.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ export default function PricingPage() {
       {/* Banner de Garantía Final */}
       <div className="max-w-3xl mx-auto px-6 mt-16 text-center">
         <div className="glass-panel rounded-2xl p-6 border border-white/5 text-xs text-zinc-400 leading-relaxed">
-          🔒 <strong>Cero Riesgo:</strong> Si dentro de tus primeros 15 días decides no continuar,
+          🔒 <strong>Cero Riesgo:</strong> Si dentro de tus primeros 3 días decides no continuar,
           no se realiza ningún cobro. Tu información permanece respaldada y protegida.
         </div>
       </div>

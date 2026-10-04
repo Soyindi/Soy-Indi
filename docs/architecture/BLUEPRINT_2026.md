@@ -393,26 +393,26 @@ export default async function PublicCardPage({ params }: PageProps) {
 5. Controles de navegación y guardado directo en la base de datos Turso SQLite.
 
 ### ✅ Fase 4: Estrategia Comercial, Modelo Todo-en-Uno y Pricing (COMPLETADA)
-1. Definición comercial unificada:
-   - **Prueba VIP Gratuita de 15 Días** (sin tarjeta obligatoria al inicio).
+1. Definición comercial unificada y minimalista:
+   - **Prueba Gratuita de 3 Días** (sin tarjeta obligatoria al registrarse).
+   - **Plan Mensual Flexible**: **$2.500 CLP / mes** / $3 USD (acceso total a tarjetas digitales, analíticas y métricas, CV y presentaciones).
    - **Plan Semestral Recomendado**: **$6.000 CLP cada 6 meses** (~$1.000 CLP/mes, 60% de ahorro) / $7 USD.
-   - **Plan Mensual Flexible**: **$2.500 CLP / mes** / $3 USD.
-   - **Modelo Todo-en-Uno**: Tarjetas, visitas, QR y hosting ilimitados, con **30 créditos de IA mensuales** para ATS CV y Presentaciones.
-2. Entidades y Server Actions de suscripción (`checkUserEntitlementAction`, `consumeAiCreditsAction`, `createCheckoutSessionAction`).
+   - **Modelo Todo-en-Uno Sin Créditos**: Eliminación de fricción de créditos artificiales. Acceso irrestricto a todas las funcionalidades mientras la membresía esté activa.
+2. Entidades y Server Actions de suscripción (`checkUserEntitlementAction`, `createCheckoutSessionAction`).
 3. Página dedicada `/pricing` con tabla comparativa de beneficios, badge de descuento, calculador de ahorro y FAQ interactivo (`FaqAccordion.tsx`).
 4. Componente de notificación contextual `TrialBanner.tsx` integrado en `/cards`, `/cv` y `/presentations` con cuenta regresiva en vivo y CTA directo.
 
 ### ✅ Fase 5: Landing Page de Alta Conversión en 7 Bloques Estratégicos (COMPLETADA)
-1. **Hero Interactivo**: Titular de alto impacto, CTA de prueba gratuita de 15 días y demostración en vivo de la tarjeta con simulación de escaneo QR y WhatsApp.
+1. **Hero Interactivo**: Titular de alto impacto, CTA de prueba gratuita de 3 días y demostración en vivo de la tarjeta con simulación de escaneo QR y WhatsApp.
 2. **Social Proof & Métricas**: Contadores dinámicos de tarjetas activas, interacciones registradas y tasa de contacto vía WhatsApp.
-3. **Tabla Comparativa Disruptiva**: Análisis cara a cara "Tarjetas de Papel Tradicionales vs. INDI Digital 2026".
+3. **Tabla Comparativa Disruptiva**: Análisis cara a cara "Tarjetas de Papel Tradicionales vs. INDI Digital 2026 ($2.500/mes o $1.000/mes semestral)".
 4. **Bento Grid de la Suite Todo-en-Uno**:
    - Tarjetas de Presentación Glassmorphism con QR y Web Share.
    - Smart CV ATS Optimizer con auditoría algorítmica.
-   - Orbital Presentations con generación cinematográfica por IA.
-5. **Sección de Precios Integrada**: Selector de divisa CLP / USD, con el Plan Semestral destacado como la opción más inteligente.
-6. **Preguntas Frecuentes (FAQ)**: Respuestas claras sobre la prueba de 15 días, formas de pago (Webpay, CuentaRUT, Tarjetas, Stripe) y créditos de IA.
-7. **CTA Final Volumétrico**: Cierre persuasivo sin riesgo con botón de registro inmediato a la prueba VIP.
+   - Orbital Presentations con generación cinemática.
+5. **Sección de Precios Integrada**: Selector de divisa CLP / USD, con el Plan Mensual ($2.500 CLP) y Plan Semestral ($6.000 CLP) claros y sin letra chica.
+6. **Preguntas Frecuentes (FAQ)**: Respuestas claras sobre la prueba de 3 días, formas de pago (Webpay, CuentaRUT, Tarjetas, Stripe) y cero letra chica.
+7. **CTA Final Volumétrico**: Cierre persuasivo sin riesgo con botón de registro inmediato a la prueba gratuita.
 ### ✅ Fase 6: Onboarding Hub y Selector de Experiencia ('/start') (COMPLETADA)
 1. **Ruta Server Component Dinámica en `/start`**:
    - Acceso inmediato al presionar *"Comenzar Prueba de 15 Días"* o *"Prueba Gratis"* desde cualquier CTA de la Landing Page.
@@ -758,7 +758,7 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Activación de proveedor `google` con enlace declarativo de credenciales desde variables de entorno (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`).
    - Soporte automático para fallback en entornos donde las credenciales sociales no estén configuradas aún, manteniendo activo el flujo de correo y contraseña sin fallos de compilación ni ejecución.
 2. **Hook de Ciclo de Vida de Usuario (`databaseHooks.user.create.before`)**:
-   - Asignación determinista de 15 días de prueba gratuita (`trialEndsAt: Date.now() + 15 días`), 30 créditos de IA para inferencia de modelos de frontera y estado `'TRIAL'` de forma inmediata y automática cuando un nuevo usuario se registra vía Google OAuth o Email.
+   - Asignación determinista de 3 días de prueba gratuita (`trialEndsAt: Date.now() + 3 días`) y estado `'TRIAL'` de forma inmediata y automática cuando un nuevo usuario se registra vía Google OAuth o Email. Modelo simplificado sin créditos artificiales de IA.
 3. **UI/UX: Componente Accesible `AuthModal.tsx`, Ruta `/login` & Navegación Global**:
    - Creación de [src/features/dashboard/components/AuthModal.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/dashboard/components/AuthModal.tsx) con soporte dual Google OAuth One-Click y formulario de Email/Contraseña.
    - Creación de ruta pública dedicada [src/app/login/page.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/app/login/page.tsx) con metadata SEO y retorno inteligente.

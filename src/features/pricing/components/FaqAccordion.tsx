@@ -10,14 +10,14 @@ interface FaqItem {
 
 const FAQ_ITEMS: FaqItem[] = [
   {
-    question: '¿Cómo funcionan los 15 días de prueba gratis?',
+    question: '¿Cómo funcionan los 3 días de prueba gratis?',
     answer:
-      'Al crear tu cuenta tienes 15 días completos para usar todo gratis, sin ningún compromiso y sin pedirte tarjeta de crédito. Puedes crear tu tarjeta, personalizarla con tus datos y compartir tu link o tu código QR con tus clientes desde el primer minuto.',
+      'Al crear tu cuenta tienes 3 días completos para usar todo gratis, sin ningún compromiso y sin pedirte tarjeta de crédito. Puedes crear tu tarjeta, personalizarla con tus datos, revisar tus métricas de visitas y compartir tu link o tu código QR con tus clientes desde el primer minuto.',
   },
   {
-    question: '¿Por qué cuesta solo $1.000 pesos al mes?',
+    question: '¿Cuánto cuesta el servicio después de los 3 días?',
     answer:
-      'Queremos que cualquier persona, negocio de barrio o emprendedor pueda tener una presencia impecable en internet sin pagar de más. Nuestro plan semestral cuesta solo $6.000 pesos cada 6 meses (equivalente a $1.000 al mes), lo que es mucho más barato que mandar a imprimir una sola caja de tarjetas de papel.',
+      'Puedes suscribirte por solo $2.500 CLP al mes para mantener tus tarjetas digitales, métricas, currículum profesional y presentaciones activas. O si prefieres ahorrar un 60%, puedes optar por el plan semestral de $6.000 CLP cada 6 meses (equivalente a $1.000 al mes).',
   },
   {
     question: '¿Mis clientes necesitan instalar alguna aplicación para ver mi tarjeta?',
@@ -25,14 +25,9 @@ const FAQ_ITEMS: FaqItem[] = [
       'No, para nada. Tu cliente solo escanea tu código QR con la cámara de su celular o toca el enlace que le envíes por WhatsApp, y tu tarjeta se abre al instante en su navegador (funciona perfecto en cualquier iPhone o Android).',
   },
   {
-    question: '¿Qué pasa cuando se terminen mis 15 días de prueba?',
+    question: '¿Qué pasa cuando se terminen mis 3 días de prueba?',
     answer:
-      'Tu información, tu tarjeta y tus diseños quedan guardados de forma segura en tu cuenta. Para que tu tarjeta siga visible en internet para tus clientes, solo debes activar tu membresía de $6.000 pesos por 6 meses.',
-  },
-  {
-    question: '¿Qué son los créditos de ayuda con Inteligencia Artificial?',
-    answer:
-      'Son ayudas automáticas que te damos todos los meses para que no tengas que redactar desde cero. Por ejemplo, te sugerimos textos profesionales para tu presentación o armamos diapositivas por ti en segundos. Visitar tus tarjetas y escanear tus códigos QR siempre es 100% ilimitado.',
+      'Tu información, tu tarjeta y tus diseños quedan guardados de forma segura en tu cuenta. Para que tu tarjeta siga visible en internet para tus clientes y continúes registrando visitas y clics, solo debes activar tu suscripción mensual de $2.500 CLP o semestral de $6.000 CLP.',
   },
   {
     question: '¿Qué medios de pago puedo usar en Chile?',

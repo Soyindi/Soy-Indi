@@ -48,7 +48,7 @@ src/
    - Capturar excepciones con bloques `try/catch` y registrar en consola del servidor antes de responder al cliente.
 5. **Autenticación Better-Auth & Google OAuth Multi-Cuenta:**
    - Toda resolución de sesión debe aprovechar `auth.api.getSession({ headers })` en `@/shared/lib/session` de forma transparente.
-   - Todo nuevo usuario registrado con Google OAuth o credenciales locales debe recibir automáticamente 15 días de prueba (`trialEndsAt`) y 30 créditos de IA mediante el hook `databaseHooks.user.create.before`.
+   - Todo nuevo usuario registrado con Google OAuth o credenciales locales debe recibir automáticamente 3 días de prueba gratuita (`trialEndsAt: Date.now() + 3 días`) y estado `'TRIAL'` mediante el hook `databaseHooks.user.create.before`. Tras dicho período, el acceso a tarjetas digitales, métricas, CV y presentaciones se gestiona mediante la suscripción mensual ($2.500 CLP) o semestral ($6.000 CLP) sin restricción por créditos de uso.
    - Las variables de entorno de producción (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) deben configurarse en Vercel con URIs de redirección autorizadas en Google Cloud Console.
 6. **Protección contra Open Redirect & Flujo de Autenticación Contextual:**
    - Todo endpoint o formulario de autenticación que acepte `callbackUrl` debe validar y sanitizar el valor obligatoriamente mediante `AuthRedirectParamsSchema` o `sanitizeCallbackUrl` ubicado en `@/entities/auth/schemas`.

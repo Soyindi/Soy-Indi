@@ -15,7 +15,6 @@ export interface PlanConfig {
   monthlyEquivalentUsd: number;
   discountPercentage?: number;
   trialDays: number;
-  aiCreditsMonthly: number;
   features: PlanFeature[];
 }
 
@@ -28,19 +27,17 @@ export const PRICING_PLANS: Record<PlanInterval, PlanConfig> = {
     intervalText: 'facturado cada mes',
     monthlyEquivalentClp: 2500,
     monthlyEquivalentUsd: 3,
-    trialDays: 15,
-    aiCreditsMonthly: 30,
+    trialDays: 3,
     features: [
-      { text: '15 Días de Prueba Gratis (Sin tarjeta de crédito)' },
+      { text: '3 Días de Prueba Gratis (Sin ingresar tarjeta)' },
       { text: 'Tarjetas Digitales Ilimitadas para todos tus negocios' },
       { text: 'Botón directo para abrir chat de WhatsApp con tus clientes' },
       { text: 'Código QR listo para imprimir en stickers o mostrar en tu celular' },
+      { text: 'Métricas y contador de visitas y clics en tiempo real' },
+      { text: 'Creador de Currículum en PDF listo para imprimir y postular' },
+      { text: 'Presentaciones cinemáticas en pantalla completa para propuestas' },
       { text: 'Se ve impecable al compartir en WhatsApp, Facebook e Instagram' },
-      { text: 'Sin marcas de agua en tus tarjetas' },
-      { text: 'Creador de Currículum en PDF listo para imprimir' },
-      { text: 'Presentaciones en pantalla completa para mostrar tus propuestas' },
-      { text: '30 Ayudas de redacción con Inteligencia Artificial al mes' },
-      { text: 'Contador de visitas y clics de tus clientes' },
+      { text: 'Sin marcas de agua ni restricciones en tus tarjetas' },
     ],
   },
   semiannual: {
@@ -52,20 +49,18 @@ export const PRICING_PLANS: Record<PlanInterval, PlanConfig> = {
     monthlyEquivalentClp: 1000,
     monthlyEquivalentUsd: 1.16,
     discountPercentage: 60,
-    trialDays: 15,
-    aiCreditsMonthly: 30,
+    trialDays: 3,
     features: [
       { text: '🔥 Ahorras el 60% frente al pago mensual', highlight: true },
-      { text: '15 Días de Prueba Gratis (Sin tarjeta de crédito)' },
+      { text: '3 Días de Prueba Gratis (Sin ingresar tarjeta)' },
       { text: 'Tarjetas Digitales Ilimitadas para todos tus negocios' },
       { text: 'Botón directo para abrir chat de WhatsApp con tus clientes' },
       { text: 'Código QR listo para imprimir en stickers o mostrar en tu celular' },
-      { text: 'Se ve impecable al compartir en WhatsApp, Facebook e Instagram' },
+      { text: 'Métricas completas de visitas y clics con analíticas en tiempo real' },
+      { text: 'Creador de Currículum en PDF listo para imprimir y postular' },
+      { text: 'Presentaciones cinemáticas en pantalla completa para propuestas' },
       { text: 'Tu propia marca 100% limpia (Sin logos de INDI)' },
-      { text: 'Creador y corrector de Currículum con descarga en PDF' },
-      { text: 'Presentaciones en pantalla completa para mostrar tus propuestas' },
-      { text: '30 Ayudas de redacción con Inteligencia Artificial al mes' },
-      { text: 'Contador de visitas y clics de tus clientes con soporte prioritario' },
+      { text: 'Soporte prioritario y actualizaciones continuas' },
     ],
   },
 };

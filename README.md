@@ -83,19 +83,19 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 - **Desplazamiento Suave Accesible**: Configuración nativa `scroll-behavior: smooth` y compensación de altura fija (`scroll-padding-top: 5rem`), con compatibilidad automática para usuarios con `prefers-reduced-motion`.
 
 ### 6. 🚪 Onboarding Hub Guiado (`/start`)
-- Al iniciar la prueba de 15 días, el usuario accede a un selector interactivo (*Job-to-be-Done*) que le permite elegir por dónde empezar (Tarjeta, CV o Presentación) con estimaciones de tiempo (2 a 4 minutos).
+- Al iniciar la prueba de 3 días, el usuario accede a un selector interactivo (*Job-to-be-Done*) que le permite elegir por dónde empezar (Tarjeta, CV o Presentación) con estimaciones de tiempo (2 a 4 minutos).
 
 ---
 
-## 💎 Modelo Comercial Inteligente
+## 💎 Modelo Comercial Inteligente & Minimalista
 
-INDI implementa un modelo **Todo-en-Uno sin restricciones ocultas**:
+INDI implementa un modelo **Todo-en-Uno sin restricciones ocultas ni sistemas artificiales de créditos**:
 
 | Plan | Inversión | Beneficios Incluidos |
 | :--- | :--- | :--- |
-| **Prueba VIP** | **Gratis 15 Días** (Sin tarjeta requerida) | Acceso total a los 3 productos + 30 créditos de IA. |
-| **Plan Semestral (Recomendado)** | **$6.000 CLP / 6 meses** (~$1.000 CLP/mes) o **$7 USD** | **60% de Ahorro**. Tarjetas, visitas y QR ilimitados + 30 créditos IA/mes. |
-| **Plan Mensual** | **$2.500 CLP / mes** o **$3 USD** | Máxima flexibilidad sin permanencia + 30 créditos IA/mes. |
+| **Prueba Gratuita** | **Gratis 3 Días** (Sin tarjeta requerida) | Acceso total a los 3 productos (Tarjetas, Métricas, CV, Presentaciones). |
+| **Plan Mensual Flexible** | **$2.500 CLP / mes** o **$3 USD** | Tarjetas digitales ilimitadas, métricas en tiempo real, CV y presentaciones sin permanencia. |
+| **Plan Semestral (Recomendado)** | **$6.000 CLP / 6 meses** (~$1.000 CLP/mes) o **$7 USD** | **60% de Ahorro**. Mismos beneficios con el máximo ahorro anual. |
 
 ---
 

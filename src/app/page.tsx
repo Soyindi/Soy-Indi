@@ -175,7 +175,7 @@ export default function HomePage() {
             <ul className="space-y-4 text-xs sm:text-sm text-zinc-200">
               <li className="flex items-start gap-3">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 stroke-[3]" />
-                <span><strong>Súper económica:</strong> Solo $1.000 pesos al mes ($6.000 al semestre) para compartirla todas las veces que quieras.</span>
+                <span><strong>Súper económica:</strong> Solo $2.500 pesos al mes (o $1.000/mes con el plan semestral) para compartirla todas las veces que quieras.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 stroke-[3]" />
@@ -283,7 +283,7 @@ export default function HomePage() {
             Preguntas Frecuentes
           </h2>
           <p className="text-sm text-zinc-300 mt-2">
-            Todo claro y sin enredos antes de empezar tus 15 días gratis:
+            Todo claro y sin enredos antes de empezar tus 3 días gratis:
           </p>
         </div>
 
@@ -295,7 +295,7 @@ export default function HomePage() {
         <div className="glass-panel rounded-3xl p-10 sm:p-14 border border-indigo-500/30 relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
-              Comienza hoy tus 15 días gratis
+              Comienza hoy tus 3 días gratis
             </h2>
             <p className="text-sm sm:text-base text-zinc-300 max-w-xl mx-auto mb-8">
               Tu tarjeta estará lista en 2 minutos. Compártela en tus redes o por WhatsApp y empieza a recibir nuevos clientes.

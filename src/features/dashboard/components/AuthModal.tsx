@@ -129,7 +129,7 @@ export function AuthModal({
           </h2>
           <p className="text-xs text-zinc-400 mt-1">
             {mode === 'signup'
-              ? 'Comienza tu prueba gratuita de 15 días con 30 créditos de IA incluidos.'
+              ? 'Comienza tu prueba gratuita de 3 días con acceso total a todas las herramientas.'
               : 'Accede a tus tarjetas, currículums calibrados y presentaciones.'}
           </p>
         </div>

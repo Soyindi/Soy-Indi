@@ -9,7 +9,7 @@ interface TrialBannerProps {
 }
 
 export function TrialBanner({ entitlement }: TrialBannerProps) {
-  // Si tiene suscripción activa o quedan más de 10 días de prueba, mostrar badge minimalista o nada intrusivo
+  // Si tiene suscripción activa
   if (entitlement.status === 'ACTIVE') {
     return (
       <div className="w-full bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-xs flex items-center justify-between text-emerald-300">
@@ -18,9 +18,6 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
           <span>Membresía INDI Pro Activa • {entitlement.daysRemaining} días restantes</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="bg-emerald-500/20 px-2 py-0.5 rounded text-[11px] font-mono">
-            {entitlement.aiCredits} créditos IA disponibles
-          </span>
           <Link href="/pricing" className="text-emerald-400 hover:text-emerald-300 underline font-medium">
             Gestionar plan
           </Link>
@@ -29,9 +26,9 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
     );
   }
 
-  // Si está en período de prueba
+  // Si está en período de prueba (3 días)
   if (entitlement.status === 'TRIAL') {
-    const isUrgent = entitlement.daysRemaining <= 3;
+    const isUrgent = entitlement.daysRemaining <= 1;
     return (
       <div
         className={`w-full px-4 py-2.5 text-xs flex flex-wrap items-center justify-between gap-3 border-b transition-all ${
@@ -48,24 +45,20 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
           ></span>
           <span>
             {isUrgent ? (
-              <strong>¡Últimos {entitlement.daysRemaining} días de prueba gratuita!</strong>
+              <strong>¡Último día de tu prueba gratuita!</strong>
             ) : (
-              <>Período de Prueba VIP: <strong>{entitlement.daysRemaining} días restantes</strong></>
+              <>Prueba Gratuita: <strong>{entitlement.daysRemaining} días restantes</strong></>
             )}
-            {' '}• Acceso total a Tarjetas, ATS CV y Presentaciones.
+            {' '}• Acceso total a Tarjetas Digitales, Métricas, CV y Presentaciones.
           </span>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="bg-white/10 px-2.5 py-0.5 rounded text-[11px] font-mono text-zinc-300">
-            {entitlement.aiCredits} Créditos IA
-          </span>
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-semibold text-xs transition shadow-sm hover:shadow-amber-500/20"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-semibold text-xs transition shadow-sm hover:shadow-amber-500/20 min-h-[36px]"
           >
-            Asegurar $6.000 / 6 meses
-            <span className="text-[10px] bg-black/10 px-1 rounded">-60%</span>
+            Suscríbete por $2.500 / mes
           </Link>
         </div>
       </div>
@@ -78,14 +71,14 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
       <div className="flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-rose-500"></span>
         <span>
-          <strong>Tu período de prueba ha finalizado.</strong> Actualiza hoy para reactivar tus tarjetas públicas y herramientas de IA.
+          <strong>Tu período de prueba de 3 días ha finalizado.</strong> Activa tu membresía mensual por $2.500 o semestral por $6.000 para mantener tus tarjetas y métricas activas.
         </span>
       </div>
       <Link
         href="/pricing"
-        className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium transition"
+        className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium transition min-h-[36px] flex items-center"
       >
-        Activar Plan Pro ($6.000 / 6 meses)
+        Activar por $2.500 / mes
       </Link>
     </div>
   );
