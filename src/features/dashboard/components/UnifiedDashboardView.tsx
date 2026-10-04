@@ -31,6 +31,9 @@ import {
 import { deleteCardAction, toggleCardActiveAction } from '@/features/card-builder/dashboard-actions';
 import { deletePresentationAction } from '@/features/orbital-presentations/actions';
 import { deleteSmartCvAction } from '@/features/ai-smart-cv/actions';
+import { useSession, signOut } from '@/shared/lib/auth-client';
+import { AuthModal } from '@/features/dashboard/components/AuthModal';
+import { LogIn, LogOut, User as UserIcon } from 'lucide-react';
 
 interface CardItem {
   id: string;
@@ -88,6 +91,8 @@ export function UnifiedDashboardView({
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [copiedPresSlug, setCopiedPresSlug] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { data: sessionData, isPending: isSessionLoading } = useSession();
 
   // Filtrado de tarjetas
   const filteredCards = cardsList.filter(
@@ -208,10 +213,10 @@ export function UnifiedDashboardView({
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Link
             href="/pricing"
-            className="text-xs text-zinc-400 hover:text-white transition hidden sm:inline-block"
+            className="text-xs text-zinc-400 hover:text-white transition hidden md:inline-block"
           >
             Planes y Precios
           </Link>
@@ -221,8 +226,55 @@ export function UnifiedDashboardView({
           >
             + Nuevo Proyecto
           </Link>
+
+          {/* Estado de Cuenta / Autenticación Multi-Cuenta */}
+          {sessionData?.user ? (
+            <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 p-[1px] shrink-0" title={sessionData.user.email || ''}>
+                {sessionData.user.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={sessionData.user.image}
+                    alt={sessionData.user.name || 'Usuario'}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-xs font-bold text-white">
+                    {(sessionData.user.name || 'U').slice(0, 1).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  await signOut();
+                  window.location.reload();
+                }}
+                className="min-h-[36px] min-w-[36px] p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 transition-colors cursor-pointer"
+                title="Cerrar sesión"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="min-h-[36px] inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-xs font-semibold hover:opacity-95 transition-all shadow-md shadow-indigo-500/20 cursor-pointer"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Acceder con Google</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Modal de Autenticación */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        callbackUrl="/dashboard"
+      />
 
       {/* Cabecera Principal del Dashboard */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">

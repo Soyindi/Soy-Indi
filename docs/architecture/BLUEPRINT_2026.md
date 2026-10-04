@@ -753,8 +753,17 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada en Vitest (105 de 105 tests en 19 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
 
-
-
-
-
-
+### ✅ Fase 26: Autenticación Multi-Cuenta (Google OAuth + Better-Auth), Lifecycle Hooks y Preparación para Vercel (COMPLETADA)
+1. **Configuración Oficial de Better-Auth con Google OAuth (`src/shared/lib/auth.ts`)**:
+   - Activación de proveedor `google` con enlace declarativo de credenciales desde variables de entorno (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`).
+   - Soporte automático para fallback en entornos donde las credenciales sociales no estén configuradas aún, manteniendo activo el flujo de correo y contraseña sin fallos de compilación ni ejecución.
+2. **Hook de Ciclo de Vida de Usuario (`databaseHooks.user.create.before`)**:
+   - Asignación determinista de 15 días de prueba gratuita (`trialEndsAt: Date.now() + 15 días`), 30 créditos de IA para inferencia de modelos de frontera y estado `'TRIAL'` de forma inmediata y automática cuando un nuevo usuario se registra vía Google OAuth o Email.
+3. **UI/UX: Componente Accesible `AuthModal.tsx` & Selector de Perfil**:
+   - Creación de [src/features/dashboard/components/AuthModal.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/dashboard/components/AuthModal.tsx) con soporte dual Google OAuth One-Click y formulario de Email/Contraseña.
+   - Botones con touch targets ergonómicos $\ge 48\text{px}$, accesibilidad WCAG 2.2 AA y micro-animaciones de estado de carga.
+   - Integración del avatar de usuario autenticado y botón de cierre de sesión seguro en la barra de navegación del Dashboard ([UnifiedDashboardView.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/dashboard/components/UnifiedDashboardView.tsx)).
+4. **Verificación de Calidad y Pruebas Unitarias (109 Tests Passing)**:
+   - Nueva suite de pruebas unitarias: `tests/unit/oauth-multi-tenant.test.ts` (4 pruebas unitarias).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (109 de 109 tests en 20 suites).
+   - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).

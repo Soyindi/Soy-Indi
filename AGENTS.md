@@ -46,6 +46,10 @@ src/
    - Si la validación falla, retornar `{ success: false, error: ... }` sin exponer trazas de error internas del servidor.
 4. **Manejo de Errores Silencioso:**
    - Capturar excepciones con bloques `try/catch` y registrar en consola del servidor antes de responder al cliente.
+5. **Autenticación Better-Auth & Google OAuth Multi-Cuenta:**
+   - Toda resolución de sesión debe aprovechar `auth.api.getSession({ headers })` en `@/shared/lib/session` de forma transparente.
+   - Todo nuevo usuario registrado con Google OAuth o credenciales locales debe recibir automáticamente 15 días de prueba (`trialEndsAt`) y 30 créditos de IA mediante el hook `databaseHooks.user.create.before`.
+   - Las variables de entorno de producción (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) deben configurarse en Vercel con URIs de redirección autorizadas en Google Cloud Console.
 
 ---
 

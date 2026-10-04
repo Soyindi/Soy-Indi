@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-105_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-109_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -237,12 +237,45 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la 
 
 ---
 
+## ☁️ Guía de Despliegue en Vercel & Google OAuth (Producción Multi-Cuenta)
+
+INDI está 100% optimizado para desplegarse en **Vercel** con rendimiento perimetral sub-milisegundo gracias a Turso LibSQL Serverless y Better-Auth.
+
+### 1. Variables de Entorno Requeridas en Vercel Dashboard
+En la sección **Project Settings > Environment Variables** de tu proyecto en Vercel, agrega:
+
+| Variable | Descripción / Origen | Ejemplo |
+| :--- | :--- | :--- |
+| `TURSO_DATABASE_URL` | Endpoint de tu base de datos Turso Cloud distribuida | `libsql://soyindi-soyindi.aws-us-west-2.turso.io` |
+| `TURSO_AUTH_TOKEN` | Token de autenticación de Turso generado con `turso db tokens create` | `eyJhbGciOi...` |
+| `BETTER_AUTH_SECRET` | Clave secreta criptográfica (mínimo 32 caracteres) | `openssl rand -base64 32` |
+| `BETTER_AUTH_URL` | URL canónica de producción en Vercel | `https://indi.bio` o `https://tu-proyecto.vercel.app` |
+| `NEXT_PUBLIC_APP_URL` | Misma URL pública para el cliente React | `https://indi.bio` o `https://tu-proyecto.vercel.app` |
+| `GOOGLE_CLIENT_ID` | Client ID obtenido en Google Cloud Console | `123456789-abc.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | Client Secret obtenido en Google Cloud Console | `GOCSPX-xxxxxxxxxxxxx` |
+| `NVIDIA_API_KEY` | Clave de API de NVIDIA NIM para inferencia de IA | `nvapi-...` |
+
+### 2. Configurar Google Cloud Console (OAuth 2.0)
+1. Ve a [Google Cloud Console](https://console.cloud.google.com/) > **APIs & Services > Credentials**.
+2. Crea unas nuevas credenciales de tipo **OAuth 2.0 Client ID** (Web Application).
+3. En **Authorized JavaScript origins**, añade:
+   - `http://localhost:3000` (desarrollo local)
+   - `https://tu-proyecto.vercel.app` (preview Vercel)
+   - `https://indi.bio` (dominio de producción)
+4. En **Authorized redirect URIs**, añade la ruta oficial de callback de Better Auth:
+   - `http://localhost:3000/api/auth/callback/google`
+   - `https://tu-proyecto.vercel.app/api/auth/callback/google`
+   - `https://indi.bio/api/auth/callback/google`
+5. Guarda y copia el **Client ID** y **Client Secret** en las variables de entorno de Vercel.
+
+---
+
 ## ⚡ Comandos Disponibles
 
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
-- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (95 pruebas en 18 suites).
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (109 pruebas en 20 suites).
 - `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
 - `npm run db:generate`: Genera archivos de migración SQL basados en el esquema de Drizzle.
 - `npm run db:migrate`: Aplica las migraciones declarativas sobre la base de datos Turso LibSQL (Local o Nube).
