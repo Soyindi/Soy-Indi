@@ -57,12 +57,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <main className="relative z-10 flex-1 flex items-center justify-center">
         <AuthModal
           isOpen={true}
-          onClose={() => {
-            // En la página dedicada de login, el botón de cierre redirige al home
-            if (typeof window !== 'undefined') {
-              window.location.href = '/';
-            }
-          }}
           defaultMode={mode}
           callbackUrl={callbackUrl}
         />

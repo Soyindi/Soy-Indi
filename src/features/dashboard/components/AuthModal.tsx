@@ -8,7 +8,7 @@ import { sanitizeCallbackUrl } from '@/entities/auth/schemas';
 
 interface AuthModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   defaultMode?: 'login' | 'signup';
   callbackUrl?: string;
 }
@@ -22,6 +22,14 @@ export function AuthModal({
   const router = useRouter();
   const safeCallbackUrl = sanitizeCallbackUrl(callbackUrl, '/dashboard');
   const [mode, setMode] = useState<'login' | 'signup'>(defaultMode);
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      router.push('/');
+    }
+  };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -68,7 +76,7 @@ export function AuthModal({
         } else {
           router.push(safeCallbackUrl);
           router.refresh();
-          onClose();
+          handleClose();
         }
       } else {
         const res = await authClient.signIn.email({
@@ -82,7 +90,7 @@ export function AuthModal({
         } else {
           router.push(safeCallbackUrl);
           router.refresh();
-          onClose();
+          handleClose();
         }
       }
     } catch (err: any) {
@@ -101,7 +109,7 @@ export function AuthModal({
 
         {/* Cerrar modal */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           type="button"
           className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
           title="Cerrar ventana"
