@@ -162,7 +162,7 @@ export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
                 className="min-h-[44px] inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 transition-all text-center cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Prueba 15 Días</span>
+                <span>Prueba 3 Días</span>
               </button>
             </>
           )}

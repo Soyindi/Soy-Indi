@@ -53,7 +53,7 @@ C:\Users\Matías Riquelme\Desktop\Indi\
 │   │   ├── cv/                      # Optimizador de Smart CV con auditoría algorítmica ATS
 │   │   ├── presentations/           # Estudio cinematográfico de presentaciones 16:9 con IA
 │   │   ├── pricing/                 # Página comercial con comparativa, FAQ y garantías
-│   │   ├── start/                   # Onboarding Hub interactivo para prueba gratuita de 15 días
+│   │   ├── start/                   # Onboarding Hub interactivo para prueba gratuita de 3 días
 │   │   ├── layout.tsx               # Root layout con dark mode y estilos globales
 │   │   └── page.tsx                 # Landing Page de alta conversión en 7 bloques estratégicos
 │   │
@@ -415,8 +415,8 @@ export default async function PublicCardPage({ params }: PageProps) {
 7. **CTA Final Volumétrico**: Cierre persuasivo sin riesgo con botón de registro inmediato a la prueba gratuita.
 ### ✅ Fase 6: Onboarding Hub y Selector de Experiencia ('/start') (COMPLETADA)
 1. **Ruta Server Component Dinámica en `/start`**:
-   - Acceso inmediato al presionar *"Comenzar Prueba de 15 Días"* o *"Prueba Gratis"* desde cualquier CTA de la Landing Page.
-   - Integración nativa con `checkUserEntitlementAction` para validar días restantes de prueba VIP (15 días) y créditos de IA (30 créditos).
+   - Acceso inmediato al presionar *"Comenzar Prueba de 3 Días"* o *"Prueba Gratis"* desde cualquier CTA de la Landing Page.
+   - Integración nativa con `checkUserEntitlementAction` para validar días restantes de prueba VIP (3 días) con acceso total.
 2. **Componente de Decisión Intuitiva `OnboardingChoiceGrid`**:
    - Tarjeta 1: **Crear mi Tarjeta Digital** (Networking, QR dinámico, WhatsApp, 2 min) -> `/cards/new`.
    - Tarjeta 2: **Optimizar o Crear Smart CV** (Filtros ATS, formato A4 imprimible, 4 min) -> `/cv`.
@@ -694,7 +694,7 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Protección estricta contra IDOR y mutaciones anónimas en `getUserCardsAction`, `deleteCardAction`, `toggleCardActiveAction` ([src/features/card-builder/dashboard-actions.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/card-builder/dashboard-actions.ts)).
    - Aislamiento multi-cuenta completo en `getUserSmartCvsAction`, `upsertSmartCvAction` y creación de `deleteSmartCvAction` ([src/features/ai-smart-cv/actions.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/ai-smart-cv/actions.ts)) con validación estricta de propiedad contra `getSafeAuthenticatedUserId`.
    - Prevención de colisión y usurpación de URLs (slugs) entre usuarios distintos en `upsertPresentationAction` ([src/features/orbital-presentations/actions.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/orbital-presentations/actions.ts)).
-   - Resolución de derechos de acceso y período de prueba de 15 días adaptada a multi-usuario en `checkUserEntitlementAction` ([src/features/pricing/actions.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/pricing/actions.ts)).
+   - Resolución de derechos de acceso y período de prueba de 3 días adaptada a multi-usuario en `checkUserEntitlementAction` ([src/features/pricing/actions.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/pricing/actions.ts)).
 2. **Corrección de Persistencia de Ubicación & Datos**:
    - Enlace completo del campo `address` en el payload de guardado de `CardBuilder.tsx` para sincronización bidireccional con SQLite y renderizado del mapa.
 3. **Ergonomía Táctil Mobile-First (WCAG 2.2 AA) & Thumb Zone**:
@@ -773,7 +773,7 @@ export default async function PublicCardPage({ params }: PageProps) {
 1. **Unificación de la Experiencia de Autenticación & Detección de Sesión**:
    - Creación del componente transversal [GlobalNavbar.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/shared/ui/GlobalNavbar.tsx) en `@/shared/ui` que sustituye el header estático por una barra reactiva consciente del estado del usuario (`useSession`).
    - Cuando el usuario está autenticado, la barra muestra su avatar de Google, botón directo a *"Mi Panel"* (`/dashboard`), acción rápida *"Nuevo"* (`/start`) y botón ergonómico de desconexión.
-   - Cuando el usuario es visitante, `"Ingresar"` levanta `AuthModal` con modo login o redirige a `/login?mode=login&callbackUrl=/dashboard`, y `"Prueba 15 Días"` activa el registro fluido con Google dirigiendo al onboarding (`/login?mode=signup&callbackUrl=/start`).
+   - Cuando el usuario es visitante, `"Ingresar"` levanta `AuthModal` con modo login o redirige a `/login?mode=login&callbackUrl=/dashboard`, y `"Prueba 3 Días"` activa el registro fluido con Google dirigiendo al onboarding (`/login?mode=signup&callbackUrl=/start`).
 2. **Sincronización en Cascada de Navegación & Mobile Drawer (`MobileNavDrawer.tsx`)**:
    - Integración de sesión Better-Auth en el menú móvil: muestra avatar y perfil del usuario, acceso directo a `/dashboard` y logout rápido táctil ($\ge 44\text{px}$). Para visitantes, ofrece botones separados para inicio de sesión y registro de prueba.
    - Estandarización de botones de conversión en la Landing Page (`/`), sección de precios (`PricingSection.tsx`), Onboarding (`/start`) y Dashboard para redirigir contextualmente preservando el parámetro seguro de retorno `callbackUrl`.
@@ -821,6 +821,23 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Estandarización explícita de `categoryHref="/dashboard?tab=cards"` en `CardBuilder` y `categoryHref="/dashboard?tab=presentations"` en `PresentationStudio`.
 4. **Control de Calidad y Pruebas Unitarias (117 Tests Passing)**:
    - Nueva aserción en `tests/unit/auth-flow.test.ts` validando la preservación y sanitización estricta de rutas con parámetros de pestaña (`?tab=cvs`, `?tab=presentations`, `?tab=cards`).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (117 de 117 tests en 21 suites).
+   - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
+### ✅ Fase 32: Auditoría Integral de Consistencia Comercial y Unificación de Período de Prueba (COMPLETADA)
+1. **Auditoría UI/UX & Eliminación de Desincronización de Período de Prueba**:
+   - Diagnóstico: Se detectó una inconsistencia de comunicación donde el hero de la Landing Page (`src/app/page.tsx`), la barra de navegación global (`GlobalNavbar.tsx`), el menú lateral móvil (`MobileNavDrawer.tsx`) y las plantillas de presentación conservaban copys desactualizados mencionando "15 días" a pesar de que el motor de negocio (`auth.ts`, `actions.ts`, `entitlements.test.ts`) y la gobernanza definen estrictamente **3 días de prueba gratis**.
+   - Solución:
+     - Hero Section (`src/app/page.tsx`): Actualizado el badge superior a *"Para Emprendedores y Profesionales • 3 Días Gratis"* y el CTA primario a *"Probar Gratis por 3 Días"*.
+     - Barra de Navegación (`src/shared/ui/GlobalNavbar.tsx`): Botón de conversión rápida unificado a *"Prueba 3 Días"*.
+     - Drawer Móvil (`src/shared/ui/MobileNavDrawer.tsx`): Descripción del ítem comercial actualizada a *"Prueba 3 días gratis y luego solo $6.000 cada 6 meses"* y CTA inferior normalizado a *"Prueba Gratis 3 Días"*.
+     - Catálogo de Presentaciones (`src/entities/presentation/templates.ts`): Diapositiva final de pitch deck comercial actualizada a *"Disponible Hoy con 3 Días Gratuitos"*.
+     - Comentarios de arquitectura en vistas App Router (`dashboard/page.tsx`, `cv/page.tsx`, `presentations/page.tsx`): Corregidos a *"Banner de estado de membresía / trial 3 días"*.
+2. **Robustecimiento de Pruebas Unitarias (`tests/unit/oauth-multi-tenant.test.ts`)**:
+   - Se actualizó la prueba de auto-asignación para validar tanto semánticamente el nombre del test como matemáticamente el cálculo de expiración: invoca activamente el hook `before` de `databaseHooks.user.create`, comprobando que `trialEndsAt` corresponde exactamente a una ventana temporal de 3 días (`3 * 24 * 60 * 60 * 1000` ms) con tolerancia estricta de ejecución (< 2000 ms).
+3. **Gobernanza Doc-as-Code**:
+   - Sincronización en cascada de `README.md`, `BLUEPRINT_2026.md` y `AGENTS.md`.
+4. **Control de Calidad y Verificación**:
    - 100% de la suite de pruebas unitarias aprobada en Vitest (117 de 117 tests en 21 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
 

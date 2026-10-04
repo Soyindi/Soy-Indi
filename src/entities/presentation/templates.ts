@@ -220,7 +220,7 @@ export const PRESENTATION_TEMPLATES: PresentationTemplateDefinition[] = [
         },
         {
           id: 'slide-pl-4',
-          title: 'Disponible Hoy con 15 Días Gratuitos',
+          title: 'Disponible Hoy con 3 Días Gratuitos',
           subtitle: 'Comienza a crear tu identidad profesional sin compromisos',
           visualType: 'concept',
           layout: 'standard',

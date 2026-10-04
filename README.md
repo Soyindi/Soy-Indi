@@ -118,7 +118,7 @@ INDI/
 │   ├── presentation-schema.test.ts # Contratos de diapositivas, layouts y plantillas
 │   ├── presentation-heuristics.test.ts # Motor heurístico determinista y Principio de Pirámide
 │   ├── ats-audit.test.ts        # Motor algorítmico de scoring ATS
-│   ├── entitlements.test.ts     # Planes comerciales y 15 días de prueba
+│   ├── entitlements.test.ts     # Planes comerciales y 3 días de prueba
 │   └── security-guardrails.test.ts # Protección multi-tenant de Server Actions
 ├── src/
 │   ├── app/                     # Next.js 16 App Router (Rutas y Edge Handlers)
@@ -134,7 +134,7 @@ INDI/
 │   │   ├── login/               # Portal de autenticación Google OAuth y Email (/login)
 │   │   ├── presentations/       # Estudio cinematográfico 16:9 con AppEditorHeader
 │   │   ├── pricing/             # Página comercial con comparativa, FAQ y garantías
-│   │   ├── start/               # Onboarding Hub interactivo (Prueba 15 días)
+│   │   ├── start/               # Onboarding Hub interactivo (Prueba 3 días)
 │   │   └── page.tsx             # Landing Page de alta conversión en 7 bloques
 │   ├── features/                # Módulos de lógica de negocio (FSD)
 │   │   ├── card-builder/        # Formularios reactivos, dashboard actions y temas
@@ -204,7 +204,7 @@ Las pruebas validan de forma continua:
 1. La integridad de esquemas de datos Zod y restricciones de slugs.
 2. Los contratos de datos de currículums y la mitigación de alucinaciones (`needs_metric`).
 3. El motor heurístico y ponderación algorítmica de puntaje ATS.
-4. Las reglas comerciales de suscripción y 15 días de prueba.
+4. Las reglas comerciales de suscripción y 3 días de prueba.
 5. El aislamiento multi-tenant y bloqueo de llamadas no autorizadas en producción.
 
 ---

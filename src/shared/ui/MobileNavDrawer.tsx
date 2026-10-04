@@ -39,7 +39,7 @@ export function MobileNavDrawer() {
     {
       title: 'Precios ($1.000 pesos al mes)',
       href: '#precios',
-      description: 'Prueba 15 días gratis y luego solo $6.000 cada 6 meses',
+      description: 'Prueba 3 días gratis y luego solo $6.000 cada 6 meses',
       icon: Tag,
     },
     {
@@ -230,7 +230,7 @@ export function MobileNavDrawer() {
                       className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all"
                     >
                       <Sparkles className="w-4 h-4" />
-                      <span>Prueba Gratis 15 Días</span>
+                      <span>Prueba Gratis 3 Días</span>
                       <ArrowRight className="w-4 h-4 ml-auto" />
                     </Link>
 

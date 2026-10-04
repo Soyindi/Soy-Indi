@@ -46,7 +46,7 @@ export default async function UnifiedDashboardPage({ searchParams }: DashboardPa
 
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col bg-zinc-950">
-      {/* Banner de estado de membresía / trial 15 días */}
+      {/* Banner de estado de membresía / trial 3 días */}
       <TrialBanner entitlement={entitlement} />
 
       {/* Luces volumétricas de fondo */}

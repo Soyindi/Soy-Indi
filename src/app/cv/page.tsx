@@ -9,7 +9,7 @@ export default async function SmartCvPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col">
-      {/* Banner de estado de membresía / trial 15 días */}
+      {/* Banner de estado de membresía / trial 3 días */}
       <TrialBanner entitlement={entitlement} />
 
       {/* Luces volumétricas de fondo */}
