@@ -31,12 +31,20 @@ export default async function OnboardingStartPage() {
           </span>
         </Link>
 
-        <Link
-          href="/pricing"
-          className="text-xs text-zinc-400 hover:text-white font-medium transition min-h-[44px] px-3 py-2 rounded-xl hover:bg-white/5 flex items-center"
-        >
-          Detalles de Planes
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="text-xs text-zinc-300 hover:text-white font-medium transition min-h-[44px] px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5"
+          >
+            <span>Ir a Mi Panel</span>
+          </Link>
+          <Link
+            href="/pricing"
+            className="text-xs text-zinc-400 hover:text-white font-medium transition min-h-[44px] px-3 py-2 rounded-xl hover:bg-white/5 flex items-center"
+          >
+            Detalles de Planes
+          </Link>
+        </div>
       </header>
 
       {/* Contenido Principal con el Grid */}

@@ -192,24 +192,29 @@ export function UnifiedDashboardView({
       {/* Barra de Navegación Global del Dashboard */}
       <div className="flex items-center justify-between pb-6 mb-8 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <Link
-            href="/start"
-            className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition-all shadow-sm"
-            title="Volver al Selector de Inicio"
-          >
-            <span className="text-zinc-500 group-hover:-translate-x-0.5 transition-transform">←</span>
-            <span>Menú de Inicio</span>
-          </Link>
-
-          <Link href="/" className="flex items-center gap-2" title="Ir a la Web Principal">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px]">
-              <div className="w-full h-full bg-black/80 rounded-[7px] flex items-center justify-center">
-                <span className="font-black text-xs text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
+          {/* Logo que mantiene al usuario en su Panel de Control */}
+          <Link href="/dashboard" className="flex items-center gap-2.5 group" title="Mi Panel de Control">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+              <div className="w-full h-full bg-black/80 rounded-[11px] flex items-center justify-center">
+                <span className="font-black text-sm text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
                   IN
                 </span>
               </div>
             </div>
-            <span className="text-sm font-bold tracking-tight text-white hidden sm:inline-block">INDI</span>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold tracking-tight text-white leading-none">Mi Panel</span>
+              <span className="text-[10px] text-zinc-400 font-mono">INDI 2026</span>
+            </div>
+          </Link>
+
+          {/* Enlace para visitar la portada web sin perder el contexto */}
+          <Link
+            href="/"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-400 hover:text-white transition-all shadow-sm ml-2"
+            title="Ver la página web principal"
+          >
+            <span>Ver Web Principal</span>
+            <ExternalLink className="w-3 h-3 text-zinc-500" />
           </Link>
         </div>
 
@@ -222,9 +227,10 @@ export function UnifiedDashboardView({
           </Link>
           <Link
             href="/start"
-            className="text-xs px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-300 font-mono font-medium transition"
+            className="text-xs px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-semibold transition shadow-md shadow-indigo-500/20 flex items-center gap-1.5 min-h-[36px]"
           >
-            + Nuevo Proyecto
+            <Plus className="w-3.5 h-3.5" />
+            <span>Nuevo Proyecto</span>
           </Link>
 
           {/* Estado de Cuenta / Autenticación Multi-Cuenta */}

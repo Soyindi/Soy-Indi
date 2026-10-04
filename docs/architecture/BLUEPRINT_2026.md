@@ -804,9 +804,17 @@ export default async function PublicCardPage({ params }: PageProps) {
 3. **Estandarización de Precios y Navegación (`PricingSection.tsx`, `GlobalNavbar.tsx`, `MobileNavDrawer.tsx`)**:
    - Actualización de etiquetas y anclas: cambio de *"FAQ"* a *"Preguntas Frecuentes"* y de *"Soluciones"* a *"Herramientas"*.
    - Adaptación de la lista de características de planes en `PRICING_PLANS` para resaltar el ahorro y la simpleza de uso sin tecnicismos innecesarios.
-4. **Control de Calidad y Pruebas Unitarias (116 Tests Passing)**:
+### ✅ Fase 30: Arquitectura de Navegación del Dashboard y Clarificación de Flujos (COMPLETADA)
+1. **Resolución de Destino de Navegación en el Dashboard (`UnifiedDashboardView.tsx`)**:
+   - Alineación con estándares de UX: El logotipo en la barra del panel ahora enlaza a `/dashboard`, manteniendo al usuario en su centro de trabajo diario.
+   - Añadido enlace directo y explícito *"Ver Web Principal"* con icono `ExternalLink`, permitiendo al usuario visitar la portada comercial sin ambigüedades.
+   - Botón de creación rápida estandarizado como `+ Nuevo Proyecto` con gradiente interactivo para guiar al usuario a `/start` de forma clara.
+2. **Navegación Cruzada en el Onboarding Hub (`/start`)**:
+   - Inclusión del botón *"Ir a Mi Panel"* en la cabecera de `/start`, permitiendo que usuarios recurrentes regresen inmediatamente a su mesa de trabajo sin perder tiempo.
+3. **Control de Calidad y Pruebas Unitarias (116 Tests Passing)**:
    - 100% de la suite de pruebas unitarias aprobada en Vitest (116 de 116 tests en 21 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
 
 
 
