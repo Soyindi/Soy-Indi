@@ -777,11 +777,12 @@ export default async function PublicCardPage({ params }: PageProps) {
 2. **Sincronización en Cascada de Navegación & Mobile Drawer (`MobileNavDrawer.tsx`)**:
    - Integración de sesión Better-Auth en el menú móvil: muestra avatar y perfil del usuario, acceso directo a `/dashboard` y logout rápido táctil ($\ge 44\text{px}$). Para visitantes, ofrece botones separados para inicio de sesión y registro de prueba.
    - Estandarización de botones de conversión en la Landing Page (`/`), sección de precios (`PricingSection.tsx`), Onboarding (`/start`) y Dashboard para redirigir contextualmente preservando el parámetro seguro de retorno `callbackUrl`.
-3. **Guardrail de Seguridad Zod contra Open Redirect (`src/entities/auth/schemas.ts`)**:
-   - Creación del contrato `AuthRedirectParamsSchema` y la función pura `sanitizeCallbackUrl`.
+3. **Guardrail de Seguridad Zod contra Open Redirect & Protección de `/dashboard`**:
+   - Creación del contrato `AuthRedirectParamsSchema` y la función pura `sanitizeCallbackUrl` en `src/entities/auth/schemas.ts`.
    - Bloqueo estricto de redirecciones externas arbitrarias (`https://...`, `//evil.com`), garantizando que sólo se permitan rutas relativas internas validadas.
-4. **Control de Calidad, Resiliencia y Pruebas Unitarias (115 Tests Passing)**:
-   - Nueva suite de pruebas unitarias: `tests/unit/auth-flow.test.ts` (5 pruebas unitarias).
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (115 de 115 tests en 21 suites).
+   - Protección perimetral en Server Component de [src/app/dashboard/page.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/app/dashboard/page.tsx): redirección inmediata y segura a `/login?callbackUrl=/dashboard` para cualquier visitante no autenticado, eliminando vistas de paneles privados vacíos o desprotegidos.
+4. **Control de Calidad, Resiliencia y Pruebas Unitarias (116 Tests Passing)**:
+   - Suite de pruebas unitarias: `tests/unit/auth-flow.test.ts` (6 pruebas unitarias, incluyendo protección y redirección de dashboard).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (116 de 116 tests en 21 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
 

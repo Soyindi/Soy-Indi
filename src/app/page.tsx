@@ -119,7 +119,7 @@ export default function HomePage() {
       </section>
 
       {/* BLOQUE 2: COMPARATIVA BRUTAL (PAPEL VS INDI) */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 py-16">
+      <section id="comparativa" className="relative z-10 max-w-5xl mx-auto px-6 py-16 scroll-mt-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
             ¿Por qué el 93% de las tarjetas de papel fracasan?
@@ -191,7 +191,7 @@ export default function HomePage() {
       </section>
 
       {/* BLOQUE 3: EL TRIDENTE DE PRODUCTOS (BENTO GRID) */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+      <section id="soluciones" className="relative z-10 max-w-7xl mx-auto px-6 py-20 scroll-mt-24">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
             Tres Soluciones de Élite.{' '}
@@ -268,12 +268,12 @@ export default function HomePage() {
       </section>
 
       {/* BLOQUE 4: SECCIÓN DE PRECIOS INTEGRADA */}
-      <section id="pricing" className="relative z-10 py-16 border-t border-white/5">
+      <section id="precios" className="relative z-10 py-16 border-t border-white/5 scroll-mt-24">
         <PricingSection showTitle={true} />
       </section>
 
       {/* BLOQUE 5: FAQ ANTI-OBJECIONES */}
-      <section className="relative z-10 max-w-4xl mx-auto px-6 py-20">
+      <section id="faq" className="relative z-10 max-w-4xl mx-auto px-6 py-20 scroll-mt-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-extrabold tracking-tight text-white">
             Preguntas Frecuentes

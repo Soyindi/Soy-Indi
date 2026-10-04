@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-109_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-116_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -105,7 +105,7 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 115 tests pasando)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 116 tests pasando)
 │   ├── auth-flow.test.ts        # Validación de flujo de login, Open Redirect guardrail y sanitización
 │   ├── oauth-multi-tenant.test.ts # Aislamiento multi-tenant y Google OAuth
 │   ├── card-schema.test.ts      # Validación Zod de tarjetas de presentación

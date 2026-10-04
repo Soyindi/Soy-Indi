@@ -45,20 +45,42 @@ export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
           </span>
         </Link>
 
-        {/* Navegación Desktop */}
+        {/* Navegación Desktop Contextual */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
-          <Link href="/dashboard" className="hover:text-white transition-colors">
-            Panel General
-          </Link>
-          <Link href="/cv" className="hover:text-white transition-colors">
-            Smart CV (ATS)
-          </Link>
-          <Link href="/presentations" className="hover:text-white transition-colors">
-            Presentaciones
-          </Link>
-          <Link href="/pricing" className="hover:text-white transition-colors">
-            Precios ($1.000/mes)
-          </Link>
+          {user ? (
+            <>
+              <Link href="/dashboard" className="text-white hover:text-cyan-300 transition-colors">
+                Mi Panel
+              </Link>
+              <Link href="/cards/new" className="hover:text-white transition-colors">
+                Tarjetas
+              </Link>
+              <Link href="/cv" className="hover:text-white transition-colors">
+                Smart CV
+              </Link>
+              <Link href="/presentations" className="hover:text-white transition-colors">
+                Presentaciones
+              </Link>
+              <Link href="/pricing" className="hover:text-white transition-colors">
+                Planes
+              </Link>
+            </>
+          ) : (
+            <>
+              <a href="#soluciones" className="hover:text-white transition-colors">
+                Soluciones
+              </a>
+              <a href="#comparativa" className="hover:text-white transition-colors">
+                ¿Por qué INDI?
+              </a>
+              <a href="#precios" className="hover:text-white transition-colors">
+                Precios ($1.000/mes)
+              </a>
+              <a href="#faq" className="hover:text-white transition-colors">
+                FAQ
+              </a>
+            </>
+          )}
         </nav>
 
         {/* Acciones y Estado de Autenticación */}

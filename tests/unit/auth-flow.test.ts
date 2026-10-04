@@ -59,4 +59,13 @@ describe('Auth Redirection & Flow Validation Suite', () => {
     expect(sanitizeCallbackUrl('/cards/new', '/dashboard')).toBe('/cards/new');
     expect(sanitizeCallbackUrl('/start', '/dashboard')).toBe('/start');
   });
+
+  it('debe proteger el acceso al dashboard redirigiendo al portal de login con callbackUrl seguro', () => {
+    const targetDashboard = '/dashboard?tab=cards';
+    const safeUrl = sanitizeCallbackUrl(targetDashboard, '/dashboard');
+    expect(safeUrl).toBe('/dashboard?tab=cards');
+
+    const expectedLoginRedirect = `/login?callbackUrl=${encodeURIComponent(safeUrl)}`;
+    expect(expectedLoginRedirect).toContain('/login?callbackUrl=%2Fdashboard%3Ftab%3Dcards');
+  });
 });

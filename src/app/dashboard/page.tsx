@@ -6,6 +6,10 @@ import { checkUserEntitlementAction } from '@/features/pricing/actions';
 import { TrialBanner } from '@/features/pricing/components/TrialBanner';
 import { UnifiedDashboardView } from '@/features/dashboard/components/UnifiedDashboardView';
 
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+import { auth } from '@/shared/lib/auth';
+
 export const dynamic = 'force-dynamic';
 
 interface DashboardPageProps {
@@ -17,16 +21,23 @@ interface DashboardPageProps {
 }
 
 export default async function UnifiedDashboardPage({ searchParams }: DashboardPageProps) {
+  // Guardrail de autenticación: Si estamos en contexto de request y no hay sesión, redirigir a login
+  const headerList = await headers();
+  const session = await auth.api.getSession({ headers: headerList });
+  if (!session?.user) {
+    redirect('/login?callbackUrl=/dashboard');
+  }
+
   const params = await searchParams;
   const initialTab = params.tab || 'cards';
   const justCreatedSlug = params.created === 'true' ? params.slug : null;
 
   // Carga paralela de entidades y estado de membresía desde Turso SQLite
   const [cardsResult, cvsResult, presentationsResult, entitlement] = await Promise.all([
-    getUserCardsAction(),
-    getUserSmartCvsAction(),
-    getUserPresentationsAction(),
-    checkUserEntitlementAction(),
+    getUserCardsAction(session.user.id),
+    getUserSmartCvsAction(session.user.id),
+    getUserPresentationsAction(session.user.id),
+    checkUserEntitlementAction(session.user.id),
   ]);
 
   const cards = cardsResult.data || [];

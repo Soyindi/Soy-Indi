@@ -23,12 +23,45 @@ export function MobileNavDrawer() {
     };
   }, [isOpen]);
 
-  const navItems = [
+  const visitorNavItems = [
     {
-      title: 'Panel General',
+      title: 'Soluciones Integradas',
+      href: '#soluciones',
+      description: 'Tarjetas con QR, Smart CV y Presentaciones 16:9',
+      icon: Layers,
+    },
+    {
+      title: '¿Por qué INDI?',
+      href: '#comparativa',
+      description: 'Comparativa frente a tarjetas de papel tradicionales',
+      icon: Sparkles,
+    },
+    {
+      title: 'Precios & Planes ($1.000/mes)',
+      href: '#precios',
+      description: '15 días gratis y luego solo $6.000 CLP cada 6 meses',
+      icon: Tag,
+    },
+    {
+      title: 'Preguntas Frecuentes',
+      href: '#faq',
+      description: 'Garantías, métodos de pago y activación instantánea',
+      icon: FileText,
+    },
+  ];
+
+  const userNavItems = [
+    {
+      title: 'Mi Panel de Control',
       href: '/dashboard',
       description: 'Gestiona tarjetas, CVs y presentaciones en un solo lugar',
       icon: Layers,
+    },
+    {
+      title: 'Diseñar Tarjeta Digital',
+      href: '/cards/new',
+      description: 'Editor con QR dinámico y botón directo a WhatsApp',
+      icon: Tag,
     },
     {
       title: 'Smart CV (ATS)',
@@ -42,13 +75,9 @@ export function MobileNavDrawer() {
       description: 'Diapositivas cinematográficas con asistencia de IA',
       icon: MonitorPlay,
     },
-    {
-      title: 'Precios & Planes',
-      href: '/pricing',
-      description: 'Plan Semestral $1.000/mes o Mensual flexible',
-      icon: Tag,
-    },
   ];
+
+  const navItems = user ? userNavItems : visitorNavItems;
 
   return (
     <div className="md:hidden">
