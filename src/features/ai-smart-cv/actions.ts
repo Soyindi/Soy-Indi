@@ -11,6 +11,10 @@ import {
   slugifyCvTitle,
 } from '@/entities/cv/schemas';
 import { parseCvDocumentMultimodal, parseCredentialDocumentMultimodal } from '@/features/ai-smart-cv/lib/multimodal-parser';
+import {
+  validateFileSignature,
+  assertZeroBinaryPersistence,
+} from '@/shared/lib/fileSecurity';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq, desc, and, ne, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -31,8 +35,19 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
     }
 
     const buffer = await file.arrayBuffer();
+    const uint8 = new Uint8Array(buffer);
+
+    // Procedimiento de Seguridad: Validación de Firma Binaria (Magic Bytes)
+    const sigValidation = validateFileSignature(uint8, file.name, file.type);
+    if (!sigValidation.valid) {
+      return {
+        success: false,
+        error: sigValidation.error || 'Archivo rechazado por control de seguridad de firmas binarias.',
+      };
+    }
+
     const base64 = Buffer.from(buffer).toString('base64');
-    const mimeType = file.type || 'application/pdf';
+    const mimeType = sigValidation.mimeType || file.type || 'application/pdf';
 
     // Procesar con el motor multimodal
     const extracted = await parseCvDocumentMultimodal(base64, mimeType, file.name);
@@ -105,8 +120,19 @@ export async function parseCredentialDocumentAction(
     }
 
     const buffer = await file.arrayBuffer();
+    const uint8 = new Uint8Array(buffer);
+
+    // Procedimiento de Seguridad: Validación de Firma Binaria (Magic Bytes)
+    const sigValidation = validateFileSignature(uint8, file.name, file.type);
+    if (!sigValidation.valid) {
+      return {
+        success: false,
+        error: sigValidation.error || 'Archivo rechazado por control de seguridad de firmas binarias.',
+      };
+    }
+
     const base64 = Buffer.from(buffer).toString('base64');
-    const mimeType = file.type || 'image/jpeg';
+    const mimeType = sigValidation.mimeType || file.type || 'image/jpeg';
 
     const credential = await parseCredentialDocumentMultimodal(base64, mimeType, file.name, currentEducation);
 
@@ -239,6 +265,19 @@ export async function upsertSmartCvAction(
     }
 
     const data = validated.data;
+
+    // Guardrail de Seguridad: Cero Persistencia Binaria en Base de Datos (Anti-DB-Bloat)
+    const zeroBinaryCheck = assertZeroBinaryPersistence({
+      title: data.title,
+      targetRole: data.targetRole,
+      content: data.content,
+    });
+    if (!zeroBinaryCheck.safe) {
+      return {
+        success: false,
+        error: `Rechazado por guardrail de base de datos: ${zeroBinaryCheck.violations.join(' ')}`,
+      };
+    }
 
     // Resolver usuario autenticado con guardrail de seguridad
     const sessionResult = await getSafeAuthenticatedUserId(userId);

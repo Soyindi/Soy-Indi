@@ -20,6 +20,12 @@ import {
 import { PRESENTATION_TEMPLATES, PRESENTATION_THEMES } from '@/entities/presentation/templates';
 import { callNvidiaNimChat } from '@/shared/api/nvidia-nim';
 import { extractTextFromDocument, analyzeDocumentContent } from '@/features/orbital-presentations/lib/document-parser';
+import {
+  validateFileSignature,
+  sanitizeExtractedText,
+  assertZeroBinaryPersistence,
+  calculateStorageTelemetry,
+} from '@/shared/lib/fileSecurity';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq, desc, and, ne } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -42,10 +48,24 @@ export async function parsePresentationDocumentAction(formData: FormData): Promi
     }
 
     const buffer = await file.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString('base64');
-    const mimeType = file.type || 'application/pdf';
+    const uint8 = new Uint8Array(buffer);
 
-    const extractedText = await extractTextFromDocument(base64, file.name, mimeType);
+    // 1. Procedimiento de Seguridad: Validación de Firma Binaria (Magic Bytes)
+    const sigValidation = validateFileSignature(uint8, file.name, file.type);
+    if (!sigValidation.valid) {
+      return {
+        success: false,
+        error: sigValidation.error || 'Archivo rechazado por control de seguridad de firmas binarias.',
+      };
+    }
+
+    const base64 = Buffer.from(buffer).toString('base64');
+    const mimeType = sigValidation.mimeType || file.type || 'application/pdf';
+
+    const rawExtractedText = await extractTextFromDocument(base64, file.name, mimeType);
+
+    // 2. Procedimiento de Seguridad: Sanitización de Texto y Mitigación de DoS / Inyecciones
+    const extractedText = sanitizeExtractedText(rawExtractedText, { maxChars: 250000 });
 
     if (!extractedText || extractedText.trim().length === 0) {
       return {
@@ -53,6 +73,12 @@ export async function parsePresentationDocumentAction(formData: FormData): Promi
         error: `No se pudo extraer texto legible del archivo "${file.name}". Si es un PDF escaneado como imagen pura, transcribe los puntos clave.`,
       };
     }
+
+    // 3. Telemetría de Compresión e Ingesta Efímera (Cero Almacenamiento en BD)
+    const telemetry = calculateStorageTelemetry(file.size, extractedText.length);
+    console.info(
+      `[Presentation File Ingestion] ${file.name} (${file.size} bytes) -> Reducción de almacenamiento BD: ${telemetry.storageReductionPercent}% (Estrategia: ${telemetry.persistenceStrategy})`
+    );
 
     return {
       success: true,
@@ -719,6 +745,19 @@ export async function upsertPresentationAction(
     }
 
     const data = validated.data;
+
+    // Guardrail de Seguridad: Cero Persistencia Binaria en Base de Datos (Anti-DB-Bloat)
+    const zeroBinaryCheck = assertZeroBinaryPersistence({
+      title: data.title,
+      slug: data.slug,
+      slidesData: data.slidesData,
+    });
+    if (!zeroBinaryCheck.safe) {
+      return {
+        success: false,
+        error: `Rechazado por guardrail de base de datos: ${zeroBinaryCheck.violations.join(' ')}`,
+      };
+    }
 
     // Guardrail de sesión obligatorio
     const sessionResult = await getSafeAuthenticatedUserId(userId);

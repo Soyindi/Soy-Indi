@@ -118,7 +118,7 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 144 tests pasando)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 158 tests pasando)
 │   ├── auth-flow.test.ts        # Validación de flujo de login, Open Redirect guardrail y sanitización
 │   ├── oauth-multi-tenant.test.ts # Aislamiento multi-tenant y Google OAuth
 │   ├── card-schema.test.ts      # Validación Zod de tarjetas de presentación
@@ -128,6 +128,7 @@ INDI/
 │   ├── ats-audit.test.ts        # Motor algorítmico de scoring ATS
 │   ├── entitlements.test.ts     # Planes comerciales y 3 días de prueba
 │   ├── document-upload-routes.test.ts # Handlers nativos HTTP de subida de archivos (25MB)
+│   ├── file-security-pipeline.test.ts # Magic bytes, anti-malware, anti-DoS y cero persistencia binaria
 │   └── security-guardrails.test.ts # Protección multi-tenant de Server Actions
 ├── src/
 │   ├── app/                     # Next.js 16 App Router (Rutas y Edge Handlers)
@@ -166,6 +167,8 @@ INDI/
 │       ├── api/db.ts            # Cliente unificado Turso LibSQL (dual local/nube)
 │       ├── lib/auth.ts          # Configuración Better-Auth
 │       ├── lib/session.ts       # Guardrail de seguridad multi-tenant para Server Actions
+│       ├── lib/fileSecurity.ts  # Validación Magic Bytes, Anti-DoS y Cero Persistencia Binaria en BD
+│       ├── lib/imageCompression.ts # Compresión client-side WebP / Canvas 2D
 │       └── ui/                  # UI Kit (GlobalNavbar, AppEditorHeader, MobileNavDrawer, PublicContextualHeader)
 ├── AGENTS.md                    # Guía corporativa de orquestación agéntica (FSD, WCAG, Base-8)
 └── SECURITY.md                  # Política de seguridad y reporte de vulnerabilidades

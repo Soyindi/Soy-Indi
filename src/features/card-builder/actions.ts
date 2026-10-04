@@ -4,6 +4,7 @@ import { db } from '@/shared/api/db';
 import { cards, user } from '@/entities/schema';
 import { cardFormSchema, CardFormValues, CardFormInput } from '@/entities/card/schemas';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
+import { assertZeroBinaryPersistence } from '@/shared/lib/fileSecurity';
 import { eq, and, ne } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -27,6 +28,16 @@ export async function upsertCardAction(
     }
 
     const data = validated.data;
+
+    // Guardrail de Seguridad: Cero Persistencia Binaria en Base de Datos (Anti-DB-Bloat)
+    const zeroBinaryCheck = assertZeroBinaryPersistence({
+      title: data.title,
+      photoUrl: data.photoUrl,
+      themeConfig: data.themeConfig,
+    });
+    if (!zeroBinaryCheck.safe) {
+      return { success: false, error: `Rechazado por guardrail: ${zeroBinaryCheck.violations.join(' ')}` };
+    }
 
     // 2. Resolver usuario autenticado con guardrail de seguridad
     const sessionResult = await getSafeAuthenticatedUserId(userId);
