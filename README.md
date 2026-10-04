@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-127_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-139_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -51,10 +51,15 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 - **Telemetría Atómica en Turso**: Registro granular de eventos (`view`, `contact_save`, `whatsapp_click`, `share`, `qr_scan`) y Tasa de Conversión en tiempo real.
 
 
-### 2. 📄 Smart CV ATS Optimizer
+### 2. 📄 Smart CV ATS Optimizer & Living Digital Resume
+- **Living Digital Resume con URL Propia (`/cv/[slug]`)**: Acceso web público instantáneo para compartir en un toque por WhatsApp, correo o LinkedIn, eliminando la dependencia de enviar archivos PDF adjuntos pesados u obsoletos.
+- **Telemetría de Lectura en Tiempo Real**: Contador atómico perimetral de visualizaciones (`viewsCount`) para que el postulante sepa con certeza cuándo los reclutadores abren y revisan su perfil.
+- **Descarga ATS Vectorial en 1 Clic**: Motor client-side para generar y descargar el currículum en PDF nativo de alta resolución con texto 100% seleccionable e indexable por software ATS.
+- **Selector de Formato Internacional**: Alternancia inmediata entre formato Carta (EE.UU./Tech/Startups) y A4 (LatAm/Europa/Organismos).
+- **Ergonomía Móvil en el Thumb Zone**: Barra inferior de acciones anclada (`fixed bottom-4 inset-x-4 sm:hidden`) con botones táctiles $\ge 44\text{px}$ para contacto telefónico directo, correo electrónico, compartir y enlace directo a la Tarjeta Digital INDI del usuario.
 - **Auditoría Algorítmica (0 a 100)**: Evalúa estructura, densidad de palabras clave, impacto de métricas y longitud para superar filtros de software de Recursos Humanos (ATS).
-- **Feedback Accionable**: Detecta fortalezas del perfil y sugiere oportunidades de mejora concretas.
-- **Vista Imprimible A4**: Maquetación limpia lista para exportar a PDF con calidad de imprenta.
+- **Feedback Accionable & Mitigación de Alucinaciones**: Detección de logros sin números (`needs_metric`) según estándares Google XYZ y requerimientos de transparencia de la EU AI Act.
+- **Vista Imprimible A4/Carta**: Maquetación tipográfica de alta fidelidad lista para exportar a PDF con calidad de imprenta.
 
 ### 3. 📽️ Orbital Presentations Pro (16:9)
 - **Persistencia Independiente & Zero Template Shadowing**: Precedencia estricta de base de datos en `/p/[slug]`. Las presentaciones personalizadas de los usuarios tienen prioridad absoluta sobre los templates estáticos por defecto.

@@ -72,6 +72,12 @@ export type CVReference = z.infer<typeof cvReferenceSchema>;
 export const cvFormSchema = z.object({
   title: z.string().min(2, 'El título del CV debe tener al menos 2 caracteres'),
   targetRole: z.string().min(2, 'El rol objetivo debe tener al menos 2 caracteres'),
+  slug: z
+    .string()
+    .min(3, 'El enlace debe tener al menos 3 caracteres')
+    .regex(/^[a-z0-9-]+$/, 'Solo se permiten letras minúsculas, números y guiones')
+    .optional(),
+  isPublic: z.boolean().default(true).optional(),
   templateId: z.string().default('executive-modern'),
   content: z.object({
     fullName: z.string().min(1, 'Nombre completo requerido'),
@@ -97,6 +103,30 @@ export const cvFormSchema = z.object({
 });
 
 export type CVFormValues = z.infer<typeof cvFormSchema>;
+
+/**
+ * Normaliza cualquier nombre o rol a un slug válido para URLs de Smart CV
+ */
+export function slugifyCvTitle(titleOrRole: string): string {
+  const normalized = titleOrRole
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '')
+    .substring(0, 48)
+    .replace(/(^-|-$)+/g, '');
+  return normalized || 'cv-profesional';
+}
+
+/**
+ * Genera un slug único para un nuevo CV evitando colisiones
+ */
+export function generateCvSlug(nameOrRole: string = 'cv'): string {
+  const base = slugifyCvTitle(nameOrRole);
+  const suffix = Math.random().toString(36).substring(2, 6);
+  return `${base}-${suffix}`;
+}
 
 export interface AtsAuditResult {
   score: number;

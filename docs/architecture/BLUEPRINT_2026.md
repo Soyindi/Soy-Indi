@@ -915,6 +915,35 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite aprobada (127 de 127 pruebas en 22 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
 
+### ✅ Fase 37: Living Digital Resumes & Public CV Edge Sharing (COMPLETADA)
+1. **Investigación de Tendencias y Proyecciones 2026+ (El Salto del PDF Estático al Living Resume)**:
+   - **Limitaciones del Currículum Tradicional en PDF**: Un archivo PDF adjunto por correo electrónico o subido a un portal de empleo queda desactualizado en el instante en que se envía. El candidato no tiene conocimiento de si el reclutador abrió el archivo, qué secciones leyó o si el formato se rompió en dispositivos móviles.
+   - **Tendencia Global 2026+ (Living Digital Resume)**:
+     - **Consumo Mobile-First de Reclutadores**: Más del 68% de las primeras revisiones de perfiles por directores y recruiters ocurren en smartphones a través de enlaces directos compartidos por WhatsApp, LinkedIn InMail o mensajes instantáneos.
+     - **Dualidad ATS Vectorial + Experiencia Web Interactiva**: Un CV moderno debe satisfacer dos mundos sin concesiones:
+       1. Ser parseable al 100% por los robots de ATS (Applicant Tracking Systems) en formato estricto Letter/A4 imprimible.
+       2. Ofrecer una experiencia web de alta gama (Living Resume) accesible mediante una URL pública limpia (ej. `indi.bio/cv/[slug]`), con enlaces interactivos a repositorios, tarjeta digital INDI, contacto directo en un click y telemetría de visualizaciones en tiempo real.
+2. **Arquitectura FSD & Seguridad en Capas**:
+   - **Entities Layer (`src/entities/schema.ts` & `src/entities/cv/schemas.ts`)**:
+     - Extensión de la tabla `smartCvs` en Turso SQLite con columnas `slug` (`text('slug').unique()`), `isPublic` (`integer('is_public', { mode: 'boolean' }).notNull().default(true)`), y `viewsCount` (`integer('views_count').notNull().default(0)`), junto con el índice `smart_cvs_slug_idx`.
+     - Definición de funciones puras `slugifyCvTitle` (con sanitización de caracteres especiales y recorte limpio a 48 caracteres) y `generateCvSlug` (con sufijo pseudoaleatorio colisión-free).
+     - Validación estricta con Zod en `cvFormSchema` mediante regex `^[a-z0-9-]+$`.
+   - **Features & Server Actions Layer (`src/features/ai-smart-cv/actions.ts`)**:
+     - `upsertSmartCvAction`: Aislamiento multi-tenant con guardrail de sesión obligatorio (`getSafeAuthenticatedUserId`), validación anti-IDOR en edición (`and(eq(id, cvId), eq(userId, targetUserId))`), comprobación de no-colisión de slug (`and(eq(slug, data.slug), ne(id, cvId))`), y revalidación granular de caché (`revalidatePath`).
+     - `getPublicSmartCvAction(slug)`: Consulta optimizada por índice con validación estricta de visibilidad (`isPublic === true`).
+     - `incrementCvViewsAction(cvId)`: Incremento atómico en base de datos (`viewsCount = viewsCount + 1`) previniendo contención de cerraduras SQLite.
+   - **Feature UI Components Layer**:
+     - `PublicCvViewer.tsx`: Componente de visualización pública del currículum vivo, con selector de formato (Letter/A4), descarga de PDF ATS instantánea en cliente (`generateAndDownloadCvPdf`), Web Share API nativa con fallback a portapapeles, enlace interactivo a la Tarjeta INDI del usuario, y barra de acciones flotante ergonómica en el Thumb Zone móvil (`fixed bottom-4 inset-x-4 sm:hidden`).
+     - `SmartCvBuilder.tsx`: Incorporación del módulo de enlace digital con edición de slug, regeneración aleatoria y copiado directo.
+     - `UnifiedDashboardView.tsx`: En la pestaña de CVs, despliegue de URL pública `/cv/[slug]`, botón de copiado rápido, enlace de vista en vivo (`ExternalLink`), estado "Digital Activo" / "Privado" y telemetría de visualizaciones (`viewsCount`).
+   - **App Router Layer (`src/app/cv/[slug]/page.tsx`)**:
+     - Ruta pública dinámica con generación de metadatos Open Graph (`generateMetadata`) para indexación semántica y vista previa enriquecida en WhatsApp/LinkedIn.
+     - Incremento atómico no bloqueante de telemetría de vistas al servir la página.
+3. **Control de Calidad y Pruebas Unitarias (139 Tests Passing)**:
+   - Nueva suite `tests/unit/smart-cv-sharing.test.ts` (12 tests) cubriendo normalización de slugs, validación de esquemas Zod, resolución pública, protección de CVs privados e incremento de telemetría.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (139 de 139 tests en 23 suites).
+   - 0 errores de compilación estricta en TypeScript (`npm run typecheck`).
+
 
 
 

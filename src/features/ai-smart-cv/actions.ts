@@ -2,10 +2,17 @@
 
 import { db } from '@/shared/api/db';
 import { smartCvs, user } from '@/entities/schema';
-import { cvFormSchema, CVFormValues, AtsAuditResult, VerifiedCredential } from '@/entities/cv/schemas';
+import {
+  cvFormSchema,
+  CVFormValues,
+  AtsAuditResult,
+  VerifiedCredential,
+  generateCvSlug,
+  slugifyCvTitle,
+} from '@/entities/cv/schemas';
 import { parseCvDocumentMultimodal, parseCredentialDocumentMultimodal } from '@/features/ai-smart-cv/lib/multimodal-parser';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, ne, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -244,14 +251,32 @@ export async function upsertSmartCvAction(
     const audit = await auditAtsScoreAction(data);
     const calculatedScore = audit.data.score;
 
+    // Resolver slug canónico único
+    const desiredSlug = data.slug
+      ? slugifyCvTitle(data.slug)
+      : generateCvSlug(data.content.fullName || data.targetRole || data.title);
+
+    let finalCvId = cvId;
+    let finalSlug = desiredSlug;
+
     if (cvId) {
-      // Verificar propiedad estricta para evitar sobreescritura entre tenants
+      // Verificar propiedad estricta para evitar sobreescritura entre tenants (anti-IDOR)
       const existing = await db.query.smartCvs.findFirst({
         where: and(eq(smartCvs.id, cvId), eq(smartCvs.userId, targetUserId)),
       });
 
       if (!existing) {
-        return { success: false, error: 'Currículum no encontrado o no pertenece al usuario autenticado' };
+        return { success: false, error: 'Currículum no encontrado o no pertenece al usuario autenticado.' };
+      }
+
+      // Si el slug cambió, verificar que no colisione con otro CV
+      if (existing.slug !== desiredSlug) {
+        const slugCollision = await db.query.smartCvs.findFirst({
+          where: and(eq(smartCvs.slug, desiredSlug), ne(smartCvs.id, cvId)),
+        });
+        if (slugCollision) {
+          return { success: false, error: 'Este enlace personalizado de CV ya está en uso por otro usuario.' };
+        }
       }
 
       await db
@@ -260,31 +285,102 @@ export async function upsertSmartCvAction(
           title: data.title,
           targetRole: data.targetRole,
           atsScore: calculatedScore,
+          slug: desiredSlug,
+          isPublic: data.isPublic ?? true,
           content: data.content as any,
           templateId: data.templateId,
           updatedAt: new Date(),
         })
         .where(and(eq(smartCvs.id, cvId), eq(smartCvs.userId, targetUserId)));
+
+      finalCvId = cvId;
+      finalSlug = desiredSlug;
+
+      if (existing.slug && existing.slug !== desiredSlug) {
+        revalidatePath(`/cv/${existing.slug}`);
+      }
     } else {
+      // Modo creación nueva independiente
+      let uniqueSlug = desiredSlug;
+      const slugCollision = await db.query.smartCvs.findFirst({
+        where: eq(smartCvs.slug, uniqueSlug),
+      });
+
+      if (slugCollision) {
+        uniqueSlug = generateCvSlug(data.content.fullName || data.targetRole || data.title);
+      }
+
+      const newId = crypto.randomUUID();
       await db.insert(smartCvs).values({
-        id: crypto.randomUUID(),
+        id: newId,
         userId: targetUserId,
         title: data.title,
         targetRole: data.targetRole,
         atsScore: calculatedScore,
+        slug: uniqueSlug,
+        isPublic: data.isPublic ?? true,
+        viewsCount: 0,
         content: data.content as any,
         templateId: data.templateId,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+
+      finalCvId = newId;
+      finalSlug = uniqueSlug;
     }
 
     revalidatePath('/cv');
     revalidatePath('/dashboard');
-    return { success: true, score: calculatedScore };
+    if (finalSlug) {
+      revalidatePath(`/cv/${finalSlug}`);
+    }
+
+    return {
+      success: true,
+      id: finalCvId,
+      slug: finalSlug,
+      score: calculatedScore,
+    };
   } catch (err: any) {
     console.error('Error guardando Smart CV:', err);
-    return { success: false, error: err.message };
+    return { success: false, error: err.message || 'Error guardando currículum' };
+  }
+}
+
+/**
+ * Obtener un Smart CV público por su slug con validación de visibilidad
+ */
+export async function getPublicSmartCvAction(slug: string) {
+  try {
+    const cv = await db.query.smartCvs.findFirst({
+      where: eq(smartCvs.slug, slug),
+    });
+
+    if (!cv || !cv.isPublic) {
+      return { success: false, error: 'Currículum no encontrado o privado' };
+    }
+
+    return { success: true, data: cv };
+  } catch (err: any) {
+    console.error('Error obteniendo Smart CV público:', err);
+    return { success: false, error: 'Error cargando currículum' };
+  }
+}
+
+/**
+ * Incrementar atómicamente el contador de visitas del CV público
+ */
+export async function incrementCvViewsAction(cvId: string) {
+  try {
+    await db
+      .update(smartCvs)
+      .set({ viewsCount: sql`${smartCvs.viewsCount} + 1` })
+      .where(eq(smartCvs.id, cvId));
+    return { success: true };
+  } catch (err: any) {
+    console.error('Error incrementando vistas de CV:', err);
+    return { success: false };
   }
 }
 

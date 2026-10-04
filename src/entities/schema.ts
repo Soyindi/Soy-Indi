@@ -164,6 +164,9 @@ export const smartCvs = sqliteTable('smart_cvs', {
     education: Array<{ degree: string; institution: string; year: string }>;
   }>().notNull(),
   templateId: text('template_id').default('executive-modern').notNull(),
+  slug: text('slug').unique(),
+  isPublic: integer('is_public', { mode: 'boolean' }).default(true).notNull(),
+  viewsCount: integer('views_count').default(0).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
@@ -173,6 +176,7 @@ export const smartCvs = sqliteTable('smart_cvs', {
     .notNull(),
 }, (table) => [
   index('smart_cvs_user_idx').on(table.userId),
+  index('smart_cvs_slug_idx').on(table.slug),
 ]);
 
 // ============================================================================

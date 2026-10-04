@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { CVFormValues, AtsAuditResult, VerifiedCredential } from '@/entities/cv/schemas';
+import Link from 'next/link';
+import {
+  CVFormValues,
+  AtsAuditResult,
+  VerifiedCredential,
+  generateCvSlug,
+  slugifyCvTitle,
+} from '@/entities/cv/schemas';
 import { auditAtsScoreAction, upsertSmartCvAction } from '@/features/ai-smart-cv/actions';
 import { CvDocumentPreview } from '@/features/ai-smart-cv/components/CvDocumentPreview';
 import { ImportDocumentModal } from '@/features/ai-smart-cv/components/ImportDocumentModal';
@@ -26,7 +33,12 @@ import {
   Trash2,
   Download,
   Plus,
-  Wand2
+  Wand2,
+  Copy,
+  ExternalLink,
+  RefreshCw,
+  Share2,
+  Check,
 } from 'lucide-react';
 
 export function SmartCvBuilder() {
@@ -36,6 +48,7 @@ export function SmartCvBuilder() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [copiedSlug, setCopiedSlug] = useState(false);
   const [currentScore, setCurrentScore] = useState<number>(85);
   const [auditReport, setAuditReport] = useState<AtsAuditResult | null>(null);
 
@@ -47,9 +60,11 @@ export function SmartCvBuilder() {
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<CVFormValues>({
+  const [formData, setFormData] = useState<CVFormValues>(() => ({
     title: 'CV Ejecutivo 2026',
     targetRole: 'Senior Full Stack Engineer & Software Architect',
+    slug: generateCvSlug('matias-riquelme-dev'),
+    isPublic: true,
     templateId: 'executive-modern',
     content: {
       fullName: 'Matías Riquelme',
@@ -132,7 +147,7 @@ export function SmartCvBuilder() {
         },
       ],
     },
-  });
+  }));
 
   const handleContentChange = (field: string, value: any) => {
     setFormData((prev) => ({
@@ -375,9 +390,24 @@ export function SmartCvBuilder() {
       if (res.success) {
         setSavedSuccess(true);
         if (res.score) setCurrentScore(res.score);
+        if (res.slug) {
+          setFormData((prev) => ({ ...prev, slug: res.slug }));
+        }
         setTimeout(() => setSavedSuccess(false), 3000);
       }
     });
+  };
+
+  const handleCopyCvLink = async () => {
+    if (typeof window === 'undefined' || !formData.slug) return;
+    try {
+      const url = `${window.location.origin}/cv/${formData.slug}`;
+      await navigator.clipboard.writeText(url);
+      setCopiedSlug(true);
+      setTimeout(() => setCopiedSlug(false), 2000);
+    } catch (err) {
+      console.error('Error al copiar link de CV:', err);
+    }
   };
 
   const handleDownloadPdf = async () => {
@@ -573,6 +603,76 @@ export function SmartCvBuilder() {
         {/* Columna Formulario */}
         {(viewMode === 'split' || viewMode === 'edit') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'w-full'} space-y-6`}>
+            {/* Sección: Enlace Digital & Visibilidad */}
+            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5 text-cyan-400" />
+                  Enlace Digital del CV
+                </span>
+                {formData.slug && (
+                  <Link
+                    href={`/cv/${formData.slug}`}
+                    target="_blank"
+                    className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition"
+                  >
+                    <span>Ver CV Digital</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[11px] font-mono text-zinc-400">Enlace Personalizado (Slug)</label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        slug: generateCvSlug(prev.content.fullName || prev.targetRole || 'cv'),
+                      }))
+                    }
+                    className="text-[10px] font-mono text-zinc-400 hover:text-cyan-300 flex items-center gap-1 transition cursor-pointer"
+                    title="Generar nuevo slug aleatorio"
+                  >
+                    <RefreshCw className="w-2.5 h-2.5" />
+                    <span>Regenerar</span>
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono text-xs select-none">
+                      /cv/
+                    </span>
+                    <input
+                      type="text"
+                      value={formData.slug || ''}
+                      onChange={(e) => {
+                        const sanitized = slugifyCvTitle(e.target.value);
+                        setFormData((prev) => ({ ...prev, slug: sanitized }));
+                      }}
+                      placeholder="tu-nombre-o-rol"
+                      className="w-full text-xs text-cyan-300 font-mono bg-black/30 rounded-xl pl-9 pr-3 py-2.5 border border-white/5 focus:outline-none focus:border-cyan-400 min-h-[44px]"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleCopyCvLink}
+                    className="min-h-[44px] min-w-[44px] px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white flex items-center justify-center transition cursor-pointer"
+                    title="Copiar enlace del CV"
+                  >
+                    {copiedSlug ? (
+                      <Check className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Sección: Identidad Profesional */}
             <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
               <div className="flex items-center justify-between">
