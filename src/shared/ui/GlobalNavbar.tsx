@@ -28,22 +28,23 @@ export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
   return (
     <>
       <header
-        className={`relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between ${className}`}
+        className={`sticky top-0 z-40 w-full backdrop-blur-xl bg-zinc-950/80 border-b border-white/5 transition-all ${className}`}
       >
-        {/* Logotipo y Badge */}
-        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group" title="Ir al Inicio">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-            <div className="w-full h-full bg-black/80 rounded-[11px] flex items-center justify-center">
-              <span className="font-black text-lg sm:text-xl tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
-                IN
-              </span>
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
+          {/* Logotipo y Badge con retorno a #inicio */}
+          <Link href="/#inicio" className="flex items-center gap-2.5 sm:gap-3 group" title="Ir al Inicio">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+              <div className="w-full h-full bg-black/80 rounded-[11px] flex items-center justify-center">
+                <span className="font-black text-lg sm:text-xl tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
+                  IN
+                </span>
+              </div>
             </div>
-          </div>
-          <span className="text-lg sm:text-xl font-bold tracking-tight text-white">INDI</span>
-          <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono font-medium">
-            2026 SaaS
-          </span>
-        </Link>
+            <span className="text-lg sm:text-xl font-bold tracking-tight text-white">INDI</span>
+            <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono font-medium">
+              2026 SaaS
+            </span>
+          </Link>
 
         {/* Navegación Desktop Contextual */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
@@ -169,7 +170,8 @@ export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
           {/* Menú Drawer Móvil */}
           <MobileNavDrawer />
         </div>
-      </header>
+      </div>
+    </header>
 
       {/* Modal Reactivo para autenticación sin abandonar la página si está en Home */}
       <AuthModal

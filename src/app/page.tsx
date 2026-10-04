@@ -22,11 +22,16 @@ import { GlobalNavbar } from '@/shared/ui/GlobalNavbar';
 
 export default function HomePage() {
   return (
-    <div className="relative min-h-screen overflow-hidden flex flex-col justify-between">
-      {/* Luces volumétricas perimetrales */}
-      <div className="absolute top-[-10%] left-[15%] w-[600px] h-[600px] rounded-full bg-indigo-600/20 blur-[140px] pointer-events-none" />
-      <div className="absolute top-[35%] right-[-5%] w-[500px] h-[500px] rounded-full bg-cyan-500/15 blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[550px] h-[550px] rounded-full bg-blue-700/15 blur-[150px] pointer-events-none" />
+    <div className="relative min-h-screen flex flex-col justify-between">
+      {/* Anchor invisible para navegación instantánea hacia el tope */}
+      <div id="inicio" className="absolute top-0 left-0 w-0 h-0 pointer-events-none opacity-0" aria-hidden="true" />
+
+      {/* Luces volumétricas perimetrales aisladas para evitar scroll horizontal sin recortar el scroll del documento */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[15%] w-[600px] h-[600px] rounded-full bg-indigo-600/20 blur-[140px]" />
+        <div className="absolute top-[35%] right-[-5%] w-[500px] h-[500px] rounded-full bg-cyan-500/15 blur-[130px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[550px] h-[550px] rounded-full bg-blue-700/15 blur-[150px]" />
+      </div>
 
       {/* Header / Navbar Global Reactivo con Detección de Sesión */}
       <GlobalNavbar />

@@ -784,5 +784,19 @@ export default async function PublicCardPage({ params }: PageProps) {
 4. **Control de Calidad, Resiliencia y Pruebas Unitarias (116 Tests Passing)**:
    - Suite de pruebas unitarias: `tests/unit/auth-flow.test.ts` (6 pruebas unitarias, incluyendo protección y redirección de dashboard).
    - 100% de la suite de pruebas unitarias aprobada en Vitest (116 de 116 tests en 21 suites).
+### ✅ Fase 28: Solución al Desbordamiento de Scroll, Navegación Sticky Glassmorphic y Ancla Superior (COMPLETADA)
+1. **Diagnóstico y Eliminación del Conflicto de Desbordamiento (`src/app/page.tsx`)**:
+   - Identificación de la causa raíz: la clase `overflow-hidden` aplicada sobre el contenedor flex principal de la landing page capturaba y recortaba el contexto de scroll vertical de la ventana al navegar mediante fragmentos hash (`#soluciones`, `#comparativa`, `#precios`, `#faq`).
+   - Aislamiento arquitectónico: se extrajeron los elementos visuales perimetrales (luces volumétricas con `blur-[140px]`) dentro de un sub-contenedor dedicado `absolute inset-0 overflow-hidden pointer-events-none`. Esto previene el desbordamiento horizontal sin interferir con el scroll vertical de la ventana.
+   - Creación del ancla superior `#inicio`: se añadió `<div id="inicio" className="absolute top-0 left-0 w-0 h-0 pointer-events-none opacity-0" aria-hidden="true" />` en la raíz del hero section para permitir el retorno instantáneo y accesible al tope de la página.
+2. **Navegación Sticky Glassmorphic & Ergonomía de Retorno (`GlobalNavbar.tsx`)**:
+   - Reconfiguración de la barra de navegación global como `sticky top-0 z-40 w-full backdrop-blur-xl bg-zinc-950/80 border-b border-white/5`. Permanece visible y accesible en cualquier punto del recorrido de la página.
+   - El logotipo de la marca INDI enlaza directamente a `/#inicio`, permitiendo al usuario volver al punto de partida con un solo toque desde cualquier profundidad de lectura.
+3. **Comportamiento de Scroll Suave y Respeto a Preferencias de Movimiento (`globals.css`)**:
+   - Reglas globales `html { scroll-behavior: smooth; scroll-padding-top: 5rem; }` para asegurar que el contenido anclado no quede oculto detrás de la barra pegajosa.
+   - Soporte de accesibilidad para reducción de movimiento: `@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }`.
+4. **Control de Calidad y Pruebas Unitarias (116 Tests Passing)**:
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (116 de 116 tests en 21 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
 

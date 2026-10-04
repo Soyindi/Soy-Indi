@@ -77,7 +77,12 @@ A diferencia de las tarjetas de visita de papel tradicionales —que el 88% de l
 - **Métricas Agregadas**: Visitas globales en Edge, clicks en WhatsApp e interacciones directas.
 - **Navegación Bidireccional Continua**: Cabecera universal `AppEditorHeader` con botón *"← Volver al Panel"* en todos los editores y redirección fluida tras guardar.
 
-### 5. 🚪 Onboarding Hub Guiado (`/start`)
+### 5. 🧭 Navegación Global Reactiva & Scroll Fluido
+- **Barra Sticky Glassmorphic (`GlobalNavbar.tsx`)**: Fijada al tope con `backdrop-blur-xl bg-zinc-950/80` y enlaces directos al panel (`/dashboard`), editores de producto o anclas contextuales de la landing page.
+- **Retorno Ergonómico al Inicio (`/#inicio`)**: Logotipo interactivo con retorno al ancla superior en un toque, eliminando cortes o bloqueos de scroll (`overflow-hidden` desacoplado a luces perimetrales).
+- **Desplazamiento Suave Accesible**: Configuración nativa `scroll-behavior: smooth` y compensación de altura fija (`scroll-padding-top: 5rem`), con compatibilidad automática para usuarios con `prefers-reduced-motion`.
+
+### 6. 🚪 Onboarding Hub Guiado (`/start`)
 - Al iniciar la prueba de 15 días, el usuario accede a un selector interactivo (*Job-to-be-Done*) que le permite elegir por dónde empezar (Tarjeta, CV o Presentación) con estimaciones de tiempo (2 a 4 minutos).
 
 ---
