@@ -21,6 +21,7 @@ import { FaqAccordion } from '@/features/pricing/components/FaqAccordion';
 import { GlobalNavbar } from '@/shared/ui/GlobalNavbar';
 import { HeroCtaButtons } from '@/features/onboarding/components/HeroCtaButtons';
 import { BottomCtaButton } from '@/features/onboarding/components/BottomCtaButton';
+import { MetricsShowcaseSection } from '@/features/card-builder/components/MetricsShowcaseSection';
 
 export default function HomePage() {
   return (
@@ -185,7 +186,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* BLOQUE 3: CÓMO TE AYUDA INDI EN TU DÍA A DÍA */}
+      {/* BLOQUE 3: TELEMETRÍA EN TIEMPO REAL & RETORNO DE INVERSIÓN (KPIs EN VIVO) */}
+      <MetricsShowcaseSection />
+
+      {/* BLOQUE 4: CÓMO TE AYUDA INDI EN TU DÍA A DÍA */}
       <section id="soluciones" className="relative z-10 max-w-7xl mx-auto px-6 py-20 scroll-mt-24">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">

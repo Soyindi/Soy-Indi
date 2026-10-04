@@ -30,6 +30,16 @@ const FAQ_ITEMS: FaqItem[] = [
       'Tu información, tu tarjeta y tus diseños quedan guardados de forma segura en tu cuenta. Para que tu tarjeta siga visible en internet para tus clientes y continúes registrando visitas y clics, solo debes activar tu suscripción mensual de $2.500 CLP o semestral de $6.000 CLP.',
   },
   {
+    question: '¿Cómo sé cuántas personas están viendo mi tarjeta o escribiéndome?',
+    answer:
+      'En tu panel privado de INDI tienes estadísticas en tiempo real: ves cuántas personas abrieron tu tarjeta, cuántas tocaron tu botón de WhatsApp, cuántas te guardaron en sus contactos del celular y tu porcentaje de efectividad comercial. Así sabes exactamente qué impacto tiene tu presencia digital.',
+  },
+  {
+    question: '¿Mis clientes tienen que escribir mi número a mano para guardarme?',
+    answer:
+      'No. Tu tarjeta incluye un botón inteligente de "Guardar Contacto". Al presionarlo, el celular de tu cliente descarga tu ficha de contacto completa (con tu nombre, foto, WhatsApp, correo y dirección) y la guarda directamente en su agenda sin tener que tipear nada.',
+  },
+  {
     question: '¿Qué medios de pago puedo usar en Chile?',
     answer:
       'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay (BancoEstado y todos los bancos chilenos). Para quienes están fuera de Chile, también aceptamos tarjetas internacionales.',
