@@ -124,6 +124,7 @@ INDI/
 │   │   ├── cards/new/           # Creador en tiempo real con AppEditorHeader
 │   │   ├── cv/                  # Optimizador de Smart CV ATS con AppEditorHeader
 │   │   ├── dashboard/           # Panel central unificado con pestañas (/dashboard)
+│   │   ├── login/               # Portal de autenticación Google OAuth y Email (/login)
 │   │   ├── presentations/       # Estudio cinematográfico 16:9 con AppEditorHeader
 │   │   ├── pricing/             # Página comercial con comparativa, FAQ y garantías
 │   │   ├── start/               # Onboarding Hub interactivo (Prueba 15 días)

@@ -137,6 +137,14 @@ export function MobileNavDrawer() {
               {/* Botón CTA inferior en Zona del Pulgar */}
               <div className="pt-6 border-t border-white/10 flex flex-col gap-3">
                 <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-medium text-xs active:scale-[0.98] transition-all"
+                >
+                  <span>¿Ya tienes cuenta? Iniciar Sesión</span>
+                </Link>
+
+                <Link
                   href="/start"
                   onClick={() => setIsOpen(false)}
                   className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all"

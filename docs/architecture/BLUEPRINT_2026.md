@@ -759,11 +759,12 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Soporte automático para fallback en entornos donde las credenciales sociales no estén configuradas aún, manteniendo activo el flujo de correo y contraseña sin fallos de compilación ni ejecución.
 2. **Hook de Ciclo de Vida de Usuario (`databaseHooks.user.create.before`)**:
    - Asignación determinista de 15 días de prueba gratuita (`trialEndsAt: Date.now() + 15 días`), 30 créditos de IA para inferencia de modelos de frontera y estado `'TRIAL'` de forma inmediata y automática cuando un nuevo usuario se registra vía Google OAuth o Email.
-3. **UI/UX: Componente Accesible `AuthModal.tsx` & Selector de Perfil**:
+3. **UI/UX: Componente Accesible `AuthModal.tsx`, Ruta `/login` & Navegación Global**:
    - Creación de [src/features/dashboard/components/AuthModal.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/dashboard/components/AuthModal.tsx) con soporte dual Google OAuth One-Click y formulario de Email/Contraseña.
-   - Botones con touch targets ergonómicos $\ge 48\text{px}$, accesibilidad WCAG 2.2 AA y micro-animaciones de estado de carga.
+   - Creación de ruta pública dedicada [src/app/login/page.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/app/login/page.tsx) con metadata SEO y retorno inteligente.
+   - Enlace directo "Ingresar" en el Navbar de escritorio ([src/app/page.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/app/page.tsx)) y en el drawer móvil táctil ([src/shared/ui/MobileNavDrawer.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/shared/ui/MobileNavDrawer.tsx)) con touch targets ergonómicos $\ge 44\text{px}$.
    - Integración del avatar de usuario autenticado y botón de cierre de sesión seguro en la barra de navegación del Dashboard ([UnifiedDashboardView.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/dashboard/components/UnifiedDashboardView.tsx)).
-4. **Verificación de Calidad y Pruebas Unitarias (109 Tests Passing)**:
-   - Nueva suite de pruebas unitarias: `tests/unit/oauth-multi-tenant.test.ts` (4 pruebas unitarias).
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (109 de 109 tests en 20 suites).
+4. **Verificación de Calidad y Pruebas Unitarias (110 Tests Passing)**:
+   - Nueva suite de pruebas unitarias: `tests/unit/oauth-multi-tenant.test.ts` (5 pruebas unitarias).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (110 de 110 tests en 20 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).

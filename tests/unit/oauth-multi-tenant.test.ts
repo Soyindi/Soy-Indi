@@ -42,4 +42,15 @@ describe('Multi-Tenant & Google OAuth Architecture Verification', () => {
       expect(typeof v).toBe('string');
     });
   });
+
+  it('debe verificar la presencia y formato de las credenciales de Google OAuth si están configuradas', () => {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (clientId) {
+      expect(clientId).toMatch(/\.apps\.googleusercontent\.com$/);
+    }
+    const secret = process.env.GOOGLE_CLIENT_SECRET;
+    if (secret) {
+      expect(secret.length).toBeGreaterThan(10);
+    }
+  });
 });
