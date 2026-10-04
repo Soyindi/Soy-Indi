@@ -43,20 +43,19 @@ export default function HomePage() {
           <div className="lg:col-span-7 text-left">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill text-xs font-medium text-cyan-300 mb-6">
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Plataforma Todo-en-Uno • 15 Días de Prueba Gratis</span>
+              <span>Para Emprendedores y Profesionales • 15 Días Gratis</span>
             </div>
 
             <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-6">
-              Tu Identidad Digital, Currículum y Presentaciones{' '}
+              Haz crecer tu negocio y comparte tus servicios{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-300 to-teal-300">
-                en un solo enlace vivo.
+                con un solo link en tu celular.
               </span>
             </h1>
 
             <p className="text-base sm:text-lg text-zinc-300 font-normal leading-relaxed mb-8 max-w-2xl">
-              Reemplaza las tarjetas de papel que se pierden o terminan en la basura. Conecta a clientes
-              directamente por WhatsApp, supera los filtros ATS de reclutamiento y proyecta diapositivas
-              cinemáticas a $1.000 CLP al mes.
+              Dile adiós a las tarjetas de papel que se pierden o terminan en la basura. 
+              Con INDI, tus clientes te escriben a WhatsApp en un toque, conocen tus trabajos y te guardan en sus contactos al instante, por solo $1.000 pesos al mes.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
@@ -64,29 +63,29 @@ export default function HomePage() {
                 href="/login?mode=signup&callbackUrl=/start"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all min-h-[48px]"
               >
-                <span>Comenzar Prueba de 15 Días</span>
+                <span>Probar Gratis por 15 Días</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/pricing"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass-panel text-zinc-300 hover:text-white font-medium text-sm transition-all min-h-[48px]"
               >
-                <span>Conocer Plan Semestral ($6.000)</span>
+                <span>Ver Precios ($1.000 al mes)</span>
               </Link>
             </div>
 
-            <div className="flex items-center gap-6 text-xs text-zinc-500 font-mono">
+            <div className="flex items-center gap-6 text-xs text-zinc-400 font-medium">
               <span className="flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
-                Sin tarjeta de crédito
+                No te pedimos tarjeta
               </span>
               <span className="flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
-                Configuración en 2 min
+                Listo en 2 minutos
               </span>
               <span className="flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
-                Cancela cuando quieras
+                Sin amarras ni contratos
               </span>
             </div>
           </div>
@@ -95,7 +94,7 @@ export default function HomePage() {
           <div className="lg:col-span-5 flex flex-col items-center justify-center">
             <div className="text-center mb-3">
               <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-cyan-400">
-                ● Tarjeta Interactiva en Vivo (Prueba los botones)
+                ● Ejemplo Real (Toca los botones para probarla)
               </span>
             </div>
 
@@ -103,8 +102,8 @@ export default function HomePage() {
               card={{
                 slug: 'demo',
                 title: 'Matías Riquelme',
-                profession: 'Ingeniero de Software & Tech Lead',
-                about: 'Especialista en arquitecturas web distribuidas, Edge computing y sistemas de alta concurrencia.',
+                profession: 'Servicios Profesionales & Emprendedor',
+                about: 'Ayudo a personas y negocios a ordenar sus ideas, captar nuevos clientes y verse impecables en internet.',
                 whatsapp: '+56912345678',
                 emailContact: 'contacto@matiasriquelme.dev',
                 websiteUrl: 'https://matiasriquelme.dev',
@@ -123,14 +122,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* BLOQUE 2: COMPARATIVA BRUTAL (PAPEL VS INDI) */}
+      {/* BLOQUE 2: COMPARATIVA CLARA (PAPEL VS INDI) */}
       <section id="comparativa" className="relative z-10 max-w-5xl mx-auto px-6 py-16 scroll-mt-24">
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            ¿Por qué el 93% de las tarjetas de papel fracasan?
+            ¿Por qué ya casi nadie usa tarjetas de papel?
           </h2>
           <p className="text-sm text-zinc-400 mt-2">
-            La forma tradicional de networking quedó obsoleta. Compara los números reales:
+            La forma antigua de dar tu contacto se quedó en el pasado. Mira lo que pasa en la vida real:
           </p>
         </div>
 
@@ -139,7 +138,7 @@ export default function HomePage() {
           <div className="glass-panel rounded-3xl p-8 border border-red-500/20 bg-red-950/10">
             <div className="flex items-center justify-between mb-6">
               <span className="text-xs font-mono font-bold text-red-400 uppercase tracking-wider">
-                Tarjetas de Papel Impresas
+                Tarjetas de Papel de Imprenta
               </span>
               <X className="w-5 h-5 text-red-400" />
             </div>
@@ -147,19 +146,19 @@ export default function HomePage() {
             <ul className="space-y-4 text-xs sm:text-sm text-zinc-400">
               <li className="flex items-start gap-3">
                 <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <span><strong>Cuestan ~$35.000 CLP</strong> por caja de 100 unidades y se agotan rápido.</span>
+                <span><strong>Son caras:</strong> Pagas cerca de $35.000 por una cajita de 100 tarjetas y se te acaban justo cuando las necesitas.</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <span><strong>Si cambias de teléfono o cargo</strong>, debes botarlas todas a la basura.</span>
+                <span><strong>Si cambias tu número o dirección:</strong> Tienes que botar toda la caja a la basura y volver a mandar a imprimir.</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <span><strong>Cero analítica:</strong> Imposible saber si alguien la leyó o la botó.</span>
+                <span><strong>No sabes qué pasó:</strong> Nunca sabrás si la persona guardó tu teléfono o si la dejó tirada en un cajón.</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <span>El cliente tiene que digitar tu número a mano (fricción total).</span>
+                <span><strong>Da flojera escribir el número:</strong> El cliente tiene que tipear tu teléfono dígito por dígito para hablarte.</span>
               </li>
             </ul>
           </div>
@@ -168,7 +167,7 @@ export default function HomePage() {
           <div className="glass-panel rounded-3xl p-8 border-2 border-emerald-500/30 bg-emerald-950/10 shadow-xl shadow-emerald-500/10">
             <div className="flex items-center justify-between mb-6">
               <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">
-                Tarjeta Digital INDI (2026)
+                Tu Tarjeta Digital con INDI
               </span>
               <Check className="w-5 h-5 text-emerald-400 stroke-[3]" />
             </div>
@@ -176,96 +175,96 @@ export default function HomePage() {
             <ul className="space-y-4 text-xs sm:text-sm text-zinc-200">
               <li className="flex items-start gap-3">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 stroke-[3]" />
-                <span><strong>Solo $1.000 CLP al mes</strong> ($6.000 semestral) para uso ilimitado.</span>
+                <span><strong>Súper económica:</strong> Solo $1.000 pesos al mes ($6.000 al semestre) para compartirla todas las veces que quieras.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 stroke-[3]" />
-                <span><strong>Actualización en segundos:</strong> Cambia foto, datos o redes al instante.</span>
+                <span><strong>La editas cuando quieras:</strong> Cambias tu foto, tu número o tus ofertas en segundos desde tu teléfono sin pagar de más.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 stroke-[3]" />
-                <span><strong>Un clic a WhatsApp:</strong> Abre el chat de inmediato con mensaje listo.</span>
+                <span><strong>A un toque de WhatsApp:</strong> Tu cliente presiona un botón y te abre la conversación de inmediato.</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 stroke-[3]" />
-                <span><strong>Métricas en vivo:</strong> Cuenta cuántas personas te visitan y hacen clic.</span>
+                <span><strong>Ves cuánta gente te visita:</strong> Sabes cuántas personas abrieron tu tarjeta y cuántas te hablaron.</span>
               </li>
             </ul>
           </div>
         </div>
       </section>
 
-      {/* BLOQUE 3: EL TRIDENTE DE PRODUCTOS (BENTO GRID) */}
+      {/* BLOQUE 3: CÓMO TE AYUDA INDI EN TU DÍA A DÍA */}
       <section id="soluciones" className="relative z-10 max-w-7xl mx-auto px-6 py-20 scroll-mt-24">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
-            Tres Soluciones de Élite.{' '}
+            Todo lo que necesitas para tu negocio.{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-300">
-              Un Solo Ecosistema.
+              Fácil y sin enredos.
             </span>
           </h2>
-          <p className="text-sm sm:text-base text-zinc-400">
-            Todo lo necesario para tu presencia profesional y de negocios integrado en tu membresía:
+          <p className="text-sm sm:text-base text-zinc-300">
+            Tres herramientas prácticas incluidas en una sola cuenta para mostrar lo que haces con orgullo:
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Pilar 1 */}
+          {/* Herramienta 1 */}
           <div className="glass-panel rounded-3xl p-8 flex flex-col justify-between hover:border-indigo-500/40 transition-all">
             <div>
               <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mb-6">
                 <QrCode className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Tarjetas & QR Interactivo</h3>
+              <h3 className="text-xl font-bold text-white mb-3">Tu Tarjeta Digital con Código QR</h3>
               <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                Diseño Glassmorphism 2.0 tridimensional, SmartParticles anti-colisión y botón directo a WhatsApp con previsualización en redes sociales.
+                Un link elegante con tu foto, tus servicios y tu catálogo. Tus clientes escanean tu código QR con la cámara de su teléfono o tocan tu enlace para chatear contigo directo por WhatsApp.
               </p>
             </div>
             <Link
               href="/cards/new"
               className="inline-flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 font-mono transition-colors"
             >
-              <span>Diseñar Tarjeta</span>
+              <span>Crear mi Tarjeta</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* Pilar 2 */}
+          {/* Herramienta 2 */}
           <div className="glass-panel rounded-3xl p-8 flex flex-col justify-between hover:border-cyan-500/40 transition-all">
             <div>
               <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center mb-6">
                 <FileText className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Smart CV (Calibración ATS)</h3>
+              <h3 className="text-xl font-bold text-white mb-3">Currículum Profesional Fácil</h3>
               <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                Auditoría heurística con Score 0-100 para superar los filtros automatizados de reclutadores, con vista de impresión A4 estándar.
+                Crea o mejora tu currículum paso a paso con la ayuda de un asistente inteligente. Te da consejos sencillos para destacar tu experiencia y lo descargas listo en PDF para postular a empleos.
               </p>
             </div>
             <Link
               href="/cv"
               className="inline-flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 font-mono transition-colors"
             >
-              <span>Auditar mi Currículum</span>
+              <span>Preparar mi Currículum</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* Pilar 3 */}
+          {/* Herramienta 3 */}
           <div className="glass-panel rounded-3xl p-8 flex flex-col justify-between hover:border-teal-500/40 transition-all">
             <div>
               <div className="w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center mb-6">
                 <Presentation className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Orbital Studio 16:9</h3>
+              <h3 className="text-xl font-bold text-white mb-3">Presentaciones para Clientes</h3>
               <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                Presentaciones cinemáticas con iluminación volumétrica e inteligencia artificial para estructurar diapositivas automáticamente.
+                Muestra tus propuestas, presupuestos o proyectos en diapositivas limpias y profesionales que puedes proyectar en tu computador, tablet o celular en cualquier reunión.
               </p>
             </div>
             <Link
               href="/presentations"
               className="inline-flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 font-mono transition-colors"
             >
-              <span>Abrir Estudio</span>
+              <span>Ver Presentaciones</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -277,14 +276,14 @@ export default function HomePage() {
         <PricingSection showTitle={true} />
       </section>
 
-      {/* BLOQUE 5: FAQ ANTI-OBJECIONES */}
+      {/* BLOQUE 5: PREGUNTAS FRECUENTES CLARAS */}
       <section id="faq" className="relative z-10 max-w-4xl mx-auto px-6 py-20 scroll-mt-24">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-extrabold tracking-tight text-white">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
             Preguntas Frecuentes
           </h2>
-          <p className="text-sm text-zinc-400 mt-2">
-            Todo claro antes de iniciar tu prueba gratuita de 15 días:
+          <p className="text-sm text-zinc-300 mt-2">
+            Todo claro y sin enredos antes de empezar tus 15 días gratis:
           </p>
         </div>
 
@@ -296,16 +295,16 @@ export default function HomePage() {
         <div className="glass-panel rounded-3xl p-10 sm:p-14 border border-indigo-500/30 relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
-              Comienza hoy tu prueba de 15 días gratis
+              Comienza hoy tus 15 días gratis
             </h2>
             <p className="text-sm sm:text-base text-zinc-300 max-w-xl mx-auto mb-8">
-              Tu enlace público estará listo en 2 minutos. Comparte por WhatsApp, activa tu QR y comprueba la diferencia.
+              Tu tarjeta estará lista en 2 minutos. Compártela en tus redes o por WhatsApp y empieza a recibir nuevos clientes.
             </p>
             <Link
               href="/login?mode=signup&callbackUrl=/start"
               className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-xl shadow-indigo-500/30 hover:scale-105 transition-all min-h-[48px]"
             >
-              <span>Comenzar Prueba Gratuita Ahora</span>
+              <span>Crear mi Cuenta Gratis</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -314,10 +313,10 @@ export default function HomePage() {
 
       {/* FOOTER */}
       <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 py-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
-        <p>© 2026 INDI Platform. Diseñado para alta velocidad y conversión.</p>
+        <p>© 2026 INDI. La forma más fácil de mostrar tu trabajo y hacer crecer tu negocio.</p>
         <div className="flex items-center gap-6">
           <Link href="/cards" className="hover:text-zinc-300 transition-colors">Tarjetas</Link>
-          <Link href="/cv" className="hover:text-zinc-300 transition-colors">Smart CV</Link>
+          <Link href="/cv" className="hover:text-zinc-300 transition-colors">Currículum</Link>
           <Link href="/presentations" className="hover:text-zinc-300 transition-colors">Presentaciones</Link>
           <Link href="/pricing" className="hover:text-zinc-300 transition-colors">Precios</Link>
         </div>

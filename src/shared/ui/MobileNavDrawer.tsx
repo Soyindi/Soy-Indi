@@ -25,27 +25,27 @@ export function MobileNavDrawer() {
 
   const visitorNavItems = [
     {
-      title: 'Soluciones Integradas',
+      title: 'Herramientas de Negocio',
       href: '#soluciones',
-      description: 'Tarjetas con QR, Smart CV y Presentaciones 16:9',
+      description: 'Tarjetas con QR, Currículum en PDF y Presentaciones',
       icon: Layers,
     },
     {
-      title: '¿Por qué INDI?',
+      title: '¿Por qué elegir INDI?',
       href: '#comparativa',
-      description: 'Comparativa frente a tarjetas de papel tradicionales',
+      description: 'La diferencia frente a las tarjetas de papel tradicionales',
       icon: Sparkles,
     },
     {
-      title: 'Precios & Planes ($1.000/mes)',
+      title: 'Precios ($1.000 pesos al mes)',
       href: '#precios',
-      description: '15 días gratis y luego solo $6.000 CLP cada 6 meses',
+      description: 'Prueba 15 días gratis y luego solo $6.000 cada 6 meses',
       icon: Tag,
     },
     {
       title: 'Preguntas Frecuentes',
       href: '#faq',
-      description: 'Garantías, métodos de pago y activación instantánea',
+      description: 'Formas de pago, Cuenta RUT y cómo funciona',
       icon: FileText,
     },
   ];

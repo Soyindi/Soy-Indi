@@ -31,19 +31,19 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
         <div className="text-center max-w-3xl mx-auto mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill text-xs font-semibold text-cyan-400 mb-4 animate-fade-in">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Transparencia Radical • Cero Letra Chica</span>
+            <span>Precios Claros • Sin Letra Chica</span>
           </div>
 
           <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
-            Un Solo Plan.{' '}
+            Un Solo Precio.{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-300 to-teal-300">
-              Todo el Ecosistema Desbloqueado.
+              Todo Incluido para tu Negocio.
             </span>
           </h2>
 
-          <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
-            Comienza hoy con <strong>15 días de prueba gratis</strong>. Luego mantén tus tarjetas,
-            tu Smart CV y tus presentaciones activas por el valor de un café al mes.
+          <p className="text-sm sm:text-base text-zinc-300 leading-relaxed">
+            Empieza hoy con <strong>15 días de prueba gratis</strong>. Luego mantén tu tarjeta digital,
+            tu currículum y tus presentaciones activas por menos de lo que cuesta un café al mes.
           </p>
         </div>
       )}
@@ -88,12 +88,12 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
         <div className="flex items-center justify-between mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-xs font-mono font-semibold">
             <Zap className="w-3.5 h-3.5 text-cyan-400" />
-            <span>INDI ALL-ACCESS PASS</span>
+            <span>ACCESO TOTAL ILIMITADO</span>
           </div>
 
           <div className="text-right">
             <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-              15 DÍAS DE PRUEBA VIP
+              15 DÍAS DE PRUEBA GRATIS
             </span>
           </div>
         </div>
@@ -110,19 +110,19 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
           </div>
 
           <div className="mt-2 text-xs font-mono text-cyan-300 flex items-center gap-2">
-            <span>● Equivalente a solo</span>
+            <span>● Te sale a solo</span>
             <strong className="text-sm font-bold text-white">
-              ${interval === 'semiannual' ? '1.000' : '2.500'} CLP / mes
+              ${interval === 'semiannual' ? '1.000' : '2.500'} CLP al mes
             </strong>
             {interval === 'semiannual' && (
-              <span className="text-zinc-500">($7 USD para usuarios internacionales)</span>
+              <span className="text-zinc-500">($7 USD si estás fuera de Chile)</span>
             )}
           </div>
         </div>
 
         <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed mb-8 pb-6 border-b border-white/10">
-          Acceso sin restricciones a crear y compartir tus <strong>Tarjetas Digitales</strong>,
-          optimizar tu <strong>Smart CV para filtros ATS</strong> y proyectar con <strong>Orbital Studio</strong>.
+          Uso completo sin límites para crear tus <strong>Tarjetas con Código QR</strong>,
+          armar tu <strong>Currículum Profesional</strong> y proyectar tus <strong>Presentaciones</strong>.
         </p>
 
         {/* Lista de Características */}
@@ -149,12 +149,12 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
             href="/login?mode=signup&callbackUrl=/start"
             className="w-full inline-flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm sm:text-base shadow-xl shadow-indigo-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all min-h-[48px]"
           >
-            <span>Iniciar Prueba Gratis de 15 Días</span>
+            <span>Empezar Gratis por 15 Días</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
 
-          <p className="text-center text-[11px] text-zinc-500 font-mono">
-            Sin tarjeta de crédito requerida • Configuración en menos de 2 minutos
+          <p className="text-center text-[11px] text-zinc-400">
+            No necesitas ingresar tarjeta • Lo tienes listo en 2 minutos
           </p>
         </div>
       </div>
@@ -165,9 +165,9 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
           <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
             <Layers className="w-5 h-5" />
           </div>
-          <h4 className="text-sm font-bold text-white mb-1">Tarjetas & QR Ilimitadas</h4>
+          <h4 className="text-sm font-bold text-white mb-1">Tarjetas con Código QR</h4>
           <p className="text-xs text-zinc-400">
-            Conexión directa a WhatsApp, SmartParticles anti-colisión y Open Graph en el Edge.
+            Botón directo a tu WhatsApp, link personalizado y visualización rápida en celulares.
           </p>
         </div>
 
@@ -175,9 +175,9 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
           <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-3">
             <FileText className="w-5 h-5" />
           </div>
-          <h4 className="text-sm font-bold text-white mb-1">Smart CV Calibrado</h4>
+          <h4 className="text-sm font-bold text-white mb-1">Currículum Fácil en PDF</h4>
           <p className="text-xs text-zinc-400">
-            Auditoría de compatibilidad ATS en tiempo real y exportación de documento estándar.
+            Revisión automática de tu CV con consejos sencillos para destacar y postular a mejores trabajos.
           </p>
         </div>
 
@@ -185,9 +185,9 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
           <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center mb-3">
             <Presentation className="w-5 h-5" />
           </div>
-          <h4 className="text-sm font-bold text-white mb-1">Presentaciones 16:9</h4>
+          <h4 className="text-sm font-bold text-white mb-1">Presentaciones de Negocio</h4>
           <p className="text-xs text-zinc-400">
-            Generador por IA, temas cinematográficos con iluminación reactiva y modo orador.
+            Muestra tus presupuestos y servicios en pantalla completa desde tu teléfono o computador.
           </p>
         </div>
       </div>

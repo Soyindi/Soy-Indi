@@ -795,8 +795,18 @@ export default async function PublicCardPage({ params }: PageProps) {
 3. **Comportamiento de Scroll Suave y Respeto a Preferencias de Movimiento (`globals.css`)**:
    - Reglas globales `html { scroll-behavior: smooth; scroll-padding-top: 5rem; }` para asegurar que el contenido anclado no quede oculto detrás de la barra pegajosa.
    - Soporte de accesibilidad para reducción de movimiento: `@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }`.
+### ✅ Fase 29: Refactorización de Branding y Copywriting Cercano para Emprendedores (COMPLETADA)
+1. **Humanización del Lenguaje y Cero Tecnicismos en Landing Page (`src/app/page.tsx`)**:
+   - Sustitución de terminología compleja de software (*"Ecosistema Todo-en-Uno"*, *"Filtros ATS"*, *"Diapositivas Cinemáticas"*, *"Open Graph en el Edge"*) por propuestas de valor cotidianas y transparentes orientadas a emprendedores y trabajadores independientes.
+   - Enfoque directo en beneficios reales de negocio: conexión con clientes en 1 toque por WhatsApp, actualización instantánea desde el celular sin costos de reimpresión de papel, y herramientas intuitivas para mostrar servicios y presupuestos.
+2. **Clarificación y Accesibilidad en Preguntas Frecuentes (`FaqAccordion.tsx`)**:
+   - Reescritura completa de preguntas y respuestas en un tono cercano y explicativo: detalle de medios de pago en Chile (Cuenta RUT, tarjetas bancarias mediante Webpay), confirmación de que los clientes no necesitan descargar ninguna app para ver la tarjeta, y explicación transparente de la ayuda asistida por Inteligencia Artificial.
+3. **Estandarización de Precios y Navegación (`PricingSection.tsx`, `GlobalNavbar.tsx`, `MobileNavDrawer.tsx`)**:
+   - Actualización de etiquetas y anclas: cambio de *"FAQ"* a *"Preguntas Frecuentes"* y de *"Soluciones"* a *"Herramientas"*.
+   - Adaptación de la lista de características de planes en `PRICING_PLANS` para resaltar el ahorro y la simpleza de uso sin tecnicismos innecesarios.
 4. **Control de Calidad y Pruebas Unitarias (116 Tests Passing)**:
    - 100% de la suite de pruebas unitarias aprobada en Vitest (116 de 116 tests en 21 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
 
 

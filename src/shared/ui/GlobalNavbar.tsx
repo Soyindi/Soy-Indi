@@ -69,7 +69,7 @@ export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
           ) : (
             <>
               <a href="#soluciones" className="hover:text-white transition-colors">
-                Soluciones
+                Herramientas
               </a>
               <a href="#comparativa" className="hover:text-white transition-colors">
                 ¿Por qué INDI?
@@ -78,7 +78,7 @@ export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
                 Precios ($1.000/mes)
               </a>
               <a href="#faq" className="hover:text-white transition-colors">
-                FAQ
+                Preguntas Frecuentes
               </a>
             </>
           )}

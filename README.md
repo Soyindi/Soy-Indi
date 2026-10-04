@@ -13,7 +13,7 @@
 [![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](#)
 
 <p align="center">
-  <b>Reemplaza las tarjetas de papel obsoletas por una identidad digital viva, audita tu currículum frente a filtros ATS de RRHH y proyecta presentaciones cinematográficas 16:9 con Inteligencia Artificial.</b>
+  <b>Reemplaza las tarjetas de papel tradicionales por una presencia digital viva en el celular de tus clientes, prepara tu currículum profesional y proyecta tus propuestas comerciales sin complicaciones técnicas.</b>
 </p>
 
 [Explorar Landing Page](#-características-principales) • [Arquitectura Técnica](#-arquitectura-de-clase-mundial) • [Documentación Oficial](#-documentación-técnica-y-gobernanza) • [Pruebas & Calidad](#-pruebas-unitarias-y-calidad) • [Instalación Local](#-puesta-en-marcha-local)
@@ -24,9 +24,9 @@
 
 ## 📌 ¿Qué es INDI?
 
-**INDI** es una plataforma SaaS moderna diseñada para profesionales independientes, ejecutivos, empresas y creadores que buscan maximizar su impacto comercial y laboral. 
+**INDI** es una plataforma diseñada para emprendedores, trabajadores independientes y profesionales que buscan captar más clientes y proyectar una imagen impecable de manera sencilla.
 
-A diferencia de las tarjetas de visita de papel tradicionales —que el 88% de las personas pierde o desecha en menos de una semana—, INDI proporciona un **enlace vivo de alta conversión** con código QR dinámico, botón directo a WhatsApp y analíticas en tiempo real, respaldado por una suite de productividad con **Smart CV (ATS)** y **Presentaciones Cinemáticas**.
+A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en la basura—, INDI proporciona un **link personalizado y código QR** con botón directo a WhatsApp, catálogo de servicios y estadísticas claras, todo por solo **$1.000 CLP al mes**.
 
 ---
 

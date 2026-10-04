@@ -10,34 +10,34 @@ interface FaqItem {
 
 const FAQ_ITEMS: FaqItem[] = [
   {
-    question: '¿Cómo funcionan los 15 días de prueba gratuita?',
+    question: '¿Cómo funcionan los 15 días de prueba gratis?',
     answer:
-      'Al crear tu cuenta o diseñar tu primera tarjeta, obtienes acceso VIP inmediato a todas las funciones durante 15 días completos: sin ingresar tarjeta de crédito ni compromisos. Puedes compartir tu enlace y código QR con clientes de inmediato.',
+      'Al crear tu cuenta tienes 15 días completos para usar todo gratis, sin ningún compromiso y sin pedirte tarjeta de crédito. Puedes crear tu tarjeta, personalizarla con tus datos y compartir tu link o tu código QR con tus clientes desde el primer minuto.',
   },
   {
-    question: '¿Por qué el plan semestral de $6.000 CLP es tan conveniente?',
+    question: '¿Por qué cuesta solo $1.000 pesos al mes?',
     answer:
-      'Equivale a solo $1.000 CLP al mes (literalmente menos de lo que cuesta un café). Pagas una sola vez cada 6 meses, ahorras un 60% frente a la suscripción mensual y te olvidas de micro-cargos recurrentes en tu tarjeta o Cuenta RUT.',
+      'Queremos que cualquier persona, negocio de barrio o emprendedor pueda tener una presencia impecable en internet sin pagar de más. Nuestro plan semestral cuesta solo $6.000 pesos cada 6 meses (equivalente a $1.000 al mes), lo que es mucho más barato que mandar a imprimir una sola caja de tarjetas de papel.',
   },
   {
-    question: '¿La otra persona necesita tener instalada alguna aplicación para ver mi tarjeta?',
+    question: '¿Mis clientes necesitan instalar alguna aplicación para ver mi tarjeta?',
     answer:
-      'No. Tu tarjeta abre en milisegundos directamente en el navegador de cualquier smartphone (iPhone o Android) al escanear el código QR o abrir el enlace compartido por WhatsApp o redes.',
+      'No, para nada. Tu cliente solo escanea tu código QR con la cámara de su celular o toca el enlace que le envíes por WhatsApp, y tu tarjeta se abre al instante en su navegador (funciona perfecto en cualquier iPhone o Android).',
   },
   {
-    question: '¿Qué sucede cuando finalizan mis 15 días de prueba?',
+    question: '¿Qué pasa cuando se terminen mis 15 días de prueba?',
     answer:
-      'Tus datos, tarjeta, currículum y presentaciones permanecen guardados intactos en tu panel. Solo debes activar tu membresía semestral o mensual para que tu enlace público y código QR sigan respondiendo a tus visitas.',
+      'Tu información, tu tarjeta y tus diseños quedan guardados de forma segura en tu cuenta. Para que tu tarjeta siga visible en internet para tus clientes, solo debes activar tu membresía de $6.000 pesos por 6 meses.',
   },
   {
-    question: '¿Cómo funcionan los créditos de Inteligencia Artificial?',
+    question: '¿Qué son los créditos de ayuda con Inteligencia Artificial?',
     answer:
-      'Recibes 30 créditos de IA mensuales renovables incluidos en tu plan. Cada auditoría profunda ATS consume 2 créditos y la generación completa de una presentación consume 5 créditos. Las visitas a tus tarjetas, códigos QR y enlaces son 100% ilimitados.',
+      'Son ayudas automáticas que te damos todos los meses para que no tengas que redactar desde cero. Por ejemplo, te sugerimos textos profesionales para tu presentación o armamos diapositivas por ti en segundos. Visitar tus tarjetas y escanear tus códigos QR siempre es 100% ilimitado.',
   },
   {
-    question: '¿Qué métodos de pago aceptan?',
+    question: '¿Qué medios de pago puedo usar en Chile?',
     answer:
-      'Aceptamos todos los medios de pago en Chile mediante Webpay: Tarjetas de Crédito, Débito y Cuenta RUT (BancoEstado). Para usuarios internacionales, aceptamos tarjetas vía Stripe.',
+      'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay (BancoEstado y todos los bancos chilenos). Para quienes están fuera de Chile, también aceptamos tarjetas internacionales.',
   },
 ];
 
