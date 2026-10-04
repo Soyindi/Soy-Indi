@@ -1,5 +1,8 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { useSession } from '@/shared/lib/auth-client';
 import { Sparkles, ArrowRight, LayoutDashboard } from 'lucide-react';
 
 interface PublicHeaderProps {
@@ -7,6 +10,9 @@ interface PublicHeaderProps {
 }
 
 export function PublicContextualHeader({ ownerMode = false }: PublicHeaderProps) {
+  const { data: sessionData } = useSession();
+  const isAuthenticated = !!sessionData?.user || ownerMode;
+
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex items-center justify-between z-30">
       {/* Lado Izquierdo: Marca / Contexto */}
@@ -22,8 +28,8 @@ export function PublicContextualHeader({ ownerMode = false }: PublicHeaderProps)
         <span className="font-semibold tracking-tight">INDI</span>
       </Link>
 
-      {/* Lado Derecho: Acción contextual (Dueño o Visitante Viral) */}
-      {ownerMode ? (
+      {/* Lado Derecho: Acción contextual (Autenticado vs Visitante Viral) */}
+      {isAuthenticated ? (
         <Link
           href="/dashboard"
           className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 active:scale-95 shadow-lg"

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { PRICING_PLANS, PlanInterval } from '@/entities/subscription/types';
+import { useSession } from '@/shared/lib/auth-client';
 import { 
   Sparkles, 
   Check, 
@@ -22,6 +23,8 @@ interface PricingSectionProps {
 
 export function PricingSection({ showTitle = true }: PricingSectionProps) {
   const [interval, setInterval] = useState<PlanInterval>('semiannual');
+  const { data: sessionData } = useSession();
+  const isAuthenticated = !!sessionData?.user;
 
   const currentPlan = PRICING_PLANS[interval];
 
@@ -146,15 +149,17 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
         {/* Botón de Llamada a la Acción Principal */}
         <div className="space-y-3">
           <Link
-            href="/login?mode=signup&callbackUrl=/start"
+            href={isAuthenticated ? '/start' : '/login?mode=signup&callbackUrl=/start'}
             className="w-full inline-flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm sm:text-base shadow-xl shadow-indigo-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all min-h-[48px]"
           >
-            <span>Empezar Gratis por 3 Días</span>
+            <span>{isAuthenticated ? 'Ir al Onboarding Hub' : 'Empezar Gratis por 3 Días'}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
 
           <p className="text-center text-[11px] text-zinc-400">
-            No necesitas ingresar tarjeta • Lo tienes listo en 2 minutos
+            {isAuthenticated
+              ? 'Tu cuenta está activa • Explora todas las herramientas'
+              : 'No necesitas ingresar tarjeta • Lo tienes listo en 2 minutos'}
           </p>
         </div>
       </div>

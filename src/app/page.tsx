@@ -19,6 +19,8 @@ import { DigitalCard } from '@/entities/card/components/DigitalCard';
 import { PricingSection } from '@/features/pricing/components/PricingSection';
 import { FaqAccordion } from '@/features/pricing/components/FaqAccordion';
 import { GlobalNavbar } from '@/shared/ui/GlobalNavbar';
+import { HeroCtaButtons } from '@/features/onboarding/components/HeroCtaButtons';
+import { BottomCtaButton } from '@/features/onboarding/components/BottomCtaButton';
 
 export default function HomePage() {
   return (
@@ -58,21 +60,7 @@ export default function HomePage() {
               Con INDI, tus clientes te escriben a WhatsApp en un toque, conocen tus trabajos y te guardan en sus contactos al instante, por solo $1.000 pesos al mes.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
-              <Link
-                href="/login?mode=signup&callbackUrl=/start"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all min-h-[48px]"
-              >
-                <span>Probar Gratis por 3 Días</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/pricing"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass-panel text-zinc-300 hover:text-white font-medium text-sm transition-all min-h-[48px]"
-              >
-                <span>Ver Precios ($1.000 al mes)</span>
-              </Link>
-            </div>
+            <HeroCtaButtons className="mb-8" />
 
             <div className="flex items-center gap-6 text-xs text-zinc-400 font-medium">
               <span className="flex items-center gap-1.5">
@@ -300,13 +288,7 @@ export default function HomePage() {
             <p className="text-sm sm:text-base text-zinc-300 max-w-xl mx-auto mb-8">
               Tu tarjeta estará lista en 2 minutos. Compártela en tus redes o por WhatsApp y empieza a recibir nuevos clientes.
             </p>
-            <Link
-              href="/login?mode=signup&callbackUrl=/start"
-              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-xl shadow-indigo-500/30 hover:scale-105 transition-all min-h-[48px]"
-            >
-              <span>Crear mi Cuenta Gratis</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <BottomCtaButton />
           </div>
         </div>
       </section>

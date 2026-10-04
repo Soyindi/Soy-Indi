@@ -837,9 +837,26 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Se actualizó la prueba de auto-asignación para validar tanto semánticamente el nombre del test como matemáticamente el cálculo de expiración: invoca activamente el hook `before` de `databaseHooks.user.create`, comprobando que `trialEndsAt` corresponde exactamente a una ventana temporal de 3 días (`3 * 24 * 60 * 60 * 1000` ms) con tolerancia estricta de ejecución (< 2000 ms).
 3. **Gobernanza Doc-as-Code**:
    - Sincronización en cascada de `README.md`, `BLUEPRINT_2026.md` y `AGENTS.md`.
-4. **Control de Calidad y Verificación**:
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (117 de 117 tests en 21 suites).
-   - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+### ✅ Fase 33: Flujo Zero Redundant Logins y Resolución Reactiva de Sesión en Landing & CTAs (COMPLETADA)
+1. **Diagnóstico del Problema de Autenticación Redundante**:
+   - Al pulsar el botón primario de llamada a la acción en la Landing Page (*"Probar Gratis por 3 Días"*) o en la sección de precios, el enlace estático dirigía incondicionalmente a `/login?mode=signup&callbackUrl=/start`.
+   - En el servidor, la ruta `src/app/login/page.tsx` renderizaba el formulario de login/registro aun cuando el usuario ya contaba con una sesión activa y válida en Better-Auth (`auth.api.getSession`), obligándolo a iniciar sesión nuevamente o desconcertándolo.
+2. **Implementación de Guardrail en Servidor (`src/app/login/page.tsx`)**:
+   - Integración de `auth.api.getSession({ headers: await headers() })`. Si el usuario ya está autenticado, Next.js emite un `redirect(callbackUrl)` instantáneo a nivel HTTP/Edge, omitiendo por completo el renderizado del formulario y conduciéndolo sin fricción a su destino previsto (`/start` o `/dashboard`).
+3. **Componentes Reactivos Sensibles a Sesión (Feature-Sliced Design)**:
+   - **`HeroCtaButtons.tsx` & `BottomCtaButton.tsx` (`@/features/onboarding/components/`)**:
+     - Detectan de forma reactiva el estado de autenticación mediante `useSession()`.
+     - Si el usuario tiene sesión activa, el CTA primario cambia a *"Crear Nueva Tarjeta / Hub"* apuntando directamente a `/start` y el secundario ofrece acceso a *"Ir a Mi Panel"* (`/dashboard`), eliminando pasos innecesarios.
+     - Cumplen estrictamente con los estándares ergonómicos táctiles: touch targets $\ge 44\text{px}$ (`min-h-[48px]`), retícula base 8 y contraste WCAG 2.2 AA.
+   - **`PricingSection.tsx` (`@/features/pricing/components/`)**:
+     - Adaptación del botón principal: Si hay sesión activa, navega directamente a `/start` con el texto *"Ir al Onboarding Hub"*; si es visitante, conserva el flujo de registro guiado con `callbackUrl=/start`.
+   - **`PublicContextualHeader.tsx` (`@/shared/ui/`)**:
+     - Actualizado a componente cliente con detección de `useSession()`, permitiendo que usuarios autenticados que visualicen tarjetas públicas o demos accedan directamente a *"Mi Panel"*.
+4. **Pruebas Unitarias y Control de Calidad (119 Tests Passing)**:
+   - Nuevos tests en `tests/unit/auth-flow.test.ts` para validar la resolución de sesión, la priorización de `callbackUrl=/start` y el fallback seguro ante URLs externas o maliciosas.
+   - 100% de la suite de pruebas aprobada (119 de 119 pruebas unitarias en 21 suites).
+   - Chequeo de tipos estricto sin errores (`npm run typecheck`).
+
 
 
 

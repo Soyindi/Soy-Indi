@@ -74,4 +74,28 @@ describe('Auth Redirection & Flow Validation Suite', () => {
     expect(sanitizeCallbackUrl('/dashboard?tab=presentations', '/dashboard')).toBe('/dashboard?tab=presentations');
     expect(sanitizeCallbackUrl('/dashboard?tab=cards', '/dashboard')).toBe('/dashboard?tab=cards');
   });
+
+  it('debe priorizar el callbackUrl seguro (/start) cuando un usuario con sesión activa ingresa a /login', () => {
+    const rawQuery = { mode: 'signup', callbackUrl: '/start' };
+    const parsed = AuthRedirectParamsSchema.safeParse(rawQuery);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.callbackUrl).toBe('/start');
+    }
+  });
+
+  it('debe aplicar fallback a /dashboard cuando el callbackUrl provisto está ausente o es inválido en /login', () => {
+    const rawQuery = { mode: 'login' };
+    const parsed = AuthRedirectParamsSchema.safeParse(rawQuery);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.callbackUrl).toBe('/dashboard');
+    }
+
+    const invalidQuery = { mode: 'login', callbackUrl: 'https://external-attack.com' };
+    const invalidParsed = AuthRedirectParamsSchema.safeParse(invalidQuery);
+    expect(invalidParsed.success).toBe(false);
+    const sanitized = sanitizeCallbackUrl(invalidQuery.callbackUrl, '/dashboard');
+    expect(sanitized).toBe('/dashboard');
+  });
 });

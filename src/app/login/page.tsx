@@ -10,6 +10,9 @@ export const metadata: Metadata = {
 };
 
 import { AuthRedirectParamsSchema } from '@/entities/auth/schemas';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { auth } from '@/shared/lib/auth';
 
 interface LoginPageProps {
   searchParams: Promise<{
@@ -24,6 +27,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { mode, callbackUrl } = parsed.success
     ? parsed.data
     : { mode: 'login' as const, callbackUrl: '/dashboard' };
+
+  // Guardrail de Experiencia de Usuario: Si el usuario ya cuenta con sesión activa en Better-Auth,
+  // evitar mostrar nuevamente el formulario y redirigir al destino contextual seguro (callbackUrl o /dashboard).
+  const headerList = await headers();
+  const session = await auth.api.getSession({ headers: headerList });
+  if (session?.user) {
+    redirect(callbackUrl);
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-zinc-950 flex flex-col justify-between py-8 px-4 sm:px-6">
