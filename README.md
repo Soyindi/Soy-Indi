@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-119_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-123_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -57,6 +57,9 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 - **Vista Imprimible A4**: Maquetación limpia lista para exportar a PDF con calidad de imprenta.
 
 ### 3. 📽️ Orbital Presentations Pro (16:9)
+- **Persistencia Independiente & Zero Template Shadowing**: Precedencia estricta de base de datos en `/p/[slug]`. Las presentaciones personalizadas de los usuarios tienen prioridad absoluta sobre los templates estáticos por defecto.
+- **Gestión Visual de Metadatos & Slugs Dinámicos**: Control en vivo del título y enlace de acceso (`/p/[slug]`) en `PresentationStudio`, con generador automático de sufijos únicos anti-colisión (`generatePresentationSlug`), botón de copiado rápido y regeneración.
+- **Separación Robusta Modo Edición vs Creación**: Server Action `upsertPresentationAction` protegida contra sobrescritura silenciosa con validación de identificador primario inmutable (`/presentations?id=...`) y guardrails anti-IDOR.
 - **Efectos Cinemáticos & Aura Ambiental Reactiva**: Transiciones fluidas (*Crossfade*, *Slide Keynote*, *Zoom Focus*), auras volumétricas perimetrales (*Backdrop Aura* acelerada por GPU) y modos tipográficos (*Modern Sans*, *Editorial Serif*, *Técnica Mono*).
 - **Estudio Cinemático Profesional**: Diapositivas interactivas en relación 16:9 para reuniones de alto impacto, conferencias y videollamadas.
 - **Ampliación Profesional de Diapositiva Individual**: Botón ergonómico dedicado en cabecera de `SlideViewer` para proyectar únicamente el lienzo de la diapositiva en pantalla completa nativa sin barras de navegación del navegador ni distracciones del estudio.
@@ -284,7 +287,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
-- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (109 pruebas en 20 suites).
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (123 pruebas en 21 suites).
 - `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
 - `npm run db:generate`: Genera archivos de migración SQL basados en el esquema de Drizzle.
 - `npm run db:migrate`: Aplica las migraciones declarativas sobre la base de datos Turso LibSQL (Local o Nube).

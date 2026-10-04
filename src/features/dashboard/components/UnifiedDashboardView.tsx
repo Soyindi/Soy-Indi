@@ -717,7 +717,7 @@ export function UnifiedDashboardView({
                       </button>
 
                       <Link
-                        href={`/presentations?slug=${pres.slug || ''}`}
+                        href={`/presentations?id=${pres.id}`}
                         className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-sm hover:opacity-95 transition"
                       >
                         <MonitorPlay className="w-3.5 h-3.5" />

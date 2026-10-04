@@ -158,3 +158,25 @@ export type PresentationSlide = z.infer<typeof presentationSlideSchema>;
 export type PresentationTheme = z.infer<typeof presentationThemeSchema>;
 export type PresentationFormValues = z.infer<typeof presentationFormSchema>;
 export type PresentationDecompositionRequest = z.infer<typeof presentationDecompositionRequestSchema>;
+
+/**
+ * Normaliza cualquier título a un slug válido URL-friendly para presentaciones
+ */
+export function slugifyPresentationTitle(title: string): string {
+  const normalized = title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+  return normalized || 'presentacion';
+}
+
+/**
+ * Genera un slug único para una nueva presentación evitando colisiones con templates estáticos
+ */
+export function generatePresentationSlug(title: string = 'presentacion'): string {
+  const base = slugifyPresentationTitle(title);
+  const suffix = Math.random().toString(36).substring(2, 6);
+  return `${base}-${suffix}`;
+}

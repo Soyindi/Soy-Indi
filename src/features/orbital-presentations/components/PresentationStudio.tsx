@@ -7,6 +7,8 @@ import {
   PresentationTheme,
   PresentationFormValues,
   PresentationVisualType,
+  generatePresentationSlug,
+  slugifyPresentationTitle,
 } from '@/entities/presentation/schemas';
 import {
   PRESENTATION_TEMPLATES,
@@ -46,6 +48,10 @@ import {
   ArrowRight,
   AlertTriangle,
   X,
+  Copy,
+  ExternalLink,
+  Globe,
+  RefreshCw,
 } from 'lucide-react';
 
 interface PresentationStudioProps {
@@ -60,6 +66,8 @@ export function PresentationStudio({
   const [isPending, startTransition] = useTransition();
   const [aiGenerating, startAiTransition] = useTransition();
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [copiedSlug, setCopiedSlug] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [showSpeakerNotes, setShowSpeakerNotes] = useState(false);
   const [activeTab, setActiveTab] = useState<'editor' | 'templates' | 'theme'>('editor');
@@ -70,11 +78,15 @@ export function PresentationStudio({
   const [aiTopicPrompt, setAiTopicPrompt] = useState('');
   const [selectedTemplateCategory, setSelectedTemplateCategory] = useState('pitch-deck');
 
-  // Inicializar con la plantilla de Pitch Deck o la data cargada
+  // Inicializar con la plantilla de Pitch Deck o la data cargada, asegurando slug único en modo creación
   const defaultTemplate = PRESENTATION_TEMPLATES[0];
-  const [presentation, setPresentation] = useState<PresentationFormValues>(
-    initialData || defaultTemplate.data
-  );
+  const [presentation, setPresentation] = useState<PresentationFormValues>(() => {
+    if (initialData) return initialData;
+    return {
+      ...defaultTemplate.data,
+      slug: generatePresentationSlug(defaultTemplate.data.title || 'pitch-deck'),
+    };
+  });
 
   const activeSlide =
     presentation.slidesData[currentSlideIndex] || presentation.slidesData[0];
@@ -83,7 +95,6 @@ export function PresentationStudio({
 
   // Aplicar plantilla curada completa (con confirmación de seguridad para no perder contenido)
   const handleApplyTemplate = (templateId: string) => {
-    // Si ya tiene contenido cargado, pedir confirmación antes de sobreescribir
     const tmpl = PRESENTATION_TEMPLATES.find((t) => t.id === templateId);
     if (!tmpl) return;
     setTemplateToConfirm(templateId);
@@ -94,10 +105,11 @@ export function PresentationStudio({
     const tmpl = PRESENTATION_TEMPLATES.find((t) => t.id === templateToConfirm);
     if (tmpl) {
       if (replaceContent) {
-        // Reemplazo completo (diseño + contenido de ejemplo de la plantilla)
-        setPresentation({
+        // Reemplazo completo (diseño + contenido de la plantilla con slug independiente si es nueva)
+        setPresentation((prev) => ({
           ...tmpl.data,
-        });
+          slug: presentationId ? prev.slug : generatePresentationSlug(tmpl.data.title),
+        }));
       } else {
         // Adaptación inteligente: Conservar el contenido y adaptar la estética y categoría
         setPresentation((prev) => ({
@@ -115,6 +127,7 @@ export function PresentationStudio({
         }));
       }
       setCurrentSlideIndex(0);
+      setSaveError(null);
     }
     setTemplateToConfirm(null);
   };
@@ -125,21 +138,27 @@ export function PresentationStudio({
       setShowDecomposerModal(true);
       return;
     }
+    setSaveError(null);
     startAiTransition(async () => {
       const res = await generateAiSlidesAction(aiTopicPrompt, selectedTemplateCategory, 4);
       if (res.success && res.data) {
+        const newTitle = res.presentationTitle || aiTopicPrompt.trim();
         setPresentation((prev) => ({
           ...prev,
-          title: res.presentationTitle || aiTopicPrompt.trim(),
+          title: newTitle,
+          slug: presentationId ? prev.slug : generatePresentationSlug(newTitle),
           slidesData: res.data,
         }));
         setCurrentSlideIndex(0);
+      } else if (!res.success) {
+        setSaveError(res.error || 'Error al generar diapositivas con IA.');
       }
     });
   };
 
-  // Guardar en la base de datos Turso de forma idempotente
+  // Guardar en la base de datos Turso de forma idempotente con reporte de fallos
   const handleSave = () => {
+    setSaveError(null);
     startTransition(async () => {
       const res = await upsertPresentationAction(presentation, presentationId || undefined);
       if (res.success) {
@@ -148,8 +167,22 @@ export function PresentationStudio({
         }
         setSavedSuccess(true);
         setTimeout(() => setSavedSuccess(false), 2500);
+      } else {
+        setSaveError(res.error || 'Ocurrió un error al guardar la presentación.');
       }
     });
+  };
+
+  const handleCopyLink = async () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const url = `${window.location.origin}/p/${presentation.slug}`;
+      await navigator.clipboard.writeText(url);
+      setCopiedSlug(true);
+      setTimeout(() => setCopiedSlug(false), 2000);
+    } catch (err) {
+      console.error('Error al copiar link:', err);
+    }
   };
 
   // Reordenar diapositivas
@@ -241,11 +274,17 @@ export function PresentationStudio({
           <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto my-auto custom-scrollbar">
             <SmartPresentationDropzone
               onDecomposed={(newSlides, meta) => {
+                const newTitle = meta.title || presentation.title;
                 setPresentation((prev) => ({
                   ...prev,
-                  title: meta.title || prev.title,
+                  title: newTitle,
+                  slug: presentationId
+                    ? prev.slug
+                    : (meta.slug ? slugifyPresentationTitle(meta.slug) : generatePresentationSlug(newTitle)),
+                  themeSettings: meta.theme || prev.themeSettings,
                   slidesData: newSlides,
                 }));
+                setSaveError(null);
                 setCurrentSlideIndex(0);
                 setShowDecomposerModal(false);
               }}
@@ -359,6 +398,26 @@ export function PresentationStudio({
           </button>
         </div>
       </AppEditorHeader>
+
+      {/* Alerta Accesible de Error en Guardado o Validación */}
+      {saveError && (
+        <div
+          role="alert"
+          className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between gap-3 animate-fade-in"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span className="font-medium">{saveError}</span>
+          </div>
+          <button
+            onClick={() => setSaveError(null)}
+            className="min-h-[44px] min-w-[44px] p-2 hover:bg-rose-500/20 rounded-xl transition flex items-center justify-center cursor-pointer text-rose-300"
+            aria-label="Cerrar alerta de error"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Selector de Pestañas Superiores del Estudio */}
       <div className="flex items-center gap-2 mb-6 p-1 rounded-2xl glass-panel border border-white/10 max-w-md">
@@ -542,12 +601,102 @@ export function PresentationStudio({
         <div className="lg:col-span-4 space-y-6">
           {/* PESTAÑA 1: EDITOR DE CONTENIDO DE LA DIAPOSITIVA */}
           {activeTab === 'editor' && (
-            <div className="glass-panel rounded-3xl p-6 space-y-5 border border-white/10">
-              <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300 flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" />
-                  Diapositiva {currentSlideIndex + 1} de {presentation.slidesData.length}
-                </h3>
+            <>
+              {/* CONFIGURACIÓN GLOBAL DE LA PRESENTACIÓN */}
+              <div className="glass-panel rounded-3xl p-5 space-y-4 border border-white/10">
+                <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                    <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                    Propiedades de Presentación
+                  </h3>
+                  {presentation.slug && (
+                    <Link
+                      href={`/p/${presentation.slug}`}
+                      target="_blank"
+                      className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 min-h-[32px] px-2 py-1 rounded-lg hover:bg-white/5 transition"
+                      title="Abrir página pública"
+                    >
+                      <span>Ver enlace</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
+                    Título General
+                  </label>
+                  <input
+                    type="text"
+                    value={presentation.title}
+                    onChange={(e) =>
+                      setPresentation((prev) => ({ ...prev, title: e.target.value }))
+                    }
+                    placeholder="Título general del deck..."
+                    className="w-full min-h-[44px] rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                      Enlace Personalizado (Slug)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPresentation((prev) => ({
+                          ...prev,
+                          slug: generatePresentationSlug(prev.title),
+                        }))
+                      }
+                      className="text-[10px] font-mono text-zinc-400 hover:text-cyan-300 flex items-center gap-1 transition cursor-pointer min-h-[32px] px-2"
+                      title="Generar nuevo slug único"
+                    >
+                      <RefreshCw className="w-2.5 h-2.5" />
+                      <span>Regenerar</span>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono text-xs select-none">
+                        /p/
+                      </span>
+                      <input
+                        type="text"
+                        value={presentation.slug}
+                        onChange={(e) => {
+                          const sanitized = slugifyPresentationTitle(e.target.value);
+                          setPresentation((prev) => ({ ...prev, slug: sanitized }));
+                        }}
+                        placeholder="mi-presentacion"
+                        className="w-full min-h-[44px] rounded-xl bg-black/50 border border-white/10 pl-8 pr-3.5 py-2 text-xs text-cyan-300 font-mono focus:outline-none focus:border-cyan-400"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className="min-h-[44px] min-w-[44px] px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white flex items-center justify-center transition cursor-pointer"
+                      title="Copiar enlace"
+                    >
+                      {copiedSlug ? (
+                        <Check className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* EDITOR DE DIAPOSITIVA ACTIVA */}
+              <div className="glass-panel rounded-3xl p-6 space-y-5 border border-white/10">
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300 flex items-center gap-2">
+                    <FileText className="w-3.5 h-3.5" />
+                    Diapositiva {currentSlideIndex + 1} de {presentation.slidesData.length}
+                  </h3>
 
                 <button
                   onClick={() => setShowSpeakerNotes(!showSpeakerNotes)}
@@ -874,6 +1023,7 @@ export function PresentationStudio({
                 />
               </div>
             </div>
+          </>
           )}
 
           {/* PESTAÑA 2: CATÁLOGO DE PLANTILLAS PROFESIONALES */}

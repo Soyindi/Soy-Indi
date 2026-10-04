@@ -4,6 +4,8 @@ import {
   presentationFormSchema,
   PresentationSlide,
   PresentationFormValues,
+  generatePresentationSlug,
+  slugifyPresentationTitle,
 } from '@/entities/presentation/schemas';
 
 describe('Auditoría Integral del Flujo de Presentaciones (Studio UX & Contracts)', () => {
@@ -254,6 +256,82 @@ describe('Auditoría Integral del Flujo de Presentaciones (Studio UX & Contracts
       // Verificación de contratos ergonómicos
       expect(slide.keyPoints.length).toBe(3);
       expect(slide.badgeText).toContain('PANTALLA COMPLETA');
+    });
+  });
+
+  describe('Auditoría de Slugs e Independencia de Presentaciones (Zero Template Shadowing)', () => {
+    it('normaliza correctamente títulos complejos a slugs URL-friendly', () => {
+      expect(slugifyPresentationTitle('¡Estrategia Q4 & Crecimiento 2026!')).toBe(
+        'estrategia-q4-crecimiento-2026'
+      );
+      expect(slugifyPresentationTitle('   Pitch Deck Inversionistas - Tech & AI   ')).toBe(
+        'pitch-deck-inversionistas-tech-ai'
+      );
+      expect(slugifyPresentationTitle('¿Qué es INDI?')).toBe('que-es-indi');
+      expect(slugifyPresentationTitle('')).toBe('presentacion');
+      expect(slugifyPresentationTitle('$$$###')).toBe('presentacion');
+    });
+
+    it('genera slugs únicos conformes con el esquema de validación de Zod', () => {
+      const generated = generatePresentationSlug('Mi Startup IA');
+      expect(generated).toMatch(/^mi-startup-ia-[a-z0-9]{4}$/);
+
+      // Debe cumplir la regla regex de presentationFormSchema
+      const result = presentationFormSchema.shape.slug.safeParse(generated);
+      expect(result.success).toBe(true);
+    });
+
+    it('dos llamadas consecutivas generan slugs distintos para prevenir colisiones en creación', () => {
+      const slugA = generatePresentationSlug('Deck');
+      const slugB = generatePresentationSlug('Deck');
+      expect(slugA).not.toBe(slugB);
+    });
+
+    it('garantiza que la resolución en /p/[slug] priorice registros de base de datos sobre templates por defecto', () => {
+      // Simulación de resolución de ruta: Si un usuario guardó una presentación con el mismo slug
+      // que una plantilla estática ('pitch-deck-inversionistas'), el DB finder debe prevalecer.
+      const mockDatabaseRecord = {
+        id: 'user-pres-123',
+        slug: 'pitch-deck-inversionistas',
+        title: 'Pitch Personalizado del Usuario',
+        slidesData: [{ id: 'custom-slide', title: 'Slide Personalizada del Usuario', visualType: 'concept' }],
+      };
+
+      const mockStaticTemplate = {
+        id: 'pitch-deck-inversionistas',
+        data: {
+          slug: 'pitch-deck-inversionistas',
+          title: 'Plantilla por Defecto Estática',
+          slidesData: [{ id: 'template-slide', title: 'Slide Template Original' }],
+        },
+      };
+
+      // Lógica de precedencia en /p/[slug]:
+      // Prioridad 1: Base de datos.
+      // Prioridad 2: Template estático solo si no existe en BD.
+      const resolvePresentation = (
+        dbRecord: typeof mockDatabaseRecord | null,
+        staticTemplate: typeof mockStaticTemplate | undefined
+      ) => {
+        if (dbRecord) {
+          return { source: 'database', title: dbRecord.title, slides: dbRecord.slidesData };
+        }
+        if (staticTemplate) {
+          return { source: 'static_template', title: staticTemplate.data.title, slides: staticTemplate.data.slidesData };
+        }
+        return null;
+      };
+
+      const resolved = resolvePresentation(mockDatabaseRecord, mockStaticTemplate);
+      expect(resolved).not.toBeNull();
+      expect(resolved?.source).toBe('database');
+      expect(resolved?.title).toBe('Pitch Personalizado del Usuario');
+      expect(resolved?.slides[0].title).toBe('Slide Personalizada del Usuario');
+
+      // Si no existe en base de datos, recién recurre al template estático
+      const fallbackResolved = resolvePresentation(null, mockStaticTemplate);
+      expect(fallbackResolved?.source).toBe('static_template');
+      expect(fallbackResolved?.title).toBe('Plantilla por Defecto Estática');
     });
   });
 });

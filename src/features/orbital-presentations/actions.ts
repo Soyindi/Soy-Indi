@@ -21,7 +21,7 @@ import { PRESENTATION_TEMPLATES, PRESENTATION_THEMES } from '@/entities/presenta
 import { callNvidiaNimChat } from '@/shared/api/nvidia-nim';
 import { extractTextFromDocument, analyzeDocumentContent } from '@/features/orbital-presentations/lib/document-parser';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, ne } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -726,35 +726,25 @@ export async function upsertPresentationAction(
       return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
     }
     const targetUserId = sessionResult.userId;
-    let finalPresentationId = presentationId;
 
-    // Verificar si el slug ya está en uso por otro usuario (Unicidad global de URL)
-    if (data.slug) {
-      const existingWithSlug = await db.query.presentations.findFirst({
-        where: eq(presentations.slug, data.slug),
-      });
-
-      if (existingWithSlug) {
-        if (finalPresentationId && existingWithSlug.id !== finalPresentationId) {
-          return { success: false, error: 'Este enlace personalizado de presentación ya está en uso por otro proyecto.' };
-        }
-        if (!finalPresentationId && existingWithSlug.userId !== targetUserId) {
-          return { success: false, error: 'Este enlace personalizado ya pertenece a otro usuario. Por favor elige otro slug.' };
-        }
-        if (!finalPresentationId && existingWithSlug.userId === targetUserId) {
-          finalPresentationId = existingWithSlug.id;
-        }
-      }
-    }
-
-    if (finalPresentationId) {
-      // Verificar propiedad estricta para evitar sobreescritura entre tenants
+    if (presentationId) {
+      // ================= MODO EDICIÓN EXPLÍCITA (ANTI-IDOR) =================
       const existing = await db.query.presentations.findFirst({
-        where: and(eq(presentations.id, finalPresentationId), eq(presentations.userId, targetUserId)),
+        where: and(eq(presentations.id, presentationId), eq(presentations.userId, targetUserId)),
       });
 
       if (!existing) {
-        return { success: false, error: 'Presentación no encontrada o no pertenece al usuario autenticado' };
+        return { success: false, error: 'Presentación no encontrada o no pertenece al usuario autenticado.' };
+      }
+
+      // Si el slug cambió, verificar que no colisione con otra presentación existente
+      if (data.slug && existing.slug !== data.slug) {
+        const slugCollision = await db.query.presentations.findFirst({
+          where: and(eq(presentations.slug, data.slug), ne(presentations.id, presentationId)),
+        });
+        if (slugCollision) {
+          return { success: false, error: 'Este enlace personalizado de presentación ya está en uso por otro proyecto.' };
+        }
       }
 
       await db
@@ -767,10 +757,33 @@ export async function upsertPresentationAction(
           themeSettings: data.themeSettings,
           updatedAt: new Date(),
         })
-        .where(and(eq(presentations.id, finalPresentationId), eq(presentations.userId, targetUserId)));
+        .where(and(eq(presentations.id, presentationId), eq(presentations.userId, targetUserId)));
+
+      revalidatePath('/presentations');
+      revalidatePath('/dashboard');
+      if (data.slug) {
+        revalidatePath(`/p/${data.slug}`);
+      }
+      if (existing.slug && existing.slug !== data.slug) {
+        revalidatePath(`/p/${existing.slug}`);
+      }
+      return { success: true, id: presentationId, slug: data.slug };
     } else {
+      // ================= MODO CREACIÓN NUEVA INDEPENDIENTE =================
+      if (data.slug) {
+        const slugCollision = await db.query.presentations.findFirst({
+          where: eq(presentations.slug, data.slug),
+        });
+
+        if (slugCollision) {
+          return {
+            success: false,
+            error: 'Este enlace personalizado ya está en uso. Por favor ingresa otro slug para tu presentación.',
+          };
+        }
+      }
+
       const newId = crypto.randomUUID();
-      finalPresentationId = newId;
       await db.insert(presentations).values({
         id: newId,
         userId: targetUserId,
@@ -783,14 +796,14 @@ export async function upsertPresentationAction(
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-    }
 
-    revalidatePath('/presentations');
-    revalidatePath('/dashboard');
-    if (data.slug) {
-      revalidatePath(`/p/${data.slug}`);
+      revalidatePath('/presentations');
+      revalidatePath('/dashboard');
+      if (data.slug) {
+        revalidatePath(`/p/${data.slug}`);
+      }
+      return { success: true, id: newId, slug: data.slug };
     }
-    return { success: true, id: finalPresentationId, slug: data.slug };
   } catch (err: any) {
     console.error('Error guardando presentación:', err);
     return { success: false, error: err.message || 'Error guardando presentación' };

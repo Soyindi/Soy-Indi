@@ -866,9 +866,34 @@ export default async function PublicCardPage({ params }: PageProps) {
      - Botón principal de WhatsApp pre-redactado y vCard 4.0 One-Tap.
      - **Módulo de Ubicación & Oficina con OpenStreetMap** y accesos directos a Google Maps y Waze.
      - Acabado `classic` con textura de superficie `radial-glow` y color primario `#6366f1` (Gamut P3 / OKLCH).
-2. **Control de Calidad y Verificación**:
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (119 de 119 tests en 21 suites).
-   - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+### ✅ Fase 35: Auditoría Integral del Flujo de Presentaciones e Independencia de Slugs (COMPLETADA)
+1. **Diagnóstico del Fallo de Persistencia y Shadowing por Plantillas Estáticas**:
+   - **Precedencia Invertida en `/p/[slug]`**: La ruta pública `src/app/p/[slug]/page.tsx` (tanto en `generateMetadata` como en el Server Component `PublicPresentationPage`) consultaba primero la constante estática `PRESENTATION_TEMPLATES`. Debido a que la plantilla estática de pitch deck utiliza el slug `'pitch-deck-inversionistas'`, cualquier presentación creada y guardada por el usuario con ese slug quedaba completamente eclipsada (shadowed), renderizando siempre las diapositivas de ejemplo por defecto.
+   - **Secuestro Silencioso (Silent Hijack) en Server Action**: En `upsertPresentationAction`, si no se pasaba `presentationId` pero el slug coincidía con un registro del mismo usuario, la Server Action mutaba silenciosamente la presentación previa en lugar de crear un nuevo registro o exigir un slug diferenciado.
+   - **Falta de Edición de Slugs y Título en el Estudio**: `PresentationStudio.tsx` carecía de controles de interfaz para editar el título general y el slug público de la presentación, e inicializaba siempre las nuevas presentaciones con el slug estático de la plantilla (`pitch-deck-inversionistas`).
+   - **Pérdida de Metadatos en Ingesta Multimodal**: El callback de `SmartPresentationDropzone` no transmitía el `slug` ni el `theme` generados por IA hacia el estado del editor.
+   - **Enlace Ambiguo en Dashboard**: `UnifiedDashboardView.tsx` enlazaba a `/presentations?slug=${pres.slug}` en lugar de emplear el ID inmutable de la base de datos (`/presentations?id=${pres.id}`).
+2. **Solución Arquitectural y de Seguridad (FSD & Drizzle LibSQL)**:
+   - **Precedencia Absoluta de Base de Datos**: Reordenamiento en `src/app/p/[slug]/page.tsx` para consultar prioritariamente `db.query.presentations.findFirst({ where: eq(presentations.slug, slug) })`. Solo si no existe registro en base de datos, se evalúan las plantillas curadas y demos estáticos como fallback.
+   - **Independencia de Slugs y Separación Modo Edición vs Creación**:
+     - Implementación de `generatePresentationSlug()` y `slugifyPresentationTitle()` en `@/entities/presentation/schemas`.
+     - `upsertPresentationAction` ahora diferencia estrictamente:
+       - **Modo Edición (`presentationId`)**: Aplica guardrail anti-IDOR compuesto `and(eq(id, presentationId), eq(userId, targetUserId))` y valida colisión con `and(eq(slug, data.slug), ne(id, presentationId))`.
+       - **Modo Creación (`!presentationId`)**: Valida que no exista ningún slug duplicado previo y crea un registro nuevo e independiente.
+   - **Mejoras UI/UX en `PresentationStudio.tsx`**:
+     - Tarjeta de *Propiedades de Presentación* en la pestaña de Contenido: edición en tiempo real de Título y Slug, botón de regeneración aleatoria única, copiado de enlace en un click y acceso directo a la vista pública.
+     - Banner de error accesible (`role="alert"`) ante fallos de validación o colisión de slug.
+     - Preservación íntegra de título, slug y tema visual en ingesta multimodal (`SmartPresentationDropzone`) y generación rápida con IA.
+   - **Dashboard Enlazado por ID Inmutable**:
+     - En `UnifiedDashboardView.tsx`, el botón *"Abrir Estudio"* navega a `/presentations?id=${pres.id}`.
+3. **Control de Calidad y Pruebas Unitarias (123 Tests Passing)**:
+   - Nuevos casos de prueba en `tests/unit/presentation-flow-audit.test.ts` verificando:
+     - Normalización de títulos a slugs URL-friendly (`slugifyPresentationTitle`).
+     - Generación de slugs únicos conformes con el esquema regex de Zod (`generatePresentationSlug`).
+     - No-colisión entre llamadas consecutivas.
+     - Resolución con precedencia de base de datos sobre plantillas estáticas para eliminar el shadowing.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (123 de 123 tests en 21 suites).
+   - 0 errores de compilación estricta en TypeScript (`npm run typecheck`).
 
 
 

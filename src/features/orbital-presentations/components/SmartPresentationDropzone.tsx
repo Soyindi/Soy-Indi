@@ -28,8 +28,13 @@ import {
   parsePresentationDocumentAction,
 } from '@/features/orbital-presentations/actions';
 
+import { PresentationTheme } from '@/entities/presentation/schemas';
+
 interface SmartPresentationDropzoneProps {
-  onDecomposed: (slides: PresentationSlide[], metadata: { title?: string; pacingSeconds?: number }) => void;
+  onDecomposed: (
+    slides: PresentationSlide[],
+    metadata: { title?: string; slug?: string; theme?: PresentationTheme; pacingSeconds?: number }
+  ) => void;
   onClose?: () => void;
 }
 
@@ -186,6 +191,8 @@ export function SmartPresentationDropzone({
       if (res.success && res.data) {
         onDecomposed(res.data.slidesData, {
           title: res.data.title,
+          slug: res.data.slug,
+          theme: res.data.themeSettings,
           pacingSeconds: Math.round((targetDurationMinutes * 60) / res.data.slidesData.length),
         });
         if (onClose) onClose();
