@@ -89,20 +89,23 @@ export default function HomePage() {
             <DigitalCard
               card={{
                 slug: 'demo',
-                title: 'Matías Riquelme',
-                profession: 'Servicios Profesionales & Emprendedor',
-                about: 'Ayudo a personas y negocios a ordenar sus ideas, captar nuevos clientes y verse impecables en internet.',
-                whatsapp: '+56912345678',
-                emailContact: 'contacto@matiasriquelme.dev',
-                websiteUrl: 'https://matiasriquelme.dev',
-                linkedinUrl: 'https://linkedin.com',
-                instagramUrl: 'https://instagram.com',
-                photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+                title: 'Carlos Mendoza',
+                profession: 'Especialista en Marketing Digital',
+                about: 'Ayudo a marcas y empresas a escalar sus ventas mediante estrategias de adquisición y analítica de datos.',
+                whatsapp: '+56987654321',
+                emailContact: 'carlos@mendoza.com',
+                websiteUrl: 'https://carlosmendoza.com',
+                linkedinUrl: 'https://linkedin.com/in/carlosmendoza',
+                instagramUrl: 'https://instagram.com/carlosmendoza',
+                photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+                address: 'Av. Providencia 1208, Oficina 702, Santiago, Chile',
                 themeConfig: {
                   themeId: 'stellar',
                   primaryColorOklch: '#6366f1',
-                  particleBehavior: 'interactive',
+                  particleBehavior: 'ambient',
                   particleIntensity: 'balanced',
+                  cardFinish: 'classic',
+                  surfaceTexture: 'radial-glow',
                 },
               }}
             />

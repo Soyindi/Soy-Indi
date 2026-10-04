@@ -857,6 +857,19 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas aprobada (119 de 119 pruebas unitarias en 21 suites).
    - Chequeo de tipos estricto sin errores (`npm run typecheck`).
 
+### ✅ Fase 34: Unificación y Consistencia de Tarjeta Demo en Portada y Editor (COMPLETADA)
+1. **Alineación Visual y Coherencia de Producto (Carlos Mendoza)**:
+   - Diagnóstico: Existía una disonancia entre la tarjeta demo de la Landing Page (perfil sin módulo de mapa, ni acabados específicos) y la plantilla por defecto que encuentra el usuario al crear una tarjeta en el editor (`CardBuilder.tsx`).
+   - Solución: Se actualizó la tarjeta de la portada (`src/app/page.tsx`) y el endpoint público `/c/demo` (`src/app/c/[slug]/page.tsx`) con la identidad completa de **Carlos Mendoza** (*Especialista en Marketing Digital*).
+   - Beneficio: Exhibe de inmediato el catálogo completo de capacidades del producto:
+     - Badge Glassmorphism 2.0 y halo de partículas ambientales.
+     - Botón principal de WhatsApp pre-redactado y vCard 4.0 One-Tap.
+     - **Módulo de Ubicación & Oficina con OpenStreetMap** y accesos directos a Google Maps y Waze.
+     - Acabado `classic` con textura de superficie `radial-glow` y color primario `#6366f1` (Gamut P3 / OKLCH).
+2. **Control de Calidad y Verificación**:
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (119 de 119 tests en 21 suites).
+   - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
 
 
 
