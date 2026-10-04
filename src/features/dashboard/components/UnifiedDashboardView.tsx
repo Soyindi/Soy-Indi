@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import { 
   Sparkles, 
@@ -84,6 +84,13 @@ export function UnifiedDashboardView({
   justCreatedSlug,
 }: UnifiedDashboardViewProps) {
   const [activeTab, setActiveTab] = useState<'cards' | 'cvs' | 'presentations'>(initialTab);
+
+  // Sincronizar pestaña activa cuando se navega con parámetro ?tab= en la URL
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
   const [cardsList, setCardsList] = useState<CardItem[]>(initialCards);
   const [cvsList, setCvsList] = useState<CvItem[]>(initialCvs);
   const [presentationsList, setPresentationsList] = useState<any[]>(initialPresentations);

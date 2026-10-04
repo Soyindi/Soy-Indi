@@ -68,4 +68,10 @@ describe('Auth Redirection & Flow Validation Suite', () => {
     const expectedLoginRedirect = `/login?callbackUrl=${encodeURIComponent(safeUrl)}`;
     expect(expectedLoginRedirect).toContain('/login?callbackUrl=%2Fdashboard%3Ftab%3Dcards');
   });
+
+  it('debe validar rutas de retorno contextuales con parámetros de pestaña (?tab=cvs, ?tab=presentations)', () => {
+    expect(sanitizeCallbackUrl('/dashboard?tab=cvs', '/dashboard')).toBe('/dashboard?tab=cvs');
+    expect(sanitizeCallbackUrl('/dashboard?tab=presentations', '/dashboard')).toBe('/dashboard?tab=presentations');
+    expect(sanitizeCallbackUrl('/dashboard?tab=cards', '/dashboard')).toBe('/dashboard?tab=cards');
+  });
 });

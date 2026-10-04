@@ -811,9 +811,19 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Botón de creación rápida estandarizado como `+ Nuevo Proyecto` con gradiente interactivo para guiar al usuario a `/start` de forma clara.
 2. **Navegación Cruzada en el Onboarding Hub (`/start`)**:
    - Inclusión del botón *"Ir a Mi Panel"* en la cabecera de `/start`, permitiendo que usuarios recurrentes regresen inmediatamente a su mesa de trabajo sin perder tiempo.
-3. **Control de Calidad y Pruebas Unitarias (116 Tests Passing)**:
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (116 de 116 tests en 21 suites).
+### ✅ Fase 31: Auditoría de Navegación Bidireccional Contextual (Tab-Aware Routing) (COMPLETADA)
+1. **Detección y Corrección de Desvío en el Editor de CV (`SmartCvBuilder.tsx`)**:
+   - Diagnóstico: En la cabecera `AppEditorHeader`, la propiedad `categoryHref` estaba configurada como `"/dashboard"`. Al hacer click en la flecha de retroceso `←` o en la miga de pan contextual `Smart CV (ATS)`, el usuario era dirigido a la pestaña por defecto de Tarjetas (`tab=cards`) en lugar de regresar a su lista de currículums.
+   - Solución: Se actualizó `categoryHref="/dashboard?tab=cvs"` tanto en el botón de retroceso como en el breadcrumb contextual.
+2. **Sincronización Reactiva de Pestañas en el Dashboard (`UnifiedDashboardView.tsx`)**:
+   - Se añadió un efecto reactivo `useEffect` vinculado a la prop `initialTab` (`searchParams.tab`). Cuando el usuario navega desde cualquier editor secundario (`/cv` o `/presentations`) con `?tab=cvs` o `?tab=presentations`, el dashboard actualiza automáticamente la pestaña activa sin desincronización de estado.
+3. **Consistencia en Editores de Tarjetas y Presentaciones (`CardBuilder.tsx` & `PresentationStudio.tsx`)**:
+   - Estandarización explícita de `categoryHref="/dashboard?tab=cards"` en `CardBuilder` y `categoryHref="/dashboard?tab=presentations"` en `PresentationStudio`.
+4. **Control de Calidad y Pruebas Unitarias (117 Tests Passing)**:
+   - Nueva aserción en `tests/unit/auth-flow.test.ts` validando la preservación y sanitización estricta de rutas con parámetros de pestaña (`?tab=cvs`, `?tab=presentations`, `?tab=cards`).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (117 de 117 tests en 21 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
 
 
 

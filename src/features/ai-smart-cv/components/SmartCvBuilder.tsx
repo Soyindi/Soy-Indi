@@ -402,7 +402,7 @@ export function SmartCvBuilder() {
       <AppEditorHeader
         sectionTitle="Optimizador de CV"
         categoryName="Smart CV (ATS)"
-        categoryHref="/dashboard"
+        categoryHref="/dashboard?tab=cvs"
         badgeText="Swiss Canvas"
       >
         {/* Selector de modo de vista */}

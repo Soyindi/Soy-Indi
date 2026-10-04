@@ -207,7 +207,7 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
       <AppEditorHeader
         sectionTitle={cardId ? "Editar Tarjeta INDI" : "Crear Tarjeta INDI"}
         categoryName="Tarjetas Digitales"
-        categoryHref="/dashboard"
+        categoryHref="/dashboard?tab=cards"
         badgeText={cardId ? "Modo Edición" : "Sincronización 60 FPS"}
       >
         <button
