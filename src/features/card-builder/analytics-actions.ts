@@ -39,25 +39,40 @@ export async function trackCardEventAction(input: RecordEventInput): Promise<{
       return { success: false, error: 'Tarjeta no encontrada' };
     }
 
-    // 1. Insertar evento atómico
-    await db.insert(cardEvents).values({
-      cardId: card.id,
-      eventType,
-      source,
-      device,
-    });
-
-    // 2. Incrementar contadores consolidados en la tarjeta
+    // Atomic batch update in Turso LibSQL (collapses 2 roundtrips into 1)
     if (eventType === 'view') {
-      await db
-        .update(cards)
-        .set({ viewsCount: sql`${cards.viewsCount} + 1` })
-        .where(eq(cards.id, card.id));
+      await db.batch([
+        db.insert(cardEvents).values({
+          cardId: card.id,
+          eventType,
+          source,
+          device,
+        }),
+        db
+          .update(cards)
+          .set({ viewsCount: sql`${cards.viewsCount} + 1` })
+          .where(eq(cards.id, card.id)),
+      ]);
     } else if (eventType === 'contact_save' || eventType === 'whatsapp_click') {
-      await db
-        .update(cards)
-        .set({ clicksCount: sql`${cards.clicksCount} + 1` })
-        .where(eq(cards.id, card.id));
+      await db.batch([
+        db.insert(cardEvents).values({
+          cardId: card.id,
+          eventType,
+          source,
+          device,
+        }),
+        db
+          .update(cards)
+          .set({ clicksCount: sql`${cards.clicksCount} + 1` })
+          .where(eq(cards.id, card.id)),
+      ]);
+    } else {
+      await db.insert(cardEvents).values({
+        cardId: card.id,
+        eventType,
+        source,
+        device,
+      });
     }
 
     return { success: true };

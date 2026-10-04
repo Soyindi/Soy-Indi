@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-90_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-95_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -222,9 +222,10 @@ El proyecto incluye soporte local out-of-the-box con SQLite local (`local.db`):
 cp .env.example .env.local
 ```
 
-### 4. Ejecutar migraciones de la base de datos
+### 4. Ejecutar migraciones y sembrado de datos (Turso LibSQL)
 ```bash
-npx drizzle-kit push
+npm run db:migrate
+npm run db:seed
 ```
 
 ### 5. Iniciar el servidor de desarrollo
@@ -240,11 +241,12 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la 
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
-- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest.
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (95 pruebas en 18 suites).
 - `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
-- `npx drizzle-kit generate`: Genera archivos de migración SQL basados en el esquema.
-- `npx drizzle-kit push`: Aplica las migraciones directamente sobre la base de datos Turso SQLite.
-- `npx drizzle-kit studio`: Abre la interfaz visual de Drizzle Studio para explorar tablas y registros.
+- `npm run db:generate`: Genera archivos de migración SQL basados en el esquema de Drizzle.
+- `npm run db:migrate`: Aplica las migraciones declarativas sobre la base de datos Turso LibSQL (Local o Nube).
+- `npm run db:seed`: Siembra datos iniciales de demostración (Usuario demo, Tarjeta digital, Smart CV, Presentación).
+- `npm run db:studio`: Abre la interfaz visual de Drizzle Studio para explorar tablas y registros en vivo.
 
 ---
 

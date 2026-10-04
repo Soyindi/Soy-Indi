@@ -127,10 +127,10 @@ export default async function PublicCardPage({ params }: PageProps) {
 
   if (!card) notFound();
 
-  // Incrementar métricas de visitas reales y registrar evento atómico de telemetría
+  // Incrementar métricas de visitas reales y registrar evento atómico de telemetría en Turso (1 roundtrip)
   try {
     const { cardEvents } = await import('@/entities/schema');
-    await Promise.all([
+    await db.batch([
       db
         .update(cards)
         .set({ viewsCount: sql`${cards.viewsCount} + 1` })

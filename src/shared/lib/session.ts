@@ -15,7 +15,20 @@ export interface SafeUserResult {
 export async function getSafeAuthenticatedUserId(providedUserId?: string): Promise<SafeUserResult> {
   const isProd = process.env.NODE_ENV === 'production';
 
-  // 1. Si viene un userId explícito, verificar existencia en la base de datos
+  // 1. Intentar resolver sesión autenticada mediante Better-Auth si estamos en contexto de request
+  try {
+    const { headers } = await import('next/headers');
+    const headerList = await headers();
+    const { auth } = await import('@/shared/lib/auth');
+    const session = await auth.api.getSession({ headers: headerList });
+    if (session?.user?.id) {
+      return { userId: session.user.id };
+    }
+  } catch {
+    // En contextos fuera de request (ej. pruebas unitarias o scripts), continuamos con el flujo estándar
+  }
+
+  // 2. Si viene un userId explícito, verificar existencia en la base de datos
   if (providedUserId) {
     try {
       const existing = await db.query.user.findFirst({

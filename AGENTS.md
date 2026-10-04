@@ -73,7 +73,9 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - Producción se conecta mediante `TURSO_DATABASE_URL` y `TURSO_AUTH_TOKEN`.
 3. **Flujo de Migraciones:**
    - Nunca modificar las tablas SQLite manualmente en producción.
-   - Usar `npx drizzle-kit generate` y `npx drizzle-kit push`.
+   - Usar `npx drizzle-kit generate` y `npx drizzle-kit migrate` (o `npx drizzle-kit push`).
+4. **Batching de Escrituras Multi-Statement (`db.batch`):**
+   - En operaciones que ejecutan múltiples escrituras simultáneas (ej. registrar evento en `card_events` e incrementar `viewsCount` en `cards`), utilizar siempre `db.batch([stmt1, stmt2])` de Drizzle LibSQL en lugar de `Promise.all()`. Esto colapsa los roundtrips de red en uno solo y previene contención de cerraduras SQLite (`SQLITE_BUSY`).
 
 ---
 

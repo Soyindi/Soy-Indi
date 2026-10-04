@@ -1,3 +1,8 @@
+import dotenv from 'dotenv';
+if (typeof process !== 'undefined' && process.env) {
+  dotenv.config({ path: '.env.local' });
+  dotenv.config();
+}
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
 import * as schema from '@/entities/schema';

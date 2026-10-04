@@ -15,6 +15,13 @@
       "when": 1790657978491,
       "tag": "0001_tired_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791079826019,
+      "tag": "0002_sharp_korath",
+      "breakpoints": true
     }
   ]
 }

@@ -720,6 +720,24 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada en Vitest (90 de 90 tests en 17 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
 
+### ✅ Fase 24: Transición a Turso Cloud Oficial, Pipeline de Lotes `db.batch()` y Resolución Centralizada de Sesiones Better-Auth (COMPLETADA)
+1. **Conexión & Sincronización a Turso Cloud Oficial (`libsql://soyindi-soyindi.aws-us-west-2.turso.io`)**:
+   - Integración oficial de credenciales remotas en `.env.local` y actualización dinámica de `drizzle.config.ts` (`dialect: isTurso ? 'turso' : 'sqlite'` con inyección de `authToken` y carga de `.env.local`).
+   - Generación y ejecución de la migración faltante `0002_sharp_korath.sql` (creación de tabla `card_events` con índices de agregación y adición de columna `address` en `cards`).
+   - Migración 100% exitosa de las 8 tablas de dominio sobre Turso Cloud (`user`, `session`, `account`, `verification`, `cards`, `card_events`, `smart_cvs`, `presentations`, `__drizzle_migrations`).
+   - Creación del script de sembrado idempotente `src/shared/api/seed.ts` y script npm `"db:seed"`. Sembrado exitoso de usuario demo, tarjeta insignia `/c/matias-riquelme`, Smart CV con score ATS 94 y presentación interactiva `/p/pitch-deck-2026`.
+2. **Optimización de Telemetría con Pipeline de Lotes `db.batch()` (Turso LibSQL)**:
+   - Eliminación de escrituras paralelas con contención `Promise.all([db.update, db.insert])` en [src/app/c/[slug]/page.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/app/c/%5Bslug%5D/page.tsx) y [src/features/card-builder/analytics-actions.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/card-builder/analytics-actions.ts).
+   - Sustitución por transacciones por lotes `db.batch()` nativas de `drizzle-orm/libsql`, colapsando 2 roundtrips de red en 1 solo request HTTP perimetral atómico y eliminando riesgos de bloqueos `SQLITE_BUSY`.
+3. **Resolución Centralizada de Sesiones Better-Auth en Guardrails de Servidor**:
+   - Actualización de `getSafeAuthenticatedUserId` en [src/shared/lib/session.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/shared/lib/session.ts) para extraer de forma segura y transparente la sesión autenticada desde los encabezados de Next.js (`auth.api.getSession({ headers })`) con fallback resiliente para pruebas unitarias.
+4. **Control de Calidad, Resiliencia y Pruebas Unitarias (95 Tests Passing)**:
+   - Nueva suite `tests/unit/turso-batch-and-schema.test.ts` (5 pruebas).
+   - Mock determinista de inferencia externa en `tests/unit/presentation-adaptive-pipeline.test.ts` para ejecución offline instantánea (<20ms).
+   - 100% de las pruebas aprobadas en Vitest (95 de 95 tests en 18 suites).
+   - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
+
 
 
 

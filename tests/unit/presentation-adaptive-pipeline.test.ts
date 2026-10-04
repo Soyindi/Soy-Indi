@@ -1,9 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   analyzeDocumentContent,
   detectDocumentArchetype,
 } from '@/features/orbital-presentations/lib/document-parser';
 import { decomposeAndGeneratePresentationAction } from '@/features/orbital-presentations/actions';
+
+// Mockear llamada de red externa de NVIDIA NIM para aislar pruebas unitarias del motor heurístico
+vi.mock('@/shared/api/nvidia-nim', () => ({
+  callNvidiaNimChat: vi.fn().mockResolvedValue({
+    success: false,
+    error: 'Mock unit test: activating semantic heuristics engine',
+  }),
+}));
 
 describe('Pipeline Semántico Adaptativo (SAP Engine) - Clasificación y Fidelidad', () => {
   describe('Clasificación Automática de Arquetipos (detectDocumentArchetype)', () => {
