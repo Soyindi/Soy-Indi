@@ -94,6 +94,9 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 4. **Cartografía Web y Geolocalización Privacy-First:**
    - La representación de mapas en tarjetas públicas debe priorizar soluciones sin rastreadores ni tokens expuestos en cliente (OpenStreetMap embebido con `loading="lazy"` y `referrerPolicy="no-referrer"`).
    - Los enlaces de navegación externa deben ofrecer compatibilidad universal multilingüe con Google Maps y Waze asegurando touch targets $\ge 44\text{px}$.
+5. **Optimización y Compresión Client-Side de Medios (WebP First):**
+   - Toda subida de imagen de usuario (foto de perfil en tarjeta, captura de currículum o soporte visual de diapositivas) debe pasar por el motor client-side `@/shared/lib/imageCompression` (`compressImageClient`) antes de enviarse al servidor o serializarse en el estado.
+   - Preservar dimensiones proporcionales (`calculateAspectRatioFit`), convertir a WebP con factor de calidad balanceado (0.80 - 0.85) y garantizar retroalimentación visual al usuario en tiempo real con touch targets $\ge 44\text{px}$.
 
 
 ---

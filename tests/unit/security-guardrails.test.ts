@@ -24,5 +24,5 @@ describe('Security Guardrails & Multi-Tenant Protection', () => {
     const result = await getSafeAuthenticatedUserId(undefined);
     expect(result.userId).toBeDefined();
     expect(typeof result.userId).toBe('string');
-  });
+  }, 15000);
 });

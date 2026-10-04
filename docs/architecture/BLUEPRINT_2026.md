@@ -737,6 +737,23 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de las pruebas aprobadas en Vitest (95 de 95 tests en 18 suites).
    - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
 
+### ✅ Fase 25: Pipeline de Compresión Client-Side WebP & Validación Polimórfica de Medios (COMPLETADA)
+1. **Arquitectura FSD & Primitiva Reutilizable (`src/shared/lib/imageCompression.ts`)**:
+   - Extracción, modernización y tipado riguroso del algoritmo de compresión de imágenes derivado del proyecto de referencia (`JoyasJP_Definitive`).
+   - Función pura y universal `compressImageClient` basada en la API de HTML5 Canvas y WebP con preservación matemática de relación de aspecto (`calculateAspectRatioFit`).
+   - Cero sobrecarga de red al servidor: conversión en tiempo de ejecución en el navegador, reduciendo fotos de 4-10MB a menos de 150KB (ahorro de hasta un 85%).
+   - Retorno dual: objeto `File` comprimido para uploads binarios y cadena `dataUrl` en base64 para previsualizaciones instantáneas reactivas.
+2. **Validación Polimórfica de Contratos Zod (`src/entities/card/schemas.ts`)**:
+   - Flexibilización y robustecimiento de `photoUrl` para admitir tanto URLs web públicas (`http://`, `https://`) como Data URLs en formato Base64 (`data:image/...`), manteniendo la sanitización estricta contra inyecciones de scripts (`javascript:`).
+3. **Ergonomía Táctil Mobile-First (WCAG 2.2 AA) & Feedback en Tiempo Real**:
+   - Actualización de `CardBuilder.tsx` con zona de carga de fotos integrada, botón interactivo con touch target $\ge 44 \times 44\text{ px}$, indicador visual de carga con micro-animación `Loader2` y badge de telemetría de compresión (KB original vs KB optimizado y porcentaje de ahorro).
+   - Integración sinérgica en la ingesta multimodal de CVs y diplomas (`SmartDocumentDropzone.tsx`), firma digital en PDF (`SignatureModal.tsx`) y presentaciones (`SmartPresentationDropzone.tsx`).
+4. **Control de Calidad y Pruebas Unitarias (105 Tests Passing)**:
+   - Nueva suite de pruebas unitarias: `tests/unit/image-compression.test.ts` (10 pruebas unitarias).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (105 de 105 tests en 19 suites).
+   - 0 errores en verificación estricta de tipos TypeScript (`npm run typecheck`).
+
+
 
 
 

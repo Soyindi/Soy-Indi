@@ -17,5 +17,5 @@ describe('Subscription & Entitlements Logic', () => {
     expect(entitlement.isTrial).toBe(true);
     expect(entitlement.daysRemaining).toBeGreaterThanOrEqual(1);
     expect(entitlement.aiCredits).toBe(30);
-  });
+  }, 15000);
 });

@@ -105,11 +105,28 @@ export function SmartPresentationDropzone({
       return;
     }
 
-    // 2. Archivos PDF o documentos binarios que requieren extracción profunda en el servidor (unpdf)
+    // 2. Archivos PDF, imágenes o documentos binarios que requieren extracción profunda
     setIsExtracting(true);
     try {
+      let fileToSend = file;
+
+      // Si el archivo subido es una imagen (captura de diapositiva o gráfico), comprimir en cliente a WebP
+      if (file.type.startsWith('image/')) {
+        try {
+          const { compressImageClient } = await import('@/shared/lib/imageCompression');
+          const compressed = await compressImageClient(file, {
+            maxDimension: 1600,
+            quality: 0.85,
+            mimeType: 'image/webp',
+          });
+          fileToSend = compressed.file;
+        } catch (compErr) {
+          console.warn('[SmartPresentationDropzone] Fallback con archivo original tras error de compresión:', compErr);
+        }
+      }
+
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', fileToSend);
 
       const res = await parsePresentationDocumentAction(formData);
 

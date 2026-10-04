@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { DigitalCard, CardData } from '@/entities/card/components/DigitalCard';
 import { upsertCardAction } from '@/features/card-builder/actions';
 import { generateBioVariantsAction } from '@/features/card-builder/ai-bio-actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { CARD_DESIGN_PRESETS, CardDesignPreset } from '@/entities/card/themes';
+import { compressImageClient } from '@/shared/lib/imageCompression';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -21,7 +22,9 @@ import {
   ExternalLink,
   Layers,
   ShieldCheck,
-  MapPin
+  MapPin,
+  UploadCloud,
+  Trash2
 } from 'lucide-react';
 
 interface CardBuilderProps {
@@ -37,6 +40,15 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [bioVariants, setBioVariants] = useState<Array<{ tone: string; label: string; bio: string }>>([]);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+
+  // Estados para compresión client-side de foto
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
+  const [photoCompressionInfo, setPhotoCompressionInfo] = useState<{
+    originalKb: number;
+    compressedKb: number;
+    ratio: number;
+  } | null>(null);
+  const photoFileInputRef = useRef<HTMLInputElement>(null);
 
   // Generador de slug inicial seguro para evitar colisiones accidentales
   const [initialSlug] = useState(() => {
@@ -85,6 +97,40 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
         [field]: value,
       },
     }));
+  };
+
+  // Manejador de subida y compresión WebP en cliente
+  const handlePhotoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsCompressingPhoto(true);
+      setErrorMsg(null);
+
+      // Comprimir en cliente a máx 800px y calidad WebP 0.82
+      const result = await compressImageClient(file, {
+        maxDimension: 800,
+        quality: 0.82,
+        mimeType: 'image/webp',
+      });
+
+      handleChange('photoUrl', result.dataUrl);
+      setPhotoCompressionInfo({
+        originalKb: Math.round(result.originalSize / 1024),
+        compressedKb: Math.round(result.compressedSize / 1024),
+        ratio: result.compressionRatioPercent,
+      });
+    } catch (err: any) {
+      console.error('Error al comprimir foto:', err);
+      setErrorMsg('No se pudo procesar la imagen seleccionada.');
+    } finally {
+      setIsCompressingPhoto(false);
+      // Reset input value para permitir re-selección del mismo archivo
+      if (photoFileInputRef.current) {
+        photoFileInputRef.current.value = '';
+      }
+    }
   };
 
   // Guardar en Turso
@@ -349,17 +395,80 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                 )}
               </div>
 
+              {/* Foto de Perfil con Compresión WebP en Cliente */}
               <div>
-                <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-2">
-                  URL Foto de Perfil (o Avatar)
-                </label>
-                <input
-                  type="text"
-                  value={formData.photoUrl || ''}
-                  onChange={(e) => handleChange('photoUrl', e.target.value)}
-                  className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono text-xs"
-                  placeholder="https://..."
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-mono font-semibold uppercase text-zinc-400">
+                    Foto de Perfil o Avatar (WebP Ultra-Comprimido)
+                  </label>
+                  {isCompressingPhoto && (
+                    <span className="flex items-center gap-1.5 text-[11px] font-mono text-cyan-400">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Optimizando...
+                    </span>
+                  )}
+                </div>
+
+                {/* Zona de Subida y Previsualización */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <div className="flex-1 flex items-center gap-2">
+                    <input
+                      type="file"
+                      ref={photoFileInputRef}
+                      accept="image/png,image/jpeg,image/webp,image/jpg"
+                      className="hidden"
+                      onChange={handlePhotoFileUpload}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => photoFileInputRef.current?.click()}
+                      disabled={isCompressingPhoto}
+                      className="min-h-[44px] px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/50 text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      <UploadCloud className="w-4 h-4 text-cyan-400" />
+                      <span>Subir Foto (Auto-WebP)</span>
+                    </button>
+
+                    {formData.photoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleChange('photoUrl', '');
+                          setPhotoCompressionInfo(null);
+                        }}
+                        className="min-h-[44px] min-w-[44px] px-3 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs flex items-center justify-center transition-all cursor-pointer"
+                        title="Quitar foto actual"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Métricas de Compresión */}
+                {photoCompressionInfo && (
+                  <div className="mt-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-mono text-emerald-300 flex items-center justify-between">
+                    <span>⚡ Optimizado WebP: {photoCompressionInfo.originalKb} KB ➔ {photoCompressionInfo.compressedKb} KB</span>
+                    <span className="font-bold">-{photoCompressionInfo.ratio}% tamaño</span>
+                  </div>
+                )}
+
+                {/* Input de URL directa opcional */}
+                <div className="mt-2.5">
+                  <input
+                    type="text"
+                    value={formData.photoUrl?.startsWith('data:image/') ? '' : (formData.photoUrl || '')}
+                    onChange={(e) => {
+                      handleChange('photoUrl', e.target.value);
+                      setPhotoCompressionInfo(null);
+                    }}
+                    className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono text-xs"
+                    placeholder="O pega una URL web externa (https://...)"
+                  />
+                  <p className="text-[11px] text-zinc-500 mt-1">
+                    Las fotos subidas se comprimen en tu navegador a formato WebP sin saturar tu red.
+                  </p>
+                </div>
               </div>
             </div>
           )}

@@ -25,7 +25,24 @@ export const cardFormSchema = z.object({
   websiteUrl: z.string().url('URL de sitio web inválida').optional().nullable().or(z.literal('')),
   linkedinUrl: z.string().url('URL de LinkedIn inválida').optional().nullable().or(z.literal('')),
   instagramUrl: z.string().url('URL de Instagram inválida').optional().nullable().or(z.literal('')),
-  photoUrl: z.string().url('URL de foto inválida').optional().nullable().or(z.literal('')),
+  photoUrl: z
+    .string()
+    .refine(
+      (val) => {
+        if (!val || val === '') return true;
+        if (val.startsWith('data:image/')) return true;
+        try {
+          const parsed = new URL(val);
+          return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+        } catch {
+          return false;
+        }
+      },
+      { message: 'URL o formato de imagen inválido' }
+    )
+    .optional()
+    .nullable()
+    .or(z.literal('')),
   address: z.string().max(200, 'La dirección no puede superar los 200 caracteres').optional().nullable(),
   themeConfig: z.object({
     themeId: z.string().default('stellar'),

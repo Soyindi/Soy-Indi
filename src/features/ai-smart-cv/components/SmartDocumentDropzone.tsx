@@ -28,10 +28,26 @@ export function SmartDocumentDropzone({
     setErrorMessage(null);
     setIsProcessing(true);
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
+      let fileToSend = file;
+
+      // Si el archivo subido es una imagen (foto de CV o captura de diploma), comprimir en cliente a WebP
+      if (file.type.startsWith('image/')) {
+        try {
+          const { compressImageClient } = await import('@/shared/lib/imageCompression');
+          const compressed = await compressImageClient(file, {
+            maxDimension: 1600,
+            quality: 0.85,
+            mimeType: 'image/webp',
+          });
+          fileToSend = compressed.file;
+        } catch (compErr) {
+          console.warn('[SmartDocumentDropzone] Fallback con archivo original tras error de compresión:', compErr);
+        }
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileToSend);
       if (type === 'cv') {
         setStatusMessage('Analizando disposición de documento con Qwen2.5-VL y aplicando sanitización EU AI Act...');
         

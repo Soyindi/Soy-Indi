@@ -90,15 +90,25 @@ export function SignatureModal({
     setHasDrawn(false);
   };
 
-  // Subir imagen
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Subir imagen con compresión client-side
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setUploadedImage(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const { compressImageClient } = await import('@/shared/lib/imageCompression');
+        const compressed = await compressImageClient(file, {
+          maxDimension: 600,
+          quality: 0.85,
+          mimeType: 'image/png', // Mantener transparencia si es PNG
+        });
+        setUploadedImage(compressed.dataUrl);
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setUploadedImage(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
