@@ -211,7 +211,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
       intensity={card.themeConfig?.particleIntensity || 'balanced'}
       behavior={card.themeConfig?.particleBehavior || 'ambient'}
       color={primaryColor}
-      className="w-full max-w-sm mx-auto"
+      className="w-full max-w-sm sm:max-w-[430px] mx-auto transition-all duration-300"
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}

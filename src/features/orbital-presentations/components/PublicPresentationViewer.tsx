@@ -271,8 +271,8 @@ export function PublicPresentationViewer({
         </div>
       </header>
 
-      {/* Contenedor Principal de la Diapositiva */}
-      <main className="flex-1 flex flex-col items-center justify-center max-w-6xl w-full mx-auto my-auto py-2">
+      {/* Contenedor Principal de la Diapositiva (Modo Teatro Cinemático Expansivo) */}
+      <main className="flex-1 flex flex-col items-center justify-center max-w-7xl w-full mx-auto my-auto py-2 sm:py-4 px-2 sm:px-4 transition-all duration-300">
         <SlideViewer
           slide={currentSlide}
           theme={theme}

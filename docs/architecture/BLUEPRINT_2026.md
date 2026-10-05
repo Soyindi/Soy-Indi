@@ -1349,6 +1349,21 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada en Vitest (243 de 243 tests en 40 suites).
    - 0 errores en verificación estricta de tipos (`npm run typecheck`).
 
+### Fase: Escala, Presencia Imponente y Zoom Fluido en Vistas Públicas (/cv, /c, /p) (Octubre 2026)
+1. **Smart CV de Gran Presencia con Selector de Zoom**:
+   - Expansión del contenedor principal en [PublicCvViewer.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/ai-smart-cv/components/PublicCvViewer.tsx) de `max-w-5xl` a `max-w-6xl lg:max-w-7xl` (alineado a la escala de la portada web).
+   - Integración de selector interactivo de Zoom/Escala en la barra de herramientas (`85%` a `125%`) con tipografía proporcional, permitiendo una lectura nítida e imponente en pantallas portátiles y monitores 2K/4K sin alterar la exportación vectorial estándar A4 (ISO 216).
+   - Actualización de [CvDocumentPreview.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/ai-smart-cv/components/CvDocumentPreview.tsx) para admitir ancho fluido hasta `920px` y `scale` dinámico por CSS Transform.
+2. **Presencia Ejecutiva en Tarjetas Digitales (`/c/[slug]`)**:
+   - Ampliación responsive en [DigitalCard.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/entities/card/components/DigitalCard.tsx) de `max-w-sm` (384px) a `sm:max-w-[430px]` con padding optimizado.
+   - Expansión de luces volumétricas ambientales de fondo en [src/app/c/[slug]/page.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/app/c/%5Bslug%5D/page.tsx) a 650px con desenfoque de 150px, eliminando vacíos oscuros.
+3. **Modo Teatro Cinemático Expansivo en Presentaciones Orbitales (`/p/[slug]`)**:
+   - Ampliación del contenedor de diapositiva a `max-w-7xl` en [PublicPresentationViewer.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/orbital-presentations/components/PublicPresentationViewer.tsx), aprovechando todo el ancho de monitores panorámicos.
+4. **Control de Calidad (243 Tests Passing)**:
+   - 100% de tests aprobados en Vitest (243 de 243 pruebas en 40 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
 
 

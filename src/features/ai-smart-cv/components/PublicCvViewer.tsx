@@ -18,6 +18,9 @@ import {
   ArrowLeft,
   Loader2,
   Copy,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
 } from 'lucide-react';
 
 interface PublicCvViewerProps {
@@ -31,6 +34,19 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [pageFormat] = useState<'a4' | 'letter'>('a4');
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+
+  const handleZoomIn = () => {
+    setZoomLevel((prev) => Math.min(1.25, Number((prev + 0.1).toFixed(2))));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((prev) => Math.max(0.85, Number((prev - 0.1).toFixed(2))));
+  };
+
+  const handleResetZoom = () => {
+    setZoomLevel((prev) => (prev === 1 ? 1.15 : 1));
+  };
 
   const { content } = cv;
 
@@ -106,8 +122,38 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Control de Escala / Zoom Dinámico */}
+            <div className="hidden md:inline-flex items-center gap-1 px-1.5 py-1 rounded-xl bg-white/5 border border-white/10 text-xs font-mono">
+              <button
+                type="button"
+                onClick={handleZoomOut}
+                disabled={zoomLevel <= 0.85}
+                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white disabled:opacity-30 transition cursor-pointer"
+                title="Reducir tamaño (Zoom Out)"
+              >
+                <ZoomOut className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={handleResetZoom}
+                className="px-2 py-0.5 rounded text-[11px] text-cyan-300 font-semibold hover:bg-white/10 transition cursor-pointer"
+                title="Alternar tamaño de lectura"
+              >
+                {Math.round(zoomLevel * 100)}%
+              </button>
+              <button
+                type="button"
+                onClick={handleZoomIn}
+                disabled={zoomLevel >= 1.25}
+                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white disabled:opacity-30 transition cursor-pointer"
+                title="Aumentar tamaño (Zoom In)"
+              >
+                <ZoomIn className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
             {/* Formato Unificado A4 */}
-            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-mono text-zinc-300">
+            <div className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-mono text-zinc-300">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
               <span>A4 Ejecutivo (ISO 216)</span>
             </div>
@@ -162,21 +208,21 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
       </header>
 
       {/* Contenido Principal con Hoja de CV y Acciones Rápidas */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-28 sm:pb-12">
-        {/* Banner de Contacto Directo & Perfil Profesional */}
-        <div className="mb-8 p-4 sm:p-5 rounded-2xl glass-panel border border-white/10 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-300">
-              <Sparkles className="w-5 h-5" />
+      <main className="flex-1 w-full max-w-6xl lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 sm:pb-12">
+        {/* Banner de Contacto Directo & Perfil Profesional con Gran Presencia */}
+        <div className="mb-8 p-5 sm:p-6 rounded-2xl glass-panel border border-white/10 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-300 shadow-lg shadow-cyan-500/10">
+              <Sparkles className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <span>{content.fullName}</span>
-                <span className="text-[11px] font-normal text-zinc-400 hidden sm:inline">
+                <span className="text-xs sm:text-sm font-normal text-zinc-400 hidden sm:inline">
                   • {cv.targetRole}
                 </span>
               </h2>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">
                 Currículum digital verificado y exportable en formato compatible con filtros ATS.
               </p>
             </div>
@@ -205,7 +251,7 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
               <Link
                 href={`/c/${content.indiCardSlug}`}
                 target="_blank"
-                className="min-h-[44px] px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition"
+                className="min-h-[44px] px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition"
                 title="Ver Tarjeta de Presentación Digital"
               >
                 <span>Ver Tarjeta INDI</span>
@@ -216,8 +262,8 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
         </div>
 
         {/* Lienzo del Documento de CV */}
-        <div className="w-full flex justify-center overflow-x-auto pb-4">
-          <CvDocumentPreview cv={cv} pageFormat={pageFormat} />
+        <div className="w-full flex justify-center overflow-x-auto pb-4 transition-all duration-300">
+          <CvDocumentPreview cv={cv} pageFormat={pageFormat} scale={zoomLevel} />
         </div>
       </main>
 

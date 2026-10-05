@@ -8,9 +8,10 @@ import { sanitizeBulletText } from '@/features/ai-smart-cv/lib/pdf-engine';
 interface CvDocumentPreviewProps {
   cv: CVFormValues;
   pageFormat?: 'a4' | 'letter';
+  scale?: number;
 }
 
-export function CvDocumentPreview({ cv, pageFormat = 'a4' }: CvDocumentPreviewProps) {
+export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocumentPreviewProps) {
   const { content } = cv;
 
   // Determinar si el contenido requiere paginación en 2 hojas
@@ -29,8 +30,8 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4' }: CvDocumentPreviewPr
   const cleanBullet = (text: string) =>
     text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '').trim();
 
-  // Dimensiones canónicas de A4 Internacional (210 x 297 mm a 96 DPI: 794px x 1123px)
-  const pageDimensions = 'min-h-[1123px] max-w-[794px] mx-auto';
+  // Dimensiones canónicas de A4 Internacional con escala fluida para pantallas grandes
+  const pageDimensions = 'min-h-[1123px] w-full max-w-[860px] lg:max-w-[920px] mx-auto';
 
   return (
     <div className="w-full space-y-8 font-sans selection:bg-indigo-100 selection:text-indigo-900">
@@ -74,7 +75,10 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4' }: CvDocumentPreviewPr
           <span>Hoja 1 {needsTwoPages ? 'de 2' : 'de 1'} • Formato Unificado A4 Internacional (Grado Empresarial)</span>
         </div>
 
-        <div className={`cv-page-sheet w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 border border-zinc-200 flex flex-col justify-between transition-all ${pageDimensions}`}>
+        <div 
+          className={`cv-page-sheet w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 lg:p-14 border border-zinc-200 flex flex-col justify-between transition-all origin-top ${pageDimensions}`}
+          style={{ transform: scale !== 1 ? `scale(${scale})` : undefined }}
+        >
           <div>
             {/* Cabecera del CV */}
             <div className="border-b-2 border-zinc-900 pb-5 mb-6">
@@ -287,7 +291,10 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4' }: CvDocumentPreviewPr
             <span>Hoja 2 de 2 • Formato Unificado A4 Internacional</span>
           </div>
 
-          <div className={`cv-page-sheet w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 border border-zinc-200 flex flex-col justify-between transition-all ${pageDimensions}`}>
+          <div 
+            className={`cv-page-sheet w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 lg:p-14 border border-zinc-200 flex flex-col justify-between transition-all origin-top ${pageDimensions}`}
+            style={{ transform: scale !== 1 ? `scale(${scale})` : undefined }}
+          >
             <div>
               {/* Encabezado corporativo de continuación */}
               <div className="border-b border-zinc-200 pb-3 mb-6 flex items-center justify-between text-xs text-zinc-500">
