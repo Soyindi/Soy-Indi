@@ -105,3 +105,71 @@ export function generateCardSlug(name: string = 'carlos-mendoza', withSuffix: bo
   return `${base}-${suffix}`;
 }
 
+/**
+ * Slugs reservados del sistema para prevenir colisiones con rutas internas
+ */
+export const RESERVED_CARD_SLUGS = new Set([
+  'admin',
+  'api',
+  'dashboard',
+  'cards',
+  'card',
+  'cv',
+  'presentations',
+  'presentation',
+  'pricing',
+  'start',
+  'login',
+  'register',
+  'auth',
+  'settings',
+  'account',
+  'billing',
+  'help',
+  'terms',
+  'privacy',
+  'blog',
+  'app',
+  'explore',
+  'search',
+  'p',
+  'c',
+]);
+
+/**
+ * Comprueba si un slug pertenece a las rutas del sistema reservadas
+ */
+export function isReservedCardSlug(slug: string): boolean {
+  if (!slug) return false;
+  return RESERVED_CARD_SLUGS.has(slug.toLowerCase().trim());
+}
+
+/**
+ * Genera alternativas ejecutivas y profesionales si un slug ya está tomado
+ */
+export function generateSlugAlternatives(baseSlug: string, profession?: string): string[] {
+  const cleanBase = slugifyCardName(baseSlug);
+  const alternatives: string[] = [];
+
+  // 1. Variante con sufijo profesional común
+  alternatives.push(`${cleanBase}-pro`);
+  alternatives.push(`${cleanBase}-cl`);
+
+  // 2. Variante contextual por profesión si existe
+  if (profession) {
+    const cleanProf = slugifyCardName(profession).split('-')[0];
+    if (cleanProf && cleanProf.length >= 3) {
+      alternatives.push(`${cleanBase}-${cleanProf}`);
+    }
+  }
+
+  // 3. Variante con número o sufijo corto
+  alternatives.push(`${cleanBase}-oficial`);
+
+  // Desduplicar y filtrar los que colisionen con reservados
+  return Array.from(new Set(alternatives)).filter(
+    (alt) => !isReservedCardSlug(alt) && alt !== cleanBase
+  ).slice(0, 3);
+}
+
+

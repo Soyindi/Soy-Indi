@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useRef, useTransition } from 'react';
+import React, { useState, useRef, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DigitalCard, CardData } from '@/entities/card/components/DigitalCard';
-import { upsertCardAction } from '@/features/card-builder/actions';
+import { upsertCardAction, checkCardSlugAvailabilityAction, SlugAvailabilityResult } from '@/features/card-builder/actions';
 import { generateBioVariantsAction } from '@/features/card-builder/ai-bio-actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { CARD_DESIGN_PRESETS, CardDesignPreset } from '@/entities/card/themes';
@@ -28,7 +28,9 @@ import {
   Trash2,
   RefreshCw,
   Copy,
-  CheckCheck
+  CheckCheck,
+  AlertCircle,
+  AlertTriangle
 } from 'lucide-react';
 
 interface CardBuilderProps {
@@ -64,6 +66,14 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(() => Boolean(initialData?.slug));
   const [isCopiedSlug, setIsCopiedSlug] = useState(false);
 
+  // Estados de verificación de disponibilidad en tiempo real con debounce
+  const [isCheckingSlug, setIsCheckingSlug] = useState(false);
+  const [slugAvailability, setSlugAvailability] = useState<SlugAvailabilityResult>({
+    available: true,
+    status: 'available',
+    suggestions: [],
+  });
+
   // Estado reactivo del formulario
   const [formData, setFormData] = useState<CardData>({
     slug: initialData?.slug || initialSlug,
@@ -86,6 +96,41 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
       surfaceTexture: initialData?.themeConfig?.surfaceTexture || 'radial-glow',
     },
   });
+
+  // Efecto debounced (350ms) para comprobar disponibilidad de slug en Turso
+  useEffect(() => {
+    if (!formData.slug || formData.slug.length < 3) {
+      setSlugAvailability({
+        available: false,
+        status: 'invalid',
+        message: 'Mínimo 3 caracteres.',
+        suggestions: [],
+      });
+      return;
+    }
+
+    let isMounted = true;
+    setIsCheckingSlug(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const result = await checkCardSlugAvailabilityAction(formData.slug, cardId, formData.profession);
+        if (isMounted) {
+          setSlugAvailability(result);
+          setIsCheckingSlug(false);
+        }
+      } catch {
+        if (isMounted) {
+          setIsCheckingSlug(false);
+        }
+      }
+    }, 350);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [formData.slug, cardId, formData.profession]);
 
   // Manejador genérico de inputs con auto-sincronización del slug según el nombre
   const handleChange = (field: keyof CardData, value: any) => {
@@ -116,6 +161,12 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
     const derivedSlug = slugifyCardName(formData.title || 'mi-tarjeta');
     setFormData((prev) => ({ ...prev, slug: derivedSlug }));
     setIsSlugManuallyEdited(false);
+  };
+
+  // Aplicar sugerencia inteligente alternativa en 1 clic
+  const handleApplyAlternativeSlug = (altSlug: string) => {
+    setFormData((prev) => ({ ...prev, slug: altSlug }));
+    setIsSlugManuallyEdited(true);
   };
 
   // Copiar URL pública de la tarjeta
@@ -373,7 +424,11 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm focus-within:border-indigo-500/80 transition-colors">
+                <div className={`flex items-center rounded-xl bg-black/50 border px-3.5 py-2.5 text-sm transition-colors ${
+                  !slugAvailability.available && !isCheckingSlug
+                    ? 'border-amber-500/50 focus-within:border-amber-500'
+                    : 'border-white/10 focus-within:border-indigo-500/80'
+                }`}>
                   <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">indi.bio/c/</span>
                   <input
                     type="text"
@@ -383,12 +438,56 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                     placeholder="tu-nombre"
                     spellCheck={false}
                   />
-                  {formData.slug && (
-                    <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      Activo
-                    </span>
-                  )}
+
+                  {/* Estado dinámico de disponibilidad con Turso */}
+                  <div className="flex items-center gap-1.5 ml-2">
+                    {isCheckingSlug ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400">
+                        <Loader2 className="w-3 h-3 animate-spin text-indigo-400" />
+                        <span className="hidden sm:inline">Verificando</span>
+                      </span>
+                    ) : slugAvailability.status === 'available' ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <Check className="w-2.5 h-2.5" />
+                        <span>Disponible</span>
+                      </span>
+                    ) : slugAvailability.status === 'reserved' ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                        <AlertCircle className="w-2.5 h-2.5" />
+                        <span>Reservado</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        <AlertTriangle className="w-2.5 h-2.5" />
+                        <span>En uso</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
+
+                {/* Alternativas inteligentes de 1 toque si el slug está ocupado o reservado */}
+                {!slugAvailability.available && slugAvailability.suggestions.length > 0 && (
+                  <div className="mt-2 p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20 animate-fade-in">
+                    <p className="text-[11px] font-medium text-amber-300 mb-1.5 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      <span>{slugAvailability.message} Alternativas recomendadas:</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {slugAvailability.suggestions.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => handleApplyAlternativeSlug(suggestion)}
+                          className="min-h-[32px] inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 border border-amber-500/30 transition-colors cursor-pointer"
+                        >
+                          <span>{suggestion}</span>
+                          <ArrowRight className="w-2.5 h-2.5 opacity-60" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between mt-1.5 px-1">
                   <p className="text-[11px] text-zinc-500">
                     {isSlugManuallyEdited

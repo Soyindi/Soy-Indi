@@ -2,7 +2,13 @@
 
 import { db } from '@/shared/api/db';
 import { cards, user } from '@/entities/schema';
-import { cardFormSchema, CardFormValues, CardFormInput } from '@/entities/card/schemas';
+import { 
+  cardFormSchema, 
+  CardFormValues, 
+  CardFormInput, 
+  isReservedCardSlug, 
+  generateSlugAlternatives 
+} from '@/entities/card/schemas';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { assertZeroBinaryPersistence } from '@/shared/lib/fileSecurity';
 import { eq, and, ne } from 'drizzle-orm';
@@ -57,8 +63,11 @@ export async function upsertCardAction(
         return { success: false, error: 'La tarjeta a editar no existe o no tienes permisos sobre ella.' };
       }
 
-      // 3b. Si el slug cambió, verificar que no esté ocupado por otra tarjeta
+      // 3b. Si el slug cambió, verificar que no esté ocupado por otra tarjeta ni reservado
       if (existingCard.slug !== data.slug) {
+        if (isReservedCardSlug(data.slug)) {
+          return { success: false, error: 'Este identificador está reservado para rutas del sistema. Por favor elige otro.' };
+        }
         const slugCollision = await db.query.cards.findFirst({
           where: and(eq(cards.slug, data.slug), ne(cards.id, cardId)),
         });
@@ -98,7 +107,12 @@ export async function upsertCardAction(
       return { success: true, data: { slug: data.slug, id: cardId } };
     } else {
       // ================= MODO CREACIÓN NUEVA =================
-      // 4a. Verificar si el slug ya existe globalmente
+      // 4a. Verificar si el slug está reservado por el sistema
+      if (isReservedCardSlug(data.slug)) {
+        return { success: false, error: 'Este identificador está reservado para rutas del sistema. Por favor elige otro.' };
+      }
+
+      // 4b. Verificar si el slug ya existe globalmente
       const slugCollision = await db.query.cards.findFirst({
         where: eq(cards.slug, data.slug),
       });
@@ -109,7 +123,7 @@ export async function upsertCardAction(
 
       const newId = crypto.randomUUID();
 
-      // 4b. Insertar nueva tarjeta con UUID propio
+      // 4c. Insertar nueva tarjeta con UUID propio
       await db.insert(cards).values({
         id: newId,
         userId: targetUserId,
@@ -144,4 +158,86 @@ export async function upsertCardAction(
     return { success: false, error: err.message || 'Error al guardar la tarjeta' };
   }
 }
+
+export type SlugAvailabilityResult = {
+  available: boolean;
+  status: 'available' | 'taken' | 'reserved' | 'invalid';
+  message?: string;
+  suggestions: string[];
+};
+
+/**
+ * Server Action en tiempo real para verificar la disponibilidad de un slug público
+ * y proveer sugerencias automáticas de desambiguación si está ocupado.
+ */
+export async function checkCardSlugAvailabilityAction(
+  rawSlug: string,
+  currentCardId?: string,
+  profession?: string
+): Promise<SlugAvailabilityResult> {
+  try {
+    const slug = rawSlug.toLowerCase().trim();
+
+    if (!slug || slug.length < 3) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'El enlace debe tener al menos 3 caracteres.',
+        suggestions: [],
+      };
+    }
+
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'Solo se permiten letras minúsculas, números y guiones.',
+        suggestions: [],
+      };
+    }
+
+    // 1. Verificar si está en la lista de slugs reservados del sistema
+    if (isReservedCardSlug(slug)) {
+      const suggestions = generateSlugAlternatives(slug, profession);
+      return {
+        available: false,
+        status: 'reserved',
+        message: 'Este identificador está reservado para el sistema.',
+        suggestions,
+      };
+    }
+
+    // 2. Consultar colisión en la base de datos
+    const existing = await db.query.cards.findFirst({
+      where: currentCardId
+        ? and(eq(cards.slug, slug), ne(cards.id, currentCardId))
+        : eq(cards.slug, slug),
+    });
+
+    if (existing) {
+      const suggestions = generateSlugAlternatives(slug, profession);
+      return {
+        available: false,
+        status: 'taken',
+        message: 'Este enlace ya está en uso por otro profesional.',
+        suggestions,
+      };
+    }
+
+    return {
+      available: true,
+      status: 'available',
+      message: '¡Enlace disponible!',
+      suggestions: [],
+    };
+  } catch (error) {
+    console.error('Error al comprobar disponibilidad de slug:', error);
+    return {
+      available: true,
+      status: 'available',
+      suggestions: [],
+    };
+  }
+}
+
 

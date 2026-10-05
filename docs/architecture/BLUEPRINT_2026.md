@@ -1209,10 +1209,15 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Botón *"Desde nombre"* para re-sincronizar el slug con el nombre del usuario en 1 toque.
    - Botón *"Copiar"* para copiar la URL completa `https://indi.bio/c/[slug]` con confirmación visual reactiva (`Copiado!`).
    - Remoción de desfases visuales entre el prefijo `indi.bio/c/` y el input, con validación inline de patrón URL.
-4. **Control de Calidad y Pruebas Unitarias (199 Tests Passing)**:
-   - Suite completa en `tests/unit/card-slug.test.ts` verificando normalización de acentos, caracteres especiales, colapso de guiones/espacios y compatibilidad con `cardFormSchema`.
-   - 100% de la suite de pruebas unitarias aprobada (199 de 199 tests en 30 suites).
+4. **Verificación en Tiempo Real con Turso & Alternativas Inteligentes**:
+   - Mediante `checkCardSlugAvailabilityAction`, el editor consulta a Turso con debounce de 350ms, mostrando badges dinámicos (`Disponible`, `En uso`, `Reservado`).
+   - Algoritmo `generateSlugAlternatives` sugiere 3 variantes ejecutivas si el slug está tomado (`-pro`, `-cl`, `-oficial`, o por profesión) seleccionables en 1 toque.
+   - Guardrail de seguridad: `RESERVED_CARD_SLUGS` prohíbe registrar rutas del sistema de la aplicación (`admin`, `dashboard`, `pricing`, `api`, `cv`, etc.).
+5. **Control de Calidad y Pruebas Unitarias (204 Tests Passing)**:
+   - Suites en `tests/unit/card-slug.test.ts` y `tests/unit/card-slug-availability.test.ts`.
+   - 100% de la suite de pruebas unitarias aprobada (204 de 204 tests en 31 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
+
 
 
 
