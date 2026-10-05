@@ -522,12 +522,14 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         visualType: s.visualType || 'concept',
         layout: s.layout || optimalLayout,
         badgeText: s.badgeText || `SLIDE ${idx + 1}`,
-        keyPoints: s.keyPoints || [],
+        keyPoints: Array.isArray(s.keyPoints)
+          ? s.keyPoints.map((kp: any) => typeof kp === 'string' ? kp : (kp?.text || kp?.point || kp?.detail || kp?.title || String(kp ?? ''))).filter(Boolean)
+          : [],
         speakerNotes: s.speakerNotes || '',
         estimatedDurationSeconds: pacingSecondsPerSlide,
-        metricsData: s.metricsData,
-        comparisonData: s.comparisonData,
-        timelineData: s.timelineData,
+        metricsData: Array.isArray(s.metricsData) && s.metricsData.length > 0 ? s.metricsData : undefined,
+        comparisonData: s.comparisonData && typeof s.comparisonData === 'object' ? s.comparisonData : undefined,
+        timelineData: Array.isArray(s.timelineData) && s.timelineData.length > 0 ? s.timelineData : undefined,
       };
     });
 
@@ -664,12 +666,14 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             visualType: s.visualType || (idx === parsed.slides.length - 1 ? 'timeline' : 'concept'),
             layout: s.layout || 'standard',
             badgeText: s.badgeText || `SLIDE ${idx + 1}`,
-            keyPoints: s.keyPoints || [],
+            keyPoints: Array.isArray(s.keyPoints)
+              ? s.keyPoints.map((kp: any) => typeof kp === 'string' ? kp : (kp?.text || kp?.point || kp?.detail || kp?.title || String(kp ?? ''))).filter(Boolean)
+              : [],
             speakerNotes: s.speakerNotes || '',
             estimatedDurationSeconds: 60,
-            metricsData: s.metricsData,
-            comparisonData: s.comparisonData,
-            timelineData: s.timelineData,
+            metricsData: Array.isArray(s.metricsData) && s.metricsData.length > 0 ? s.metricsData : undefined,
+            comparisonData: s.comparisonData && typeof s.comparisonData === 'object' ? s.comparisonData : undefined,
+            timelineData: Array.isArray(s.timelineData) && s.timelineData.length > 0 ? s.timelineData : undefined,
           }));
 
           return {
@@ -811,13 +815,17 @@ export async function upsertPresentationAction(
         })
         .where(and(eq(presentations.id, presentationId), eq(presentations.userId, targetUserId)));
 
-      revalidatePath('/presentations');
-      revalidatePath('/dashboard');
-      if (data.slug) {
-        revalidatePath(`/p/${data.slug}`);
-      }
-      if (existing.slug && existing.slug !== data.slug) {
-        revalidatePath(`/p/${existing.slug}`);
+      try {
+        revalidatePath('/presentations');
+        revalidatePath('/dashboard');
+        if (data.slug) {
+          revalidatePath(`/p/${data.slug}`);
+        }
+        if (existing.slug && existing.slug !== data.slug) {
+          revalidatePath(`/p/${existing.slug}`);
+        }
+      } catch {
+        // Revalidation silente fuera de contexto HTTP
       }
       return { success: true, id: presentationId, slug: data.slug };
     } else {
@@ -849,10 +857,14 @@ export async function upsertPresentationAction(
         updatedAt: new Date(),
       });
 
-      revalidatePath('/presentations');
-      revalidatePath('/dashboard');
-      if (data.slug) {
-        revalidatePath(`/p/${data.slug}`);
+      try {
+        revalidatePath('/presentations');
+        revalidatePath('/dashboard');
+        if (data.slug) {
+          revalidatePath(`/p/${data.slug}`);
+        }
+      } catch {
+        // Revalidation silente fuera de contexto HTTP
       }
       return { success: true, id: newId, slug: data.slug };
     }

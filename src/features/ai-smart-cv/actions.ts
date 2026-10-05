@@ -386,10 +386,14 @@ export async function upsertSmartCvAction(
       finalSlug = uniqueSlug;
     }
 
-    revalidatePath('/cv');
-    revalidatePath('/dashboard');
-    if (finalSlug) {
-      revalidatePath(`/cv/${finalSlug}`);
+    try {
+      revalidatePath('/cv');
+      revalidatePath('/dashboard');
+      if (finalSlug) {
+        revalidatePath(`/cv/${finalSlug}`);
+      }
+    } catch {
+      // Revalidation silente si se ejecuta fuera de contexto HTTP de Next.js
     }
 
     return {

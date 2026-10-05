@@ -154,4 +154,58 @@ describe('Presentation Schema & Templates Validation', () => {
       }
     }
   });
+
+  it('debe normalizar y validar exitosamente diapositivas con valores null y keyPoints polimórficos de IA', () => {
+    const dirtyAiData = {
+      title: 'Estrategia Empresarial IA 2026',
+      slug: 'estrategia-empresarial-ia-2026',
+      isPublic: true,
+      themeSettings: PRESENTATION_THEMES[0],
+      slidesData: [
+        {
+          id: 'slide-dirty-1',
+          title: 'Resumen Ejecutivo',
+          actionTitle: null,
+          subtitle: null,
+          semanticIntent: null,
+          visualType: null,
+          layout: null,
+          keyPoints: [{ text: 'Punto con objeto de LLM' }, 'Punto limpio en string', null],
+          speakerNotes: null,
+          badgeText: null,
+          estimatedDurationSeconds: null,
+          keyTakeaway: null,
+          metricsData: null,
+          quoteData: null,
+          comparisonData: null,
+          timelineData: null,
+        },
+        {
+          id: 'slide-dirty-2',
+          title: 'Comparativa y Métricas',
+          visualType: 'metrics',
+          keyPoints: ['Métricas clave'],
+          metricsData: [
+            { label: 'Conversión', value: 42, change: null, trend: null },
+          ],
+          comparisonData: {
+            beforeTitle: null,
+            beforeItems: null,
+            afterTitle: 'INDI 2026',
+            afterItems: [{ text: 'Item mejorado' }],
+          },
+        },
+      ],
+    };
+
+    const result = presentationFormSchema.safeParse(dirtyAiData);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.slidesData[0].keyPoints).toEqual(['Punto con objeto de LLM', 'Punto limpio en string']);
+      expect(result.data.slidesData[0].metricsData).toBeUndefined();
+      expect(result.data.slidesData[1].metricsData?.[0].value).toBe('42');
+      expect(result.data.slidesData[1].comparisonData?.beforeTitle).toBe('Enfoque Tradicional');
+      expect(result.data.slidesData[1].comparisonData?.afterItems).toEqual(['Item mejorado']);
+    }
+  });
 });

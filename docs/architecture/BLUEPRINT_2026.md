@@ -1053,5 +1053,27 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada en Vitest (169 de 169 tests en 26 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+---
+
+### Fase 42: Sincronización DDL SQLite Turso/Local y Sanitización Polimórfica Resiliente Zod en Presentaciones e Ingesta IA
+1. **Diagnóstico Forense de Incidencias de Persistencia**:
+   - **Desfase DDL en `smart_cvs` (`Failed query: select ... from "smart_cvs" where "slug" = ?`)**:
+     - La tabla `smart_cvs` en base de datos local y remota carecía físicamente de las columnas `slug`, `is_public` y `views_count`, generando un error de ejecución SQL (`no such column: slug`) al evaluar la unicidad de enlace.
+     - Se generó la migración formal `drizzle/migrations/0003_aspiring_maggott.sql` y se aplicó de forma determinista tanto a Turso Cloud como al archivo `file:local.db`.
+   - **Fallo de Validación Zod en Presentaciones (`Invalid input: expected array, received null, expected string, received object...`)**:
+     - Al procesar la respuesta de inferencia de modelos LLM (NVIDIA NIM, Llama 3.3, DeepSeek), los campos opcionales no generados (`metricsData`, `comparisonData`, `timelineData`, `quoteData`, `actionTitle`, `subtitle`) se recibían como `null` en lugar de `undefined`.
+     - Adicionalmente, `keyPoints` recibía en ocasiones colecciones polimórficas de objetos (`[{ text: "..." }]` o `{ point: "..." }`) que eran rechazados de forma estricta por `z.array(z.string())`.
+2. **Solución Arquitectural y Resiliencia de Contratos**:
+   - **Normalización Polimórfica en `src/entities/presentation/schemas.ts`**:
+     - `presentationSlideSchema`: campos opcionales adaptados con `.nullish()` y transformaciones seguras para depurar valores `null` a `undefined`.
+     - `keyPoints`: normalizador universal que mapea strings, objetos (`item.text`, `item.point`, `item.detail`, `item.title`) o enteros a un arreglo tipado `string[]`.
+     - `metricItemSchema`, `comparisonDataSchema`, `timelineItemSchema`: tipado tolerante con valores numéricos y deltas nulos.
+   - **Blindaje de Acciones de Revalidación**:
+     - Aislamiento de llamadas a `revalidatePath` mediante bloques `try / catch` en `upsertSmartCvAction` y `upsertPresentationAction` para neutralizar excepciones de invariante de generación estática fuera del contexto de solicitud HTTP.
+3. **Métricas de Calidad y Pruebas Unitarias**:
+   - Cobertura expandida a **170 pruebas unitarias aprobadas al 100%** en Vitest.
+   - 0 errores en compilación estricta TypeScript (`npm run typecheck`).
+
+
 
 

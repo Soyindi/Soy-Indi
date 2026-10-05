@@ -57,49 +57,58 @@ export const documentArchetypeSchema = z.enum([
 ]);
 
 export const metricItemSchema = z.object({
-  label: z.string().min(1, 'La etiqueta es requerida'),
-  value: z.string().min(1, 'El valor métrico es requerido'),
-  change: z.string().optional(),
-  trend: z.enum(['up', 'down', 'neutral']).default('up'),
-  visualWeightDominance: z.number().min(1).max(5).default(3).optional(),
+  label: z.union([z.string(), z.number()]).nullish().default('Métrica').transform(v => String(v ?? 'Métrica')),
+  value: z.union([z.string(), z.number()]).nullish().default('0').transform(v => String(v ?? '0')),
+  change: z.union([z.string(), z.number()]).nullish().transform(v => (v != null ? String(v) : undefined)).optional(),
+  trend: z.enum(['up', 'down', 'neutral']).nullish().default('up').transform(v => v || 'up').optional(),
+  visualWeightDominance: z.number().nullish().default(3).transform(v => v || 3).optional(),
 });
 
 export const quoteDataSchema = z.object({
-  quote: z.string().min(1, 'La cita es requerida'),
-  author: z.string().min(1, 'El autor es requerido'),
-  role: z.string().optional(),
+  quote: z.string().nullish().default('').transform(v => v || ''),
+  author: z.string().nullish().default('').transform(v => v || ''),
+  role: z.string().nullish().transform(v => v || undefined).optional(),
 });
 
 export const comparisonDataSchema = z.object({
-  beforeTitle: z.string().default('Enfoque Tradicional'),
-  beforeItems: z.array(z.string()).default([]),
-  afterTitle: z.string().default('INDI 2026'),
-  afterItems: z.array(z.string()).default([]),
+  beforeTitle: z.string().nullish().default('Enfoque Tradicional').transform(v => v || 'Enfoque Tradicional'),
+  beforeItems: z.array(z.any()).nullish().default([]).transform(items => (items || []).map(i => typeof i === 'string' ? i : (i?.text || i?.point || String(i ?? ''))).filter(Boolean)),
+  afterTitle: z.string().nullish().default('INDI 2026').transform(v => v || 'INDI 2026'),
+  afterItems: z.array(z.any()).nullish().default([]).transform(items => (items || []).map(i => typeof i === 'string' ? i : (i?.text || i?.point || String(i ?? ''))).filter(Boolean)),
 });
 
 export const timelineItemSchema = z.object({
-  step: z.string().min(1),
-  title: z.string().min(1),
-  description: z.string().min(1),
+  step: z.union([z.string(), z.number()]).nullish().default('Paso').transform(v => (v != null ? String(v) : 'Paso')),
+  title: z.union([z.string(), z.number()]).nullish().default('').transform(v => (v != null ? String(v) : '')),
+  description: z.union([z.string(), z.number()]).nullish().default('').transform(v => (v != null ? String(v) : '')),
 });
 
 export const presentationSlideSchema = z.object({
-  id: z.string(),
-  title: z.string().min(1, 'El título de la diapositiva es obligatorio'),
-  actionTitle: z.string().max(160, 'El Action Title debe ser conciso (máximo 160 caracteres)').optional(),
-  subtitle: z.string().optional(),
-  semanticIntent: semanticIntentSchema.default('executive_scqa').optional(),
-  visualType: presentationVisualTypeSchema.default('concept'),
-  layout: presentationLayoutSchema.default('standard'),
-  keyPoints: z.array(z.string()).default([]),
-  speakerNotes: z.string().optional(),
-  badgeText: z.string().optional(),
-  estimatedDurationSeconds: z.number().default(60).optional(),
-  keyTakeaway: z.string().optional(),
-  metricsData: z.array(metricItemSchema).optional(),
-  quoteData: quoteDataSchema.optional(),
-  comparisonData: comparisonDataSchema.optional(),
-  timelineData: z.array(timelineItemSchema).optional(),
+  id: z.string().nullish().default(() => crypto.randomUUID()).transform(v => v || crypto.randomUUID()),
+  title: z.string().nullish().default('Diapositiva').transform(v => v || 'Diapositiva'),
+  actionTitle: z.string().max(240, 'El Action Title debe ser conciso').nullish().transform(v => v || undefined).optional(),
+  subtitle: z.string().nullish().transform(v => v || undefined).optional(),
+  semanticIntent: semanticIntentSchema.nullish().default('executive_scqa').transform(v => v || 'executive_scqa').optional(),
+  visualType: presentationVisualTypeSchema.nullish().default('concept').transform(v => v || 'concept').optional(),
+  layout: presentationLayoutSchema.nullish().default('standard').transform(v => v || 'standard').optional(),
+  keyPoints: z.array(z.any()).nullish().default([]).transform((items) => {
+    if (!Array.isArray(items)) return [];
+    return items.map((item) => {
+      if (typeof item === 'string') return item;
+      if (typeof item === 'object' && item !== null) {
+        return item.text || item.point || item.detail || item.title || item.item || JSON.stringify(item);
+      }
+      return String(item ?? '');
+    }).filter(Boolean);
+  }),
+  speakerNotes: z.string().nullish().transform(v => v || undefined).optional(),
+  badgeText: z.string().nullish().transform(v => v || undefined).optional(),
+  estimatedDurationSeconds: z.number().nullish().default(60).transform(v => v || 60).optional(),
+  keyTakeaway: z.string().nullish().transform(v => v || undefined).optional(),
+  metricsData: z.array(metricItemSchema).nullish().transform(v => (v && v.length > 0 ? v : undefined)).optional(),
+  quoteData: quoteDataSchema.nullish().transform(v => (v && (v.quote || v.author) ? v : undefined)).optional(),
+  comparisonData: comparisonDataSchema.nullish().transform(v => (v && (v.beforeTitle || v.afterTitle || (v.beforeItems && v.beforeItems.length > 0)) ? v : undefined)).optional(),
+  timelineData: z.array(timelineItemSchema).nullish().transform(v => (v && v.length > 0 ? v : undefined)).optional(),
 });
 
 export const presentationThemeSchema = z.object({
@@ -109,12 +118,12 @@ export const presentationThemeSchema = z.object({
   accentColor: z.string().default('#22d3ee'),
   backgroundGradient: z.string().default('radial-gradient(ellipse at 50% 0%, #1e1b4b 0%, #090a10 75%)'),
   enableParticles: z.boolean().default(true),
-  fontFamily: z.string().default('sans').optional(),
-  apcaReadabilityTarget: z.number().default(75).optional(),
-  oklchHueLock: z.number().min(0).max(360).optional(),
-  transitionEffect: z.enum(['fade', 'slide', 'scale']).default('fade').optional(),
-  ambientAuraIntensity: z.enum(['subtle', 'dramatic', 'off']).default('dramatic').optional(),
-  fontPairing: z.enum(['sans', 'serif', 'mono']).default('sans').optional(),
+  fontFamily: z.string().nullish().default('sans').transform(v => v || 'sans').optional(),
+  apcaReadabilityTarget: z.number().nullish().default(75).transform(v => v || 75).optional(),
+  oklchHueLock: z.number().min(0).max(360).nullish().transform(v => v ?? undefined).optional(),
+  transitionEffect: z.enum(['fade', 'slide', 'scale']).nullish().default('fade').transform(v => v || 'fade').optional(),
+  ambientAuraIntensity: z.enum(['subtle', 'dramatic', 'off']).nullish().default('dramatic').transform(v => v || 'dramatic').optional(),
+  fontPairing: z.enum(['sans', 'serif', 'mono']).nullish().default('sans').transform(v => v || 'sans').optional(),
 });
 
 export const presentationFormSchema = z.object({
@@ -124,10 +133,10 @@ export const presentationFormSchema = z.object({
     .min(3, 'El enlace debe tener al menos 3 caracteres')
     .regex(/^[a-z0-9-]+$/, 'Solo se permiten letras minúsculas, números y guiones'),
   isPublic: z.boolean().default(true),
-  templateCategory: z.string().optional(),
-  targetDurationMinutes: z.number().min(1).max(60).default(5).optional(),
-  targetAudience: targetAudienceSchema.default('investors').optional(),
-  presentationTone: presentationToneSchema.default('orbital_cyber').optional(),
+  templateCategory: z.string().optional().nullable(),
+  targetDurationMinutes: z.number().min(1).max(60).default(5).optional().nullable(),
+  targetAudience: targetAudienceSchema.default('investors').optional().nullable(),
+  presentationTone: presentationToneSchema.default('orbital_cyber').optional().nullable(),
   themeSettings: presentationThemeSchema,
   slidesData: z.array(presentationSlideSchema).min(1, 'Debe haber al menos 1 diapositiva'),
 });
