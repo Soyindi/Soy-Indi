@@ -236,14 +236,42 @@ export const presentations = sqliteTable('presentations', {
 ]);
 
 // ============================================================================
-// 5. RELACIONES DECLARATIVAS
+// 5. HISTORIAL DE PAGOS Y SUSCRIPCIONES (MERCADO PAGO)
+// ============================================================================
+export const paymentsHistory = sqliteTable('payments_history', {
+  id: text('id').primaryKey(), // Payment ID de Mercado Pago
+  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
+  planInterval: text('plan_interval', { enum: ['monthly', 'semiannual'] }).notNull(),
+  amount: integer('amount').notNull(),
+  currency: text('currency').default('CLP').notNull(),
+  status: text('status').notNull(), // approved, pending, rejected
+  paymentMethodId: text('payment_method_id'),
+  externalReference: text('external_reference'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+}, (table) => [
+  index('payments_history_user_idx').on(table.userId),
+  index('payments_history_status_idx').on(table.status),
+]);
+
+// ============================================================================
+// 6. RELACIONES DECLARATIVAS
 // ============================================================================
 export const userRelations = relations(user, ({ many }) => ({
   cards: many(cards),
   smartCvs: many(smartCvs),
   presentations: many(presentations),
+  payments: many(paymentsHistory),
   sessions: many(session),
   accounts: many(account),
+}));
+
+export const paymentsHistoryRelations = relations(paymentsHistory, ({ one }) => ({
+  user: one(user, {
+    fields: [paymentsHistory.userId],
+    references: [user.id],
+  }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

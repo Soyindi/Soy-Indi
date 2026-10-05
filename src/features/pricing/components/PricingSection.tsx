@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PRICING_PLANS, PlanInterval } from '@/entities/subscription/types';
 import { useSession } from '@/shared/lib/auth-client';
 import { 
@@ -14,7 +15,8 @@ import {
   CreditCard,
   Layers,
   FileText,
-  Presentation
+  Presentation,
+  Loader2
 } from 'lucide-react';
 
 interface PricingSectionProps {
@@ -22,9 +24,43 @@ interface PricingSectionProps {
 }
 
 export function PricingSection({ showTitle = true }: PricingSectionProps) {
+  const router = useRouter();
   const [interval, setInterval] = useState<PlanInterval>('semiannual');
+  const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const { data: sessionData } = useSession();
   const isAuthenticated = !!sessionData?.user;
+
+  const handleStartMercadoPagoCheckout = async () => {
+    if (!isAuthenticated) {
+      router.push(`/login?mode=signup&callbackUrl=/pricing`);
+      return;
+    }
+
+    try {
+      setIsLoadingCheckout(true);
+      setCheckoutError(null);
+
+      const res = await fetch('/api/checkout/mercadopago', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planInterval: interval }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Error al iniciar checkout con Mercado Pago');
+      }
+
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      }
+    } catch (err: any) {
+      console.error('Error checkout Mercado Pago:', err);
+      setCheckoutError(err.message || 'Error al procesar el pago.');
+      setIsLoadingCheckout(false);
+    }
+  };
 
   const currentPlan = PRICING_PLANS[interval];
 
@@ -148,18 +184,48 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
 
         {/* Botón de Llamada a la Acción Principal */}
         <div className="space-y-3">
-          <Link
-            href={isAuthenticated ? '/start' : '/login?mode=signup&callbackUrl=/start'}
-            className="w-full inline-flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm sm:text-base shadow-xl shadow-indigo-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all min-h-[48px]"
+          {checkoutError && (
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs text-center">
+              {checkoutError}
+            </div>
+          )}
+
+          {/* Botón Oficial de Mercado Pago */}
+          <button
+            type="button"
+            onClick={handleStartMercadoPagoCheckout}
+            disabled={isLoadingCheckout}
+            className="w-full min-h-[48px] inline-flex items-center justify-center gap-3 py-4 px-8 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-bold text-sm sm:text-base shadow-xl shadow-amber-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50"
           >
-            <span>{isAuthenticated ? 'Ir al Onboarding Hub' : 'Empezar Gratis por 3 Días'}</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+            {isLoadingCheckout ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Conectando con Mercado Pago...</span>
+              </>
+            ) : (
+              <>
+                <CreditCard className="w-5 h-5 text-zinc-950" />
+                <span>
+                  Suscribirme con Mercado Pago (${interval === 'semiannual' ? '6.000' : '2.500'} CLP)
+                </span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
+
+          {/* Botón Secundario de Prueba Gratuita */}
+          <div className="text-center pt-2">
+            <Link
+              href={isAuthenticated ? '/start' : '/login?mode=signup&callbackUrl=/start'}
+              className="inline-flex items-center gap-2 text-xs font-medium text-cyan-300 hover:text-cyan-200 transition-colors py-2 px-3 rounded-lg hover:bg-white/5"
+            >
+              <span>{isAuthenticated ? 'O volver a mis herramientas' : '¿Prefieres probar primero? Empieza 3 días gratis'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
           <p className="text-center text-[11px] text-zinc-400">
-            {isAuthenticated
-              ? 'Tu cuenta está activa • Explora todas las herramientas'
-              : 'No necesitas ingresar tarjeta • Lo tienes listo en 2 minutos'}
+            🔒 Pago seguro procesado en pesos chilenos (CLP) vía Webpay, tarjetas de débito/crédito y Mercado Pago
           </p>
         </div>
       </div>

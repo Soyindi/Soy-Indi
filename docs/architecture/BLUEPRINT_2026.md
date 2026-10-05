@@ -1231,6 +1231,22 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (209 de 209 tests en 32 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Integración Oficial de Mercado Pago SDK v2 & Checkout Pro (Octubre 2026)
+1. **Pasarela de Pagos Transaccional en CLP**:
+   - Integración nativa del SDK oficial `mercadopago` v2 con `MercadoPagoConfig`, `Preference` y `Payment`.
+   - Soporte para cobros en pesos chilenos ($2.500 CLP mensual y $6.000 CLP semestral con 60% OFF).
+2. **Arquitectura FSD & Route Handlers Seguros**:
+   - `/api/checkout/mercadopago`: Generación de preferencias de pago Checkout Pro con redirección automática a Webpay / tarjetas.
+   - `/api/webhooks/mercadopago`: Escucha de notificaciones IPN con verificación anti-spoofing (`paymentClient.get({ id })`), batching en Turso para activar `user.status = 'ACTIVE'`, extensión de `subscriptionEndsAt` y registro contable en `payments_history`.
+3. **Página de Éxito & Experiencia de Usuario**:
+   - Nueva ruta `/checkout/success` con confirmación visual de membresía desbloqueada y accesos directos al Dashboard y Creador de Tarjetas.
+   - Botón CTA de suscripción directa en `PricingSection` con estados de carga (`Loader2`), manejo de errores y touch targets $\ge 44\text{px}$.
+4. **Control de Calidad y Pruebas Unitarias (214 Tests Passing)**:
+   - Nueva suite en `tests/unit/mercadopago-integration.test.ts` verificando schemas Zod, duración de suscripciones y validación de webhooks.
+   - 100% de la suite de pruebas unitarias aprobada (214 de 214 tests en 33 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
 
 

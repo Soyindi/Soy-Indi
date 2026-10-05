@@ -56,6 +56,10 @@ src/
 7. **Guardrail de Experiencia para Sesiones Activas (Zero Redundant Logins):**
    - Si un usuario ya autenticado accede a la página de login (`/login`), debe ser redirigido de inmediato en el servidor mediante `auth.api.getSession({ headers })` hacia el `callbackUrl` validado o hacia su panel (`/dashboard`), previniendo formularios de inicio de sesión redundantes.
    - Los componentes de llamada a la acción públicos (Hero CTA, Pricing CTA, Public Contextual Header, Mobile Drawer) deben consumir reactivamente `useSession()` para adaptar sus enlaces directamente hacia `/start` o `/dashboard`, evitando fricción en la navegación del usuario registrado.
+8. **Pasarela de Pagos Mercado Pago SDK v2 & Verificación Anti-Spoofing de Webhooks:**
+   - La creación de preferencias de pago se realiza exclusivamente del lado del servidor en Route Handlers dedicados (`/api/checkout/mercadopago`), validando la sesión activa y contratos Zod.
+   - En el webhook IPN (`/api/webhooks/mercadopago`), se prohíbe confiar en el cuerpo de la notificación entrante. Es obligatorio consultar la API de Mercado Pago (`paymentClient.get({ id })`) para verificar la autenticidad, monto y estado (`approved`) antes de activar la membresía del usuario o extender `subscriptionEndsAt` en Turso.
+   - Toda transacción aprobada se registra para trazabilidad contable en `payments_history`.
 
 ---
 
