@@ -318,6 +318,65 @@ Teléfono: +56 9 8888 7777 • andres.morales@austral.cl
       expect(result.references[1].contact).toContain('56 9 8888 7777');
       expect(result.references[1].contact).toContain('andres.morales@austral.cl');
     });
+
+    it('no debe absorber referencias posteriores en la primera persona de referencia (Anti-Swallow)', async () => {
+      const { parseCvTextToStructuredData } = await import('@/features/ai-smart-cv/lib/cv-text-parser');
+      const cvText = `
+Matías Ricardo Riquelme Cárdenas
+Psicólogo Clínico
+matias@test.cl
+
+EXPERIENCIA LABORAL
+Hospital Clínico de Magallanes
+Psicólogo
+2023 - Presente
+• Atención clínica.
+
+REFERENCIAS LABORALES
+Cecilia Vivallo Corvalán
+Enfermera encargada • Cuidados Paliativos Universales, Hospital Clínico de Magallanes
++56 9 8226 8970
+
+Hernán Soto Mansilla
+Médico Cirujano • Hospital Clínico de Magallanes
++56 9 8933 0333
+
+Patricia Andrade Vera
+Coordinadora de Salud • Red Asistencial Magallanes
++56 9 7467 7104
+
+Francisco Muñoz Oyarzún
+Jefe de Unidad • Servicio de Salud Magallanes
++56 9 6143 4397
+
+Claudia Cárcamo
+Psicóloga • CESFAM, Penco
++56 9 7387 7180
+`;
+      const result = parseCvTextToStructuredData(cvText, 'cv_matias.pdf');
+      expect(result.references.length).toBe(5);
+
+      expect(result.references[0].name).toBe('Cecilia Vivallo Corvalán');
+      expect(result.references[0].role).toBe('Enfermera encargada');
+      expect(result.references[0].contact).toBe('+56 9 8226 8970');
+
+      expect(result.references[1].name).toBe('Hernán Soto Mansilla');
+      expect(result.references[1].role).toBe('Médico Cirujano');
+      expect(result.references[1].contact).toBe('+56 9 8933 0333');
+
+      expect(result.references[2].name).toBe('Patricia Andrade Vera');
+      expect(result.references[2].role).toBe('Coordinadora de Salud');
+      expect(result.references[2].contact).toBe('+56 9 7467 7104');
+
+      expect(result.references[3].name).toBe('Francisco Muñoz Oyarzún');
+      expect(result.references[3].role).toBe('Jefe de Unidad');
+      expect(result.references[3].contact).toBe('+56 9 6143 4397');
+
+      expect(result.references[4].name).toBe('Claudia Cárcamo');
+      expect(result.references[4].role).toBe('Psicóloga');
+      expect(result.references[4].contact).toBe('+56 9 7387 7180');
+    });
   });
 });
+
 

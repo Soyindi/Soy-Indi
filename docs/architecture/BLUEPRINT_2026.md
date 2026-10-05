@@ -1161,18 +1161,21 @@ export default async function PublicCardPage({ params }: PageProps) {
 4. **Control de Calidad y Suite de Pruebas Unitarias (186 Tests Passing)**:
    - Nuevas pruebas en `tests/unit/smart-cv-crud-and-export.test.ts` verificando la sanitización de artefactos de OCR (`%Ï`), inclusión de contactos en referencias y prevención de páginas huérfanas en exportación PDF A4.
 
-### Fase: Extracción Robusta de Contacto en Referencias al Subir CV (Octubre 2026)
+### Fase: Extracción Robusta de Contacto en Referencias al Subir CV & Guardrail Anti-Swallow (Octubre 2026)
 1. **Auditoría de Ingesta y Diagnóstico de Causa Raíz**:
-   - **Pipeline Multimodal LLM (`multimodal-parser.ts`)**: El meta-prompt `MULTIMODAL_CV_PROMPT` no incluía la sección `"references"` en el esquema JSON esperado, provocando que la inferencia visual/documental descartara completamente las referencias con sus teléfonos/emails.
-   - **Pipeline Heurístico de Texto (`cv-text-parser.ts`)**:
+   - **Pipeline Multimodal LLM (`multimodal-parser.ts`)**: El meta-prompt `MULTIMODAL_CV_PROMPT` omitía la sección `"references"` en el esquema JSON esperado, provocando que la inferencia visual/documental descartara completamente las referencias con sus teléfonos/emails.
+   - **Pipeline Heurístico de Texto (`cv-text-parser.ts`) & Bug de Absorción Múltiple (Anti-Swallow)**:
+     - El lookahead previo inspeccionaba hasta 3 líneas buscando contactos. Si un CV presentaba una lista densa de referentes en párrafos sucesivos sin viñetas (`•`), la primera referencia extraía su teléfono y continuaba consumiendo líneas siguientes, devorando los teléfonos de los siguientes 3 referentes e incrementando el cursor `i`, borrando las entidades posteriores.
      - Las expresiones regulares de teléfono restringían los formatos de 8-9 dígitos de telefonía móvil y fija chilena (`+56 9 XXXX XXXX`, `+569...`, `9XXXXXXXX`).
-     - Al procesar referencias estructuradas en múltiples líneas consecutivas (Línea 1: Nombre, Línea 2: Cargo - Empresa, Línea 3: Teléfono/Email), el avance de puntero y la detección de límites de referente no desacoplaban apropiadamente las líneas de contacto.
-2. **Implementación de Extracción Adaptativa Multilínea y Monolínea**:
+2. **Implementación de Extracción Adaptativa Multilínea y Guardrail Anti-Swallow**:
    - Se añadió la clave `"references"` con campos `name`, `role`, `company` y `contact` en el prompt multimodal de IA.
-   - Se optimizó el analizador determinista en `cv-text-parser.ts` para extraer teléfonos e emails tanto en línea única con separadores (`—`, `–`, `·`, `|`, `Tel:`) como en formato de bloque de 2 a 3 líneas sin viñetas, sanitizando los datos de contacto para que no contaminen los campos de cargo o institución.
-3. **Suite de Pruebas y Validación Integral (188 Tests Passing)**:
-   - Casos de prueba exhaustivos en `tests/unit/smart-cv-crud-and-export.test.ts` verificando formatos monolínea y multilínea con múltiples referentes.
-   - 100% de la suite de pruebas unitarias aprobada (188 de 188 tests en 29 suites).
+   - **Guardrail Anti-Swallow en Parser Heurístico**:
+     - Función `isPotentialNewReference(rawLine, currentHasRoleOrCompany)`: detecta si la siguiente línea es una nueva persona (por viñeta, estructura de nombre o separadores) o si describe el cargo de la persona actual (`isJobTitleLine`).
+     - Detención inmediata del lookahead (`break;`) tan pronto como se extrae el contacto de la persona actual o si la línea siguiente pertenece a otro referente.
+     - Separación y sanitización estricta de nombres, roles, instituciones y teléfonos (`contactParts.join(' • ')`), evitando que números de teléfono contaminen los nombres de roles o instituciones.
+3. **Suite de Pruebas y Validación Integral (189 Tests Passing)**:
+   - Casos de prueba exhaustivos en `tests/unit/smart-cv-crud-and-export.test.ts` verificando formatos monolínea, multilínea y el test de regresión anti-absorción (`Anti-Swallow`) con 5 referentes consecutivos reales.
+   - 100% de la suite de pruebas unitarias aprobada (189 de 189 tests en 29 suites).
    - 0 errores de tipado TypeScript (`npm run typecheck`).
 
 

@@ -552,9 +552,10 @@ export function parseCvTextToStructuredData(
     if (isCertificateOrNoise(cleanLine)) continue;
 
     // Si la siguiente línea es un número huérfano (ej. "8970" porque el PDF partió el teléfono en 2 líneas)
+    // Solo anexar si cleanLine ya contiene indicios de teléfono o dígitos previos
     if (i + 1 < refLines.length) {
       const nextLine = refLines[i + 1].trim();
-      if (/^\d{3,5}$/.test(nextLine)) {
+      if (/^\d{3,5}$/.test(nextLine) && (/(?:\+?56|tel|fono|cel|\b9\s?\d{3,4})/i.test(cleanLine) || /\d{3,4}$/.test(cleanLine))) {
         cleanLine = `${cleanLine} ${nextLine}`;
         i++; // Avanzar índice para consumir el número
       }
@@ -584,25 +585,96 @@ export function parseCvTextToStructuredData(
     let extraRoleOrCompanyCandidate = '';
     let linesConsumed = 0;
 
-    // Helper para saber si una línea es de contacto
-    const isContactLine = (text: string): boolean => {
-      if (/^(?:contacto|tel[ée]fono|fono|celular|cel|whatsapp|mail|correo|email)[:\s]/i.test(text.trim())) return true;
-      const contacts = extractContactInfo(text);
-      if (contacts.phone || contacts.email) return true;
+    // Helper para determinar si una línea es PURAMENTE de contacto (ej: "Tel: +56 9...", "Contacto: ...")
+    const isPureContactLine = (text: string): boolean => {
+      const trimmed = text.trim();
+      if (/^(?:contacto|tel[ée]fono|fono|celular|cel|whatsapp|mail|correo|email)[:\s]/i.test(trimmed)) return true;
+      const contacts = extractContactInfo(trimmed);
+      if (contacts.phone || contacts.email) {
+        // Remover el teléfono y email; si lo que resta son palabras de contacto o casi nada (<4 chars), es línea pura de contacto
+        const residual = trimmed
+          .replace(contacts.phone || '', '')
+          .replace(contacts.email || '', '')
+          .replace(/(?:tel[ée]fono|fono|celular|cel|whatsapp|mail|correo|email|contacto|\+?\d|[\s().\-_@/•·|–—])+/gi, '')
+          .trim();
+        return residual.length < 4;
+      }
       return false;
     };
 
-    // Helper para determinar si una línea representa una NUEVA referencia (viñeta explícita o nueva persona)
-    const isExplicitNewBullet = (rawLine: string): boolean => {
-      const trimmed = rawLine.trim();
-      return /^[•\-\*]\s/.test(trimmed);
+    // Helper para determinar si una línea representa un cargo/puesto laboral
+    const isJobTitleLine = (text: string): boolean => {
+      const lower = text.toLowerCase();
+      const jobKeywords = [
+        'jefe', 'jefa', 'director', 'directora', 'gerente', 'coordinador', 'coordinadora',
+        'enfermero', 'enfermera', 'médico', 'medico', 'cirujano', 'cirujana', 'psicólogo', 'psicóloga',
+        'psicologo', 'psicologa', 'docente', 'profesor', 'profesora', 'ingeniero', 'ingeniera',
+        'analista', 'asistente', 'consultor', 'consultora', 'supervisor', 'supervisora', 'encargado',
+        'encargada', 'operador', 'operadora', 'técnico', 'tecnico', 'subdirector', 'subdirectora',
+        'profesional', 'especialista', 'asesor', 'asesora'
+      ];
+      return jobKeywords.some((k) => new RegExp(`\\b${k}\\b`, 'i').test(lower));
     };
 
-    // 2. Si es formato multilínea (o la línea actual no tiene contacto completo), inspeccionar las siguientes 1 a 3 líneas
+    // Helper para determinar si una línea representa una NUEVA persona de referencia
+    const isPotentialNewReference = (rawLine: string, currentHasRoleOrCompany: boolean): boolean => {
+      const trimmed = rawLine.trim();
+      // Viñeta explícita
+      if (/^[•\-\*·]\s/.test(trimmed)) return true;
+
+      const stripped = stripLeadingBullet(trimmed);
+
+      // Si empieza con etiqueta de contacto, NO es nueva persona
+      if (/^(?:contacto|tel[ée]fono|fono|celular|cel|whatsapp|mail|correo|email)[:\s]/i.test(stripped)) {
+        return false;
+      }
+
+      // Si la línea contiene palabras típicas de cargo
+      if (isJobTitleLine(stripped)) {
+        // Si la referencia actual AÚN NO tiene cargo ni empresa asignados, esta línea es el cargo de la actual, no una nueva persona
+        if (!currentHasRoleOrCompany) {
+          return false;
+        }
+      }
+
+      // Si la línea tiene un separador claro (em-dash, en-dash, bullet interno, guión con espacios, barra)
+      if (/[—–|·]|\s-\s/.test(stripped)) {
+        // Si no tiene cargo asignado la referencia actual y la línea parece describir rol - empresa, no es nueva persona
+        if (!currentHasRoleOrCompany && isJobTitleLine(stripped)) {
+          return false;
+        }
+        // Si tiene separador y antes del separador NO parece un cargo (sino un nombre de persona)
+        const firstSegment = stripped.split(/[—–|·]|\s-\s/)[0].trim();
+        if (firstSegment.length >= 4 && !isJobTitleLine(firstSegment)) {
+          return true;
+        }
+      }
+
+      // Si la línea parece ser un nombre propio de persona (2 a 4 palabras capitalizadas, sin números ni palabras de contacto)
+      if (
+        stripped.length >= 6 &&
+        stripped.length <= 40 &&
+        !/\d/.test(stripped) &&
+        !isJobTitleLine(stripped) &&
+        !/^(?:instituci[óo]n|empresa|hospital|cl[íi]nica|colegio|universidad|servicio|ministerio)[:\s]/i.test(stripped)
+      ) {
+        const words = stripped.split(/\s+/).filter(Boolean);
+        const capitalizedWords = words.filter((w) => /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+$/.test(w));
+        if (words.length >= 2 && words.length <= 4 && capitalizedWords.length === words.length) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    // 2. Inspeccionar líneas siguientes sólo si nos falta rol/empresa o contacto para ESTA referencia
     let lookAheadOffset = 1;
-    while (i + lookAheadOffset < refLines.length && lookAheadOffset <= 3) {
+    while (i + lookAheadOffset < refLines.length && lookAheadOffset <= 2) {
       const candidateRaw = refLines[i + lookAheadOffset];
-      if (isExplicitNewBullet(candidateRaw)) break;
+
+      // Si la línea candidata parece una NUEVA referencia, DETENER lookahead inmediatamente
+      if (isPotentialNewReference(candidateRaw, Boolean(extraRoleOrCompanyCandidate))) break;
 
       const nextRaw = stripLeadingBullet(candidateRaw).trim();
       if (
@@ -614,14 +686,15 @@ export function parseCvTextToStructuredData(
         break;
       }
 
-      if (isContactLine(nextRaw)) {
+      if (isPureContactLine(nextRaw)) {
         const c = extractContactInfo(nextRaw);
         if (c.phone && !contactParts.includes(c.phone)) contactParts.push(c.phone);
         if (c.email && !contactParts.includes(c.email)) contactParts.push(c.email);
         linesConsumed = lookAheadOffset;
-        lookAheadOffset++;
-      } else if (!extraRoleOrCompanyCandidate && nextRaw.length < 80 && !isContactLine(nextRaw)) {
-        // Podría ser la línea de cargo / institución (ej: "Jefa de Proyectos - Empresa Minera")
+        // Una vez consumido el contacto para esta persona, terminar lookahead
+        break;
+      } else if (!extraRoleOrCompanyCandidate && nextRaw.length < 120 && !isPureContactLine(nextRaw)) {
+        // Línea de cargo / institución (ej: "Enfermera encargada • Cuidados Paliativos")
         extraRoleOrCompanyCandidate = nextRaw;
         linesConsumed = lookAheadOffset;
         lookAheadOffset++;
@@ -676,10 +749,15 @@ export function parseCvTextToStructuredData(
       }
     } else if (parts.length === 1 && extraRoleOrCompanyCandidate) {
       name = parts[0];
-      const extraParts = extraRoleOrCompanyCandidate.split(/[—–|·\t,]|\s-\s/).map((p) => p.trim()).filter(Boolean);
+      // Si extraRoleOrCompanyCandidate tiene bullet (•), dash (—, –), o guión con espacio
+      const extraParts = extraRoleOrCompanyCandidate.split(/[—–|·•\t]|\s-\s/).map((p) => p.trim()).filter(Boolean);
       if (extraParts.length >= 2) {
         role = extraParts[0];
         company = extraParts.slice(1).join(' - ');
+      } else if (extraRoleOrCompanyCandidate.includes(',')) {
+        const [r, ...c] = extraRoleOrCompanyCandidate.split(',');
+        role = r.trim();
+        company = c.join(',').trim();
       } else {
         role = extraRoleOrCompanyCandidate;
         company = 'Institución de Referencia';
