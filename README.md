@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-170_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-174_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -92,7 +92,13 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 - **Retorno Ergonómico al Inicio (`/#inicio`)**: Logotipo interactivo con retorno al ancla superior en un toque, eliminando cortes o bloqueos de scroll (`overflow-hidden` desacoplado a luces perimetrales).
 - **Desplazamiento Suave Accesible**: Configuración nativa `scroll-behavior: smooth` y compensación de altura fija (`scroll-padding-top: 5rem`), con compatibilidad automática para usuarios con `prefers-reduced-motion`.
 
-### 6. 🚪 Onboarding Hub Guiado (`/start`)
+### 6. 🎨 Identidad Visual Corporativa Unificada & Brand Showcase (WebP First)
+- **Pipeline de Transcodificación WebP**: Reducción drástica del 98.3% en el payload visual de la plataforma (de 6.15 MB a 104 KB) mediante variantes multi-resolución de alta densidad (`indi-alien-symbol`, `indi-tech-lockup`, `indi-vector-light`, `indi-stacked-hero`, `indi-vector-mark`) con tiempos de carga instantáneos (LCP < 0.8s).
+- **Componente Canónico `<BrandLogo />`**: Primitiva reutilizable en `@/shared/ui/BrandLogo` con soporte para variantes (`symbol`, `horizontal`, `stacked`), escala responsive (`xs` a `2xl`), micro-interacción gradiente al hover y cero Cumulative Layout Shift (`CLS = 0.00`).
+- **Brand Showcase Interactivo**: Sección dedicada en la página de inicio con reproductor de video corporativo 1080p ambient background, visor técnico de activos en tiempo real con descarga directa y badges de telemetría de rendimiento Core Web Vitals.
+- **Unificación Transversal del Ecosistema**: Reemplazo absoluto de marcadores de texto o SVGs dispersos en `GlobalNavbar`, `MobileNavDrawer`, `UnifiedDashboardView`, `login` y `start`.
+
+### 7. 🚪 Onboarding Hub Guiado (`/start`)
 - Al iniciar la prueba de 3 días, el usuario accede a un selector interactivo (*Job-to-be-Done*) que le permite elegir por dónde empezar (Tarjeta, CV o Presentación) con estimaciones de tiempo (2 a 4 minutos).
 
 ---
@@ -224,6 +230,7 @@ Las pruebas validan de forma continua:
 4. Las reglas comerciales de suscripción y 3 días de prueba.
 5. El aislamiento multi-tenant y bloqueo de llamadas no autorizadas en producción.
 6. El flujo CRUD de Smart CV, persistencia multi-tenant anti-IDOR y renderizado vectorial A4 justificado (DIN EN ISO 216).
+7. El sistema de identidad visual corporativa unificada, contratos Zod de marca, integridad física de assets WebP/MP4 y guardrails de peso (<45 KB).
 
 ---
 

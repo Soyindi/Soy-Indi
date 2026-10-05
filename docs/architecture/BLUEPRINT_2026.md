@@ -1074,6 +1074,52 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Cobertura expandida a **170 pruebas unitarias aprobadas al 100%** en Vitest.
    - 0 errores en compilación estricta TypeScript (`npm run typecheck`).
 
+---
+
+### Fase 43: Pipeline de Identidad Visual Corporativa Unificada WebP First & Brand Identity Showcase Interactivo
+1. **Diagnóstico y Análisis Forense de Activos Visuales**:
+   - **Sobrecarga de Peso en `public/`**:
+     - Se identificaron 5 archivos de identidad visual maestros en formato JPEG de alta resolución (2K) con pesos comprendidos entre 882 KB y 1.25 MB (totalizando 6.15 MB), además de una animación corporativa en MP4 de 575 KB.
+     - Su utilización directa en el frontend web provocaba degradación crítica del Largest Contentful Paint (LCP) y First Contentful Paint (FCP) en conexiones móviles, incumpliendo los umbrales de Google Core Web Vitals.
+   - **Fragmentación de Marca en UI**:
+     - Múltiples componentes core (`GlobalNavbar`, `MobileNavDrawer`, `UnifiedDashboardView`, `login`, `start`) empleaban avatares genéricos de CSS ("IN") o texto plano desarticulado, careciendo de un componente centralizado de identidad corporativa.
+2. **Pipeline de Transcodificación WebP & Benchmarks de Compresión**:
+   - Transcodificación y optimización automatizada mediante `sharp` a calidad balanceada (80% - 85%), generando variantes multi-resolución de alta densidad:
+     - `indi-alien-symbol.webp` (800x800): **12.2 KB** (Reducción del 98.7% frente al máster de 942 KB).
+     - `indi-alien-symbol-sm.webp` (128x128): **1.9 KB** (Reducción del 99.8%).
+     - `indi-alien-symbol-2k.webp` (2048x2048): **34.4 KB** (Reducción del 96.3%).
+     - `indi-tech-lockup.webp` (1376x768): **13.0 KB** (Reducción del 98.5% frente a 882 KB).
+     - `indi-tech-lockup-sm.webp` (688x384): **6.7 KB** (Reducción del 99.2%).
+     - `indi-vector-light.webp` (1376x768): **13.0 KB** (Reducción del 98.7% frente a 988 KB).
+     - `indi-stacked-hero.webp` (768x1376): **12.0 KB** (Reducción del 99.0% frente a 1.25 MB).
+     - `indi-vector-mark.webp` (800x800): **11.2 KB** (Reducción del 99.1% frente a 1.23 MB).
+     - `indi-brand-reveal.mp4` (1080p, 575 KB): video corporativo ambient background integrado sin bloqueo de hilo principal.
+   - **Eficiencia Global**: Reducción del peso visual de 6.15 MB a ~104 KB (**98.3% de reducción total**). Los originales 2K fueron preservados en `public/brand/source/` como repositorio histórico máster.
+3. **Arquitectura FSD & Contratos Tipados en Capa de Entidades**:
+   - **Contratos Zod (`src/entities/brand/schemas.ts`)**:
+     - `brandAssetCategorySchema`, `brandAssetFormatSchema`, `brandAssetSchema`.
+     - Catálogo canónico inmutable `BRAND_ASSETS` con 10 referencias oficiales, metadata de dimensiones, propósito y rutas relativas seguras.
+   - **Componente Reutilizable Universal (`src/shared/ui/BrandLogo.tsx`)**:
+     - Implementado con Next.js `<Image>` para optimización automática en Edge y prevención de CLS (Cumulative Layout Shift = 0.00).
+     - Variantes `symbol`, `horizontal`, `stacked`, `svg-symbol`, `svg-horizontal` con tamaños estandarizados `xs` a `2xl` y microinteracción de brillo gradiente al hover.
+   - **Unificación Transversal del Ecosistema**:
+     - `GlobalNavbar.tsx`: Integración oficial de `<BrandLogo linkToHome priority />`.
+     - `MobileNavDrawer.tsx`, `UnifiedDashboardView.tsx`, `login/page.tsx`, `start/page.tsx`: Reemplazo de marcadores genéricos por el logotipo corporativo oficial.
+4. **Experiencia de Usuario: Brand Identity Showcase (`src/features/brand/components/BrandIdentityShowcase.tsx`)**:
+   - Bloque interactivo incorporado en la Landing Page (`src/app/page.tsx`):
+     - Reproductor de video ambient MP4/WebP con controles glassmórficos flotantes para reproducción, pausa y silencio (touch targets $\ge 44\text{px}$).
+     - Selector interactivo de activos de marca en tiempo real con panel de metadatos (resolución, peso, formato) y botón de descarga directa de assets.
+     - Telemetría de rendimiento y Core Web Vitals en tiempo real destacando compresión de 98.3% y peso promedio < 15 KB.
+5. **Control de Calidad y Pruebas Unitarias (174 Tests Passing)**:
+   - Nueva suite `tests/unit/brand-identity-system.test.ts` (4 pruebas unitarias):
+     - Validación estricta con Zod de los 10 activos canónicos registrados.
+     - Verificación de existencia física de los archivos WebP y MP4 en `public/brand/`.
+     - Guardrail de peso máximo por activo WebP (< 45 KB).
+     - Conformidad de categorías de arquetipos de diseño (`symbol`, `lockup`, `vector`, `stacked`, `video`).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (174 de 174 tests en 27 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
 
 

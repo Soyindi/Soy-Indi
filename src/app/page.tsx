@@ -22,6 +22,8 @@ import { GlobalNavbar } from '@/shared/ui/GlobalNavbar';
 import { HeroCtaButtons } from '@/features/onboarding/components/HeroCtaButtons';
 import { BottomCtaButton } from '@/features/onboarding/components/BottomCtaButton';
 import { MetricsShowcaseSection } from '@/features/card-builder/components/MetricsShowcaseSection';
+import { BrandLogo } from '@/shared/ui/BrandLogo';
+import { BrandIdentityShowcase } from '@/features/brand/components/BrandIdentityShowcase';
 
 export default function HomePage() {
   return (
@@ -45,7 +47,7 @@ export default function HomePage() {
           {/* Columna Izquierda: Mensaje y Call to Action */}
           <div className="lg:col-span-7 text-left">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill text-xs font-medium text-cyan-300 mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <BrandLogo size="xs" showText={false} />
               <span>Para Emprendedores y Profesionales • 3 Días Gratis</span>
             </div>
 
@@ -266,10 +268,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* BLOQUE 4: SECCIÓN DE PRECIOS INTEGRADA */}
+      {/* BLOQUE 5: SECCIÓN DE PRECIOS INTEGRADA */}
       <section id="precios" className="relative z-10 py-16 border-t border-white/5 scroll-mt-24">
         <PricingSection showTitle={true} />
       </section>
+
+      {/* BLOQUE 6: VITRINA OFICIAL DE IDENTIDAD VISUAL & BRAND REVEAL */}
+      <BrandIdentityShowcase />
 
       {/* BLOQUE 5: PREGUNTAS FRECUENTES CLARAS */}
       <section id="faq" className="relative z-10 max-w-4xl mx-auto px-6 py-20 scroll-mt-24">
@@ -301,13 +306,18 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 py-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
-        <p>© 2026 INDI. La forma más fácil de mostrar tu trabajo y hacer crecer tu negocio.</p>
-        <div className="flex items-center gap-6">
-          <Link href="/cards" className="hover:text-zinc-300 transition-colors">Tarjetas</Link>
-          <Link href="/cv" className="hover:text-zinc-300 transition-colors">Currículum</Link>
-          <Link href="/presentations" className="hover:text-zinc-300 transition-colors">Presentaciones</Link>
-          <Link href="/pricing" className="hover:text-zinc-300 transition-colors">Precios</Link>
+      <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 py-10 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-zinc-400">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <BrandLogo size="sm" showText={true} />
+          <span className="hidden sm:inline text-zinc-600">|</span>
+          <p className="text-center sm:text-left">© 2026 INDI. La plataforma todo-en-uno de identidad profesional.</p>
+        </div>
+        <div className="flex items-center gap-6 font-medium">
+          <Link href="/cards" className="hover:text-cyan-300 transition-colors">Tarjetas</Link>
+          <Link href="/cv" className="hover:text-cyan-300 transition-colors">Currículum</Link>
+          <Link href="/presentations" className="hover:text-cyan-300 transition-colors">Presentaciones</Link>
+          <Link href="/pricing" className="hover:text-cyan-300 transition-colors">Precios</Link>
+          <Link href="#identidad" className="hover:text-cyan-300 transition-colors text-indigo-400">Identidad</Link>
         </div>
       </footer>
     </div>

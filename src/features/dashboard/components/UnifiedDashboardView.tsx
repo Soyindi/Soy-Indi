@@ -28,6 +28,7 @@ import {
   Play,
   Edit3
 } from 'lucide-react';
+import { BrandLogo } from '@/shared/ui/BrandLogo';
 import { deleteCardAction, toggleCardActiveAction } from '@/features/card-builder/dashboard-actions';
 import { deletePresentationAction } from '@/features/orbital-presentations/actions';
 import { deleteSmartCvAction } from '@/features/ai-smart-cv/actions';
@@ -210,19 +211,9 @@ export function UnifiedDashboardView({
       {/* Barra de Navegación Global del Dashboard */}
       <div className="flex items-center justify-between pb-6 mb-8 border-b border-white/10">
         <div className="flex items-center gap-3">
-          {/* Logo que mantiene al usuario en su Panel de Control */}
-          <Link href="/dashboard" className="flex items-center gap-2.5 group" title="Mi Panel de Control">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-              <div className="w-full h-full bg-black/80 rounded-[11px] flex items-center justify-center">
-                <span className="font-black text-sm text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
-                  IN
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold tracking-tight text-white leading-none">Mi Panel</span>
-              <span className="text-[10px] text-zinc-400 font-mono">INDI 2026</span>
-            </div>
+          {/* Logo Oficial INDI en Panel de Control */}
+          <Link href="/dashboard" title="Mi Panel de Control">
+            <BrandLogo size="sm" subtitle="Mi Panel" />
           </Link>
 
           {/* Enlace para visitar la portada web sin perder el contexto */}

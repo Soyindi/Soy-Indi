@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { checkUserEntitlementAction } from '@/features/pricing/actions';
 import { OnboardingChoiceGrid } from '@/features/onboarding/components/OnboardingChoiceGrid';
 import { SmartParticles } from '@/features/visual-effects/SmartParticles';
+import { BrandLogo } from '@/shared/ui/BrandLogo';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,18 +18,8 @@ export default async function OnboardingStartPage() {
 
       {/* Barra de Marca Minimalista */}
       <header className="relative z-10 w-full max-w-6xl mx-auto px-6 mb-8 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20">
-            <div className="w-full h-full bg-black/80 rounded-[10px] flex items-center justify-center">
-              <span className="font-black text-lg tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
-                IN
-              </span>
-            </div>
-          </div>
-          <span className="text-xl font-bold tracking-tight text-white">INDI</span>
-          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-white/10 text-zinc-400">
-            Onboarding Hub
-          </span>
+        <Link href="/" title="Ir a la portada">
+          <BrandLogo size="md" subtitle="Onboarding Hub" />
         </Link>
 
         <div className="flex items-center gap-3">

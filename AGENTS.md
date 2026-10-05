@@ -124,6 +124,11 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - Párrafos de resumen profesional y viñetas de experiencia deben estar pulcramente justificados (`text-justify` en cliente web y `{ align: 'justify', maxWidth: ... }` en jsPDF), con sangría colgante y sanitización de caracteres para neutralizar la duplicación de viñetas (`• •` o `- •`).
    - Las cabeceras de sección en PDF deben implementar guardrail anti-huérfanos (mínimo 24mm de espacio vertical libre) y encabezado corporativo de continuación en páginas posteriores.
    - Los editores de CV deben enlazar desde paneles mediante clave primaria inmutable (`/cv?id=${cv.id}`) y persistir reactivamente el `cvId` en el estado tras cada guardado para garantizar mutaciones idempotentes y prevenir la duplicación de registros.
+9. **Identidad Visual Corporativa Unificada & Activos WebP First:**
+   - La identidad gráfica de la plataforma está centralizada en el contrato canónico `@/entities/brand/schemas` (`BRAND_ASSETS`) y se renderiza universalmente a través de `@/shared/ui/BrandLogo` (`<BrandLogo />`).
+   - Se prohíbe terminantemente el uso de placeholders genéricos con letras iniciales CSS (`IN`) o inserción de SVGs/imágenes dispersas sin pasar por el componente canónico.
+   - Todos los activos estáticos de identidad visual deben residir en `public/brand/` convertidos a formato **WebP** con factor de calidad balanceado (80-85%) y peso ultra-ligero (&lt;45 KB), preservando los archivos fuente 2K sin comprimir en `public/brand/source/`.
+   - Elementos multimedia de identidad (video reveal 1080p) deben contar con controles táctiles ergonómicos $\ge 44\text{px}$, accesibilidad WCAG y reproducción en bucle silenciada de bajo consumo.
 
 ---
 

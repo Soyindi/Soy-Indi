@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from '@/shared/lib/auth-client';
 import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, Tag, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function MobileNavDrawer() {
@@ -115,19 +116,7 @@ export function MobileNavDrawer() {
               {/* Cabecera del Drawer */}
               <div>
                 <div className="flex items-center justify-between pb-6 border-b border-white/10 mb-6">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px]">
-                      <div className="w-full h-full bg-black/80 rounded-[7px] flex items-center justify-center">
-                        <span className="font-black text-sm text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
-                          IN
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-base font-bold tracking-tight text-white">INDI</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                      2026
-                    </span>
-                  </div>
+                  <BrandLogo size="sm" subtitle="2026" />
 
                   <button
                     onClick={() => setIsOpen(false)}

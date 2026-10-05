@@ -3,6 +3,7 @@ import { AuthModal } from '@/features/dashboard/components/AuthModal';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Sparkles, ArrowLeft } from 'lucide-react';
+import { BrandLogo } from '@/shared/ui/BrandLogo';
 
 export const metadata: Metadata = {
   title: 'Iniciar Sesión | INDI 2026',
@@ -52,15 +53,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <span>Volver al Inicio</span>
         </Link>
 
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-indigo-500/20">
-            <div className="w-full h-full bg-black/80 rounded-[10px] flex items-center justify-center">
-              <span className="font-black text-sm tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-cyan-200">
-                IN
-              </span>
-            </div>
-          </div>
-          <span className="text-base font-bold tracking-tight text-white">INDI</span>
+        <Link href="/" title="Ir a la portada">
+          <BrandLogo size="sm" subtitle="Acceso" />
         </Link>
       </header>
 
