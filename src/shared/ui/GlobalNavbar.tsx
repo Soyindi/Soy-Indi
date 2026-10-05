@@ -32,8 +32,8 @@ export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
         className={`sticky top-0 z-40 w-full backdrop-blur-xl bg-zinc-950/80 border-b border-white/5 transition-all ${className}`}
       >
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
-          {/* Logotipo Oficial INDI con retorno a #inicio */}
-          <BrandLogo linkToHome={true} subtitle="2026 SaaS" priority={true} />
+          {/* Logotipo Oficial Cinemático (Solo Video Imponente) con retorno a #inicio */}
+          <BrandLogo linkToHome={true} size="md" priority={true} showText={false} />
 
         {/* Navegación Desktop Contextual */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">

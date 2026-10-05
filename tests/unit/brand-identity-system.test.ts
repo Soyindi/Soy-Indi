@@ -84,5 +84,24 @@ describe('Brand Identity System & Asset Optimization (WebP First)', () => {
     const webmSizeKb = fs.statSync(webmPath).size / 1024;
     expect(webmSizeKb).toBeLessThan(70); // WebM debe pesar menos de 70 KB
   });
+
+  it('debe verificar la existencia y optimización de las variantes de video panorámico 16:9 y poster WebP', () => {
+    // Variantes panorámicas para presencia cinemática imponente
+    const wideMp4 = path.join(process.cwd(), 'public', 'brand', 'indi-logo-wide-animated.mp4');
+    const wideWebm = path.join(process.cwd(), 'public', 'brand', 'indi-logo-wide-animated.webm');
+    const poster = path.join(process.cwd(), 'public', 'brand', 'indi-logo-video-poster.webp');
+
+    expect(fs.existsSync(wideMp4), 'indi-logo-wide-animated.mp4 debe existir').toBe(true);
+    expect(fs.existsSync(wideWebm), 'indi-logo-wide-animated.webm debe existir').toBe(true);
+    expect(fs.existsSync(poster), 'indi-logo-video-poster.webp debe existir').toBe(true);
+
+    const wideMp4Size = fs.statSync(wideMp4).size / 1024;
+    const wideWebmSize = fs.statSync(wideWebm).size / 1024;
+    const posterSize = fs.statSync(poster).size / 1024;
+
+    expect(wideMp4Size).toBeLessThan(100); // Menos de 100 KB
+    expect(wideWebmSize).toBeLessThan(90);  // Menos de 90 KB
+    expect(posterSize).toBeLessThan(15);   // Poster WebP ultra liviano (<15 KB)
+  });
 });
 

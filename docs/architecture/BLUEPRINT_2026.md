@@ -1115,14 +1115,15 @@ export default async function PublicCardPage({ params }: PageProps) {
      - Reproductor de video ambient MP4/WebP con controles glassmórficos flotantes para reproducción, pausa y silencio (touch targets $\ge 44\text{px}$).
      - Selector interactivo de activos de marca en tiempo real con panel de metadatos (resolución, peso, formato) y botón de descarga directa de assets.
      - Telemetría de rendimiento y Core Web Vitals en tiempo real destacando compresión de 98.3% y peso promedio < 15 KB.
-5. **Control de Calidad y Pruebas Unitarias (175 Tests Passing)**:
-   - Nueva suite `tests/unit/brand-identity-system.test.ts` (5 pruebas unitarias):
+5. **Control de Calidad y Pruebas Unitarias (176 Tests Passing)**:
+   - Suite `tests/unit/brand-identity-system.test.ts` (6 pruebas unitarias):
      - Validación estricta con Zod de los activos canónicos registrados.
      - Verificación de existencia física de los archivos WebP, WebM y MP4 en `public/brand/`.
-     - Guardrail de peso máximo por activo WebP (< 45 KB) y video de logo animado (< 80 KB).
-     - Validación de formatos duales WebM/MP4 y fallback WebP.
+     - Guardrail de peso máximo por activo WebP (< 45 KB), video 1:1 (< 80 KB) y video panorámico 16:9 (< 100 KB).
+     - Validación de formatos duales WebM/MP4 y poster WebP (4.4 KB) para Zero CLS.
      - Conformidad de categorías de arquetipos de diseño (`symbol`, `lockup`, `vector`, `stacked`, `animation`).
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (175 de 175 tests en 27 suites).
+     - Protagonismo visual exclusivo sin textos redundantes HTML a los lados (`showText=false`).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (176 de 176 tests en 27 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`) y build de producción Next.js exitoso.
 
 

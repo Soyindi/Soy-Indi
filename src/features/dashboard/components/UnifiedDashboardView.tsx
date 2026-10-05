@@ -211,9 +211,9 @@ export function UnifiedDashboardView({
       {/* Barra de Navegación Global del Dashboard */}
       <div className="flex items-center justify-between pb-6 mb-8 border-b border-white/10">
         <div className="flex items-center gap-3">
-          {/* Logo Oficial INDI en Panel de Control */}
+          {/* Logo Oficial INDI en Panel de Control (Solo Video Imponente) */}
           <Link href="/dashboard" title="Mi Panel de Control">
-            <BrandLogo size="sm" subtitle="Mi Panel" />
+            <BrandLogo size="md" showText={false} />
           </Link>
 
           {/* Enlace para visitar la portada web sin perder el contexto */}

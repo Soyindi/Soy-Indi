@@ -116,7 +116,7 @@ export function MobileNavDrawer() {
               {/* Cabecera del Drawer */}
               <div>
                 <div className="flex items-center justify-between pb-6 border-b border-white/10 mb-6">
-                  <BrandLogo size="sm" subtitle="2026" />
+                  <BrandLogo size="sm" linkToHome={true} showText={false} />
 
                   <button
                     onClick={() => setIsOpen(false)}

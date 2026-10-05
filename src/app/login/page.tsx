@@ -54,7 +54,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </Link>
 
         <Link href="/" title="Ir a la portada">
-          <BrandLogo size="sm" subtitle="Acceso" />
+          <BrandLogo size="md" showText={false} />
         </Link>
       </header>
 

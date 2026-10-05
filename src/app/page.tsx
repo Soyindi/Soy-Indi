@@ -308,7 +308,7 @@ export default function HomePage() {
       {/* FOOTER */}
       <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 py-10 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-zinc-400">
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          <BrandLogo size="sm" showText={true} />
+          <BrandLogo size="md" showText={false} linkToHome={true} />
           <span className="hidden sm:inline text-zinc-600">|</span>
           <p className="text-center sm:text-left">© 2026 INDI. La plataforma todo-en-uno de identidad profesional.</p>
         </div>

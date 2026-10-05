@@ -17,26 +17,37 @@ interface BrandLogoProps {
   useVideo?: boolean;
 }
 
-const sizeMap: Record<BrandLogoSize, { box: string; imgSize: number; text: string; subText: string }> = {
+const squareSizeMap: Record<BrandLogoSize, { box: string; imgSize: number; text: string; subText: string }> = {
   xs: { box: 'w-6 h-6', imgSize: 24, text: 'text-sm', subText: 'text-[9px]' },
   sm: { box: 'w-8 h-8', imgSize: 32, text: 'text-base', subText: 'text-[10px]' },
   md: { box: 'w-10 h-10', imgSize: 40, text: 'text-lg', subText: 'text-[11px]' },
-  lg: { box: 'w-12 h-12', imgSize: 48, text: 'text-xl', subText: 'text-xs' },
-  xl: { box: 'w-16 h-16', imgSize: 64, text: 'text-2xl', subText: 'text-sm' },
-  '2xl': { box: 'w-24 h-24', imgSize: 96, text: 'text-3xl', subText: 'text-base' },
+  lg: { box: 'w-14 h-14', imgSize: 56, text: 'text-xl', subText: 'text-xs' },
+  xl: { box: 'w-20 h-20', imgSize: 80, text: 'text-2xl', subText: 'text-sm' },
+  '2xl': { box: 'w-28 h-28', imgSize: 112, text: 'text-3xl', subText: 'text-base' },
+};
+
+const cinematicSizeMap: Record<BrandLogoSize, { box: string; width: number; height: number }> = {
+  xs: { box: 'h-7 aspect-[16/9] min-w-[50px]', width: 50, height: 28 },
+  sm: { box: 'h-9 aspect-[16/9] min-w-[64px]', width: 64, height: 36 },
+  md: { box: 'h-11 sm:h-12 aspect-[16/9] min-w-[80px] sm:min-w-[86px]', width: 86, height: 48 },
+  lg: { box: 'h-14 sm:h-16 aspect-[16/9] min-w-[100px] sm:min-w-[114px]', width: 114, height: 64 },
+  xl: { box: 'h-20 sm:h-24 aspect-[16/9] min-w-[142px] sm:min-w-[170px]', width: 170, height: 96 },
+  '2xl': { box: 'h-28 sm:h-36 aspect-[16/9] min-w-[200px] sm:min-w-[256px]', width: 256, height: 144 },
 };
 
 export function BrandLogo({
-  variant = 'symbol',
+  variant = 'horizontal',
   size = 'md',
-  showText = true,
+  showText = false,
   subtitle,
   className = '',
   linkToHome = false,
   priority = false,
   useVideo = true,
 }: BrandLogoProps) {
-  const currentSize = sizeMap[size];
+  const isCinematic = variant !== 'symbol' && variant !== 'svg-symbol';
+  const currentSquare = squareSizeMap[size];
+  const currentCinematic = cinematicSizeMap[size];
 
   // Selección de activo oficial optimizado WebP / SVG
   const asset = (() => {
@@ -57,13 +68,19 @@ export function BrandLogo({
     }
   })();
 
+  const posterUrl = isCinematic
+    ? '/brand/indi-logo-video-poster.webp'
+    : asset.url;
+
   const content = (
-    <div className={`inline-flex items-center gap-2.5 sm:gap-3 group select-none ${className}`}>
-      {/* Icon Container con Aura Reactiva Glassmorphic */}
+    <div className={`inline-flex items-center gap-3 group select-none ${className}`}>
+      {/* Contenedor del Logotipo Cinemático Imponente con Aura Cósmica */}
       <div
-        className={`relative ${currentSize.box} rounded-xl overflow-hidden bg-gradient-to-br from-indigo-500/30 to-cyan-500/20 p-[1px] shadow-lg shadow-indigo-500/15 group-hover:scale-105 group-hover:shadow-cyan-500/25 transition-all duration-300 shrink-0`}
+        className={`relative ${
+          useVideo && isCinematic ? currentCinematic.box : currentSquare.box
+        } rounded-xl sm:rounded-2xl overflow-hidden bg-black/60 border border-cyan-500/25 p-0.5 shadow-lg shadow-cyan-500/15 group-hover:scale-105 group-hover:shadow-cyan-400/30 group-hover:border-cyan-400/50 transition-all duration-300 shrink-0`}
       >
-        <div className="w-full h-full bg-black/90 rounded-[11px] flex items-center justify-center p-0.5 relative overflow-hidden">
+        <div className="w-full h-full rounded-[10px] sm:rounded-[14px] flex items-center justify-center relative overflow-hidden bg-black">
           {useVideo ? (
             <>
               <video
@@ -72,27 +89,36 @@ export function BrandLogo({
                 muted
                 playsInline
                 preload="auto"
-                poster={asset.url}
-                className="w-full h-full object-cover rounded-[9px] filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)] motion-reduce:hidden"
-                aria-label="Logotipo animado oficial INDI"
+                poster={posterUrl}
+                className="w-full h-full object-contain filter drop-shadow-[0_2px_12px_rgba(34,211,238,0.35)] motion-reduce:hidden transition-transform duration-500 group-hover:scale-105"
+                aria-label="Logotipo oficial animado INDI"
               >
-                <source src="/brand/indi-logo-animated.webm" type="video/webm" />
-                <source src="/brand/indi-logo-animated.mp4" type="video/mp4" />
+                {isCinematic ? (
+                  <>
+                    <source src="/brand/indi-logo-wide-animated.webm" type="video/webm" />
+                    <source src="/brand/indi-logo-wide-animated.mp4" type="video/mp4" />
+                  </>
+                ) : (
+                  <>
+                    <source src="/brand/indi-logo-animated.webm" type="video/webm" />
+                    <source src="/brand/indi-logo-animated.mp4" type="video/mp4" />
+                  </>
+                )}
                 <Image
-                  src={asset.url}
+                  src={posterUrl}
                   alt={asset.alt}
-                  width={currentSize.imgSize}
-                  height={currentSize.imgSize}
+                  width={isCinematic ? currentCinematic.width : currentSquare.imgSize}
+                  height={isCinematic ? currentCinematic.height : currentSquare.imgSize}
                   priority={priority}
                   className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)]"
                 />
               </video>
               {/* Fallback accesible para usuarios con preferencia de movimiento reducido */}
               <Image
-                src={asset.url}
+                src={posterUrl}
                 alt={asset.alt}
-                width={currentSize.imgSize}
-                height={currentSize.imgSize}
+                width={isCinematic ? currentCinematic.width : currentSquare.imgSize}
+                height={isCinematic ? currentCinematic.height : currentSquare.imgSize}
                 priority={priority}
                 className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)] hidden motion-reduce:block"
               />
@@ -101,8 +127,8 @@ export function BrandLogo({
             <Image
               src={asset.url}
               alt={asset.alt}
-              width={currentSize.imgSize}
-              height={currentSize.imgSize}
+              width={isCinematic ? currentCinematic.width : currentSquare.imgSize}
+              height={isCinematic ? currentCinematic.height : currentSquare.imgSize}
               priority={priority}
               className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)]"
             />
@@ -110,12 +136,12 @@ export function BrandLogo({
         </div>
       </div>
 
-      {/* Tipografía Oficial INDI */}
+      {/* Tipografía Oficial Opcional (solo si se solicita expresamente) */}
       {showText && (
         <div className="flex flex-col text-left">
           <div className="flex items-center gap-2">
             <span
-              className={`font-black tracking-tight text-white ${currentSize.text} leading-none group-hover:text-cyan-200 transition-colors`}
+              className={`font-black tracking-tight text-white ${currentSquare.text} leading-none group-hover:text-cyan-200 transition-colors`}
             >
               INDI
             </span>
@@ -126,7 +152,7 @@ export function BrandLogo({
             )}
           </div>
           {!subtitle && (
-            <span className={`font-mono text-zinc-400 ${currentSize.subText} tracking-wider uppercase mt-0.5`}>
+            <span className={`font-mono text-zinc-400 ${currentSquare.subText} tracking-wider uppercase mt-0.5`}>
               Identity Edge
             </span>
           )}

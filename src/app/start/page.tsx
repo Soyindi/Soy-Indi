@@ -19,7 +19,7 @@ export default async function OnboardingStartPage() {
       {/* Barra de Marca Minimalista */}
       <header className="relative z-10 w-full max-w-6xl mx-auto px-6 mb-8 flex items-center justify-between">
         <Link href="/" title="Ir a la portada">
-          <BrandLogo size="md" subtitle="Onboarding Hub" />
+          <BrandLogo size="md" showText={false} />
         </Link>
 
         <div className="flex items-center gap-3">
