@@ -7,6 +7,7 @@ import {
   CVFormValues,
   AtsAuditResult,
   VerifiedCredential,
+  MultimodalCvExtraction,
   generateCvSlug,
   slugifyCvTitle,
 } from '@/entities/cv/schemas';
@@ -30,27 +31,43 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
 }> {
   try {
     const file = formData.get('file') as File | null;
-    if (!file) {
-      return { success: false, error: 'No se ha adjuntado ningún archivo.' };
+    const extractedTextParam = formData.get('extractedText') as string | null;
+    const fileName = (formData.get('fileName') as string | null) || file?.name || 'cv.pdf';
+
+    let extracted: MultimodalCvExtraction | null = null;
+
+    if (extractedTextParam && extractedTextParam.trim().length > 0) {
+      const { sanitizeExtractedText } = await import('@/shared/lib/fileSecurity');
+      const sanitized = sanitizeExtractedText(extractedTextParam, { maxChars: 250000 });
+      const { parseCvTextToStructuredData } = await import('@/features/ai-smart-cv/lib/cv-text-parser');
+      extracted = parseCvTextToStructuredData(sanitized, fileName);
+    } else {
+      if (!file) {
+        return { success: false, error: 'No se ha adjuntado ningún archivo ni texto de currículum.' };
+      }
+
+      const buffer = await file.arrayBuffer();
+      const uint8 = new Uint8Array(buffer);
+
+      // Procedimiento de Seguridad: Validación de Firma Binaria (Magic Bytes)
+      const sigValidation = validateFileSignature(uint8, file.name, file.type);
+      if (!sigValidation.valid) {
+        return {
+          success: false,
+          error: sigValidation.error || 'Archivo rechazado por control de seguridad de firmas binarias.',
+        };
+      }
+
+      const base64 = Buffer.from(buffer).toString('base64');
+      const mimeType = sigValidation.mimeType || file.type || 'application/pdf';
+
+      // Procesar con el motor multimodal
+      extracted = await parseCvDocumentMultimodal(base64, mimeType, file.name);
     }
 
-    const buffer = await file.arrayBuffer();
-    const uint8 = new Uint8Array(buffer);
-
-    // Procedimiento de Seguridad: Validación de Firma Binaria (Magic Bytes)
-    const sigValidation = validateFileSignature(uint8, file.name, file.type);
-    if (!sigValidation.valid) {
-      return {
-        success: false,
-        error: sigValidation.error || 'Archivo rechazado por control de seguridad de firmas binarias.',
-      };
+    if (!extracted) {
+      return { success: false, error: 'No se pudo extraer información estructurada del currículum.' };
     }
-
-    const base64 = Buffer.from(buffer).toString('base64');
-    const mimeType = sigValidation.mimeType || file.type || 'application/pdf';
-
-    // Procesar con el motor multimodal
-    const extracted = await parseCvDocumentMultimodal(base64, mimeType, file.name);
 
     // Mapear a CVFormValues con soporte de viñetas XYZ
     const structuredCv: Partial<CVFormValues> = {

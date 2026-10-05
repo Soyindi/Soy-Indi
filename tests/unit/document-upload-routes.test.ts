@@ -7,7 +7,8 @@ import { POST as postPresentationRoute } from '@/app/api/presentations/parse/rou
 vi.mock('@/features/ai-smart-cv/actions', () => ({
   parseCvDocumentAction: vi.fn(async (formData: FormData) => {
     const file = formData.get('file');
-    if (!file) return { success: false, error: 'No se ha adjuntado ningún archivo.' };
+    const extractedText = formData.get('extractedText');
+    if (!file && !extractedText) return { success: false, error: 'No se ha adjuntado ningún archivo ni texto de currículum.' };
     return {
       success: true,
       data: {
@@ -34,11 +35,12 @@ vi.mock('@/features/ai-smart-cv/actions', () => ({
 vi.mock('@/features/orbital-presentations/actions', () => ({
   parsePresentationDocumentAction: vi.fn(async (formData: FormData) => {
     const file = formData.get('file');
-    if (!file) return { success: false, error: 'No se ha adjuntado ningún archivo.' };
+    const extractedText = formData.get('extractedText');
+    if (!file && !extractedText) return { success: false, error: 'No se ha adjuntado ningún archivo ni texto de documento.' };
     return {
       success: true,
-      extractedText: 'Extracted presentation content for testing.',
-      fileName: 'slides-deck.pdf',
+      extractedText: typeof extractedText === 'string' ? extractedText : 'Extracted presentation content for testing.',
+      fileName: (formData.get('fileName') as string) || 'slides-deck.pdf',
     };
   }),
 }));
@@ -92,7 +94,26 @@ describe('Document Upload & Ingestion Native Route Handlers (/api/*)', () => {
       expect(json.credential.credentialName).toBe('Magíster en Inteligencia Artificial');
     });
 
-    it('retorna error amigable cuando no se proporciona archivo', async () => {
+    it('procesa exitosamente un currículum usando texto extraído en el cliente (bypaseando límites de red)', async () => {
+      const formData = new FormData();
+      formData.append('extractedText', 'Juan Pérez - Ingeniero de Software Senior con experiencia en React y Cloud.');
+      formData.append('fileName', 'cv-pesado-15mb.pdf');
+      formData.append('type', 'cv');
+
+      const req = new NextRequest('http://localhost:3000/api/cv/parse', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const response = await postCvRoute(req);
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.data.fullName).toBe('Test Candidate');
+    });
+
+    it('retorna error amigable cuando no se proporciona archivo ni texto', async () => {
       const formData = new FormData();
       const req = new NextRequest('http://localhost:3000/api/cv/parse', {
         method: 'POST',
@@ -125,6 +146,24 @@ describe('Document Upload & Ingestion Native Route Handlers (/api/*)', () => {
       expect(json.success).toBe(true);
       expect(json.extractedText).toBe('Extracted presentation content for testing.');
       expect(json.fileName).toBe('slides-deck.pdf');
+    });
+
+    it('procesa exitosamente una presentación con texto extraído en cliente (0 bytes transferidos de PDF)', async () => {
+      const formData = new FormData();
+      formData.append('extractedText', '# Visión Estratégica Q4\nMetas y objetivos de crecimiento acelerado.');
+      formData.append('fileName', 'pitch-deck-20mb.pdf');
+
+      const req = new NextRequest('http://localhost:3000/api/presentations/parse', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const response = await postPresentationRoute(req);
+      const json = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(json.success).toBe(true);
+      expect(json.extractedText).toContain('Visión Estratégica');
     });
 
     it('retorna error controlado cuando no se provee archivo de presentación', async () => {

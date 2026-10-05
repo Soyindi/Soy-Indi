@@ -43,8 +43,21 @@ export async function parsePresentationDocumentAction(formData: FormData): Promi
 }> {
   try {
     const file = formData.get('file') as File | null;
+    const extractedTextParam = formData.get('extractedText') as string | null;
+    const fileNameParam = (formData.get('fileName') as string | null) || file?.name || 'documento.pdf';
+
+    if (extractedTextParam && extractedTextParam.trim().length > 0) {
+      const sanitized = sanitizeExtractedText(extractedTextParam, { maxChars: 250000 });
+      return {
+        success: true,
+        extractedText: sanitized,
+        fileName: fileNameParam,
+        charCount: sanitized.length,
+      };
+    }
+
     if (!file) {
-      return { success: false, error: 'No se ha adjuntado ningún archivo.' };
+      return { success: false, error: 'No se ha adjuntado ningún archivo ni texto de documento.' };
     }
 
     const buffer = await file.arrayBuffer();

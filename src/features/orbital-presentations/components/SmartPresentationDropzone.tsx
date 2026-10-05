@@ -110,7 +110,23 @@ export function SmartPresentationDropzone({
       return;
     }
 
-    // 2. Archivos PDF, imágenes o documentos binarios que requieren extracción profunda
+    // 2. Si es un archivo PDF, extraer texto directamente en el navegador con unpdf (Zero Network Transfer)
+    if (file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf') {
+      setIsExtracting(true);
+      try {
+        const { extractTextFromPdfClient } = await import('@/shared/lib/clientDocumentExtractor');
+        const extracted = await extractTextFromPdfClient(file);
+        if (extracted && extracted.trim().length > 20) {
+          setInputText(extracted.trim());
+          setIsExtracting(false);
+          return;
+        }
+      } catch (clientErr) {
+        console.warn('[SmartPresentationDropzone] Extracción client-side omitida, usando servidor:', clientErr);
+      }
+    }
+
+    // 3. Archivos binarios o imágenes que requieren extracción profunda
     setIsExtracting(true);
     try {
       let fileToSend = file;
@@ -130,8 +146,15 @@ export function SmartPresentationDropzone({
         }
       }
 
+      if (fileToSend.size > 4.2 * 1024 * 1024) {
+        throw new Error(
+          `El archivo "${file.name}" (${(fileToSend.size / (1024 * 1024)).toFixed(1)} MB) supera el límite de transferencia de la red (4.5 MB). Si es un PDF escaneado, puedes subirlo como imagen JPG/PNG para compresión automática o copiar el texto.`
+        );
+      }
+
       const formData = new FormData();
       formData.append('file', fileToSend);
+      formData.append('fileName', file.name);
 
       let res: { success: boolean; extractedText?: string; error?: string } | null = null;
       try {
@@ -139,9 +162,28 @@ export function SmartPresentationDropzone({
           method: 'POST',
           body: formData,
         });
+
+        if (!response.ok) {
+          if (response.status === 413) {
+            throw new Error(`El archivo "${file.name}" excede el límite de carga de la red (4.5 MB).`);
+          }
+          const errorText = await response.text();
+          let parsedError = '';
+          try {
+            const errJson = JSON.parse(errorText);
+            parsedError = errJson.error;
+          } catch {
+            parsedError = errorText || `Error HTTP ${response.status}`;
+          }
+          throw new Error(parsedError || 'Error procesando archivo de presentación.');
+        }
+
         res = await response.json();
-      } catch (fetchErr) {
+      } catch (fetchErr: any) {
         console.warn('[SmartPresentationDropzone] Fallback a Server Action:', fetchErr);
+        if (fetchErr?.message?.includes('4.5 MB') || fetchErr?.message?.includes('413')) {
+          throw fetchErr;
+        }
         res = await parsePresentationDocumentAction(formData);
       }
 

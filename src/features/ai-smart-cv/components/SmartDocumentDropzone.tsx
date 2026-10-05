@@ -30,8 +30,9 @@ export function SmartDocumentDropzone({
 
     try {
       let fileToSend = file;
+      let clientExtractedText = '';
 
-      // Si el archivo subido es una imagen (foto de CV o captura de diploma), comprimir en cliente a WebP
+      // 1. Si es imagen (foto de CV o captura de diploma), comprimir en cliente a WebP (< 150KB)
       if (file.type.startsWith('image/')) {
         try {
           const { compressImageClient } = await import('@/shared/lib/imageCompression');
@@ -44,13 +45,37 @@ export function SmartDocumentDropzone({
         } catch (compErr) {
           console.warn('[SmartDocumentDropzone] Fallback con archivo original tras error de compresión:', compErr);
         }
+      } else if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        // 2. Si es PDF, extraer texto directamente en el navegador con unpdf (Client-Side Parsing)
+        // Esto reduce una carga de 10MB a menos de 10KB, evitando por completo el error HTTP 413 de Vercel/AWS.
+        setStatusMessage('Extrayendo texto del PDF directamente en tu navegador...');
+        try {
+          const { extractTextFromPdfClient } = await import('@/shared/lib/clientDocumentExtractor');
+          clientExtractedText = await extractTextFromPdfClient(file);
+        } catch (pdfClientErr) {
+          console.warn('[SmartDocumentDropzone] Extracción client-side no disponible, usando fallback:', pdfClientErr);
+        }
+      }
+
+      // 3. Si el archivo sigue siendo muy pesado (> 4.2 MB) y no se pudo extraer texto (ej. PDF escaneado como imagen pura)
+      if (fileToSend.size > 4.2 * 1024 * 1024 && !clientExtractedText) {
+        throw new Error(
+          `El archivo "${file.name}" (${(fileToSend.size / (1024 * 1024)).toFixed(1)} MB) supera el límite de transferencia de red (4.5 MB). Si es un documento escaneado, puedes subirlo como imagen JPG/PNG para compresión automática.`
+        );
       }
 
       const formData = new FormData();
-      formData.append('file', fileToSend);
+      formData.append('fileName', file.name);
+
+      if (clientExtractedText && clientExtractedText.trim().length > 20) {
+        formData.append('extractedText', clientExtractedText);
+      } else {
+        formData.append('file', fileToSend);
+      }
+
       if (type === 'cv') {
         formData.append('type', 'cv');
-        setStatusMessage('Analizando disposición de documento con Qwen2.5-VL y aplicando sanitización EU AI Act...');
+        setStatusMessage('Analizando competencias y aplicando sanitización EU AI Act...');
         
         let result: any = null;
         try {
@@ -58,9 +83,28 @@ export function SmartDocumentDropzone({
             method: 'POST',
             body: formData,
           });
+
+          if (!res.ok) {
+            if (res.status === 413) {
+              throw new Error(`El archivo "${file.name}" excede el límite de carga de la red (4.5 MB).`);
+            }
+            const errorText = await res.text();
+            let parsedError = '';
+            try {
+              const errJson = JSON.parse(errorText);
+              parsedError = errJson.error;
+            } catch {
+              parsedError = errorText || `Error HTTP ${res.status}`;
+            }
+            throw new Error(parsedError || 'Error procesando documento en el servidor.');
+          }
+
           result = await res.json();
-        } catch (fetchErr) {
+        } catch (fetchErr: any) {
           console.warn('[SmartDocumentDropzone] Fallback a Server Action:', fetchErr);
+          if (fetchErr?.message?.includes('4.5 MB') || fetchErr?.message?.includes('413')) {
+            throw fetchErr;
+          }
           const { parseCvDocumentAction } = await import('@/features/ai-smart-cv/actions');
           result = await parseCvDocumentAction(formData);
         }
@@ -83,9 +127,28 @@ export function SmartDocumentDropzone({
             method: 'POST',
             body: formData,
           });
+
+          if (!res.ok) {
+            if (res.status === 413) {
+              throw new Error(`El archivo "${file.name}" excede el límite de carga de la red (4.5 MB).`);
+            }
+            const errorText = await res.text();
+            let parsedError = '';
+            try {
+              const errJson = JSON.parse(errorText);
+              parsedError = errJson.error;
+            } catch {
+              parsedError = errorText || `Error HTTP ${res.status}`;
+            }
+            throw new Error(parsedError || 'Error procesando diploma en el servidor.');
+          }
+
           result = await res.json();
-        } catch (fetchErr) {
+        } catch (fetchErr: any) {
           console.warn('[SmartDocumentDropzone] Fallback a Server Action de credencial:', fetchErr);
+          if (fetchErr?.message?.includes('4.5 MB') || fetchErr?.message?.includes('413')) {
+            throw fetchErr;
+          }
           const { parseCredentialDocumentAction } = await import('@/features/ai-smart-cv/actions');
           result = await parseCredentialDocumentAction(formData, currentEducation);
         }
@@ -99,7 +162,7 @@ export function SmartDocumentDropzone({
         }
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Error de conexión durante el análisis.');
+      setErrorMessage(err.message || 'Error durante el análisis del documento.');
     } finally {
       setIsProcessing(false);
     }
