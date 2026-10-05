@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useEffect, useTransition, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Sparkles, 
@@ -21,12 +21,11 @@ import {
   MonitorPlay,
   ArrowRight,
   BrainCircuit,
-  Printer,
-  Calendar,
   CheckCircle2,
   Clock,
   Play,
-  Edit3
+  Edit3,
+  X
 } from 'lucide-react';
 import { BrandLogo } from '@/shared/ui/BrandLogo';
 import { deleteCardAction, toggleCardActiveAction } from '@/features/card-builder/dashboard-actions';
@@ -34,7 +33,8 @@ import { deletePresentationAction } from '@/features/orbital-presentations/actio
 import { deleteSmartCvAction } from '@/features/ai-smart-cv/actions';
 import { useSession, signOut } from '@/shared/lib/auth-client';
 import { AuthModal } from '@/features/dashboard/components/AuthModal';
-import { LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { DashboardEmptyState } from '@/features/dashboard/components/DashboardEmptyState';
+import { LogIn, LogOut } from 'lucide-react';
 
 interface CardItem {
   id: string;
@@ -95,6 +95,7 @@ export function UnifiedDashboardView({
       setActiveTab(initialTab);
     }
   }, [initialTab]);
+
   const [cardsList, setCardsList] = useState<CardItem[]>(initialCards);
   const [cvsList, setCvsList] = useState<CvItem[]>(initialCvs);
   const [presentationsList, setPresentationsList] = useState<any[]>(initialPresentations);
@@ -104,9 +105,22 @@ export function UnifiedDashboardView({
   const [copiedCvSlug, setCopiedCvSlug] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { data: sessionData, isPending: isSessionLoading } = useSession();
+  const { data: sessionData } = useSession();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Filtrado de tarjetas
+  // Atajo de teclado accesible global: Ctrl+K o '/' para enfocar buscador
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && document.activeElement?.tagName !== 'INPUT')) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Filtrado reactivo contextual según la pestaña activa
   const filteredCards = cardsList.filter(
     (c) =>
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -114,7 +128,20 @@ export function UnifiedDashboardView({
       c.slug.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Totales de analítica
+  const filteredCvs = cvsList.filter(
+    (cv) =>
+      cv.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cv.targetRole.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (cv.slug && cv.slug.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const filteredPresentations = presentationsList.filter(
+    (p) =>
+      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.slug && p.slug.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  // Totales de analítica para Tarjetas
   const totalViews = cardsList.reduce((acc, c) => acc + (c.viewsCount || 0), 0);
   const totalClicks = cardsList.reduce((acc, c) => acc + (c.clicksCount || 0), 0);
   const activeCardsCount = cardsList.filter((c) => c.isActive).length;
@@ -184,8 +211,30 @@ export function UnifiedDashboardView({
     });
   };
 
+  // Metadatos de la acción contextual activa
+  const contextualAction = {
+    cards: {
+      href: '/cards/new',
+      label: 'Nueva Tarjeta',
+      gradient: 'from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 shadow-cyan-500/20',
+      icon: <QrCode className="w-4 h-4" />
+    },
+    cvs: {
+      href: '/cv',
+      label: 'Crear o Mejorar CV',
+      gradient: 'from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/20',
+      icon: <FileText className="w-4 h-4" />
+    },
+    presentations: {
+      href: '/presentations',
+      label: 'Nueva Presentación',
+      gradient: 'from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-amber-500/20',
+      icon: <MonitorPlay className="w-4 h-4" />
+    }
+  }[activeTab];
+
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24 sm:pb-8">
       {/* Notificación de éxito post-creación */}
       {justCreatedSlug && (
         <div className="mb-6 p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 flex flex-wrap items-center justify-between gap-3 animate-fade-in">
@@ -199,7 +248,7 @@ export function UnifiedDashboardView({
             <Link
               href={`/c/${justCreatedSlug}`}
               target="_blank"
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5"
+              className="min-h-[44px] text-xs font-semibold px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5"
             >
               <span>Ver en Vivo</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -208,44 +257,40 @@ export function UnifiedDashboardView({
         </div>
       )}
 
-      {/* Barra de Navegación Global del Dashboard */}
-      <div className="flex items-center justify-between pb-6 mb-8 border-b border-white/10">
+      {/* Barra de Navegación Global del Dashboard (Cero Redundancia de Creación) */}
+      <header className="flex items-center justify-between pb-4 sm:pb-6 mb-6 sm:mb-8 border-b border-white/10">
         <div className="flex items-center gap-3">
-          {/* Logo Oficial INDI en Panel de Control (Solo Video Imponente) */}
-          <Link href="/dashboard" title="Mi Panel de Control">
+          {/* Logo Oficial INDI en Panel de Control */}
+          <Link href="/dashboard" title="Mi Panel de Control" className="flex items-center gap-2 group">
             <BrandLogo size="md" showText={false} />
           </Link>
 
-          {/* Enlace para visitar la portada web sin perder el contexto */}
+          {/* Enlace sutil hacia la portada web */}
           <Link
             href="/"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-400 hover:text-white transition-all shadow-sm ml-2"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-medium text-zinc-400 hover:text-white transition-all shadow-sm ml-2"
             title="Ver la página web principal"
           >
-            <span>Ver Web Principal</span>
+            <span>Ver Web</span>
             <ExternalLink className="w-3 h-3 text-zinc-500" />
           </Link>
         </div>
 
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-3">
           <Link
             href="/pricing"
-            className="text-xs text-zinc-400 hover:text-white transition hidden md:inline-block"
+            className="text-xs font-medium text-zinc-400 hover:text-white transition hidden md:inline-block px-3 py-1.5 rounded-xl hover:bg-white/5"
           >
-            Planes y Precios
-          </Link>
-          <Link
-            href="/start"
-            className="text-xs px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-semibold transition shadow-md shadow-indigo-500/20 flex items-center gap-1.5 min-h-[36px]"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Nuevo Proyecto</span>
+            Planes y Membresía
           </Link>
 
           {/* Estado de Cuenta / Autenticación Multi-Cuenta */}
           {sessionData?.user ? (
             <div className="flex items-center gap-2 pl-2 border-l border-white/10">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 p-[1px] shrink-0" title={sessionData.user.email || ''}>
+              <div 
+                className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 p-[1px] shrink-0" 
+                title={sessionData.user.email || sessionData.user.name || 'Usuario'}
+              >
                 {sessionData.user.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -269,21 +314,21 @@ export function UnifiedDashboardView({
                 title="Cerrar sesión"
                 aria-label="Cerrar sesión"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
             <button
               type="button"
               onClick={() => setIsAuthModalOpen(true)}
-              className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-xs font-semibold hover:opacity-95 transition-all shadow-md shadow-indigo-500/20 cursor-pointer"
+              className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white text-xs font-semibold hover:opacity-95 transition-all shadow-md shadow-indigo-500/20 cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5" />
-              <span>Acceder con Google</span>
+              <span>Acceder</span>
             </button>
           )}
         </div>
-      </div>
+      </header>
 
       {/* Modal de Autenticación */}
       <AuthModal
@@ -292,132 +337,144 @@ export function UnifiedDashboardView({
         callbackUrl="/dashboard"
       />
 
-      {/* Cabecera Principal del Dashboard */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      {/* Cabecera Principal del Dashboard con Jerarquía Ejecutiva */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill text-xs font-medium text-indigo-400 mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill text-xs font-semibold text-cyan-400 mb-2">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
             <span>Suite Profesional Unificada INDI</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
             Panel de Control General
           </h1>
-          <p className="text-sm text-zinc-400 mt-1">
-            Administra tus tarjetas digitales, currículums calibrados con ATS y presentaciones en un solo lugar.
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-2xl">
+            Administra tus tarjetas digitales, currículums calibrados con ATS y presentaciones cinemáticas en un solo lugar.
           </p>
         </div>
 
-        {/* Botón contextual de creación rápida */}
-        <div className="flex items-center gap-2">
-          {activeTab === 'cards' && (
-            <Link
-              href="/cards/new"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 active:scale-[0.98] transition-all"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span>Nueva Tarjeta</span>
-            </Link>
-          )}
-          {activeTab === 'cvs' && (
-            <Link
-              href="/cv"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-xs shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 active:scale-[0.98] transition-all"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span>Crear o Mejorar CV</span>
-            </Link>
-          )}
-          {activeTab === 'presentations' && (
-            <Link
-              href="/presentations"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 active:scale-[0.98] transition-all"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span>Nueva Presentación</span>
-            </Link>
-          )}
+        {/* Botón contextual primario en escritorio */}
+        <div className="hidden sm:flex items-center gap-2">
+          <Link
+            href={contextualAction.href}
+            className={`min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer`}
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>{contextualAction.label}</span>
+          </Link>
         </div>
       </div>
 
-      {/* Selector de Pestañas Unificado (Tabs) */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl glass-panel border border-white/10 mb-8 max-w-2xl overflow-x-auto scrollbar-none">
-        <button
-          onClick={() => setActiveTab('cards')}
-          className={`flex-1 min-w-[130px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all shrink-0 ${
-            activeTab === 'cards'
-              ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <QrCode className="w-4 h-4" />
-          <span>Tarjetas ({cardsList.length})</span>
-        </button>
+      {/* Barra de Herramientas Unificada (Selector de Pestañas + Buscador Contextual) */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-6 sm:mb-8">
+        {/* Selector de Pestañas Unificado con snap horizontal */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl glass-panel border border-white/10 overflow-x-auto scrollbar-none snap-x">
+          <button
+            onClick={() => setActiveTab('cards')}
+            className={`min-h-[44px] min-w-[130px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start ${
+              activeTab === 'cards'
+                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <QrCode className="w-4 h-4" />
+            <span>Tarjetas ({cardsList.length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('cvs')}
-          className={`flex-1 min-w-[140px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all shrink-0 ${
-            activeTab === 'cvs'
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>Smart CVs ({initialCvs.length})</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('cvs')}
+            className={`min-h-[44px] min-w-[140px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start ${
+              activeTab === 'cvs'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Smart CVs ({cvsList.length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('presentations')}
-          className={`flex-1 min-w-[160px] flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all shrink-0 ${
-            activeTab === 'presentations'
-              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
-              : 'text-zinc-400 hover:text-white hover:bg-white/5'
-          }`}
-        >
-          <MonitorPlay className="w-4 h-4" />
-          <span>Presentaciones ({initialPresentations.length})</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('presentations')}
+            className={`min-h-[44px] min-w-[160px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start ${
+              activeTab === 'presentations'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <MonitorPlay className="w-4 h-4" />
+            <span>Presentaciones ({presentationsList.length})</span>
+          </button>
+        </div>
+
+        {/* Buscador inteligente integrado con atajo de teclado */}
+        <div className="relative flex-1 max-w-md">
+          <div className="flex items-center gap-2.5 glass-panel rounded-2xl px-3.5 py-2.5 border border-white/10 focus-within:border-cyan-500/50 transition-colors">
+            <Search className="w-4 h-4 text-zinc-400 shrink-0" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder={`Buscar en ${activeTab === 'cards' ? 'tarjetas' : activeTab === 'cvs' ? 'currículums' : 'presentaciones'}...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none w-full"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-zinc-500 hover:text-zinc-300 p-1 cursor-pointer"
+                title="Limpiar búsqueda"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-400 select-none">
+                Ctrl K
+              </kbd>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* ================= PESTAÑA 1: TARJETAS DIGITALES ================= */}
       {activeTab === 'cards' && (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-6 sm:space-y-8 animate-fade-in">
           {/* Métricas rápidas calculadas con Telemetría en Tiempo Real */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div className="glass-panel rounded-2xl p-5 flex items-center justify-between border border-cyan-500/20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className={`glass-panel rounded-2xl p-5 flex items-center justify-between border ${cardsList.length > 0 ? 'border-cyan-500/20' : 'border-white/5 opacity-80'}`}>
               <div>
                 <span className="text-xs font-mono font-medium text-zinc-400 uppercase tracking-wider">
                   Total Visitas
                 </span>
-                <p className="text-3xl font-black text-white mt-1">{totalViews.toLocaleString()}</p>
+                <p className="text-2xl sm:text-3xl font-black text-white mt-1">{totalViews.toLocaleString()}</p>
                 <span className="text-[11px] text-cyan-400 font-mono flex items-center gap-1 mt-1">
                   <TrendingUp className="w-3 h-3" />
-                  Lecturas en Edge
+                  {totalViews > 0 ? 'Lecturas en Edge' : 'Esperando visitas'}
                 </span>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                <Eye className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                <Eye className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="glass-panel rounded-2xl p-5 flex items-center justify-between border border-indigo-500/20">
+            <div className={`glass-panel rounded-2xl p-5 flex items-center justify-between border ${cardsList.length > 0 ? 'border-indigo-500/20' : 'border-white/5 opacity-80'}`}>
               <div>
                 <span className="text-xs font-mono font-medium text-zinc-400 uppercase tracking-wider">
                   Clicks & vCard
                 </span>
-                <p className="text-3xl font-black text-white mt-1">{totalClicks.toLocaleString()}</p>
+                <p className="text-2xl sm:text-3xl font-black text-white mt-1">{totalClicks.toLocaleString()}</p>
                 <span className="text-[11px] text-indigo-400 font-mono mt-1 block">Contactos & WhatsApp</span>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                <MousePointerClick className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                <MousePointerClick className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="glass-panel rounded-2xl p-5 flex items-center justify-between border border-purple-500/20">
+            <div className={`glass-panel rounded-2xl p-5 flex items-center justify-between border ${cardsList.length > 0 ? 'border-purple-500/20' : 'border-white/5 opacity-80'}`}>
               <div>
                 <span className="text-xs font-mono font-medium text-zinc-400 uppercase tracking-wider">
                   Conversión
                 </span>
-                <p className="text-3xl font-black text-white mt-1">
+                <p className="text-2xl sm:text-3xl font-black text-white mt-1">
                   {totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0.0'}%
                 </p>
                 <span className="text-[11px] text-purple-400 font-mono flex items-center gap-1 mt-1">
@@ -425,75 +482,65 @@ export function UnifiedDashboardView({
                   Efectividad vCard
                 </span>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-                <TrendingUp className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+                <TrendingUp className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="glass-panel rounded-2xl p-5 flex items-center justify-between border border-emerald-500/20">
+            <div className={`glass-panel rounded-2xl p-5 flex items-center justify-between border ${cardsList.length > 0 ? 'border-emerald-500/20' : 'border-white/5 opacity-80'}`}>
               <div>
                 <span className="text-xs font-mono font-medium text-zinc-400 uppercase tracking-wider">
                   Tarjetas Activas
                 </span>
-                <p className="text-3xl font-black text-white mt-1">
+                <p className="text-2xl sm:text-3xl font-black text-white mt-1">
                   {activeCardsCount} <span className="text-sm font-normal text-zinc-500">/ {cardsList.length}</span>
                 </p>
                 <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1 mt-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Públicas y accesibles
+                  Públicas y vivas
                 </span>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <Layers className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                <Layers className="w-5 h-5" />
               </div>
             </div>
           </div>
 
-          {/* Buscador */}
-          <div className="flex items-center gap-3 glass-panel rounded-2xl px-4 py-3 border border-white/5">
-            <Search className="w-4 h-4 text-zinc-500" />
-            <input
-              type="text"
-              placeholder="Buscar tarjeta por nombre, especialidad o enlace..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none w-full"
-            />
-          </div>
-
-          {/* Listado de Tarjetas */}
-          {filteredCards.length === 0 ? (
-            <div className="text-center py-16 glass-panel rounded-3xl border border-white/5">
-              <QrCode className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-white mb-1">No se encontraron tarjetas</h3>
-              <p className="text-xs text-zinc-400 mb-6">Crea tu primera tarjeta de presentación digital con enlace vivo.</p>
-              <Link
-                href="/cards/new"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs"
+          {/* Listado de Tarjetas o Estado Vacío Inductivo */}
+          {cardsList.length === 0 ? (
+            <DashboardEmptyState type="cards" />
+          ) : filteredCards.length === 0 ? (
+            <div className="text-center py-12 glass-panel rounded-3xl border border-white/5">
+              <Search className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
+              <h3 className="text-base font-bold text-white mb-1">Sin coincidencias para &ldquo;{searchQuery}&rdquo;</h3>
+              <p className="text-xs text-zinc-400 mb-4">Intenta buscar por otro término o limpia el filtro.</p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="min-h-[44px] px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-200 transition cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
-                <span>Crear Tarjeta Ahora</span>
-              </Link>
+                Limpiar búsqueda
+              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredCards.map((card) => (
                 <div
                   key={card.id}
-                  className={`glass-panel rounded-3xl p-6 border transition-all flex flex-col justify-between ${
+                  className={`glass-panel rounded-3xl p-5 sm:p-6 border transition-all flex flex-col justify-between ${
                     card.isActive ? 'border-white/10 hover:border-indigo-500/40' : 'border-white/5 opacity-60'
                   }`}
                 >
                   <div>
                     <div className="flex items-start justify-between gap-3 mb-4">
                       <div>
-                        <h3 className="text-lg font-bold text-white leading-tight">{card.title}</h3>
+                        <h3 className="text-base sm:text-lg font-bold text-white leading-tight">{card.title}</h3>
                         <p className="text-xs text-zinc-400 mt-0.5">{card.profession}</p>
                       </div>
                       <button
                         onClick={() => handleToggleActiveCard(card.id, card.isActive)}
                         className={`min-h-[44px] min-w-[44px] p-2.5 rounded-xl transition flex items-center justify-center cursor-pointer ${
-                          card.isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-800 text-zinc-500'
+                          card.isActive ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
                         }`}
                         title={card.isActive ? 'Desactivar Tarjeta' : 'Activar Tarjeta'}
                       >
@@ -501,7 +548,7 @@ export function UnifiedDashboardView({
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 py-3 my-3 border-y border-white/5">
+                    <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 py-2.5 my-2 border-y border-white/5">
                       <span className="flex items-center gap-1.5">
                         <Eye className="w-3.5 h-3.5 text-cyan-400" />
                         {card.viewsCount || 0} visitas
@@ -512,12 +559,12 @@ export function UnifiedDashboardView({
                       </span>
                     </div>
 
-                    <div className="text-[11px] font-mono text-zinc-500 truncate mb-4">
-                      indi.bio/c/{card.slug}
+                    <div className="text-[11px] font-mono text-zinc-500 truncate mb-3">
+                      /c/{card.slug}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                  <div className="flex items-center gap-2 pt-3 border-t border-white/5">
                     <button
                       onClick={() => handleCopyLink(card.slug)}
                       className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition cursor-pointer"
@@ -554,7 +601,7 @@ export function UnifiedDashboardView({
 
                     <button
                       onClick={() => handleDeleteCard(card.id, card.title)}
-                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition flex items-center justify-center cursor-pointer"
+                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition flex items-center justify-center cursor-pointer"
                       title="Eliminar Tarjeta"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -571,23 +618,23 @@ export function UnifiedDashboardView({
       {activeTab === 'cvs' && (
         <div className="space-y-6 animate-fade-in">
           {cvsList.length === 0 ? (
-            <div className="text-center py-16 glass-panel rounded-3xl border border-white/5">
-              <BrainCircuit className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-white mb-1">Aún no tienes Currículums creados</h3>
-              <p className="text-xs text-zinc-400 mb-6">
-                Optimiza tu CV para superar los filtros ATS y genera un formato A4 profesional listo para enviar.
-              </p>
-              <Link
-                href="/cv"
-                className="inline-flex items-center gap-2 min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-xs shadow-lg shadow-emerald-500/20"
+            <DashboardEmptyState type="cvs" />
+          ) : filteredCvs.length === 0 ? (
+            <div className="text-center py-12 glass-panel rounded-3xl border border-white/5">
+              <Search className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
+              <h3 className="text-base font-bold text-white mb-1">Sin coincidencias para &ldquo;{searchQuery}&rdquo;</h3>
+              <p className="text-xs text-zinc-400 mb-4">Intenta buscar por otro cargo o nombre de currículum.</p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="min-h-[44px] px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-200 transition cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
-                <span>Optimizar mi CV con IA</span>
-              </Link>
+                Limpiar búsqueda
+              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cvsList.map((cv) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredCvs.map((cv) => {
                 const score = cv.atsScore ?? 75;
                 const scoreColor =
                   score >= 80 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' :
@@ -597,13 +644,13 @@ export function UnifiedDashboardView({
                 return (
                   <div
                     key={cv.id}
-                    className="glass-panel rounded-3xl p-6 border border-white/10 hover:border-emerald-500/40 transition-all flex flex-col justify-between"
+                    className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-emerald-500/40 transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-bold text-white leading-tight">{cv.title}</h3>
+                            <h3 className="text-base sm:text-lg font-bold text-white leading-tight">{cv.title}</h3>
                             {cv.isPublic !== false ? (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                                 Digital Activo
@@ -623,12 +670,12 @@ export function UnifiedDashboardView({
 
                       {cv.slug && (
                         <div className="flex items-center gap-2 mb-3 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[11px] text-zinc-300 font-mono">
-                          <Share2 className="w-3.5 h-3.5 text-teal-400 flex-shrink-0" />
+                          <Share2 className="w-3.5 h-3.5 text-teal-400 shrink-0" />
                           <span className="truncate">/cv/{cv.slug}</span>
                         </div>
                       )}
 
-                      <div className="space-y-1.5 py-3 my-2 text-xs text-zinc-400 border-y border-white/5">
+                      <div className="space-y-1.5 py-2.5 my-2 text-xs text-zinc-400 border-y border-white/5">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -710,35 +757,35 @@ export function UnifiedDashboardView({
       {activeTab === 'presentations' && (
         <div className="space-y-6 animate-fade-in">
           {presentationsList.length === 0 ? (
-            <div className="text-center py-16 glass-panel rounded-3xl border border-white/5">
-              <MonitorPlay className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-white mb-1">No hay presentaciones registradas</h3>
-              <p className="text-xs text-zinc-400 mb-6">
-                Diseña diapositivas cinemáticas en proporción 16:9 con asistente de Inteligencia Artificial.
-              </p>
-              <Link
-                href="/presentations"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-lg shadow-amber-500/20"
+            <DashboardEmptyState type="presentations" />
+          ) : filteredPresentations.length === 0 ? (
+            <div className="text-center py-12 glass-panel rounded-3xl border border-white/5">
+              <Search className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
+              <h3 className="text-base font-bold text-white mb-1">Sin coincidencias para &ldquo;{searchQuery}&rdquo;</h3>
+              <p className="text-xs text-zinc-400 mb-4">Intenta buscar por otro título de presentación.</p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="min-h-[44px] px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-200 transition cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
-                <span>Crear Presentación 16:9</span>
-              </Link>
+                Limpiar búsqueda
+              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {presentationsList.map((pres) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredPresentations.map((pres) => {
                 const slidesCount = Array.isArray(pres.slidesData) ? pres.slidesData.length : 4;
                 return (
                   <div
                     key={pres.id}
-                    className="glass-panel rounded-3xl p-6 border border-white/10 hover:border-amber-500/40 transition-all flex flex-col justify-between"
+                    className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-amber-500/40 transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
-                          <h3 className="text-lg font-bold text-white leading-tight">{pres.title}</h3>
+                          <h3 className="text-base sm:text-lg font-bold text-white leading-tight">{pres.title}</h3>
                           <span className="text-[11px] font-mono text-zinc-500 mt-0.5 block truncate">
-                            /{pres.slug}
+                            /p/{pres.slug}
                           </span>
                         </div>
                         <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono text-[10px]">
@@ -746,7 +793,7 @@ export function UnifiedDashboardView({
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 py-3 my-2 border-y border-white/5">
+                      <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 py-2.5 my-2 border-y border-white/5">
                         <span className="flex items-center gap-1.5">
                           <Layers className="w-3.5 h-3.5 text-amber-400" />
                           {slidesCount} diapositivas
@@ -809,6 +856,19 @@ export function UnifiedDashboardView({
           )}
         </div>
       )}
+
+      {/* Floating Action Bar Móvil (Thumb Zone Ergonómico para móviles) */}
+      <div className="fixed bottom-4 inset-x-4 sm:hidden z-30 pointer-events-none">
+        <div className="pointer-events-auto max-w-sm mx-auto p-1.5 rounded-2xl glass-panel border border-white/15 shadow-2xl backdrop-blur-2xl">
+          <Link
+            href={contextualAction.href}
+            className={`min-h-[48px] w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg active:scale-[0.98] transition-all`}
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>{contextualAction.label}</span>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

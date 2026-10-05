@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-193_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-232_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -87,8 +87,10 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 - **Temas Volumétricos OKLCH**: Paletas oscuras inmersivas (*Orbital Cyber*, *Emerald Aurora*, *Deep Space*, *Solar Obsidian*) con iluminación reactiva acelerada por GPU y ratios APCA.
 
 ### 4. 🎛️ Dashboard Unificado Multientidad (`/dashboard`)
-- **Gestión Centralizada con Pestañas**: Monitorea y administra en un solo panel tus Tarjetas Digitales, Smart CVs y Presentaciones.
-- **Métricas Agregadas**: Visitas globales en Edge, clicks en WhatsApp e interacciones directas.
+- **Arquitectura Zero Redundancy & Command Center**: Unifica en una sola barra de herramientas armónica las pestañas de entidad (*Tarjetas*, *Smart CVs*, *Presentaciones*), el buscador universal con atajo de teclado (`Ctrl + K` / `/`) y la acción primaria de creación 100% contextualizada.
+- **Empty States Inductivos & Guiados (`DashboardEmptyState`)**: En lugar de contenedores vacíos estáticos, ofrece guías de inducción progresiva en 3 pasos por vertical con botones magnéticos de acción inmediata.
+- **Ergonomía Móvil Thumb Zone & Floating Action Bar**: En dispositivos móviles ($\le 640\text{px}$), ancla una barra inferior flotante con touch target $\ge 48\text{px}$ para crear recursos con una sola mano.
+- **Métricas Atómicas Adaptativas**: Monitoreo de Visitas Edge, clicks en WhatsApp, vCard descargadas y Tasa de Conversión (%) con protección anti-división por cero y feedback orientativo en cuentas nuevas.
 - **Navegación Bidireccional Contextual (Tab-Aware)**: Cabecera universal `AppEditorHeader` con botón *"← Volver al Panel"* que devuelve al usuario exactamente a la pestaña correspondiente (`?tab=cvs`, `?tab=presentations` o `?tab=cards`).
 
 ### 5. 🧭 Navegación Global Reactiva & Scroll Fluido

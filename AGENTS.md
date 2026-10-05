@@ -152,6 +152,12 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Verificación de Disponibilidad en Tiempo Real con Turso**: Mediante `checkCardSlugAvailabilityAction`, `checkCvSlugAvailabilityAction` y `checkPresentationSlugAvailabilityAction`, los editores consultan a Turso con debounce de 350ms, mostrando badges reactivos (`Disponible`, `En uso`, `Reservado`).
    - **Protección de Rutas del Sistema y Sugerencias Ejecutivas en 1 Toque**: Si un slug ya está en uso o colisiona con rutas protegidas (`RESERVED_CARD_SLUGS`, `RESERVED_CV_SLUGS`, `RESERVED_PRESENTATION_SLUGS`), los motores `generateSlugAlternatives`, `generateCvSlugAlternatives` y `generatePresentationSlugAlternatives` generan chips sugeridos ejecutivos seleccionables en 1 toque.
 
+13. **Dashboard Unificado de Alta Densidad, Zero Redundancy & Empty States Inductivos:**
+   - **Acción Contextual Única**: Erradicar botones de creación globales duplicados que compitan con la vertical activa. La acción de creación (`+ Nueva Tarjeta`, `+ Crear o Mejorar CV`, `+ Nueva Presentación`) debe ser 100% contextualizada y ubicarse de forma prominente en la barra de herramientas.
+   - **Empty States Educativos**: Prohibido el uso de contenedores grises vacíos sin guía. Toda vertical sin registros debe utilizar `DashboardEmptyState` presentando una inducción progresiva en 3 pasos orientada al valor del recurso y un botón magnético de inicio con touch target $\ge 44\text{px}$.
+   - **Buscador con Atajo Accesible**: Integrar atajo accesible global (`Ctrl + K` / `/`) y botón de reseteo instantáneo.
+   - **Thumb Zone Móvil**: En pantallas móviles ($\le 640\text{px}$), toda acción de creación debe proyectarse en la barra inferior flotante anclada (`fixed bottom-4 inset-x-4 sm:hidden`) con touch target $\ge 48\text{px}$.
+
 ---
 
 

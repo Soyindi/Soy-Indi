@@ -1265,6 +1265,24 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (228 de 228 tests en 35 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Rediseño UI/UX, Eficiencia y Command Center en Dashboard Unificado (Octubre 2026)
+1. **Arquitectura Zero Redundancy & Command Center**:
+   - Erradicación de botones de creación dispersos y redundantes en el header.
+   - Acción primaria de creación 100% contextualizada por vertical (*Tarjetas*, *Smart CVs*, *Presentaciones*) sincronizada en una barra de herramientas de alta densidad.
+2. **Empty States Inductivos & Guiados (`DashboardEmptyState`)**:
+   - Sustitución de cajas grises vacías por bloques bento educativos que ilustran en 3 pasos la activación del recurso con botón magnético de inicio inmediato.
+3. **Buscador Inteligente con Atajo Accesible**:
+   - Integración de buscador reactivo en memoria con atajo de teclado global (`Ctrl + K` o `/`), feedback visual y botón de limpieza inmediata.
+4. **Ergonomía Móvil Thumb Zone & Floating Action Bar**:
+   - Barra flotante inferior fija (`fixed bottom-4 inset-x-4 sm:hidden`) con touch target $\ge 48\text{px}$ para crear y gestionar recursos con una sola mano en pantallas móviles.
+   - Pestañas con deslizamiento suave y `snap-x` para navegación táctil sin desbordes.
+5. **Control de Calidad y Pruebas Unitarias (232 Tests Passing)**:
+   - Nueva suite unitaria dedicada: `tests/unit/unified-dashboard-view.test.ts`.
+   - Cobertura de cálculos de conversión sin división por cero, filtrado multi-entidad y asignación contextual de rutas canónicas.
+   - 100% de la suite de pruebas unitarias aprobada (232 de 232 tests en 36 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
 
 
