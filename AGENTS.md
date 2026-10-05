@@ -161,7 +161,14 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Zero Redundancia de IA en Pantalla**: Prohibido fragmentar las llamadas a modelos de IA en múltiples inputs y botones dispersos (evitar cajas como "Tema Rápido" + "Modo Avanzado" + "Botón Cabecera"). Toda interacción de generación debe unificarse en una única acción ejecutiva destacada que active el flujo multimodal completo (SCQA o Dropzone).
    - **Eficiencia Vertical Above-the-Fold**: Mantener la cabecera y pestañas con una altura combinada $\le 120\text{px}$ para que el área de trabajo (lienzo 16:9, vista previa del CV o tarjeta) se visualice inmediatamente sin requerir scroll en portátiles estándar.
 
+15. **Onboarding Hub & Switchboard Sistémico (`/start`):**
+   - **Enrutamiento Orientado a Intención (*Job-to-be-Done*)**: El hub de inicio debe estructurarse estrictamente según el caso de uso del usuario (*Networking*, *Postulación Laboral*, *Pitches & Clientes*) con estimaciones explícitas de tiempo ($\le 4\text{ minutos}$) y sin fricción de configuración previa.
+   - **Dual Layout Móvil Ergonómico**: En smartphones ($\le 640\text{px}$), el grid debe ofrecer desplazamiento horizontal suave con `snap-x snap-mandatory` para evitar fatiga de scroll vertical y permitir comparar las opciones con el pulgar.
+   - **Touch Targets y Válvula de Escape**: Botones de acción principales con altura táctil $\ge 48\text{px}$ (`min-h-[48px]`) y enlace destacado de salto al Dashboard (`/dashboard`) para usuarios recurrentes.
+
 ---
+
+
 
 
 

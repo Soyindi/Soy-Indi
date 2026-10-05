@@ -1297,6 +1297,22 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (234 de 234 tests en 37 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Onboarding Hub Guiado, Switchboard Sistémico y Ergonomía Móvil (Octubre 2026)
+1. **Switchboard Sistémico Post-Registro (`/start`)**:
+   - Flujo centralizado de despacho de nuevos usuarios orientado a la intención de negocio (*Job-to-be-Done*): Tarjeta Digital (2 min), Smart CV (4 min) o Presentación Cinemática (3 min).
+   - Integración de banner de membresía server-side (`checkUserEntitlementAction`) con conteo regresivo de 3 días de prueba.
+2. **Dual Layout Móvil con Scroll Snap & Base 8**:
+   - Implementación de carrusel táctil horizontal con `snap-x snap-mandatory` en smartphones ($\le 640\text{px}$) y grid de 3 columnas de alta gama en monitores de escritorio.
+   - Botones primarios de acción con touch target ergonómico $\ge 48\text{px}$ (`min-h-[48px]`).
+3. **Branding Corporativo Persistente & Válvula de Escape**:
+   - Cabecera oficial con `<BrandLogo size="md" />` y enlace directo de salto hacia el Dashboard General para usuarios recurrentes.
+4. **Control de Calidad y Pruebas Unitarias (237 Tests Passing)**:
+   - Nueva suite unitaria dedicada: `tests/unit/onboarding-flow.test.ts`.
+   - Validación de rutas canónicas, tiempos de inducción y formateo dinámico de banners de membresía.
+   - 100% de la suite de pruebas unitarias aprobada (237 de 237 tests en 38 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
 
 

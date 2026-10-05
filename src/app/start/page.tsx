@@ -16,24 +16,25 @@ export default async function OnboardingStartPage() {
       <div className="absolute top-[-10%] left-[20%] w-[550px] h-[550px] rounded-full bg-indigo-600/15 blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[20%] w-[500px] h-[500px] rounded-full bg-cyan-500/10 blur-[140px] pointer-events-none" />
 
-      {/* Barra de Marca Minimalista */}
-      <header className="relative z-10 w-full max-w-6xl mx-auto px-6 mb-8 flex items-center justify-between">
-        <Link href="/" title="Ir a la portada">
+      {/* Barra de Marca Minimalista con Retícula Base 8 */}
+      <header className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 mb-8 flex items-center justify-between">
+        <Link href="/dashboard" title="Panel Principal INDI" className="flex items-center gap-2 group">
           <BrandLogo size="md" showText={false} />
         </Link>
 
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="text-xs text-zinc-300 hover:text-white font-medium transition min-h-[44px] px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5"
-          >
-            <span>Ir a Mi Panel</span>
-          </Link>
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Link
             href="/pricing"
-            className="text-xs text-zinc-400 hover:text-white font-medium transition min-h-[44px] px-3 py-2 rounded-xl hover:bg-white/5 flex items-center"
+            className="text-xs text-zinc-400 hover:text-white font-medium transition min-h-[44px] px-3.5 py-2 rounded-xl hover:bg-white/5 flex items-center"
           >
-            Detalles de Planes
+            Planes y Membresía
+          </Link>
+
+          <Link
+            href="/dashboard"
+            className="text-xs text-zinc-200 hover:text-white font-semibold transition min-h-[44px] px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
+          >
+            <span>Ir a Mi Panel</span>
           </Link>
         </div>
       </header>

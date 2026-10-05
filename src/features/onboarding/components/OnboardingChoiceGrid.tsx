@@ -76,30 +76,30 @@ export function OnboardingChoiceGrid({ daysRemaining }: OnboardingChoiceGridProp
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-6">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {/* Banner de Estado VIP de Bienvenida */}
-      <div className="mb-10 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-pill border border-indigo-500/30 text-xs font-semibold text-indigo-300 mb-4 shadow-lg shadow-indigo-500/10">
-          <Sparkles className="w-4 h-4 text-cyan-400 animate-spin-slow" />
+      <div className="mb-8 sm:mb-12 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-indigo-500/30 text-xs font-semibold text-indigo-300 mb-4 shadow-lg shadow-indigo-500/10">
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin-slow" />
           <span>Prueba Gratuita Activada: {daysRemaining} Días de Acceso Total Ilimitado</span>
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
+        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-3 sm:mb-4">
           ¿Por dónde te gustaría comenzar hoy?
         </h1>
-        <p className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto">
+        <p className="text-xs sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed">
           Elige tu primer proyecto para configurarlo en minutos. Recuerda que tu membresía Todo-en-Uno te da acceso sin límites a las 3 herramientas.
         </p>
       </div>
 
-      {/* Grid de Selección en 3 Columnas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      {/* Grid de Selección: Horizontal Scroll en Móvil (Snap-X) + 3 Columnas en Escritorio */}
+      <div className="flex md:grid md:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto pb-6 md:pb-0 scrollbar-none snap-x snap-mandatory mb-8 sm:mb-12 -mx-4 px-4 sm:mx-0 sm:px-0">
         {options.map((opt) => {
           const Icon = opt.icon;
           return (
             <div
               key={opt.id}
-              className={`group relative glass-panel rounded-3xl p-7 border border-white/10 ${opt.borderColor} transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between overflow-hidden shadow-xl`}
+              className={`min-w-[85vw] sm:min-w-[340px] md:min-w-0 snap-center group relative glass-panel rounded-3xl p-6 sm:p-7 border border-white/10 ${opt.borderColor} transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between overflow-hidden shadow-xl`}
             >
               {/* Iluminación de fondo en hover */}
               <div
@@ -108,7 +108,7 @@ export function OnboardingChoiceGrid({ daysRemaining }: OnboardingChoiceGridProp
 
               <div className="relative z-10">
                 {/* Cabecera de la tarjeta */}
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-4 sm:mb-5">
                   <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Icon className={`w-6 h-6 ${opt.iconColor}`} />
                   </div>
@@ -119,10 +119,10 @@ export function OnboardingChoiceGrid({ daysRemaining }: OnboardingChoiceGridProp
                 </div>
 
                 <div className="mb-2">
-                  <span className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${opt.badgeColor} mb-2.5`}>
+                  <span className={`inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${opt.badgeColor} mb-2`}>
                     {opt.badge}
                   </span>
-                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-200 transition-colors">
+                  <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-cyan-200 transition-colors">
                     {opt.title}
                   </h3>
                 </div>
@@ -132,7 +132,7 @@ export function OnboardingChoiceGrid({ daysRemaining }: OnboardingChoiceGridProp
                 </p>
 
                 {/* Lista de beneficios */}
-                <div className="space-y-2.5 pt-4 border-t border-white/5 mb-8">
+                <div className="space-y-2.5 pt-4 border-t border-white/5 mb-6 sm:mb-8">
                   {opt.highlights.map((h, i) => (
                     <div key={i} className="flex items-start gap-2 text-xs text-zinc-300">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
@@ -142,11 +142,11 @@ export function OnboardingChoiceGrid({ daysRemaining }: OnboardingChoiceGridProp
                 </div>
               </div>
 
-              {/* Botón de Selección */}
+              {/* Botón de Selección con Touch Target >= 48px */}
               <div className="relative z-10 pt-2">
                 <Link
                   href={opt.href}
-                  className={`w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider ${opt.buttonBg} hover:opacity-95 shadow-lg transition-all group-hover:gap-3`}
+                  className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider ${opt.buttonBg} hover:opacity-95 shadow-lg active:scale-[0.98] transition-all group-hover:gap-3 cursor-pointer`}
                 >
                   <span>{opt.ctaText}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -157,17 +157,17 @@ export function OnboardingChoiceGrid({ daysRemaining }: OnboardingChoiceGridProp
         })}
       </div>
 
-      {/* Navegación Rápida Alternativa */}
-      <div className="text-center pt-4 border-t border-white/5">
-        <p className="text-xs text-zinc-500 mb-3">
-          ¿Ya sabes cómo usar la plataforma o deseas ver tus proyectos creados?
+      {/* Navegación Rápida Alternativa (Válvula de Escape Rápida) */}
+      <div className="text-center pt-6 border-t border-white/5 max-w-xl mx-auto">
+        <p className="text-xs text-zinc-400 mb-3">
+          ¿Ya conoces la suite o deseas revisar tus proyectos existentes?
         </p>
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition"
+          className="min-h-[44px] inline-flex items-center justify-center gap-2 text-xs font-semibold text-zinc-200 hover:text-white px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all shadow-sm active:scale-[0.98]"
         >
           <span>Ir directamente al Panel General (Dashboard)</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
         </Link>
       </div>
     </div>

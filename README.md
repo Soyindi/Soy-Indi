@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-234_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-237_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -104,8 +104,10 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 - **Brand Showcase Interactivo**: Sección dedicada en la página de inicio con reproductor de video corporativo 1080p ambient background, visor técnico de activos en tiempo real con descarga directa y badges de telemetría de rendimiento Core Web Vitals.
 - **Unificación Transversal del Ecosistema**: Reemplazo absoluto de marcadores de texto o SVGs dispersos en `GlobalNavbar`, `MobileNavDrawer`, `UnifiedDashboardView`, `login` y `start`.
 
-### 7. 🚪 Onboarding Hub Guiado (`/start`)
-- Al iniciar la prueba de 3 días, el usuario accede a un selector interactivo (*Job-to-be-Done*) que le permite elegir por dónde empezar (Tarjeta, CV o Presentación) con estimaciones de tiempo (2 a 4 minutos).
+### 7. 🚪 Onboarding Hub Guiado & Switchboard Sistémico (`/start`)
+- **Distribuidor de Tráfico Post-Registro**: Intercambiador de tráfico que conduce al usuario a su primera victoria rápida (*First Value* en 2 a 4 minutos) categorizado según su intención de negocio (*Networking*, *Postulación Laboral*, *Pitches & Clientes*).
+- **Dual Layout Móvil/Escritorio**: Visualización en bento grid de 3 columnas para pantallas de escritorio y soporte de carrusel horizontal con `snap-x snap-mandatory` en smartphones para una selección táctil ágil sin fatiga de scroll vertical.
+- **Touch Targets Ergonómicos & Válvula de Escape**: Botones de acción principales $\ge 48\text{px}$ y enlace prominente de salto al Dashboard General para usuarios recurrentes.
 
 ---
 
