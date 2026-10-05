@@ -202,10 +202,70 @@ export function slugifyPresentationTitle(title: string): string {
 }
 
 /**
- * Genera un slug único para una nueva presentación evitando colisiones con templates estáticos
+ * Genera un slug profesional para una presentación orbital
+ * @param title Título base de la presentación
+ * @param withSuffix Si es true, añade un sufijo aleatorio de 4 caracteres para evitar colisiones
  */
-export function generatePresentationSlug(title: string = 'presentacion'): string {
+export function generatePresentationSlug(title: string = 'presentacion', withSuffix: boolean = false): string {
   const base = slugifyPresentationTitle(title);
+  if (!withSuffix) {
+    return base;
+  }
   const suffix = Math.random().toString(36).substring(2, 6);
   return `${base}-${suffix}`;
 }
+
+/**
+ * Slugs reservados del sistema para Presentaciones
+ */
+export const RESERVED_PRESENTATION_SLUGS = new Set([
+  'admin',
+  'api',
+  'dashboard',
+  'cards',
+  'cv',
+  'presentations',
+  'presentation',
+  'pricing',
+  'start',
+  'login',
+  'register',
+  'auth',
+  'settings',
+  'account',
+  'billing',
+  'help',
+  'terms',
+  'privacy',
+  'slides',
+  'export',
+  'pdf',
+  'new',
+  'parse',
+  'studio',
+  'templates',
+  'present',
+]);
+
+export function isReservedPresentationSlug(slug: string): boolean {
+  if (!slug) return false;
+  return RESERVED_PRESENTATION_SLUGS.has(slug.toLowerCase().trim());
+}
+
+/**
+ * Genera alternativas ejecutivas y profesionales si un slug de presentación ya está tomado
+ */
+export function generatePresentationSlugAlternatives(baseSlug: string): string[] {
+  const cleanBase = slugifyPresentationTitle(baseSlug);
+  const alternatives: string[] = [];
+
+  // 1. Variantes ejecutivas
+  alternatives.push(`${cleanBase}-pitch`);
+  alternatives.push(`${cleanBase}-deck`);
+  alternatives.push(`${cleanBase}-2026`);
+
+  return Array.from(new Set(alternatives)).filter(
+    (alt) => !isReservedPresentationSlug(alt) && alt !== cleanBase
+  ).slice(0, 3);
+}
+

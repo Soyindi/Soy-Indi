@@ -9,7 +9,12 @@ import {
   generateCvSlug,
   slugifyCvTitle,
 } from '@/entities/cv/schemas';
-import { auditAtsScoreAction, upsertSmartCvAction } from '@/features/ai-smart-cv/actions';
+import { 
+  auditAtsScoreAction, 
+  upsertSmartCvAction, 
+  checkCvSlugAvailabilityAction,
+  CvSlugAvailabilityResult 
+} from '@/features/ai-smart-cv/actions';
 import { CvDocumentPreview } from '@/features/ai-smart-cv/components/CvDocumentPreview';
 import { ImportDocumentModal } from '@/features/ai-smart-cv/components/ImportDocumentModal';
 import { SignatureModal } from '@/features/ai-smart-cv/components/SignatureModal';
@@ -39,6 +44,10 @@ import {
   RefreshCw,
   Share2,
   Check,
+  CheckCheck,
+  AlertTriangle,
+  AlertCircle,
+  ArrowRight,
 } from 'lucide-react';
 
 export interface SmartCvBuilderProps {
@@ -70,10 +79,21 @@ export function SmartCvBuilder({
   const [pageFormat, setPageFormat] = useState<'a4' | 'letter'>('a4');
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);  const [formData, setFormData] = useState<CVFormValues>(() => ({
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  // Rastrear si el usuario modificó deliberadamente el slug a mano
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(() => Boolean(initialData?.slug));
+  const [isCheckingSlug, setIsCheckingSlug] = useState(false);
+  const [slugAvailability, setSlugAvailability] = useState<CvSlugAvailabilityResult>({
+    available: true,
+    status: 'available',
+    suggestions: [],
+  });
+
+  const [formData, setFormData] = useState<CVFormValues>(() => ({
     title: initialData?.title || 'CV Ejecutivo 2026',
     targetRole: initialData?.targetRole || 'Senior Full Stack Engineer & Software Architect',
-    slug: initialData?.slug || generateCvSlug('matias-riquelme-dev'),
+    slug: initialData?.slug || generateCvSlug(initialData?.content?.fullName || 'matias-riquelme', false),
     isPublic: initialData?.isPublic ?? true,
     templateId: initialData?.templateId || 'executive-modern',
     content: {
@@ -159,6 +179,61 @@ export function SmartCvBuilder({
     },
   }));
 
+  // Efecto debounced (350ms) para comprobar disponibilidad de slug de CV en Turso
+  React.useEffect(() => {
+    if (!formData.slug || formData.slug.length < 3) {
+      setSlugAvailability({
+        available: false,
+        status: 'invalid',
+        message: 'Mínimo 3 caracteres.',
+        suggestions: [],
+      });
+      return;
+    }
+
+    let isMounted = true;
+    setIsCheckingSlug(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const result = await checkCvSlugAvailabilityAction(formData.slug!, currentCvId, formData.targetRole);
+        if (isMounted) {
+          setSlugAvailability(result);
+          setIsCheckingSlug(false);
+        }
+      } catch {
+        if (isMounted) {
+          setIsCheckingSlug(false);
+        }
+      }
+    }, 350);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [formData.slug, currentCvId, formData.targetRole]);
+
+  // Manejador manual de cambio de slug
+  const handleSlugChange = (rawSlug: string) => {
+    setIsSlugManuallyEdited(true);
+    const sanitized = rawSlug.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    setFormData((prev) => ({ ...prev, slug: sanitized }));
+  };
+
+  // Restablecer/regenerar slug desde el nombre actual
+  const handleRegenerateSlugFromName = () => {
+    const derivedSlug = generateCvSlug(formData.content.fullName || formData.targetRole || 'cv', false);
+    setFormData((prev) => ({ ...prev, slug: derivedSlug }));
+    setIsSlugManuallyEdited(false);
+  };
+
+  // Aplicar sugerencia alternativa en 1 clic
+  const handleApplyAlternativeSlug = (altSlug: string) => {
+    setFormData((prev) => ({ ...prev, slug: altSlug }));
+    setIsSlugManuallyEdited(true);
+  };
+
   // Sincronizar estado cuando se cargue initialData o initialCvId
   React.useEffect(() => {
     if (initialCvId) {
@@ -180,13 +255,25 @@ export function SmartCvBuilder({
   }, [initialCvId, initialData, initialScore]);
 
   const handleContentChange = (field: string, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      content: {
-        ...prev.content,
-        [field]: value,
-      },
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        content: {
+          ...prev.content,
+          [field]: value,
+        },
+      };
+
+      // Auto-sincronizar el slug si el usuario escribe su nombre y aún no ha personalizado el slug a mano
+      if (field === 'fullName' && !isSlugManuallyEdited) {
+        const derivedSlug = generateCvSlug(value, false);
+        if (derivedSlug) {
+          updated.slug = derivedSlug;
+        }
+      }
+
+      return updated;
+    });
   };
 
   const handleCvParsed = (extractedCv: Partial<CVFormValues>) => {
@@ -659,50 +746,108 @@ export function SmartCvBuilder({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-[11px] font-mono text-zinc-400">Enlace Personalizado (Slug)</label>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        slug: generateCvSlug(prev.content.fullName || prev.targetRole || 'cv'),
-                      }))
-                    }
-                    className="text-[10px] font-mono text-zinc-400 hover:text-cyan-300 flex items-center gap-1 transition cursor-pointer"
-                    title="Generar nuevo slug aleatorio"
-                  >
-                    <RefreshCw className="w-2.5 h-2.5" />
-                    <span>Regenerar</span>
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono text-xs select-none">
-                      /cv/
-                    </span>
-                    <input
-                      type="text"
-                      value={formData.slug || ''}
-                      onChange={(e) => {
-                        const sanitized = slugifyCvTitle(e.target.value);
-                        setFormData((prev) => ({ ...prev, slug: sanitized }));
-                      }}
-                      placeholder="tu-nombre-o-rol"
-                      className="w-full text-xs text-cyan-300 font-mono bg-black/30 rounded-xl pl-9 pr-3 py-2.5 border border-white/5 focus:outline-none focus:border-cyan-400 min-h-[44px]"
-                    />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleRegenerateSlugFromName}
+                      title="Sincronizar slug con tu nombre"
+                      className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 hover:text-cyan-400 px-2 py-1 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      <span>Desde nombre</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyCvLink}
+                      title="Copiar enlace del CV"
+                      className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 hover:text-emerald-400 px-2 py-1 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      {copiedSlug ? (
+                        <>
+                          <CheckCheck className="w-3 h-3 text-emerald-400" />
+                          <span className="text-emerald-400 font-semibold">Copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </button>
                   </div>
+                </div>
 
-                  <button
-                    type="button"
-                    onClick={handleCopyCvLink}
-                    className="min-h-[44px] min-w-[44px] px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white flex items-center justify-center transition cursor-pointer"
-                    title="Copiar enlace del CV"
-                  >
-                    {copiedSlug ? (
-                      <Check className="w-4 h-4 text-emerald-400" />
+                <div className={`flex items-center rounded-xl bg-black/50 border px-3.5 py-2.5 text-sm transition-colors ${
+                  !slugAvailability.available && !isCheckingSlug
+                    ? 'border-amber-500/50 focus-within:border-amber-500'
+                    : 'border-white/10 focus-within:border-cyan-400/80'
+                }`}>
+                  <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">indi.bio/cv/</span>
+                  <input
+                    type="text"
+                    value={formData.slug || ''}
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                    className="flex-1 bg-transparent text-cyan-300 font-mono text-xs sm:text-sm focus:outline-none pl-1"
+                    placeholder="tu-nombre"
+                    spellCheck={false}
+                  />
+
+                  {/* Estado dinámico de disponibilidad con Turso */}
+                  <div className="flex items-center gap-1.5 ml-2">
+                    {isCheckingSlug ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400">
+                        <Loader2 className="w-3 h-3 animate-spin text-cyan-400" />
+                        <span className="hidden sm:inline">Verificando</span>
+                      </span>
+                    ) : slugAvailability.status === 'available' ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <Check className="w-2.5 h-2.5" />
+                        <span>Disponible</span>
+                      </span>
+                    ) : slugAvailability.status === 'reserved' ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                        <AlertCircle className="w-2.5 h-2.5" />
+                        <span>Reservado</span>
+                      </span>
                     ) : (
-                      <Copy className="w-4 h-4" />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        <AlertTriangle className="w-2.5 h-2.5" />
+                        <span>En uso</span>
+                      </span>
                     )}
-                  </button>
+                  </div>
+                </div>
+
+                {/* Alternativas inteligentes de 1 toque si el slug está ocupado o reservado */}
+                {!slugAvailability.available && slugAvailability.suggestions.length > 0 && (
+                  <div className="mt-2 p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20 animate-fade-in">
+                    <p className="text-[11px] font-medium text-amber-300 mb-1.5 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      <span>{slugAvailability.message} Alternativas recomendadas:</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {slugAvailability.suggestions.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => handleApplyAlternativeSlug(suggestion)}
+                          className="min-h-[32px] inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 border border-amber-500/30 transition-colors cursor-pointer"
+                        >
+                          <span>{suggestion}</span>
+                          <ArrowRight className="w-2.5 h-2.5 opacity-60" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between mt-1.5 px-1">
+                  <p className="text-[11px] text-zinc-500">
+                    {isSlugManuallyEdited
+                      ? 'Slug personalizado manualmente.'
+                      : 'Se actualiza automáticamente al cambiar tu nombre.'}
+                  </p>
+                  <span className="text-[10px] font-mono text-zinc-600">min. 3 car.</span>
                 </div>
               </div>
             </div>

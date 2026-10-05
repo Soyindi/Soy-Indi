@@ -49,15 +49,17 @@ describe('Smart CV Digital Sharing & URL Engine', () => {
   });
 
   describe('generateCvSlug', () => {
-    it('debe generar un slug único que cumpla con la expresión regular ^[a-z0-9-]+$', () => {
+    it('debe generar un slug limpio profesional por defecto que cumpla con ^[a-z0-9-]+$', () => {
       const slug = generateCvSlug('Tech Lead 2026');
       expect(slug).toMatch(/^[a-z0-9-]+$/);
-      expect(slug.startsWith('tech-lead-2026-')).toBe(true);
+      expect(slug).toBe('tech-lead-2026');
     });
 
-    it('debe generar slugs distintos en llamadas sucesivas para evitar colisiones', () => {
-      const slug1 = generateCvSlug('Camila Morales');
-      const slug2 = generateCvSlug('Camila Morales');
+    it('debe generar sufijo aleatorio cuando withSuffix es true para evitar colisiones forzadas', () => {
+      const slug1 = generateCvSlug('Camila Morales', true);
+      const slug2 = generateCvSlug('Camila Morales', true);
+      expect(slug1).toMatch(/^camila-morales-[a-z0-9]{4}$/);
+      expect(slug2).toMatch(/^camila-morales-[a-z0-9]{4}$/);
       expect(slug1).not.toBe(slug2);
     });
   });

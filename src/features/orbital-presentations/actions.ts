@@ -10,6 +10,10 @@ import {
   presentationDecompositionRequestSchema,
   TargetAudience,
   PresentationTone,
+  generatePresentationSlug,
+  slugifyPresentationTitle,
+  isReservedPresentationSlug,
+  generatePresentationSlugAlternatives,
 } from '@/entities/presentation/schemas';
 import {
   inferOptimalLayoutStrategy,
@@ -952,6 +956,19 @@ export async function upsertPresentationAction(
     }
     const targetUserId = sessionResult.userId;
 
+    // Resolver slug canónico
+    const desiredSlug = data.slug
+      ? slugifyPresentationTitle(data.slug)
+      : generatePresentationSlug(data.title, false);
+
+    // Guardrail de Seguridad: Validación contra rutas y palabras reservadas
+    if (isReservedPresentationSlug(desiredSlug)) {
+      return {
+        success: false,
+        error: 'Este identificador está reservado para rutas del sistema. Por favor elige otro enlace.',
+      };
+    }
+
     if (presentationId) {
       // ================= MODO EDICIÓN EXPLÍCITA (ANTI-IDOR) =================
       const existing = await db.query.presentations.findFirst({
@@ -963,9 +980,9 @@ export async function upsertPresentationAction(
       }
 
       // Si el slug cambió, verificar que no colisione con otra presentación existente
-      if (data.slug && existing.slug !== data.slug) {
+      if (desiredSlug && existing.slug !== desiredSlug) {
         const slugCollision = await db.query.presentations.findFirst({
-          where: and(eq(presentations.slug, data.slug), ne(presentations.id, presentationId)),
+          where: and(eq(presentations.slug, desiredSlug), ne(presentations.id, presentationId)),
         });
         if (slugCollision) {
           return { success: false, error: 'Este enlace personalizado de presentación ya está en uso por otro proyecto.' };
@@ -976,7 +993,7 @@ export async function upsertPresentationAction(
         .update(presentations)
         .set({
           title: data.title,
-          slug: data.slug,
+          slug: desiredSlug,
           isPublic: data.isPublic,
           slidesData: data.slidesData,
           themeSettings: data.themeSettings,
@@ -987,29 +1004,25 @@ export async function upsertPresentationAction(
       try {
         revalidatePath('/presentations');
         revalidatePath('/dashboard');
-        if (data.slug) {
-          revalidatePath(`/p/${data.slug}`);
+        if (desiredSlug) {
+          revalidatePath(`/p/${desiredSlug}`);
         }
-        if (existing.slug && existing.slug !== data.slug) {
+        if (existing.slug && existing.slug !== desiredSlug) {
           revalidatePath(`/p/${existing.slug}`);
         }
       } catch {
         // Revalidation silente fuera de contexto HTTP
       }
-      return { success: true, id: presentationId, slug: data.slug };
+      return { success: true, id: presentationId, slug: desiredSlug };
     } else {
       // ================= MODO CREACIÓN NUEVA INDEPENDIENTE =================
-      if (data.slug) {
-        const slugCollision = await db.query.presentations.findFirst({
-          where: eq(presentations.slug, data.slug),
-        });
+      let uniqueSlug = desiredSlug;
+      const slugCollision = await db.query.presentations.findFirst({
+        where: eq(presentations.slug, uniqueSlug),
+      });
 
-        if (slugCollision) {
-          return {
-            success: false,
-            error: 'Este enlace personalizado ya está en uso. Por favor ingresa otro slug para tu presentación.',
-          };
-        }
+      if (slugCollision) {
+        uniqueSlug = generatePresentationSlug(data.title, true);
       }
 
       const newId = crypto.randomUUID();
@@ -1017,7 +1030,7 @@ export async function upsertPresentationAction(
         id: newId,
         userId: targetUserId,
         title: data.title,
-        slug: data.slug,
+        slug: uniqueSlug,
         isPublic: data.isPublic,
         slidesData: data.slidesData,
         themeSettings: data.themeSettings,
@@ -1029,13 +1042,13 @@ export async function upsertPresentationAction(
       try {
         revalidatePath('/presentations');
         revalidatePath('/dashboard');
-        if (data.slug) {
-          revalidatePath(`/p/${data.slug}`);
+        if (uniqueSlug) {
+          revalidatePath(`/p/${uniqueSlug}`);
         }
       } catch {
         // Revalidation silente fuera de contexto HTTP
       }
-      return { success: true, id: newId, slug: data.slug };
+      return { success: true, id: newId, slug: uniqueSlug };
     }
   } catch (err: any) {
     console.error('Error guardando presentación:', err);
@@ -1089,3 +1102,84 @@ export async function getUserPresentationsAction(userId?: string) {
     return { success: false, data: [] };
   }
 }
+
+export type PresentationSlugAvailabilityResult = {
+  available: boolean;
+  status: 'available' | 'taken' | 'reserved' | 'invalid';
+  message?: string;
+  suggestions: string[];
+};
+
+/**
+ * Server Action en tiempo real para verificar la disponibilidad de un slug de presentación
+ * y proveer sugerencias automáticas de desambiguación si está ocupado o reservado.
+ */
+export async function checkPresentationSlugAvailabilityAction(
+  rawSlug: string,
+  currentPresentationId?: string
+): Promise<PresentationSlugAvailabilityResult> {
+  try {
+    const slug = rawSlug.toLowerCase().trim();
+
+    if (!slug || slug.length < 3) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'El enlace debe tener al menos 3 caracteres.',
+        suggestions: [],
+      };
+    }
+
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'Solo se permiten letras minúsculas, números y guiones.',
+        suggestions: [],
+      };
+    }
+
+    // 1. Verificar si está en la lista de slugs reservados del sistema
+    if (isReservedPresentationSlug(slug)) {
+      const suggestions = generatePresentationSlugAlternatives(slug);
+      return {
+        available: false,
+        status: 'reserved',
+        message: 'Este identificador está reservado para el sistema.',
+        suggestions,
+      };
+    }
+
+    // 2. Consultar colisión en la base de datos
+    const existing = await db.query.presentations.findFirst({
+      where: currentPresentationId
+        ? and(eq(presentations.slug, slug), ne(presentations.id, currentPresentationId))
+        : eq(presentations.slug, slug),
+    });
+
+    if (existing) {
+      const suggestions = generatePresentationSlugAlternatives(slug);
+      return {
+        available: false,
+        status: 'taken',
+        message: 'Este enlace ya está en uso por otra presentación.',
+        suggestions,
+      };
+    }
+
+    return {
+      available: true,
+      status: 'available',
+      message: '¡Enlace de presentación disponible!',
+      suggestions: [],
+    };
+  } catch (error) {
+    console.error('Error al comprobar disponibilidad de slug de presentación:', error);
+    return {
+      available: true,
+      status: 'available',
+      suggestions: [],
+    };
+  }
+}
+

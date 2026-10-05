@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import Link from 'next/link';
 import {
   PresentationSlide,
@@ -9,6 +9,7 @@ import {
   PresentationVisualType,
   generatePresentationSlug,
   slugifyPresentationTitle,
+  generatePresentationSlugAlternatives,
 } from '@/entities/presentation/schemas';
 import {
   PRESENTATION_TEMPLATES,
@@ -21,6 +22,8 @@ import { SlideAiAssistant } from '@/features/orbital-presentations/components/Sl
 import {
   generateAiSlidesAction,
   upsertPresentationAction,
+  checkPresentationSlugAvailabilityAction,
+  PresentationSlugAvailabilityResult,
 } from '@/features/orbital-presentations/actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import {
@@ -31,6 +34,7 @@ import {
   Trash2,
   Palette,
   Check,
+  CheckCheck,
   Loader2,
   Save,
   Play,
@@ -48,6 +52,7 @@ import {
   ArrowLeft,
   ArrowRight,
   AlertTriangle,
+  AlertCircle,
   X,
   Copy,
   ExternalLink,
@@ -89,10 +94,76 @@ export function PresentationStudio({
     };
   });
 
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+  const [isCheckingSlug, setIsCheckingSlug] = useState(false);
+  const [slugAvailability, setSlugAvailability] = useState<PresentationSlugAvailabilityResult>({
+    available: true,
+    status: 'available',
+    suggestions: [],
+  });
+
   const activeSlide =
     presentation.slidesData[currentSlideIndex] || presentation.slidesData[0];
 
   const [templateToConfirm, setTemplateToConfirm] = useState<string | null>(null);
+
+  // Verificación en tiempo real de disponibilidad del slug con Turso SQLite (350ms debounce)
+  useEffect(() => {
+    if (!presentation.slug) {
+      setSlugAvailability({
+        available: false,
+        status: 'invalid',
+        message: 'El enlace no puede estar vacío.',
+        suggestions: [],
+      });
+      return;
+    }
+
+    setIsCheckingSlug(true);
+    const timer = setTimeout(async () => {
+      try {
+        const result = await checkPresentationSlugAvailabilityAction(
+          presentation.slug,
+          presentationId || undefined
+        );
+        setSlugAvailability(result);
+      } catch (err) {
+        console.error('Error al verificar slug de presentación:', err);
+      } finally {
+        setIsCheckingSlug(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [presentation.slug, presentationId]);
+
+  const handleTitleChange = (newTitle: string) => {
+    setPresentation((prev) => {
+      const updated = { ...prev, title: newTitle };
+      if (!isSlugManuallyEdited) {
+        updated.slug = generatePresentationSlug(newTitle, false);
+      }
+      return updated;
+    });
+  };
+
+  const handleSlugChange = (rawSlug: string) => {
+    const sanitized = slugifyPresentationTitle(rawSlug);
+    setIsSlugManuallyEdited(true);
+    setPresentation((prev) => ({ ...prev, slug: sanitized }));
+  };
+
+  const handleRegenerateSlugFromTitle = () => {
+    const autoSlug = generatePresentationSlug(presentation.title || 'deck', false);
+    setIsSlugManuallyEdited(false);
+    setPresentation((prev) => ({ ...prev, slug: autoSlug }));
+  };
+
+  const handleApplyAlternativeSlug = (alternative: string) => {
+    const sanitized = slugifyPresentationTitle(alternative);
+    setIsSlugManuallyEdited(true);
+    setPresentation((prev) => ({ ...prev, slug: sanitized }));
+  };
 
   // Aplicar plantilla curada completa (con confirmación de seguridad para no perder contenido)
   const handleApplyTemplate = (templateId: string) => {
@@ -630,9 +701,7 @@ export function PresentationStudio({
                   <input
                     type="text"
                     value={presentation.title}
-                    onChange={(e) =>
-                      setPresentation((prev) => ({ ...prev, title: e.target.value }))
-                    }
+                    onChange={(e) => handleTitleChange(e.target.value)}
                     placeholder="Título general del deck..."
                     className="w-full min-h-[44px] rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-semibold"
                   />
@@ -643,50 +712,108 @@ export function PresentationStudio({
                     <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
                       Enlace Personalizado (Slug)
                     </label>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setPresentation((prev) => ({
-                          ...prev,
-                          slug: generatePresentationSlug(prev.title),
-                        }))
-                      }
-                      className="text-[10px] font-mono text-zinc-400 hover:text-cyan-300 flex items-center gap-1 transition cursor-pointer min-h-[32px] px-2"
-                      title="Generar nuevo slug único"
-                    >
-                      <RefreshCw className="w-2.5 h-2.5" />
-                      <span>Regenerar</span>
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono text-xs select-none">
-                        /p/
-                      </span>
-                      <input
-                        type="text"
-                        value={presentation.slug}
-                        onChange={(e) => {
-                          const sanitized = slugifyPresentationTitle(e.target.value);
-                          setPresentation((prev) => ({ ...prev, slug: sanitized }));
-                        }}
-                        placeholder="mi-presentacion"
-                        className="w-full min-h-[44px] rounded-xl bg-black/50 border border-white/10 pl-8 pr-3.5 py-2 text-xs text-cyan-300 font-mono focus:outline-none focus:border-cyan-400"
-                      />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleRegenerateSlugFromTitle}
+                        title="Sincronizar slug con el título"
+                        className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 hover:text-cyan-400 px-2 py-1 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Desde título</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCopyLink}
+                        title="Copiar enlace de presentación"
+                        className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 hover:text-emerald-400 px-2 py-1 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
+                      >
+                        {copiedSlug ? (
+                          <>
+                            <CheckCheck className="w-3 h-3 text-emerald-400" />
+                            <span className="text-emerald-400 font-semibold">Copiado</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>Copiar</span>
+                          </>
+                        )}
+                      </button>
                     </div>
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={handleCopyLink}
-                      className="min-h-[44px] min-w-[44px] px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white flex items-center justify-center transition cursor-pointer"
-                      title="Copiar enlace"
-                    >
-                      {copiedSlug ? (
-                        <Check className="w-4 h-4 text-emerald-400" />
+                  <div className={`flex items-center rounded-xl bg-black/50 border px-3.5 py-2.5 text-sm transition-colors ${
+                    !slugAvailability.available && !isCheckingSlug
+                      ? 'border-amber-500/50 focus-within:border-amber-500'
+                      : 'border-white/10 focus-within:border-cyan-400/80'
+                  }`}>
+                    <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">indi.bio/p/</span>
+                    <input
+                      type="text"
+                      value={presentation.slug || ''}
+                      onChange={(e) => handleSlugChange(e.target.value)}
+                      placeholder="mi-presentacion"
+                      className="flex-1 bg-transparent text-cyan-300 font-mono text-xs sm:text-sm focus:outline-none pl-1"
+                      spellCheck={false}
+                    />
+
+                    {/* Estado dinámico de disponibilidad con Turso */}
+                    <div className="flex items-center gap-1.5 ml-2">
+                      {isCheckingSlug ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400">
+                          <Loader2 className="w-3 h-3 animate-spin text-cyan-400" />
+                          <span className="hidden sm:inline">Verificando</span>
+                        </span>
+                      ) : slugAvailability.status === 'available' ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <Check className="w-2.5 h-2.5" />
+                          <span>Disponible</span>
+                        </span>
+                      ) : slugAvailability.status === 'reserved' ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                          <AlertCircle className="w-2.5 h-2.5" />
+                          <span>Reservado</span>
+                        </span>
                       ) : (
-                        <Copy className="w-4 h-4" />
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          <AlertTriangle className="w-2.5 h-2.5" />
+                          <span>En uso</span>
+                        </span>
                       )}
-                    </button>
+                    </div>
+                  </div>
+
+                  {/* Alternativas inteligentes de 1 toque si el slug está ocupado o reservado */}
+                  {!slugAvailability.available && slugAvailability.suggestions.length > 0 && (
+                    <div className="mt-2 p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20 animate-fade-in">
+                      <p className="text-[11px] font-medium text-amber-300 mb-1.5 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <span>{slugAvailability.message} Alternativas recomendadas:</span>
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {slugAvailability.suggestions.map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => handleApplyAlternativeSlug(suggestion)}
+                            className="min-h-[32px] inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 border border-amber-500/30 transition-colors cursor-pointer"
+                          >
+                            <span>{suggestion}</span>
+                            <ArrowRight className="w-2.5 h-2.5 opacity-60" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between mt-1.5 px-1">
+                    <p className="text-[11px] text-zinc-500">
+                      {isSlugManuallyEdited
+                        ? 'Slug personalizado manualmente.'
+                        : 'Se actualiza automáticamente al cambiar el título.'}
+                    </p>
+                    <span className="text-[10px] font-mono text-zinc-600">min. 3 car.</span>
                   </div>
                 </div>
               </div>

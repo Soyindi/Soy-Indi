@@ -272,18 +272,20 @@ describe('Auditoría Integral del Flujo de Presentaciones (Studio UX & Contracts
       expect(slugifyPresentationTitle('$$$###')).toBe('presentacion');
     });
 
-    it('genera slugs únicos conformes con el esquema de validación de Zod', () => {
+    it('genera slugs limpios profesionales conformes con el esquema de validación de Zod', () => {
       const generated = generatePresentationSlug('Mi Startup IA');
-      expect(generated).toMatch(/^mi-startup-ia-[a-z0-9]{4}$/);
+      expect(generated).toBe('mi-startup-ia');
 
       // Debe cumplir la regla regex de presentationFormSchema
       const result = presentationFormSchema.shape.slug.safeParse(generated);
       expect(result.success).toBe(true);
     });
 
-    it('dos llamadas consecutivas generan slugs distintos para prevenir colisiones en creación', () => {
-      const slugA = generatePresentationSlug('Deck');
-      const slugB = generatePresentationSlug('Deck');
+    it('dos llamadas consecutivas con withSuffix=true generan slugs distintos para prevenir colisiones en creación', () => {
+      const slugA = generatePresentationSlug('Deck', true);
+      const slugB = generatePresentationSlug('Deck', true);
+      expect(slugA).toMatch(/^deck-[a-z0-9]{4}$/);
+      expect(slugB).toMatch(/^deck-[a-z0-9]{4}$/);
       expect(slugA).not.toBe(slugB);
     });
 

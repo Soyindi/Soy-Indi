@@ -1246,6 +1246,25 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (214 de 214 tests en 33 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Homologación Universal de Slugs Públicos en Smart CV y Presentaciones Orbitales (Octubre 2026)
+1. **Erradicación de Sufijos/Hashes Aleatorios por Defecto**:
+   - Reemplazo de los sufijos forzados de 4 caracteres (`-k3p1`, etc.) por slugs ejecutivos limpios basados en el nombre (`generateCvSlug(name, false)`) y el título de la presentación (`generatePresentationSlug(title, false)`).
+   - Generación de enlaces profesionales directos: `indi.bio/cv/matias-riquelme` y `indi.bio/p/pitch-deck-2026`.
+2. **Auto-Sincronización Reactiva Bidireccional**:
+   - Tanto `SmartCvBuilder.tsx` como `PresentationStudio.tsx` implementan auto-sincronización reactiva: al tipear el nombre o título, el slug se actualiza automáticamente a menos que el usuario lo haya editado manualmente (`isSlugManuallyEdited`).
+   - Botones ergonómicos $\ge 44\text{px}$ (*"Desde nombre"* / *"Desde título"*) para re-sincronizar el slug en 1 toque.
+   - Botón *"Copiar"* para copiar la URL completa con feedback de confirmación visual (`Copiado!`).
+3. **Verificación de Disponibilidad en Tiempo Real con Turso SQLite**:
+   - Server Actions `checkCvSlugAvailabilityAction` y `checkPresentationSlugAvailabilityAction` con debounce de 350ms.
+   - Badges visuales reactivos en la interfaz: `Disponible` (verde), `En uso` (ámbar), `Reservado` (rojo) y `Verificando` (spinner).
+4. **Protección de Rutas del Sistema & Sugerencias Inteligentes en 1 Toque**:
+   - Protección con `RESERVED_CV_SLUGS` y `RESERVED_PRESENTATION_SLUGS` previniendo colisiones con rutas críticas del sistema.
+   - Motores `generateCvSlugAlternatives` y `generatePresentationSlugAlternatives` que recomiendan chips ejecutivos (`-pro`, `-cl`, `-pitch`, `-deck`, `-2026`) seleccionables en 1 toque cuando un identificador ya está tomado.
+5. **Control de Calidad y Pruebas Unitarias (228 Tests Passing)**:
+   - Nuevas suites unitarias dedicadas: `tests/unit/cv-slug-availability.test.ts` y `tests/unit/presentation-slug-availability.test.ts`.
+   - 100% de la suite de pruebas unitarias aprobada (228 de 228 tests en 35 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
 
 
 

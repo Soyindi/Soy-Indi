@@ -120,13 +120,81 @@ export function slugifyCvTitle(titleOrRole: string): string {
 }
 
 /**
- * Genera un slug único para un nuevo CV evitando colisiones
+ * Genera un slug profesional para un Smart CV
+ * @param nameOrRole Nombre profesional o rol base
+ * @param withSuffix Si es true, añade un sufijo aleatorio de 4 caracteres para evitar colisiones
  */
-export function generateCvSlug(nameOrRole: string = 'cv'): string {
+export function generateCvSlug(nameOrRole: string = 'cv', withSuffix: boolean = false): string {
   const base = slugifyCvTitle(nameOrRole);
+  if (!withSuffix) {
+    return base;
+  }
   const suffix = Math.random().toString(36).substring(2, 6);
   return `${base}-${suffix}`;
 }
+
+/**
+ * Slugs reservados del sistema para CV
+ */
+export const RESERVED_CV_SLUGS = new Set([
+  'admin',
+  'api',
+  'dashboard',
+  'cards',
+  'cv',
+  'presentations',
+  'pricing',
+  'start',
+  'login',
+  'register',
+  'auth',
+  'settings',
+  'account',
+  'billing',
+  'help',
+  'terms',
+  'privacy',
+  'download',
+  'pdf',
+  'export',
+  'ats',
+  'parse',
+  'new',
+  'preview',
+]);
+
+export function isReservedCvSlug(slug: string): boolean {
+  if (!slug) return false;
+  return RESERVED_CV_SLUGS.has(slug.toLowerCase().trim());
+}
+
+/**
+ * Genera alternativas ejecutivas y profesionales si un slug de CV ya está tomado
+ */
+export function generateCvSlugAlternatives(baseSlug: string, role?: string): string[] {
+  const cleanBase = slugifyCvTitle(baseSlug);
+  const alternatives: string[] = [];
+
+  // 1. Variantes profesionales
+  alternatives.push(`${cleanBase}-pro`);
+  alternatives.push(`${cleanBase}-cv`);
+
+  // 2. Variante contextual por cargo si existe
+  if (role) {
+    const cleanRole = slugifyCvTitle(role).split('-')[0];
+    if (cleanRole && cleanRole.length >= 3) {
+      alternatives.push(`${cleanBase}-${cleanRole}`);
+    }
+  }
+
+  // 3. Variante territorial o formal
+  alternatives.push(`${cleanBase}-cl`);
+
+  return Array.from(new Set(alternatives)).filter(
+    (alt) => !isReservedCvSlug(alt) && alt !== cleanBase
+  ).slice(0, 3);
+}
+
 
 export interface AtsAuditResult {
   score: number;

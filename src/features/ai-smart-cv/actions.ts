@@ -10,6 +10,8 @@ import {
   MultimodalCvExtraction,
   generateCvSlug,
   slugifyCvTitle,
+  isReservedCvSlug,
+  generateCvSlugAlternatives,
 } from '@/entities/cv/schemas';
 import { parseCvDocumentMultimodal, parseCredentialDocumentMultimodal } from '@/features/ai-smart-cv/lib/multimodal-parser';
 import {
@@ -310,7 +312,15 @@ export async function upsertSmartCvAction(
     // Resolver slug canónico único
     const desiredSlug = data.slug
       ? slugifyCvTitle(data.slug)
-      : generateCvSlug(data.content.fullName || data.targetRole || data.title);
+      : generateCvSlug(data.content.fullName || data.targetRole || data.title, false);
+
+    // Guardrail de Seguridad: Validación contra rutas y slugs reservados
+    if (isReservedCvSlug(desiredSlug)) {
+      return {
+        success: false,
+        error: 'Este identificador está reservado para rutas del sistema. Por favor elige otro slug.',
+      };
+    }
 
     let finalCvId = cvId;
     let finalSlug = desiredSlug;
@@ -363,7 +373,7 @@ export async function upsertSmartCvAction(
       });
 
       if (slugCollision) {
-        uniqueSlug = generateCvSlug(data.content.fullName || data.targetRole || data.title);
+        uniqueSlug = generateCvSlug(data.content.fullName || data.targetRole || data.title, true);
       }
 
       const newId = crypto.randomUUID();
@@ -596,5 +606,86 @@ export async function rewriteCvSectionAction(params: {
   } catch (err: any) {
     console.error('Error en rewriteCvSectionAction:', err);
     return { success: false, suggestions: [], error: err.message };
+  }
+}
+
+export type CvSlugAvailabilityResult = {
+  available: boolean;
+  status: 'available' | 'taken' | 'reserved' | 'invalid';
+  message?: string;
+  suggestions: string[];
+};
+
+/**
+ * Server Action en tiempo real para verificar la disponibilidad de un slug de CV público
+ * y proveer sugerencias automáticas de desambiguación si está ocupado o reservado.
+ */
+export async function checkCvSlugAvailabilityAction(
+  rawSlug: string,
+  currentCvId?: string,
+  role?: string
+): Promise<CvSlugAvailabilityResult> {
+  try {
+    const slug = rawSlug.toLowerCase().trim();
+
+    if (!slug || slug.length < 3) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'El enlace debe tener al menos 3 caracteres.',
+        suggestions: [],
+      };
+    }
+
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'Solo se permiten letras minúsculas, números y guiones.',
+        suggestions: [],
+      };
+    }
+
+    // 1. Verificar si está en la lista de rutas o palabras reservadas del sistema
+    if (isReservedCvSlug(slug)) {
+      const suggestions = generateCvSlugAlternatives(slug, role);
+      return {
+        available: false,
+        status: 'reserved',
+        message: 'Este identificador está reservado para el sistema.',
+        suggestions,
+      };
+    }
+
+    // 2. Consultar colisión en la base de datos
+    const existing = await db.query.smartCvs.findFirst({
+      where: currentCvId
+        ? and(eq(smartCvs.slug, slug), ne(smartCvs.id, currentCvId))
+        : eq(smartCvs.slug, slug),
+    });
+
+    if (existing) {
+      const suggestions = generateCvSlugAlternatives(slug, role);
+      return {
+        available: false,
+        status: 'taken',
+        message: 'Este enlace ya está en uso por otro currículum.',
+        suggestions,
+      };
+    }
+
+    return {
+      available: true,
+      status: 'available',
+      message: '¡Enlace de CV disponible!',
+      suggestions: [],
+    };
+  } catch (error) {
+    console.error('Error al comprobar disponibilidad de slug de CV:', error);
+    return {
+      available: true,
+      status: 'available',
+      suggestions: [],
+    };
   }
 }
