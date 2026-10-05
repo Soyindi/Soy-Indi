@@ -84,8 +84,12 @@ export async function seedDatabase() {
       title: 'CV Ejecutivo — Staff Software Engineer',
       targetRole: 'Staff Software Engineer / Tech Lead',
       atsScore: 94,
-      templateId: 'executive-modern',
       content: {
+        fullName: 'Matías Riquelme',
+        email: 'matias@indi.bio',
+        phone: '+56 9 8765 4321',
+        location: 'Santiago, Chile / Remoto Global',
+        rut: '18.492.041-K',
         summary: 'Ingeniero de Software y Arquitecto de Soluciones Cloud con más de 8 años diseñando plataformas SaaS distribuidas de alta concurrencia.',
         experience: [
           {

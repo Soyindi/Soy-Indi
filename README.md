@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-139_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-169_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -53,13 +53,15 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 
 ### 2. 📄 Smart CV ATS Optimizer & Living Digital Resume
 - **Living Digital Resume con URL Propia (`/cv/[slug]`)**: Acceso web público instantáneo para compartir en un toque por WhatsApp, correo o LinkedIn, eliminando la dependencia de enviar archivos PDF adjuntos pesados u obsoletos.
+- **Persistencia Idempotente & Cero Duplicación**: Edición segura por identificador primario inmutable (`/cv?id=...`) y Server Action `upsertSmartCvAction` protegida con guardrail multi-tenant anti-IDOR. Actualiza el registro existente en base de datos sin generar registros duplicados ni desincronizar slugs.
 - **Telemetría de Lectura en Tiempo Real**: Contador atómico perimetral de visualizaciones (`viewsCount`) para que el postulante sepa con certeza cuándo los reclutadores abren y revisan su perfil.
 - **Descarga ATS Vectorial en 1 Clic**: Motor client-side para generar y descargar el currículum en PDF nativo de alta resolución con texto 100% seleccionable e indexable por software ATS.
-- **Selector de Formato Internacional**: Alternancia inmediata entre formato Carta (EE.UU./Tech/Startups) y A4 (LatAm/Europa/Organismos).
+- **Formato Unificado Empresarial A4 (DIN EN ISO 216)**: Estandarización de alta fidelidad (210 x 297 mm) con texto completamente justificado (Swiss typography), márgenes armónicos de 15 mm e interlineado optimizado tanto en la vista previa interactiva como en la exportación vectorial.
+- **Sanitización de Viñetas & Encabezados Corporativos Continuos**: Filtro algorítmico que elimina viñetas redundantes (`• •`) y agrega de forma automática encabezados corporativos con separadores en páginas secundarias (`${fullName} • ${targetRole} (Continuación)`).
+- **Protección Anti-Huérfanos**: Cálculo de clearance vertical dinámico ($\ge 24\text{mm}$) que previene títulos de sección aislados al final de una página.
 - **Ergonomía Móvil en el Thumb Zone**: Barra inferior de acciones anclada (`fixed bottom-4 inset-x-4 sm:hidden`) con botones táctiles $\ge 44\text{px}$ para contacto telefónico directo, correo electrónico, compartir y enlace directo a la Tarjeta Digital INDI del usuario.
 - **Auditoría Algorítmica (0 a 100)**: Evalúa estructura, densidad de palabras clave, impacto de métricas y longitud para superar filtros de software de Recursos Humanos (ATS).
 - **Feedback Accionable & Mitigación de Alucinaciones**: Detección de logros sin números (`needs_metric`) según estándares Google XYZ y requerimientos de transparencia de la EU AI Act.
-- **Vista Imprimible A4/Carta**: Maquetación tipográfica de alta fidelidad lista para exportar a PDF con calidad de imprenta.
 
 ### 3. 📽️ Orbital Presentations Pro (16:9)
 - **Persistencia Independiente & Zero Template Shadowing**: Precedencia estricta de base de datos en `/p/[slug]`. Las presentaciones personalizadas de los usuarios tienen prioridad absoluta sobre los templates estáticos por defecto.
@@ -221,6 +223,7 @@ Las pruebas validan de forma continua:
 3. El motor heurístico y ponderación algorítmica de puntaje ATS.
 4. Las reglas comerciales de suscripción y 3 días de prueba.
 5. El aislamiento multi-tenant y bloqueo de llamadas no autorizadas en producción.
+6. El flujo CRUD de Smart CV, persistencia multi-tenant anti-IDOR y renderizado vectorial A4 justificado (DIN EN ISO 216).
 
 ---
 
@@ -299,7 +302,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
-- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (127 pruebas en 22 suites).
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (169 pruebas en 26 suites).
 - `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
 - `npm run db:generate`: Genera archivos de migración SQL basados en el esquema de Drizzle.
 - `npm run db:migrate`: Aplica las migraciones declarativas sobre la base de datos Turso LibSQL (Local o Nube).

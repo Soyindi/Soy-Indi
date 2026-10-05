@@ -690,7 +690,7 @@ export function UnifiedDashboardView({
                       )}
 
                       <Link
-                        href="/cv"
+                        href={`/cv?id=${cv.id}`}
                         className={`min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-xs shadow-sm hover:opacity-95 transition ${!cv.slug ? 'flex-1' : ''}`}
                         title="Abrir Editor A4"
                       >

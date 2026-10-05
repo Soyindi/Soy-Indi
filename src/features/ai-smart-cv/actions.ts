@@ -405,6 +405,47 @@ export async function upsertSmartCvAction(
 }
 
 /**
+ * Obtener un Smart CV por su ID con verificación estricta de propiedad (Multi-Tenant Anti-IDOR)
+ */
+export async function getSmartCvByIdAction(cvId: string, userId?: string) {
+  try {
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
+    }
+    const targetUserId = sessionResult.userId;
+
+    const cv = await db.query.smartCvs.findFirst({
+      where: and(eq(smartCvs.id, cvId), eq(smartCvs.userId, targetUserId)),
+    });
+
+    if (!cv) {
+      return { success: false, error: 'Currículum no encontrado o no tienes permisos para acceder.' };
+    }
+
+    const cvData: CVFormValues = {
+      title: cv.title,
+      targetRole: cv.targetRole,
+      slug: cv.slug || undefined,
+      isPublic: cv.isPublic,
+      templateId: cv.templateId,
+      content: cv.content as any,
+    };
+
+    return {
+      success: true,
+      data: cvData,
+      id: cv.id,
+      slug: cv.slug,
+      atsScore: cv.atsScore,
+    };
+  } catch (err: any) {
+    console.error('Error obteniendo Smart CV por id:', err);
+    return { success: false, error: err.message || 'Error cargando currículum' };
+  }
+}
+
+/**
  * Obtener un Smart CV público por su slug con validación de visibilidad
  */
 export async function getPublicSmartCvAction(slug: string) {

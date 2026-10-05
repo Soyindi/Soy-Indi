@@ -6,19 +6,19 @@ import { Mail, Phone, MapPin, Globe, ShieldCheck, Link2 } from 'lucide-react';
 
 interface CvDocumentPreviewProps {
   cv: CVFormValues;
-  pageFormat?: 'letter' | 'a4';
+  pageFormat?: 'a4' | 'letter';
 }
 
-export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPreviewProps) {
+export function CvDocumentPreview({ cv, pageFormat = 'a4' }: CvDocumentPreviewProps) {
   const { content } = cv;
 
   // Determinar si el contenido requiere paginación en 2 hojas
   // Regla editorial: más de 3 experiencias o referencias o más de 4 ítems de educación justifican Hoja 2
-  const hasReferences = (content.references && content.references.length > 0);
+  const hasReferences = Boolean(content.references && content.references.length > 0);
   const needsTwoPages =
     content.experience.length > 3 ||
     (content.experience.length > 2 && (content.education.length > 3 || hasReferences)) ||
-    (content.summary.length > 300 && content.experience.length > 2);
+    (content.summary.length > 320 && content.experience.length > 2);
 
   // División de experiencias entre Hoja 1 y Hoja 2
   const page1Experiences = needsTwoPages ? content.experience.slice(0, 3) : content.experience;
@@ -28,19 +28,17 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
   const cleanBullet = (text: string) =>
     text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '').trim();
 
-  const pageDimensions =
-    pageFormat === 'a4'
-      ? 'min-h-[1050px] max-w-[800px] mx-auto'
-      : 'min-h-[980px] max-w-[820px] mx-auto';
+  // Dimensiones canónicas de A4 Internacional (210 x 297 mm a 96 DPI: 794px x 1123px)
+  const pageDimensions = 'min-h-[1123px] max-w-[794px] mx-auto';
 
   return (
     <div className="w-full space-y-8 font-sans selection:bg-indigo-100 selection:text-indigo-900">
-      {/* Estilos de impresión dinámicos con corte de hoja estricto */}
+      {/* Estilos de impresión dinámicos con corte de hoja estricto A4 */}
       <style jsx global>{`
         @media print {
           @page {
-            size: ${pageFormat === 'a4' ? 'A4' : 'letter'};
-            margin: 12mm 15mm;
+            size: A4 portrait;
+            margin: 12mm 16mm;
           }
           body {
             background: white !important;
@@ -69,10 +67,10 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
       {/* HOJA 1: ENCABEZADO, RESUMEN Y EXPERIENCIA PRINCIPAL           */}
       {/* ============================================================== */}
       <div className="w-full flex flex-col items-center">
-        {/* Badge indicador de hoja */}
-        <div className="page-badge mb-2.5 self-start flex items-center gap-1.5 bg-slate-900/90 text-cyan-300 border border-cyan-500/30 text-[11px] font-mono px-3.5 py-1 rounded-full shadow-sm backdrop-blur-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          <span>Hoja 1 {needsTwoPages ? 'de 2' : 'de 1'} • {pageFormat === 'a4' ? 'A4 Global' : 'Carta (US)'}</span>
+        {/* Badge indicador de hoja unificada */}
+        <div className="page-badge mb-3 self-start flex items-center gap-2 bg-slate-900/90 text-cyan-300 border border-cyan-500/30 text-[11px] font-mono px-3.5 py-1.5 rounded-full shadow-sm backdrop-blur-sm">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+          <span>Hoja 1 {needsTwoPages ? 'de 2' : 'de 1'} • Formato Unificado A4 Internacional (Grado Empresarial)</span>
         </div>
 
         <div className={`cv-page-sheet w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 border border-zinc-200 flex flex-col justify-between transition-all ${pageDimensions}`}>
@@ -136,11 +134,11 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
               </div>
             </div>
 
-            {/* Resumen Profesional */}
+            {/* Resumen Profesional (Justificado Grado Empresarial) */}
             {content.summary && (
               <div className="mb-6">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
-                  Perfil Profesional
+                  Resumen Profesional
                 </h2>
                 <p className="text-xs text-zinc-700 leading-relaxed font-normal text-justify">
                   {content.summary}
@@ -159,18 +157,23 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                     <div key={idx} className="text-xs">
                       <div className="flex items-center justify-between font-bold text-zinc-900">
                         <span className="text-[13px]">{exp.role}</span>
-                        <span className="text-zinc-500 text-[11px] font-normal">{exp.period}</span>
+                        <span className="text-zinc-500 text-[11px] font-normal font-mono">{exp.period}</span>
                       </div>
-                      <div className="text-indigo-700 font-semibold mb-1 text-[11px]">
+                      <div className="text-indigo-700 font-semibold mb-1.5 text-[11px]">
                         {exp.company}
                       </div>
                       {exp.bullets.length > 0 && (
-                        <ul className="list-disc list-inside space-y-1.5 text-zinc-600 pl-0.5">
-                          {exp.bullets.map((b, bIdx) => (
-                            <li key={bIdx} className="leading-snug">
-                              {cleanBullet(b)}
-                            </li>
-                          ))}
+                        <ul className="space-y-1.5 text-zinc-700">
+                          {exp.bullets.map((b, bIdx) => {
+                            const cleaned = cleanBullet(b);
+                            if (!cleaned) return null;
+                            return (
+                              <li key={bIdx} className="flex items-start gap-2 text-justify leading-relaxed">
+                                <span className="text-zinc-400 select-none mt-0.5">•</span>
+                                <span className="flex-1">{cleaned}</span>
+                              </li>
+                            );
+                          })}
                         </ul>
                       )}
                     </div>
@@ -185,7 +188,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                 {content.skills.length > 0 && (
                   <div className="mb-6">
                     <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
-                      Habilidades y Tecnologías
+                      Habilidades y Competencias
                     </h2>
                     <div className="flex flex-wrap gap-1.5">
                       {content.skills.map((skill, sIdx) => (
@@ -203,7 +206,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                 {content.education.length > 0 && (
                   <div className="mb-6">
                     <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
-                      Educación & Formación
+                      Educación & Certificaciones
                     </h2>
                     <div className="space-y-2">
                       {content.education.map((edu, eIdx) => (
@@ -239,7 +242,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {content.references.map((ref, rIdx) => (
-                        <div key={rIdx} className="text-xs p-2 rounded-lg bg-zinc-50 border border-zinc-150">
+                        <div key={rIdx} className="text-xs p-2.5 rounded-lg bg-zinc-50 border border-zinc-200">
                           <div className="font-bold text-zinc-900">{ref.name}</div>
                           <div className="text-indigo-700 text-[11px] font-medium">{ref.role} • {ref.company}</div>
                           {ref.contact && (
@@ -256,7 +259,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
 
           {/* Pie de Página de Hoja 1 */}
           <div className="pt-4 border-t border-zinc-200 mt-6 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-            <span>INDI Smart CV • Estándar ATS 2026</span>
+            <span>INDI Smart CV • Estándar ATS Grado Empresarial</span>
             <span>Página 1 {needsTwoPages ? 'de 2' : 'de 1'}</span>
           </div>
         </div>
@@ -269,20 +272,20 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
       {needsTwoPages && (
         <div className="w-full flex flex-col items-center">
           {/* Badge indicador de hoja 2 */}
-          <div className="page-badge mb-2.5 self-start flex items-center gap-1.5 bg-slate-900/90 text-purple-300 border border-purple-500/30 text-[11px] font-mono px-3.5 py-1 rounded-full shadow-sm backdrop-blur-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-            <span>Hoja 2 de 2 • {pageFormat === 'a4' ? 'A4 Global' : 'Carta (US)'}</span>
+          <div className="page-badge mb-3 self-start flex items-center gap-2 bg-slate-900/90 text-purple-300 border border-purple-500/30 text-[11px] font-mono px-3.5 py-1.5 rounded-full shadow-sm backdrop-blur-sm">
+            <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+            <span>Hoja 2 de 2 • Formato Unificado A4 Internacional</span>
           </div>
 
           <div className={`cv-page-sheet w-full bg-white text-zinc-900 rounded-2xl shadow-2xl p-8 sm:p-12 border border-zinc-200 flex flex-col justify-between transition-all ${pageDimensions}`}>
             <div>
-              {/* Encabezado discreto de continuación */}
+              {/* Encabezado corporativo de continuación */}
               <div className="border-b border-zinc-200 pb-3 mb-6 flex items-center justify-between text-xs text-zinc-500">
                 <span className="font-bold text-zinc-900 uppercase tracking-wider">
                   {content.fullName}
                 </span>
                 <span className="text-indigo-600 font-medium">
-                  {cv.targetRole}
+                  {cv.targetRole} (Continuación)
                 </span>
               </div>
 
@@ -297,18 +300,23 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                       <div key={idx} className="text-xs">
                         <div className="flex items-center justify-between font-bold text-zinc-900">
                           <span className="text-[13px]">{exp.role}</span>
-                          <span className="text-zinc-500 text-[11px] font-normal">{exp.period}</span>
+                          <span className="text-zinc-500 text-[11px] font-normal font-mono">{exp.period}</span>
                         </div>
-                        <div className="text-indigo-700 font-semibold mb-1 text-[11px]">
+                        <div className="text-indigo-700 font-semibold mb-1.5 text-[11px]">
                           {exp.company}
                         </div>
                         {exp.bullets.length > 0 && (
-                          <ul className="list-disc list-inside space-y-1.5 text-zinc-600 pl-0.5">
-                            {exp.bullets.map((b, bIdx) => (
-                              <li key={bIdx} className="leading-snug">
-                                {cleanBullet(b)}
-                              </li>
-                            ))}
+                          <ul className="space-y-1.5 text-zinc-700">
+                            {exp.bullets.map((b, bIdx) => {
+                              const cleaned = cleanBullet(b);
+                              if (!cleaned) return null;
+                              return (
+                                <li key={bIdx} className="flex items-start gap-2 text-justify leading-relaxed">
+                                  <span className="text-zinc-400 select-none mt-0.5">•</span>
+                                  <span className="flex-1">{cleaned}</span>
+                                </li>
+                              );
+                            })}
                           </ul>
                         )}
                       </div>
@@ -321,7 +329,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
               {content.skills.length > 0 && (
                 <div className="mb-6">
                   <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
-                    Habilidades y Tecnologías ATS
+                    Habilidades y Tecnologías
                   </h2>
                   <div className="flex flex-wrap gap-1.5">
                     {content.skills.map((skill, sIdx) => (
@@ -376,7 +384,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {content.references.map((ref, rIdx) => (
-                      <div key={rIdx} className="text-xs p-2.5 rounded-lg bg-zinc-50 border border-zinc-200/80">
+                      <div key={rIdx} className="text-xs p-2.5 rounded-lg bg-zinc-50 border border-zinc-200">
                         <div className="font-bold text-zinc-900">{ref.name}</div>
                         <div className="text-indigo-700 text-[11px] font-medium">{ref.role} • {ref.company}</div>
                         {ref.contact && (
@@ -397,7 +405,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
                     {content.fullName} • Perfil Profesional
                   </p>
                   <p className="text-[10px] text-zinc-400">
-                    Validado en plataforma INDI • Actualizado 2026
+                    Validado en plataforma INDI • Estándar ATS 2026
                   </p>
                 </div>
 
@@ -434,7 +442,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'letter' }: CvDocumentPrevi
 
               {/* Pie de Página de Hoja 2 */}
               <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-                <span>INDI Smart CV • Estándar ATS 2026</span>
+                <span>INDI Smart CV • Estándar ATS Grado Empresarial</span>
                 <span>Página 2 de 2</span>
               </div>
             </div>

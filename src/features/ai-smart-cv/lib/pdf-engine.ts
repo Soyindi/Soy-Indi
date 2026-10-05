@@ -2,48 +2,68 @@ import { jsPDF } from 'jspdf';
 import { CVFormValues } from '@/entities/cv/schemas';
 
 export interface GeneratePdfOptions {
-  format?: 'letter' | 'a4';
+  format?: 'a4' | 'letter';
   filename?: string;
 }
 
 /**
- * Motor Vectorial de Exportación a PDF para INDI (2026)
- * Genera un PDF binario con texto 100% seleccionable (compatible con filtros ATS Workday/Greenhouse),
- * micro-tipografía editorial suiza, firma digital con RUT chileno y disparo de descarga directa.
+ * Sanitiza el texto de viñetas para prevenir dobles viñetas (• • o - •)
  */
-export async function generateAndDownloadCvPdf(
+export function sanitizeBulletText(text: string): string {
+  if (!text) return '';
+  return text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '').trim();
+}
+
+/**
+ * Construye el documento vectorial jsPDF para INDI Smart CV (2026)
+ * Estándar Unificado: A4 Internacional (210 x 297 mm, DIN EN ISO 216), Grado Empresarial,
+ * texto justificado pulcro, micro-tipografía editorial suiza y compatibilidad ATS.
+ */
+export function buildCvPdfDocument(
   cv: CVFormValues,
   options: GeneratePdfOptions = {}
-): Promise<void> {
-  const { format = 'letter' } = options;
+): jsPDF {
+  const { format = 'a4' } = options;
   const { content } = cv;
 
-  // 1. Inicializar documento con dimensiones exactas
-  // Carta / US Letter: 215.9 x 279.4 mm
-  // A4 Global: 210 x 297 mm
+  // 1. Inicialización con estándar empresarial unificado A4 (o carta si se solicita expresamente)
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: format === 'a4' ? 'a4' : 'letter',
+    format: format === 'letter' ? 'letter' : 'a4',
     compress: true,
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const marginX = 18; // mm margen lateral
+  const marginX = 18; // mm margen lateral simétrico
   const contentWidth = pageWidth - marginX * 2;
   let cursorY = 20; // mm margen superior inicial
 
+  const fullName = (content.fullName || 'PROFESIONAL').toUpperCase();
+  const targetRole = cv.targetRole || 'ROL PROFESIONAL';
+
+  // Helper para verificar saltos de página con encabezado de continuación corporativo
   const checkPageBreak = (neededHeight: number) => {
     if (cursorY + neededHeight > pageHeight - 20) {
       doc.addPage();
-      cursorY = 20;
+      // Encabezado de continuación corporativo para páginas 2+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(100, 116, 139); // Slate 500
+      doc.text(`${fullName}  •  ${targetRole}  (Continuación)`, marginX, 15);
+
+      doc.setDrawColor(226, 232, 240); // Slate 200
+      doc.setLineWidth(0.2);
+      doc.line(marginX, 17, marginX + contentWidth, 17);
+
+      cursorY = 23;
     }
   };
 
-  // Helper para dibujar línea divisoria de sección
-  const drawSectionHeader = (title: string) => {
-    checkPageBreak(14);
+  // Helper para dibujar línea divisoria de sección con protección anti-huérfanos
+  const drawSectionHeader = (title: string, minContentHeight = 24) => {
+    checkPageBreak(minContentHeight);
     cursorY += 4;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10.5);
@@ -57,7 +77,6 @@ export async function generateAndDownloadCvPdf(
   };
 
   // --- CABECERA PRINCIPAL ---
-  const fullName = (content.fullName || 'PROFESIONAL').toUpperCase();
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(22);
   doc.setTextColor(15, 23, 42); // Slate 900
@@ -65,7 +84,6 @@ export async function generateAndDownloadCvPdf(
   cursorY += 6.5;
 
   // Cargo objetivo
-  const targetRole = cv.targetRole || 'ROL PROFESIONAL';
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(67, 56, 202); // Indigo 700
@@ -98,7 +116,7 @@ export async function generateAndDownloadCvPdf(
   doc.line(marginX, cursorY, marginX + contentWidth, cursorY);
   cursorY += 6;
 
-  // --- 1. RESUMEN PROFESIONAL ---
+  // --- 1. RESUMEN PROFESIONAL (JUSTIFICADO EMPRESARIAL) ---
   if (content.summary && content.summary.trim().length > 0) {
     drawSectionHeader('Resumen Profesional');
     doc.setFont('helvetica', 'normal');
@@ -106,7 +124,11 @@ export async function generateAndDownloadCvPdf(
     doc.setTextColor(51, 65, 85); // Slate 700
     const summaryLines = doc.splitTextToSize(content.summary, contentWidth);
     checkPageBreak(summaryLines.length * 4.5);
-    doc.text(summaryLines, marginX, cursorY, { lineHeightFactor: 1.35 });
+    doc.text(content.summary, marginX, cursorY, {
+      align: 'justify',
+      maxWidth: contentWidth,
+      lineHeightFactor: 1.35,
+    });
     cursorY += summaryLines.length * 4.4 + 4;
   }
 
@@ -132,36 +154,42 @@ export async function generateAndDownloadCvPdf(
       cursorY += 4.2;
 
       // Empresa
-      doc.setFont('helvetica', 'medium' in doc ? 'medium' : 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(79, 70, 229); // Indigo 600
       doc.text(exp.company || 'Empresa', marginX, cursorY);
       cursorY += 4.5;
 
-      // Viñetas STAR/XYZ
+      // Viñetas STAR/XYZ con sanitización y texto justificado
       const bullets = exp.bullets && exp.bullets.length > 0
         ? exp.bullets
         : (exp.detailedBullets || []).map((b) => b.text);
 
-      for (const bullet of bullets) {
-        if (!bullet || bullet.trim().length === 0) continue;
-        const bulletIndent = 4;
+      for (const rawBullet of bullets) {
+        const bullet = sanitizeBulletText(rawBullet);
+        if (!bullet || bullet.length === 0) continue;
+
+        const bulletIndent = 4.5;
         const bulletTextWidth = contentWidth - bulletIndent;
         const bulletLines = doc.splitTextToSize(bullet, bulletTextWidth);
-        
+
         checkPageBreak(bulletLines.length * 4.2 + 2);
-        
-        // Símbolo de viñeta
+
+        // Símbolo de viñeta limpio y único
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9);
         doc.setTextColor(148, 163, 184); // Slate 400
         doc.text('•', marginX, cursorY);
 
-        // Texto de la viñeta
+        // Texto de la viñeta justificado pulcramente
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
         doc.setTextColor(51, 65, 85); // Slate 700
-        doc.text(bulletLines, marginX + bulletIndent, cursorY, { lineHeightFactor: 1.3 });
+        doc.text(bullet, marginX + bulletIndent, cursorY, {
+          align: 'justify',
+          maxWidth: bulletTextWidth,
+          lineHeightFactor: 1.3,
+        });
         cursorY += bulletLines.length * 4.1 + 1.8;
       }
       cursorY += 2.5;
@@ -212,7 +240,11 @@ export async function generateAndDownloadCvPdf(
     doc.setTextColor(51, 65, 85);
     const skillLines = doc.splitTextToSize(skillsText, contentWidth);
     checkPageBreak(skillLines.length * 4.4);
-    doc.text(skillLines, marginX, cursorY, { lineHeightFactor: 1.35 });
+    doc.text(skillsText, marginX, cursorY, {
+      align: 'justify',
+      maxWidth: contentWidth,
+      lineHeightFactor: 1.35,
+    });
     cursorY += skillLines.length * 4.4 + 5;
   }
 
@@ -238,7 +270,6 @@ export async function generateAndDownloadCvPdf(
 
   // --- 5. FIRMA DIGITAL EJECUTIVA Y PIE LEGAL ---
   if (content.signatureUrl || content.fullName) {
-    // Si la firma está cerca del borde inferior, mover a nueva página
     checkPageBreak(38);
 
     cursorY += 6;
@@ -301,7 +332,7 @@ export async function generateAndDownloadCvPdf(
     doc.setFontSize(7.5);
     doc.setTextColor(148, 163, 184); // Slate 400
     doc.text(
-      `INDI Smart CV • Estándar ATS 2026 • Formato: ${format === 'a4' ? 'A4 Global' : 'Carta (US)'}`,
+      `INDI Smart CV • Estándar ATS Grado Empresarial • Formato Unificado: ${format === 'a4' ? 'A4 Internacional' : 'Carta (US)'}`,
       marginX,
       pageHeight - 8
     );
@@ -313,12 +344,27 @@ export async function generateAndDownloadCvPdf(
     );
   }
 
-  // 7. Generar nombre de archivo sanitizado y disparar la descarga directa
+  return doc;
+}
+
+/**
+ * Motor Vectorial de Exportación a PDF para INDI (2026)
+ * Genera un PDF binario con texto 100% seleccionable (compatible con filtros ATS Workday/Greenhouse),
+ * micro-tipografía editorial suiza, firma digital con RUT chileno y disparo de descarga directa.
+ */
+export async function generateAndDownloadCvPdf(
+  cv: CVFormValues,
+  options: GeneratePdfOptions = {}
+): Promise<void> {
+  const doc = buildCvPdfDocument(cv, options);
+  const { content } = cv;
+
+  // Generar nombre de archivo sanitizado y disparar la descarga directa
   const sanitizedName = (content.fullName || 'Profesional')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9]/g, '_');
-  
+
   const finalFilename = options.filename || `CV_${sanitizedName}_2026.pdf`;
 
   // Disparar descarga directa mediante Blob nativo en el cliente

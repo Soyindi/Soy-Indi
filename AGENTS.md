@@ -119,6 +119,12 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 
 
 
+8. **Formato Unificado Empresarial A4 y Exportación Vectorial ATS (ISO 216 Standard):**
+   - Todo currículum digital (Smart CV) tanto en visualización web (`CvDocumentPreview.tsx`) como en exportación PDF vectorial (`pdf-engine.ts`) se rige bajo el estándar unificado **A4 Internacional (210 x 297 mm, DIN EN ISO 216)** de grado empresarial.
+   - Párrafos de resumen profesional y viñetas de experiencia deben estar pulcramente justificados (`text-justify` en cliente web y `{ align: 'justify', maxWidth: ... }` en jsPDF), con sangría colgante y sanitización de caracteres para neutralizar la duplicación de viñetas (`• •` o `- •`).
+   - Las cabeceras de sección en PDF deben implementar guardrail anti-huérfanos (mínimo 24mm de espacio vertical libre) y encabezado corporativo de continuación en páginas posteriores.
+   - Los editores de CV deben enlazar desde paneles mediante clave primaria inmutable (`/cv?id=${cv.id}`) y persistir reactivamente el `cvId` en el estado tras cada guardado para garantizar mutaciones idempotentes y prevenir la duplicación de registros.
+
 ---
 
 ## 📦 6. Convenciones de Git y Commits Semánticos
@@ -145,3 +151,4 @@ Ninguna tarea que involucre cambios de arquitectura, nuevas entidades, nuevos co
    - **[AGENTS.md](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/AGENTS.md):** Actualizar si el cambio introduce un nuevo estándar de codificación, regla de diseño o protocolo de testing.
 2. **Atomicidad:**
    - Los cambios de código y sus respectivas actualizaciones documentales deben incluirse en el mismo ciclo de trabajo o commitearse bajo el prefijo `docs:` inmediatamente después.
+

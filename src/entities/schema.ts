@@ -158,10 +158,42 @@ export const smartCvs = sqliteTable('smart_cvs', {
   targetRole: text('target_role').notNull(),
   atsScore: integer('ats_score').default(0).notNull(),
   content: text('content', { mode: 'json' }).$type<{
+    fullName: string;
+    email: string;
+    phone: string;
+    location: string;
+    rut?: string;
     summary: string;
-    experience: Array<{ company: string; role: string; period: string; bullets: string[] }>;
     skills: string[];
-    education: Array<{ degree: string; institution: string; year: string }>;
+    experience: Array<{
+      company: string;
+      role: string;
+      period: string;
+      bullets: string[];
+      detailedBullets?: Array<{ text: string; needs_metric: boolean }>;
+    }>;
+    education: Array<{
+      degree: string;
+      institution: string;
+      year: string;
+      verifiedCredentialId?: string;
+      credentialType?: 'DEGREE' | 'CERTIFICATION' | 'DIPLOMA' | 'UNVERIFIED';
+    }>;
+    references?: Array<{ name: string; role: string; company: string; contact?: string }>;
+    credentials?: Array<{
+      id: string;
+      issuingInstitution: string;
+      credentialName: string;
+      issueDate?: string;
+      verificationCode?: string;
+      validationStatus: 'CRYPTOGRAPHIC_MATCH' | 'SEMANTIC_MATCH' | 'MANUAL_REVIEW';
+    }>;
+    linkedinUrl?: string;
+    websiteUrl?: string;
+    indiCardSlug?: string;
+    signatureUrl?: string;
+    signatureType?: 'DRAWN' | 'UPLOADED' | 'TYPOGRAPHIC' | 'NONE';
+    signatureDate?: string;
   }>().notNull(),
   templateId: text('template_id').default('executive-modern').notNull(),
   slug: text('slug').unique(),

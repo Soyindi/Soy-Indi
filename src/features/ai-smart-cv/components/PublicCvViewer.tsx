@@ -29,14 +29,14 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [pageFormat, setPageFormat] = useState<'letter' | 'a4'>('letter');
+  const [pageFormat] = useState<'a4' | 'letter'>('a4');
 
   const { content } = cv;
 
   const handleDownloadPdf = async () => {
     try {
       setDownloadingPdf(true);
-      await generateAndDownloadCvPdf(cv, { format: pageFormat });
+      await generateAndDownloadCvPdf(cv, { format: 'a4' });
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 2500);
     } catch (err) {
@@ -102,30 +102,10 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Selector Carta / A4 */}
-            <div className="hidden sm:flex items-center p-0.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-mono">
-              <button
-                type="button"
-                onClick={() => setPageFormat('letter')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${
-                  pageFormat === 'letter'
-                    ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                Carta
-              </button>
-              <button
-                type="button"
-                onClick={() => setPageFormat('a4')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${
-                  pageFormat === 'a4'
-                    ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                A4
-              </button>
+            {/* Formato Unificado A4 */}
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-mono text-zinc-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              <span>A4 Ejecutivo (ISO 216)</span>
             </div>
 
             {/* Botón Compartir */}

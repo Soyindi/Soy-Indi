@@ -41,45 +41,55 @@ import {
   Check,
 } from 'lucide-react';
 
-export function SmartCvBuilder() {
+export interface SmartCvBuilderProps {
+  initialData?: Partial<CVFormValues>;
+  initialCvId?: string;
+  initialScore?: number;
+}
+
+export function SmartCvBuilder({
+  initialData,
+  initialCvId,
+  initialScore,
+}: SmartCvBuilderProps = {}) {
   const [isPending, startTransition] = useTransition();
   const [auditPending, startAuditTransition] = useTransition();
   const [isDropzoneProcessing, setIsDropzoneProcessing] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState(false);
-  const [currentScore, setCurrentScore] = useState<number>(85);
+  const [currentCvId, setCurrentCvId] = useState<string | undefined>(initialCvId);
+  const [currentScore, setCurrentScore] = useState<number>(initialScore ?? 85);
   const [auditReport, setAuditReport] = useState<AtsAuditResult | null>(null);
 
   // Modo de visualización: 'split' (ambos), 'edit' (solo editor), 'preview' (solo documento)
   const [viewMode, setViewMode] = useState<'split' | 'edit' | 'preview'>('split');
-  // Formato de página: 'letter' (EE.UU./Tech/Silicon Valley) o 'a4' (LatAm/Europa/Global)
-  const [pageFormat, setPageFormat] = useState<'letter' | 'a4'>('letter');
+  // Formato unificado de página: A4 Internacional (Grado Empresarial)
+  const [pageFormat, setPageFormat] = useState<'a4' | 'letter'>('a4');
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState<CVFormValues>(() => ({
-    title: 'CV Ejecutivo 2026',
-    targetRole: 'Senior Full Stack Engineer & Software Architect',
-    slug: generateCvSlug('matias-riquelme-dev'),
-    isPublic: true,
-    templateId: 'executive-modern',
+  const [downloadError, setDownloadError] = useState<string | null>(null);  const [formData, setFormData] = useState<CVFormValues>(() => ({
+    title: initialData?.title || 'CV Ejecutivo 2026',
+    targetRole: initialData?.targetRole || 'Senior Full Stack Engineer & Software Architect',
+    slug: initialData?.slug || generateCvSlug('matias-riquelme-dev'),
+    isPublic: initialData?.isPublic ?? true,
+    templateId: initialData?.templateId || 'executive-modern',
     content: {
-      fullName: 'Matías Riquelme',
-      email: 'matias@indi.bio',
-      phone: '+56 9 8765 4321',
-      location: 'Santiago / Remoto Global',
-      rut: '18.492.041-K',
-      linkedinUrl: 'linkedin.com/in/matias-riquelme',
-      websiteUrl: 'github.com/matiquelmec',
-      signatureUrl: '',
-      signatureType: 'NONE',
-      signatureDate: '',
-      summary: 'Ingeniero de Software Senior con más de 7 años de experiencia diseñando arquitecturas serverless de alta concurrencia en el Edge, microservicios distribuidos con SQLite y liderando equipos multidisciplinarios bajo metodologías ágiles.',
-      skills: ['TypeScript', 'React 19', 'Next.js 16', 'Turso SQLite', 'Drizzle ORM', 'Tailwind CSS v4', 'Arquitectura Serverless', 'Cloudflare Workers', 'Zod', 'Docker'],
-      experience: [
+      fullName: initialData?.content?.fullName ?? 'Matías Riquelme',
+      email: initialData?.content?.email ?? 'matias@indi.bio',
+      phone: initialData?.content?.phone ?? '+56 9 8765 4321',
+      location: initialData?.content?.location ?? 'Santiago / Remoto Global',
+      rut: initialData?.content?.rut ?? '18.492.041-K',
+      linkedinUrl: initialData?.content?.linkedinUrl ?? 'linkedin.com/in/matias-riquelme',
+      websiteUrl: initialData?.content?.websiteUrl ?? 'github.com/matiquelmec',
+      signatureUrl: initialData?.content?.signatureUrl ?? '',
+      signatureType: initialData?.content?.signatureType ?? 'NONE',
+      signatureDate: initialData?.content?.signatureDate ?? '',
+      summary: initialData?.content?.summary ?? 'Ingeniero de Software Senior con más de 7 años de experiencia diseñando arquitecturas serverless de alta concurrencia en el Edge, microservicios distribuidos con SQLite y liderando equipos multidisciplinarios bajo metodologías ágiles.',
+      skills: initialData?.content?.skills ?? ['TypeScript', 'React 19', 'Next.js 16', 'Turso SQLite', 'Drizzle ORM', 'Tailwind CSS v4', 'Arquitectura Serverless', 'Cloudflare Workers', 'Zod', 'Docker'],
+      experience: initialData?.content?.experience ?? [
         {
           company: 'Indi Digital Ecosystems',
           role: 'Lead Architect & Core Engineer',
@@ -119,7 +129,7 @@ export function SmartCvBuilder() {
           ],
         },
       ],
-      education: [
+      education: initialData?.content?.education ?? [
         {
           degree: 'Ingeniería Civil en Computación e Informática',
           institution: 'Universidad de Chile',
@@ -127,7 +137,7 @@ export function SmartCvBuilder() {
           credentialType: 'DEGREE',
         },
       ],
-      credentials: [
+      credentials: initialData?.content?.credentials ?? [
         {
           id: 'cred-1',
           issuingInstitution: 'Universidad de Chile',
@@ -138,7 +148,7 @@ export function SmartCvBuilder() {
           mappedEducationIndex: 0,
         },
       ],
-      references: [
+      references: initialData?.content?.references ?? [
         {
           name: 'Dra. Carolina Morales',
           role: 'Directora de Operaciones Clínicas',
@@ -148,6 +158,26 @@ export function SmartCvBuilder() {
       ],
     },
   }));
+
+  // Sincronizar estado cuando se cargue initialData o initialCvId
+  React.useEffect(() => {
+    if (initialCvId) {
+      setCurrentCvId(initialCvId);
+    }
+    if (initialScore !== undefined) {
+      setCurrentScore(initialScore);
+    }
+    if (initialData) {
+      setFormData((prev) => ({
+        ...prev,
+        ...initialData,
+        content: {
+          ...prev.content,
+          ...(initialData.content || {}),
+        },
+      }));
+    }
+  }, [initialCvId, initialData, initialScore]);
 
   const handleContentChange = (field: string, value: any) => {
     setFormData((prev) => ({
@@ -386,14 +416,19 @@ export function SmartCvBuilder() {
 
   const handleSaveCv = () => {
     startTransition(async () => {
-      const res = await upsertSmartCvAction(formData);
+      setSaveError(null);
+      const res = await upsertSmartCvAction(formData, currentCvId);
       if (res.success) {
         setSavedSuccess(true);
+        if (res.id) setCurrentCvId(res.id);
         if (res.score) setCurrentScore(res.score);
         if (res.slug) {
           setFormData((prev) => ({ ...prev, slug: res.slug }));
         }
         setTimeout(() => setSavedSuccess(false), 3000);
+      } else {
+        setSaveError(res.error || 'Error al guardar el currículum.');
+        setTimeout(() => setSaveError(null), 5000);
       }
     });
   };
@@ -414,7 +449,7 @@ export function SmartCvBuilder() {
     setIsDownloading(true);
     setDownloadError(null);
     try {
-      await generateAndDownloadCvPdf(formData, { format: pageFormat });
+      await generateAndDownloadCvPdf(formData, { format: 'a4' });
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3500);
     } catch (err: any) {
@@ -505,35 +540,17 @@ export function SmartCvBuilder() {
           <span className="font-mono font-bold text-white">{currentScore}% ATS</span>
         </button>
 
-        {/* Selector Dinámico de Formato de Página */}
-        <div className="hidden sm:flex bg-slate-900/80 p-0.5 rounded-xl border border-white/10 text-xs font-mono">
-          <button
-            type="button"
-            onClick={() => setPageFormat('letter')}
-            className={`px-2.5 py-1.5 rounded-lg transition-all ${
-              pageFormat === 'letter' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
-            }`}
-            title="Formato Carta (8.5x11 pulgadas - Estándar EE.UU./Canadá/Tech)"
-          >
-            Carta (US)
-          </button>
-          <button
-            type="button"
-            onClick={() => setPageFormat('a4')}
-            className={`px-2.5 py-1.5 rounded-lg transition-all ${
-              pageFormat === 'a4' ? 'bg-white/15 text-white font-semibold' : 'text-slate-400 hover:text-white'
-            }`}
-            title="Formato A4 (210x297mm - Estándar Europa/LatAm/Global)"
-          >
-            A4
-          </button>
+        {/* Formato Unificado Empresarial A4 */}
+        <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-zinc-300">
+          <FileText className="w-3.5 h-3.5 text-cyan-400" />
+          <span>A4 Ejecutivo (ISO 216)</span>
         </div>
 
         {/* Descargar PDF Directo en 1 Clic */}
         <button
           onClick={handleDownloadPdf}
           disabled={isDownloading}
-          className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all disabled:opacity-50 ${
+          className={`inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all disabled:opacity-50 ${
             downloadSuccess
               ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-emerald-500/20'
               : downloadError
@@ -564,7 +581,7 @@ export function SmartCvBuilder() {
         <button
           onClick={handleSaveCv}
           disabled={isPending}
-          className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-md shadow-indigo-500/20 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
+          className="inline-flex items-center gap-2 min-h-[44px] px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-md shadow-indigo-500/20 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
         >
           {isPending ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -576,6 +593,23 @@ export function SmartCvBuilder() {
           <span>{savedSuccess ? '¡Guardado!' : 'Guardar'}</span>
         </button>
       </AppEditorHeader>
+
+      {/* Alerta de Error de Guardado */}
+      {saveError && (
+        <div className="mt-4 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
+            <span>{saveError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSaveError(null)}
+            className="text-rose-400 hover:text-white text-xs font-bold px-2 py-1 min-h-[44px] flex items-center"
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
 
       {/* Modal de Importación Desacoplado */}
       <ImportDocumentModal
@@ -1174,13 +1208,13 @@ export function SmartCvBuilder() {
           <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'w-full'} sticky top-6`}>
             <div className="flex items-center justify-between mb-3 px-1 text-xs text-zinc-400 font-mono">
               <span className="uppercase font-semibold text-slate-300">
-                FORMATO {pageFormat === 'letter' ? 'CARTA (US LETTER • 8.5x11")' : 'A4 (GLOBAL • 210x297mm)'}
+                FORMATO UNIFICADO A4 INTERNACIONAL (210x297mm)
               </span>
-              <span className="text-[11px] text-cyan-400">DUAL-TARGET ATS</span>
+              <span className="text-[11px] text-emerald-400 font-semibold">GRADO EMPRESARIAL • ATS</span>
             </div>
 
             <div className="w-full">
-              <CvDocumentPreview cv={formData} pageFormat={pageFormat} />
+              <CvDocumentPreview cv={formData} pageFormat="a4" />
             </div>
           </div>
         )}

@@ -1012,4 +1012,46 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 0 errores en compilación TypeScript (`npm run typecheck`).
    - Compilación exitosa de producción Next.js 16 (`npm run build`, exit code 0).
 
+### ✅ Fase 41: Formato Unificado A4 Internacional (Grado Empresarial), Persistencia Anti-Duplicados y Exportación Vectorial ATS (COMPLETADA)
+1. **Diagnóstico de Bugs en Guardado y Descarga de Smart CV**:
+   - **Duplicación Infinita de CVs al Guardar**:
+     - `SmartCvBuilder.tsx` invocaba `upsertSmartCvAction(formData)` omitiendo el parámetro `cvId`.
+     - No retenía en estado el `id` asignado tras la primera creación, provocando que guardados sucesivos detectaran su propio slug como colisión y crearan filas duplicadas con slugs aleatorizados (`-3k9a`).
+   - **Template Shadowing al Editar desde el Dashboard**:
+     - `UnifiedDashboardView.tsx` enlazaba el botón "Editar" del CV a `/cv` en lugar de `/cv?id=${cv.id}`.
+     - `src/app/cv/page.tsx` no recibía `searchParams` ni cargaba el registro desde base de datos, abriendo siempre la plantilla mock por defecto.
+     - Faltaba la Server Action `getSmartCvByIdAction(cvId, userId)` con guardrails multi-tenant anti-IDOR.
+   - **Inconsistencia de Formatos (Carta vs A4) y Desalineación Tipográfica**:
+     - Coexistían selectores redundantes entre Carta (US) y A4, rompiendo la paridad entre la vista web y el PDF vectorial.
+     - El generador de PDF (`pdf-engine.ts`) alineaba el texto a la izquierda (`align: 'left'`) en lugar de justificarlo, dejando bordes dentados y generando dobles viñetas (`• •`) al no sanitizar caracteres preexistentes.
+     - Encabezados de sección huérfanos al pie de página y ausencia de encabezado de continuación en la página 2.
+2. **Solución Arquitectural FSD & Seguridad**:
+   - **Entidades y Contrato de Base de Datos (`src/entities/schema.ts`)**:
+     - Tipado canónico completo para `smartCvs.content`: nombre, contacto, RUT, resumen, experiencia detallada, educación verificada, referencias, firma digital y URLs profesionales.
+     - Actualización de semillas en `src/shared/api/seed.ts` para alinearse con el contrato.
+   - **Capa de Negocio y Server Actions (`src/features/ai-smart-cv/actions.ts`)**:
+     - Implementación de `getSmartCvByIdAction(cvId, userId)` con validación de propiedad `and(eq(smartCvs.id, cvId), eq(smartCvs.userId, targetUserId))`.
+     - Blindaje de `upsertSmartCvAction`: actualización idempotente mediante `cvId` verificado y retorno del identificador inmutable.
+   - **Formato Unificado A4 Internacional (Grado Empresarial)**:
+     - Estandarización a **A4 Internacional (210 x 297 mm, DIN EN ISO 216)** tanto en visualización interactiva (`CvDocumentPreview.tsx`) como en exportación vectorial jsPDF (`pdf-engine.ts`).
+     - **Texto Justificado Editorial**: Justificación tipográfica suiza (`align: 'justify'` con `maxWidth` exacto en jsPDF y `text-justify` en DOM) para el resumen ejecutivo y viñetas de experiencia.
+     - **Sanitización de Viñetas (`sanitizeBulletText`)**: Erradicación de dobles viñetas (`• •` o `- •`) y sangría colgante estricta (`list-outside`).
+     - **Guardrail Anti-Huérfanos**: `drawSectionHeader` exige un mínimo de 24mm libres antes de dibujar la cabecera, evitando títulos aislados al fondo de hoja.
+     - **Encabezado Corporativo de Continuación**: Cabecera sutil `${fullName} • ${targetRole} (Continuación)` con línea divisoria al saltar a la página 2.
+     - **Función Pura Desacoplada (`buildCvPdfDocument`)**: Permite instanciar y auditar el documento PDF en suites de prueba unitarias sin dependencias de ventana de navegador.
+   - **Integración en UI & Enrutamiento**:
+     - `src/features/dashboard/components/UnifiedDashboardView.tsx`: Enlace de edición corregido a `/cv?id=${cv.id}`.
+     - `src/app/cv/page.tsx`: Carga asíncrona de `initialData` e `initialCvId` mediante `searchParams.id`.
+     - `src/features/ai-smart-cv/components/SmartCvBuilder.tsx`: Estado reactivo `currentCvId`, banner de notificación de error accesible (`saveError`), badge de formato unificado A4 y touch targets ergonómicos $\ge 44\text{px}$.
+     - `src/features/ai-smart-cv/components/PublicCvViewer.tsx`: Formato unificado A4 y exportación sin fricción.
+3. **Control de Calidad y Pruebas Unitarias (169 Tests Passing)**:
+   - Nueva suite `tests/unit/smart-cv-crud-and-export.test.ts` (9 pruebas unitarias) cubriendo:
+     - `getSmartCvByIdAction`: autorización de tenant y bloqueo anti-IDOR ante peticiones no autorizadas.
+     - `upsertSmartCvAction`: inserción idempotente vs actualización de registro existente.
+     - `sanitizeBulletText`: neutralización de viñetas duplicadas.
+     - `buildCvPdfDocument`: generación de documento A4 con dimensiones exactas 210 x 297 mm y pie de página institucional.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (169 de 169 tests en 26 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
