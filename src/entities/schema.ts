@@ -1,6 +1,8 @@
 import { relations, sql } from 'drizzle-orm';
 import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 import type { PresentationSlide, PresentationTheme } from './presentation/schemas';
+import type { CardThemeConfig } from './card/schemas';
+import type { CVContent } from './cv/schemas';
 
 // ============================================================================
 // 1. USUARIOS Y AUTENTICACIÓN OFICIAL BETTER-AUTH
@@ -107,19 +109,7 @@ export const cards = sqliteTable('cards', {
   instagramUrl: text('instagram_url'),
   photoUrl: text('photo_url'),
   address: text('address'),
-  themeConfig: text('theme_config', { mode: 'json' }).$type<{
-    themeId: string;
-    primaryColorOklch: string;
-    backgroundColorOklch: string;
-    particleBehavior: 'static' | 'interactive' | 'ambient';
-    particleIntensity: 'subtle' | 'balanced' | 'prominent';
-    fontFamily: string;
-    enableGlassRefraction: boolean;
-    badgeText?: string | null;
-    ctaLabel?: string | null;
-    cardFinish?: 'classic' | 'holographic' | 'titanium' | 'obsidian' | 'minimal';
-    surfaceTexture?: 'none' | 'dot-grid' | 'radial-glow';
-  }>().notNull(),
+  themeConfig: text('theme_config', { mode: 'json' }).$type<CardThemeConfig>().notNull(),
   isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
   viewsCount: integer('views_count').default(0).notNull(),
   clicksCount: integer('clicks_count').default(0).notNull(),
@@ -161,44 +151,7 @@ export const smartCvs = sqliteTable('smart_cvs', {
   title: text('title').notNull(),
   targetRole: text('target_role').notNull(),
   atsScore: integer('ats_score').default(0).notNull(),
-  content: text('content', { mode: 'json' }).$type<{
-    fullName: string;
-    email: string;
-    phone: string;
-    location: string;
-    rut?: string;
-    summary: string;
-    skills: string[];
-    experience: Array<{
-      company: string;
-      role: string;
-      period: string;
-      bullets: string[];
-      detailedBullets?: Array<{ text: string; needs_metric: boolean }>;
-    }>;
-    education: Array<{
-      degree: string;
-      institution: string;
-      year: string;
-      verifiedCredentialId?: string;
-      credentialType?: 'DEGREE' | 'CERTIFICATION' | 'DIPLOMA' | 'UNVERIFIED';
-    }>;
-    references?: Array<{ name: string; role: string; company: string; contact?: string }>;
-    credentials?: Array<{
-      id: string;
-      issuingInstitution: string;
-      credentialName: string;
-      issueDate?: string;
-      verificationCode?: string;
-      validationStatus: 'CRYPTOGRAPHIC_MATCH' | 'SEMANTIC_MATCH' | 'MANUAL_REVIEW';
-    }>;
-    linkedinUrl?: string;
-    websiteUrl?: string;
-    indiCardSlug?: string;
-    signatureUrl?: string;
-    signatureType?: 'DRAWN' | 'UPLOADED' | 'TYPOGRAPHIC' | 'NONE';
-    signatureDate?: string;
-  }>().notNull(),
+  content: text('content', { mode: 'json' }).$type<CVContent | Record<string, any>>().notNull(),
   templateId: text('template_id').default('executive-modern').notNull(),
   slug: text('slug').unique(),
   isPublic: integer('is_public', { mode: 'boolean' }).default(true).notNull(),

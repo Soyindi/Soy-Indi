@@ -1,5 +1,32 @@
 import { z } from 'zod';
 
+export const cardThemeConfigSchema = z.object({
+  themeId: z.string().default('stellar'),
+  primaryColorOklch: z.string().default('#6366f1'),
+  backgroundColorOklch: z.string().default('#090a10'),
+  particleBehavior: z.enum(['static', 'interactive', 'ambient']).default('ambient'),
+  particleIntensity: z.enum(['subtle', 'balanced', 'prominent']).default('balanced'),
+  fontFamily: z.string().default('Inter'),
+  enableGlassRefraction: z.boolean().default(true),
+  badgeText: z.string().max(40).optional().nullable(),
+  ctaLabel: z.string().max(40).optional().nullable(),
+  cardFinish: z.enum(['classic', 'holographic', 'titanium', 'obsidian', 'minimal']).default('classic').optional(),
+  surfaceTexture: z.enum(['none', 'dot-grid', 'radial-glow']).default('radial-glow').optional(),
+});
+
+export const cardBentoBlockSchema = z.object({
+  id: z.string(),
+  type: z.enum(['link', 'metric', 'featured_project', 'testimonial']),
+  title: z.string().min(1).max(100),
+  subtitle: z.string().max(160).optional().nullable(),
+  url: z.string().url().optional().nullable().or(z.literal('')),
+  metricValue: z.string().max(30).optional().nullable(),
+  metricDelta: z.string().max(30).optional().nullable(),
+});
+
+export type CardThemeConfig = z.infer<typeof cardThemeConfigSchema>;
+export type CardBentoBlock = z.infer<typeof cardBentoBlockSchema>;
+
 export const cardFormSchema = z.object({
   slug: z
     .string()
@@ -44,37 +71,12 @@ export const cardFormSchema = z.object({
     .nullable()
     .or(z.literal('')),
   address: z.string().max(200, 'La dirección no puede superar los 200 caracteres').optional().nullable(),
-  themeConfig: z.object({
-    themeId: z.string().default('stellar'),
-    primaryColorOklch: z.string().default('#6366f1'),
-    backgroundColorOklch: z.string().default('#090a10'),
-    particleBehavior: z.enum(['static', 'interactive', 'ambient']).default('ambient'),
-    particleIntensity: z.enum(['subtle', 'balanced', 'prominent']).default('balanced'),
-    fontFamily: z.string().default('Inter'),
-    enableGlassRefraction: z.boolean().default(true),
-    badgeText: z.string().max(40).optional().nullable(),
-    ctaLabel: z.string().max(40).optional().nullable(),
-    cardFinish: z.enum(['classic', 'holographic', 'titanium', 'obsidian', 'minimal']).default('classic').optional(),
-    surfaceTexture: z.enum(['none', 'dot-grid', 'radial-glow']).default('radial-glow').optional(),
-  }),
-  bentoBlocks: z
-    .array(
-      z.object({
-        id: z.string(),
-        type: z.enum(['link', 'metric', 'featured_project', 'testimonial']),
-        title: z.string().min(1).max(100),
-        subtitle: z.string().max(160).optional().nullable(),
-        url: z.string().url().optional().nullable().or(z.literal('')),
-        metricValue: z.string().max(30).optional().nullable(),
-        metricDelta: z.string().max(30).optional().nullable(),
-      })
-    )
-    .optional(),
+  themeConfig: cardThemeConfigSchema,
+  bentoBlocks: z.array(cardBentoBlockSchema).optional(),
 });
 
 export type CardFormValues = z.infer<typeof cardFormSchema>;
 export type CardFormInput = z.input<typeof cardFormSchema>;
-export type CardBentoBlock = NonNullable<CardFormValues['bentoBlocks']>[number];
 
 /**
  * Normaliza cualquier nombre o texto a un slug seguro y limpio para tarjetas de presentación

@@ -1363,6 +1363,20 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de tests aprobados en Vitest (243 de 243 pruebas en 40 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Auditoría Integral de Base de Datos, Migración 0004 & Contratos JSON (Octubre 2026)
+1. **Línea Base Canónica de 9 Tablas de Dominio**:
+   - Auditoría exhaustiva de [src/entities/schema.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/entities/schema.ts) frente a los snapshots de migración de Drizzle y la base de datos distribuida Turso LibSQL: `user`, `session`, `account`, `verification`, `cards`, `card_events`, `smart_cvs`, `presentations` y `payments_history`.
+   - Generación de la migración faltante `drizzle/migrations/0004_friendly_ezekiel.sql` para formalizar la tabla `payments_history` (registro inmutable de pagos, webhooks IPN y trazabilidad financiera de Mercado Pago).
+2. **Fuertemente Tipado de Modos JSON en Drizzle ORM**:
+   - Modularización de esquemas Zod en `src/entities/card/schemas.ts` (`cardThemeConfigSchema`, `cardBentoBlockSchema`, tipos TypeScript `CardThemeConfig`, `CardBentoBlock`).
+   - Modularización de esquemas Zod en `src/entities/cv/schemas.ts` (`cvContentSchema`, tipo TypeScript `CVContent`).
+   - Tipado estricto en [src/entities/schema.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/entities/schema.ts) de las columnas JSON `cards.themeConfig` y `smartCvs.content` con soporte resiliente para generadores de semillas y pruebas.
+3. **Actualización de Skill & Suite de Pruebas Unitarias (244 Tests Passing)**:
+   - Expansión de [.agents/skills/flow-and-persistence-audit/SKILL.md](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/.agents/skills/flow-and-persistence-audit/SKILL.md) con el protocolo formal de auditoría de esquema de 9 tablas, cero persistencia binaria y sincronización de migraciones.
+   - Actualización de [tests/unit/turso-batch-and-schema.test.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/tests/unit/turso-batch-and-schema.test.ts) validando las 9 tablas del esquema y los campos de auditoría financiera de `payments_history`.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (244 de 244 tests en 40 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
 
 
 

@@ -93,6 +93,9 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 5. **Precedencia de Persistencia & Zero Template Shadowing:**
    - En rutas públicas dinámicas (`/p/[slug]`, `/c/[slug]`, `/cv/[slug]`), la consulta a la base de datos (`db.query.*.findFirst`) tiene precedencia absoluta sobre diccionarios o plantillas estáticas de demostración. Los templates curados o mocks en código actúan estrictamente como fallback ante la ausencia de registro en base de datos, garantizando que el contenido generado o editado por los usuarios nunca sea eclipsado por fixtures estáticos.
    - En editores y asistentes de creación, las entidades nuevas deben inicializarse con identificadores o slugs únicos generados dinámicamente (`generatePresentationSlug`, `generateCvSlug`) y los enlaces de apertura desde paneles o dashboards deben vincularse por clave primaria inmutable (`?id=${item.id}`).
+6. **Línea Base de 9 Tablas de Dominio & Contratos JSON Fuertemente Tipados:**
+   - La base de datos centraliza 9 tablas de dominio: `user`, `session`, `account`, `verification`, `cards`, `card_events`, `smart_cvs`, `presentations` y `payments_history`.
+   - Las columnas JSON en SQLite (`themeConfig`, `content`, `slidesData`, `themeSettings`) deben estar fuertemente tipadas mediante `.$type<...>()` en concordancia con sus esquemas Zod en `src/entities/*/schemas.ts`, admitiendo interoperabilidad con generadores de semillas y pruebas. Toda migración Drizzle debe quedar sincronizada en `drizzle/migrations/`.
 
 ---
 

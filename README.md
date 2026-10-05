@@ -239,6 +239,7 @@ Las pruebas validan de forma continua:
 5. El aislamiento multi-tenant y bloqueo de llamadas no autorizadas en producción.
 6. El flujo CRUD de Smart CV, persistencia multi-tenant anti-IDOR y renderizado vectorial A4 justificado (DIN EN ISO 216).
 7. El sistema de identidad visual corporativa unificada, contratos Zod de marca, logotipo viviente por video loop WebM/MP4, integridad física de assets y guardrails de peso (<45 KB en WebP y <80 KB en video).
+8. La arquitectura de base de datos Turso LibSQL: línea base de 9 tablas (`user`, `session`, `account`, `verification`, `cards`, `card_events`, `smart_cvs`, `presentations`, `payments_history`), sincronización de migraciones (`0004_friendly_ezekiel.sql`) y contratos JSON fuertemente tipados.
 
 ---
 

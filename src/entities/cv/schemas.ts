@@ -69,6 +69,30 @@ export const cvReferenceSchema = z.object({
 
 export type CVReference = z.infer<typeof cvReferenceSchema>;
 
+export const cvContentSchema = z.object({
+  fullName: z.string().min(1, 'Nombre completo requerido'),
+  email: z.string().default(''), // Puede quedar pendiente si no viene en el documento
+  phone: z.string().default(''), // Puede quedar pendiente si no viene en el documento
+  location: z.string().default(''), // Puede quedar pendiente
+  rut: z.string().optional(), // RUT / DNI
+  summary: z.string().default(''), // Resumen profesional (puede estar pendiente)
+  skills: z.array(z.string()).default([]),
+  experience: z.array(cvExperienceSchema).default([]),
+  education: z.array(cvEducationSchema).default([]),
+  references: z.array(cvReferenceSchema).optional().default([]),
+  credentials: z.array(verifiedCredentialSchema).optional().default([]),
+  // Enlaces Profesionales Modernos
+  linkedinUrl: z.string().optional(),
+  websiteUrl: z.string().optional(),
+  indiCardSlug: z.string().optional(),
+  // Firma Digital Ejecutiva
+  signatureUrl: z.string().optional(),
+  signatureType: z.enum(['DRAWN', 'UPLOADED', 'TYPOGRAPHIC', 'NONE']).optional().default('NONE'),
+  signatureDate: z.string().optional(),
+});
+
+export type CVContent = z.infer<typeof cvContentSchema>;
+
 export const cvFormSchema = z.object({
   title: z.string().min(2, 'El título del CV debe tener al menos 2 caracteres'),
   targetRole: z.string().min(2, 'El rol objetivo debe tener al menos 2 caracteres'),
@@ -79,27 +103,7 @@ export const cvFormSchema = z.object({
     .optional(),
   isPublic: z.boolean().default(true).optional(),
   templateId: z.string().default('executive-modern'),
-  content: z.object({
-    fullName: z.string().min(1, 'Nombre completo requerido'),
-    email: z.string().default(''), // Puede quedar pendiente si no viene en el documento
-    phone: z.string().default(''), // Puede quedar pendiente si no viene en el documento
-    location: z.string().default(''), // Puede quedar pendiente
-    rut: z.string().optional(), // RUT / DNI
-    summary: z.string().default(''), // Resumen profesional (puede estar pendiente)
-    skills: z.array(z.string()).default([]),
-    experience: z.array(cvExperienceSchema).default([]),
-    education: z.array(cvEducationSchema).default([]),
-    references: z.array(cvReferenceSchema).optional().default([]),
-    credentials: z.array(verifiedCredentialSchema).optional().default([]),
-    // Enlaces Profesionales Modernos
-    linkedinUrl: z.string().optional(),
-    websiteUrl: z.string().optional(),
-    indiCardSlug: z.string().optional(),
-    // Firma Digital Ejecutiva
-    signatureUrl: z.string().optional(),
-    signatureType: z.enum(['DRAWN', 'UPLOADED', 'TYPOGRAPHIC', 'NONE']).optional().default('NONE'),
-    signatureDate: z.string().optional(),
-  }),
+  content: cvContentSchema,
 });
 
 export type CVFormValues = z.infer<typeof cvFormSchema>;

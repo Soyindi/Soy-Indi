@@ -129,6 +129,7 @@ export async function seedDatabase() {
             degree: 'Ingeniería Civil en Computación e Informática',
             institution: 'Universidad Técnica',
             year: '2019',
+            credentialType: 'DEGREE',
           },
         ],
       },

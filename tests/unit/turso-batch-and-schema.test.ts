@@ -4,7 +4,7 @@ import { getTableColumns } from 'drizzle-orm';
 import { z } from 'zod';
 
 describe('Turso LibSQL Architecture & Schema Integrity Suite', () => {
-  it('debe contener todas las 8 tablas de dominio centralizadas en schema.ts', () => {
+  it('debe contener todas las 9 tablas de dominio centralizadas en schema.ts', () => {
     expect(schema.user).toBeDefined();
     expect(schema.session).toBeDefined();
     expect(schema.account).toBeDefined();
@@ -13,6 +13,20 @@ describe('Turso LibSQL Architecture & Schema Integrity Suite', () => {
     expect(schema.cardEvents).toBeDefined();
     expect(schema.smartCvs).toBeDefined();
     expect(schema.presentations).toBeDefined();
+    expect(schema.paymentsHistory).toBeDefined();
+  });
+
+  it('tabla paymentsHistory debe incluir columnas para auditoría financiera de Mercado Pago', () => {
+    const columns = getTableColumns(schema.paymentsHistory);
+    expect(columns.id).toBeDefined();
+    expect(columns.userId).toBeDefined();
+    expect(columns.planInterval).toBeDefined();
+    expect(columns.amount).toBeDefined();
+    expect(columns.currency).toBeDefined();
+    expect(columns.status).toBeDefined();
+    expect(columns.paymentMethodId).toBeDefined();
+    expect(columns.externalReference).toBeDefined();
+    expect(columns.createdAt).toBeDefined();
   });
 
   it('tabla cards debe incluir columna address para geolocalización', () => {
