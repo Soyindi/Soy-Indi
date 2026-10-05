@@ -121,8 +121,10 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 
 8. **Formato Unificado Empresarial A4 y Exportación Vectorial ATS (ISO 216 Standard):**
    - Todo currículum digital (Smart CV) tanto en visualización web (`CvDocumentPreview.tsx`) como en exportación PDF vectorial (`pdf-engine.ts`) se rige bajo el estándar unificado **A4 Internacional (210 x 297 mm, DIN EN ISO 216)** de grado empresarial.
-   - Párrafos de resumen profesional y viñetas de experiencia deben estar pulcramente justificados (`text-justify` en cliente web y `{ align: 'justify', maxWidth: ... }` en jsPDF), con sangría colgante y sanitización de caracteres para neutralizar la duplicación de viñetas (`• •` o `- •`).
+   - Párrafos de resumen profesional y viñetas de experiencia deben estar pulcramente justificados (`text-justify` en cliente web y `{ align: 'justify', maxWidth: ... }` en jsPDF), con sangría colgante y sanitización de caracteres para neutralizar la duplicación de viñetas (`• •` o `- •`) y artefactos de OCR corruptos (`%Ï`, `%ï`).
    - Las cabeceras de sección en PDF deben implementar guardrail anti-huérfanos (mínimo 24mm de espacio vertical libre) y encabezado corporativo de continuación en páginas posteriores.
+   - **Referencias Laborales con Contacto Verificable Obligatorio:** En PDF y web preview, toda referencia laboral debe mostrar de forma prominente el teléfono o correo de contacto (`Contacto: +56 9... / email`), distribuido en columnas ergonómicas para evitar que el reclutador deba solicitar los contactos por separado.
+   - **Guardrail Anti-Página Huérfana de Firma:** El bloque de firma digital en PDF solo se renderiza si existe una rúbrica o firma explícita configurada, previniendo la generación de hojas adicionales vacías con solo una línea de firma al final del documento.
    - Los editores de CV deben enlazar desde paneles mediante clave primaria inmutable (`/cv?id=${cv.id}`) y persistir reactivamente el `cvId` en el estado tras cada guardado para garantizar mutaciones idempotentes y prevenir la duplicación de registros.
 9. **Identidad Visual Corporativa Unificada & Activos WebP First:**
    - La identidad gráfica de la plataforma está centralizada en el contrato canónico `@/entities/brand/schemas` (`BRAND_ASSETS`) y se renderiza universalmente a través de `@/shared/ui/BrandLogo` (`<BrandLogo />`).

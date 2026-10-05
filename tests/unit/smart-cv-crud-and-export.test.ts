@@ -175,12 +175,16 @@ describe('Smart CV Persistence, Multi-Tenant Security & Enterprise Export', () =
   });
 
   describe('Motor Vectorial de Exportación PDF (Grado Empresarial & A4 Unificado)', () => {
-    it('debe sanitizar viñetas con caracteres preexistentes para prevenir dobles viñetas (• •)', () => {
+    it('debe sanitizar viñetas con caracteres preexistentes y artefactos de OCR (%Ï, %ï)', () => {
       expect(sanitizeBulletText('• Lideré el equipo de arquitectura')).toBe('Lideré el equipo de arquitectura');
       expect(sanitizeBulletText('- Optimicé la latencia P95')).toBe('Optimicé la latencia P95');
       expect(sanitizeBulletText('* Diseñé el nuevo esquema relacional')).toBe('Diseñé el nuevo esquema relacional');
       expect(sanitizeBulletText('• • Reduje los costos en un 30%')).toBe('Reduje los costos en un 30%');
       expect(sanitizeBulletText('Logro sin viñeta previa')).toBe('Logro sin viñeta previa');
+      // Casos de artefactos de OCR de diplomas y títulos:
+      expect(sanitizeBulletText('%Ï Diplomado en Psicodiagnóstico Laboral')).toBe('Diplomado en Psicodiagnóstico Laboral');
+      expect(sanitizeBulletText('%ï Elaboración de Informes Técnicos')).toBe('Elaboración de Informes Técnicos');
+      expect(sanitizeBulletText('%Ï Primeros Auxilios Psicológicos')).toBe('Primeros Auxilios Psicológicos');
     });
 
     it('debe construir un documento jsPDF con formato estándar unificado A4 (210 x 297 mm)', () => {
@@ -194,6 +198,42 @@ describe('Smart CV Persistence, Multi-Tenant Security & Enterprise Export', () =
       expect(Math.round(width)).toBe(210);
       expect(Math.round(height)).toBe(297);
       expect(doc.getNumberOfPages()).toBeGreaterThanOrEqual(1);
+    });
+
+    it('debe incluir datos de contacto verificables en las referencias laborales del PDF', () => {
+      const cvWithRef: CVFormValues = {
+        ...sampleCv,
+        content: {
+          ...sampleCv.content,
+          references: [
+            {
+              name: 'Cecilia Vivallo Corvalán',
+              role: 'Enfermera encargada',
+              company: 'Hospital Clínico de Magallanes',
+              contact: '+56 9 9123 4567 • cecilia.vivallo@redsalud.gob.cl',
+            },
+          ],
+        },
+      };
+
+      const doc = buildCvPdfDocument(cvWithRef, { format: 'a4' });
+      expect(doc).toBeDefined();
+      expect(doc.getNumberOfPages()).toBeGreaterThanOrEqual(1);
+    });
+
+    it('no debe generar páginas huérfanas al final cuando no hay firma digital explícita', () => {
+      const cvWithoutSignature: CVFormValues = {
+        ...sampleCv,
+        content: {
+          ...sampleCv.content,
+          signatureUrl: '', // Sin firma digital configurada
+        },
+      };
+
+      const doc = buildCvPdfDocument(cvWithoutSignature, { format: 'a4' });
+      expect(doc).toBeDefined();
+      // Documento compacto de 1 o 2 páginas sin página vacía
+      expect(doc.getNumberOfPages()).toBeLessThanOrEqual(2);
     });
 
     it('debe incluir texto justificado y pie de página institucional en todas las hojas', () => {

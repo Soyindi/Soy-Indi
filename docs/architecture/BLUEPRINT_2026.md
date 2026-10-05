@@ -1149,3 +1149,18 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Nuevos casos de prueba en `tests/unit/brand-identity-system.test.ts` verificando la existencia y límites de peso de `indi-brand-reveal.webm` (< 150 KB) y `indi-brand-reveal-poster.webp` (< 20 KB).
    - 100% de la suite de pruebas unitarias aprobada (184 de 184 tests en 29 suites).
 
+### Fase: Pulcritud Vectorial en PDF ATS, Sanitización de OCR y Referencias Verificables (Octubre 2026)
+1. **Sanitización de Artefactos de OCR Corruptos (`pdf-engine.ts`, `cv-text-parser.ts`)**:
+   - Filtrado automático de artefactos de escaneo y OCR (`%Ï`, `%ï`, `‰`) en títulos de grados, diplomas y viñetas de experiencia laboral, garantizando tipografía limpia sin caracteres espurios.
+2. **Referencias Laborales con Contacto Verificable Prominente**:
+   - Rediseño de la sección de referencias tanto en el motor PDF vectorial (`pdf-engine.ts`) como en el visor web A4 (`CvDocumentPreview.tsx`) y el editor interactivo (`SmartCvBuilder.tsx`).
+   - Layout en 2 columnas con tipografía jerárquica clara (Nombre ➔ Cargo • Empresa ➔ `Contacto: [Teléfono / Email]` destacado para el reclutador).
+   - Detección multilínea de teléfonos y correos en el parser heurístico de texto para asociar contactos a cada referente automáticamente.
+3. **Guardrail Anti-Página Huérfana y Control de Márgenes**:
+   - Prevención estricta de páginas adicionales vacías: la línea de firma ejecutiva solo se dibuja en PDF si existe una firma digital configurada por el usuario.
+   - Cálculo dinámico de altura requerida (`neededHeight`) y comprobación de saltos de página con encabezado de continuación corporativo.
+4. **Control de Calidad y Suite de Pruebas Unitarias (186 Tests Passing)**:
+   - Nuevas pruebas en `tests/unit/smart-cv-crud-and-export.test.ts` verificando la sanitización de artefactos de OCR (`%Ï`), inclusión de contactos en referencias y prevención de páginas huérfanas en exportación PDF A4.
+   - 100% de la suite de pruebas unitarias aprobada (186 de 186 tests en 29 archivos de prueba).
+
+

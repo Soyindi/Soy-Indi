@@ -7,11 +7,16 @@ export interface GeneratePdfOptions {
 }
 
 /**
- * Sanitiza el texto de viñetas para prevenir dobles viñetas (• • o - •)
+ * Sanitiza el texto de viñetas, títulos o cursos para neutralizar
+ * dobles viñetas (• • o - •) y artefactos de OCR corruptos (%Ï, %ï, etc.).
  */
 export function sanitizeBulletText(text: string): string {
   if (!text) return '';
-  return text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '').trim();
+  // 1. Eliminar artefactos de OCR comunes (%Ï, %ï, ï%, , etc.) al inicio o embebidos al arranque
+  let cleaned = text.replace(/^[%‰]\s*[ÏïîIíi]?\s*/i, '');
+  // 2. Eliminar viñetas y caracteres no textuales comunes al inicio
+  cleaned = cleaned.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '');
+  return cleaned.trim();
 }
 
 /**
@@ -201,11 +206,12 @@ export function buildCvPdfDocument(
     drawSectionHeader('Educación y Certificaciones');
 
     for (const edu of content.education) {
-      checkPageBreak(14);
+      checkPageBreak(15);
+      const degreeTitle = sanitizeBulletText(edu.degree || 'Título o Grado');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9.5);
       doc.setTextColor(15, 23, 42);
-      doc.text(edu.degree || 'Título o Grado', marginX, cursorY);
+      doc.text(degreeTitle, marginX, cursorY);
 
       if (edu.year) {
         doc.setFont('helvetica', 'normal');
@@ -218,7 +224,8 @@ export function buildCvPdfDocument(
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(71, 85, 105);
-      doc.text(edu.institution || 'Institución', marginX, cursorY);
+      const instName = sanitizeBulletText(edu.institution || 'Institución');
+      doc.text(instName, marginX, cursorY);
 
       if (edu.verifiedCredentialId) {
         cursorY += 3.8;
@@ -248,35 +255,80 @@ export function buildCvPdfDocument(
     cursorY += skillLines.length * 4.4 + 5;
   }
 
-  // --- 4.5. REFERENCIAS LABORALES ---
+  // --- 4.5. REFERENCIAS LABORALES (FORMATO EJECUTIVO DE ALTA CONVERSIÓN) ---
   if (content.references && content.references.length > 0) {
     drawSectionHeader('Referencias Laborales');
-    for (const ref of content.references) {
-      checkPageBreak(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9.5);
-      doc.setTextColor(15, 23, 42);
-      doc.text(ref.name, marginX, cursorY);
 
-      cursorY += 4;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
-      doc.setTextColor(67, 56, 202); // Indigo 700
-      const refDetail = `${ref.role} • ${ref.company}${ref.contact ? ` (${ref.contact})` : ''}`;
-      doc.text(refDetail, marginX, cursorY);
-      cursorY += 5;
+    // Layout en 2 columnas si hay más de una referencia y caben en el ancho
+    const refColWidth = (contentWidth - 6) / 2;
+
+    for (let rIdx = 0; rIdx < content.references.length; rIdx += 2) {
+      const ref1 = content.references[rIdx];
+      const ref2 = content.references[rIdx + 1];
+
+      // Altura requerida para este renglón de referencias
+      const hasContact = Boolean(ref1?.contact || ref2?.contact);
+      const neededHeight = hasContact ? 19 : 14;
+      checkPageBreak(neededHeight);
+
+      // Renderizar Referencia 1 (Columna Izquierda o Ancho Completo si es impar único)
+      const isSingle = !ref2;
+      const currentWidth = isSingle ? contentWidth : refColWidth;
+
+      const renderRefCard = (ref: typeof ref1, xPos: number, cardWidth: number) => {
+        const startY = cursorY;
+
+        // Nombre
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(15, 23, 42); // Slate 900
+        doc.text(ref.name, xPos, startY);
+
+        // Cargo y Empresa
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(67, 56, 202); // Indigo 700
+        const roleOrg = `${ref.role} • ${ref.company}`;
+        const splitRoleOrg = doc.splitTextToSize(roleOrg, cardWidth);
+        doc.text(splitRoleOrg, xPos, startY + 4);
+
+        const afterRoleY = startY + 4 + (splitRoleOrg.length * 3.6);
+
+        // Contacto Verificable (Teléfono / Email)
+        if (ref.contact && ref.contact.trim().length > 0) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.setTextColor(30, 41, 59); // Slate 800
+          doc.text(`Contacto: `, xPos, afterRoleY + 1);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(71, 85, 105); // Slate 600
+          const contactX = xPos + doc.getTextWidth('Contacto: ');
+          doc.text(ref.contact, contactX, afterRoleY + 1);
+        }
+      };
+
+      renderRefCard(ref1, marginX, currentWidth);
+      if (ref2) {
+        renderRefCard(ref2, marginX + refColWidth + 6, refColWidth);
+      }
+
+      cursorY += neededHeight + 2;
     }
   }
 
   // --- 5. FIRMA DIGITAL EJECUTIVA Y PIE LEGAL ---
-  if (content.signatureUrl || content.fullName) {
+  // Solo renderizar si el usuario configuró una firma digital explícita
+  // (evita dejar una página 3 vacía con solo una línea de firma)
+  if (content.signatureUrl && content.signatureUrl.trim().length > 0) {
     checkPageBreak(38);
 
     cursorY += 6;
     const signatureBlockX = marginX + contentWidth - 65; // Bloque alineado a la derecha
 
     // Si hay rúbrica o imagen de firma
-    if (content.signatureUrl && content.signatureUrl.startsWith('data:image')) {
+    if (content.signatureUrl.startsWith('data:image')) {
       try {
         const imgFormat = content.signatureUrl.includes('image/jpeg') || content.signatureUrl.includes('image/jpg') ? 'JPEG' : 'PNG';
         doc.addImage(content.signatureUrl, imgFormat, signatureBlockX + 5, cursorY, 45, 16);

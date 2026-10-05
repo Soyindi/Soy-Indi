@@ -3,6 +3,7 @@
 import React from 'react';
 import { CVFormValues } from '@/entities/cv/schemas';
 import { Mail, Phone, MapPin, Globe, ShieldCheck, Link2 } from 'lucide-react';
+import { sanitizeBulletText } from '@/features/ai-smart-cv/lib/pdf-engine';
 
 interface CvDocumentPreviewProps {
   cv: CVFormValues;
@@ -212,8 +213,8 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4' }: CvDocumentPreviewPr
                       {content.education.map((edu, eIdx) => (
                         <div key={eIdx} className="text-xs flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-zinc-900">{edu.degree}</span>
-                            <span className="text-zinc-600">• {edu.institution}</span>
+                            <span className="font-bold text-zinc-900">{sanitizeBulletText(edu.degree)}</span>
+                            <span className="text-zinc-600">• {sanitizeBulletText(edu.institution)}</span>
                             {edu.credentialType === 'DEGREE' && (
                               <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                                 <ShieldCheck className="w-3 h-3 text-emerald-600" />
@@ -242,11 +243,20 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4' }: CvDocumentPreviewPr
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {content.references.map((ref, rIdx) => (
-                        <div key={rIdx} className="text-xs p-2.5 rounded-lg bg-zinc-50 border border-zinc-200">
-                          <div className="font-bold text-zinc-900">{ref.name}</div>
-                          <div className="text-indigo-700 text-[11px] font-medium">{ref.role} • {ref.company}</div>
-                          {ref.contact && (
-                            <div className="text-zinc-500 text-[10px] font-mono mt-0.5">{ref.contact}</div>
+                        <div key={rIdx} className="text-xs p-3 rounded-lg bg-zinc-50 border border-zinc-200 flex flex-col justify-between">
+                          <div>
+                            <div className="font-bold text-zinc-900 text-[12px]">{ref.name}</div>
+                            <div className="text-indigo-700 text-[11px] font-medium mt-0.5">{ref.role} • {ref.company}</div>
+                          </div>
+                          {ref.contact ? (
+                            <div className="mt-2 pt-1.5 border-t border-zinc-200/60 flex items-center gap-1.5 text-zinc-600 text-[10.5px] font-mono">
+                              <span className="font-semibold text-zinc-800">Contacto:</span>
+                              <span className="select-all">{ref.contact}</span>
+                            </div>
+                          ) : (
+                            <div className="mt-2 pt-1.5 border-t border-zinc-200/60 text-amber-600 text-[10px] italic">
+                              Contacto pendiente
+                            </div>
                           )}
                         </div>
                       ))}
@@ -354,8 +364,8 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4' }: CvDocumentPreviewPr
                     {content.education.map((edu, eIdx) => (
                       <div key={eIdx} className="text-xs flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-zinc-900">{edu.degree}</span>
-                          <span className="text-zinc-600">• {edu.institution}</span>
+                          <span className="font-bold text-zinc-900">{sanitizeBulletText(edu.degree)}</span>
+                          <span className="text-zinc-600">• {sanitizeBulletText(edu.institution)}</span>
                           {edu.credentialType === 'DEGREE' && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                               <ShieldCheck className="w-3 h-3 text-emerald-600" />
@@ -384,11 +394,20 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4' }: CvDocumentPreviewPr
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {content.references.map((ref, rIdx) => (
-                      <div key={rIdx} className="text-xs p-2.5 rounded-lg bg-zinc-50 border border-zinc-200">
-                        <div className="font-bold text-zinc-900">{ref.name}</div>
-                        <div className="text-indigo-700 text-[11px] font-medium">{ref.role} • {ref.company}</div>
-                        {ref.contact && (
-                          <div className="text-zinc-500 text-[10px] font-mono mt-0.5">{ref.contact}</div>
+                      <div key={rIdx} className="text-xs p-3 rounded-lg bg-zinc-50 border border-zinc-200 flex flex-col justify-between">
+                        <div>
+                          <div className="font-bold text-zinc-900 text-[12px]">{ref.name}</div>
+                          <div className="text-indigo-700 text-[11px] font-medium mt-0.5">{ref.role} • {ref.company}</div>
+                        </div>
+                        {ref.contact ? (
+                          <div className="mt-2 pt-1.5 border-t border-zinc-200/60 flex items-center gap-1.5 text-zinc-600 text-[10.5px] font-mono">
+                            <span className="font-semibold text-zinc-800">Contacto:</span>
+                            <span className="select-all">{ref.contact}</span>
+                          </div>
+                        ) : (
+                          <div className="mt-2 pt-1.5 border-t border-zinc-200/60 text-amber-600 text-[10px] italic">
+                            Contacto pendiente
+                          </div>
                         )}
                       </div>
                     ))}

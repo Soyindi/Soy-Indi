@@ -392,15 +392,29 @@ export function parseCvTextToStructuredData(
       lower.includes('doctor') ||
       lower.includes('técnico') ||
       lower.includes('tecnico') ||
-      lower.includes('bachiller')
+      lower.includes('bachiller') ||
+      lower.includes('certificad') ||
+      lower.includes('curso') ||
+      lower.includes('formación') ||
+      lower.includes('formacion') ||
+      lower.includes('especialización') ||
+      lower.includes('especializacion') ||
+      lower.includes('capacitación') ||
+      lower.includes('capacitacion')
     );
   };
 
-  for (const line of eduLines) {
+  for (const rawLine of eduLines) {
     // Si la línea es solo una fecha de emisión de documento o certificado, omitirla
-    if (isDateOnlyLine(line)) {
+    if (isDateOnlyLine(rawLine)) {
       continue;
     }
+
+    // Sanitizar artefactos de OCR como "%Ï ", "%ï ", etc.
+    const line = rawLine
+      .replace(/^[%‰]\s*[ÏïîIíi]?\s*/i, '')
+      .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '')
+      .trim();
 
     if (hasAcademicKeyword(line)) {
       const parts = line.split(/[|–—\-·•]/).map((p) => p.trim()).filter(Boolean);
@@ -548,9 +562,22 @@ export function parseCvTextToStructuredData(
     let company = '';
     let contact = '';
 
-    // Buscar email o teléfono en la línea
-    const phoneInLine = cleanLine.match(/(?:\+?56\s?9|\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/);
-    const emailInLine = cleanLine.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i);
+    // Buscar email o teléfono en la línea actual
+    let phoneInLine = cleanLine.match(/(?:\+?56\s?9|\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/);
+    let emailInLine = cleanLine.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i);
+
+    // Si la línea actual no tiene contacto, mirar si la línea siguiente contiene teléfono o email de esta persona
+    if (!phoneInLine && !emailInLine && i + 1 < refLines.length) {
+      const nextCandidate = refLines[i + 1].trim();
+      const nextPhone = nextCandidate.match(/(?:\+?56\s?9|\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/);
+      const nextEmail = nextCandidate.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i);
+      if (nextPhone || nextEmail) {
+        if (nextPhone && nextPhone[0].length >= 8) contact = nextPhone[0].trim();
+        if (nextEmail) contact = contact ? `${contact} • ${nextEmail[0]}` : nextEmail[0];
+        i++; // Consumir línea de contacto de la referencia
+      }
+    }
+
     if (phoneInLine && phoneInLine[0].length >= 8) contact = phoneInLine[0].trim();
     if (emailInLine) contact = contact ? `${contact} • ${emailInLine[0]}` : emailInLine[0];
 

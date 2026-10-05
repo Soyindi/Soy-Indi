@@ -1174,17 +1174,29 @@ export function SmartCvBuilder({
                             placeholder="Empresa / Institución"
                           />
                         </div>
-                        <input
-                          type="text"
-                          value={ref.contact || ''}
-                          onChange={(e) => {
-                            const updated = [...(formData.content.references || [])];
-                            updated[idx].contact = e.target.value;
-                            handleContentChange('references', updated);
-                          }}
-                          className="w-full text-[10px] font-mono text-zinc-500 bg-transparent border-b border-transparent focus:border-indigo-400/40 focus:outline-none"
-                          placeholder="Teléfono o Email de contacto"
-                        />
+                        <div className="pt-1">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-[10px] font-mono text-zinc-400">Contacto Verificable (Teléfono / Email):</span>
+                            {!ref.contact && (
+                              <span className="text-[9px] font-mono text-amber-400 bg-amber-400/10 px-1 rounded">
+                                Vital para el reclutador
+                              </span>
+                            )}
+                          </div>
+                          <input
+                            type="text"
+                            value={ref.contact || ''}
+                            onChange={(e) => {
+                              const updated = [...(formData.content.references || [])];
+                              updated[idx].contact = e.target.value;
+                              handleContentChange('references', updated);
+                            }}
+                            className={`w-full text-xs font-mono rounded-lg px-2.5 py-1.5 bg-black/40 border focus:outline-none transition-colors ${
+                              !ref.contact ? 'border-amber-500/30 text-amber-200 placeholder-amber-400/40 focus:border-amber-400' : 'border-white/10 text-cyan-300 focus:border-cyan-400'
+                            }`}
+                            placeholder="+56 9 1234 5678 o nombre@empresa.com"
+                          />
+                        </div>
                       </div>
 
                       <button
