@@ -435,29 +435,30 @@ export function PresentationStudio({
         badgeText="Orbital Studio 16:9"
       >
         <div className="flex items-center gap-2">
-          {/* Botón Deconstrucción Inteligente SCQA */}
+          {/* Botón Único de Asistente IA Multimodal SCQA */}
           <button
             onClick={() => setShowDecomposerModal(true)}
-            className="min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 border border-cyan-400/40 text-cyan-300 hover:text-white hover:bg-cyan-500/30 text-xs font-semibold transition-all active:scale-[0.98]"
-            title="Sube archivos o conceptos para desestructurar con IA"
+            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 border border-cyan-400/40 text-cyan-300 hover:text-white hover:bg-cyan-500/30 text-xs font-semibold transition-all active:scale-[0.98] shadow-md shadow-cyan-500/10 cursor-pointer"
+            title="Crear o desestructurar presentación con IA desde documentos o ideas"
           >
-            <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-            <span className="hidden sm:inline">Descomponer con IA</span>
+            <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
+            <span>Crear con IA (SCQA)</span>
           </button>
 
           {/* Botón Presentar en Vivo In-Situ */}
           <button
             onClick={() => setIsLivePresenting(true)}
-            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-zinc-200 hover:text-white border border-white/15 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
+            className="min-h-[44px] inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 hover:text-white border border-white/10 text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer"
+            title="Proyectar en pantalla completa 16:9"
           >
             <Play className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Presentar en Vivo</span>
+            <span className="hidden sm:inline">Presentar en Vivo</span>
           </button>
 
           <button
             onClick={handleSave}
             disabled={isPending}
-            className="min-h-[44px] inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="min-h-[44px] inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
           >
             {isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -466,7 +467,7 @@ export function PresentationStudio({
             ) : (
               <Save className="w-4 h-4" />
             )}
-            <span>{savedSuccess ? '¡Guardada!' : 'Guardar Presentación'}</span>
+            <span>{savedSuccess ? '¡Guardada!' : 'Guardar'}</span>
           </button>
         </div>
       </AppEditorHeader>
@@ -491,88 +492,53 @@ export function PresentationStudio({
         </div>
       )}
 
-      {/* Selector de Pestañas Superiores del Estudio */}
-      <div className="flex items-center gap-2 mb-6 p-1 rounded-2xl glass-panel border border-white/10 max-w-md">
-        <button
-          onClick={() => setActiveTab('editor')}
-          className={`flex-1 min-h-[44px] flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'editor'
-              ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md'
-              : 'text-zinc-400 hover:text-white'
-          }`}
-        >
-          <FileText className="w-3.5 h-3.5" />
-          <span>Contenido</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('templates')}
-          className={`flex-1 min-h-[44px] flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'templates'
-              ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md'
-              : 'text-zinc-400 hover:text-white'
-          }`}
-        >
-          <LayoutGrid className="w-3.5 h-3.5" />
-          <span>Plantillas ({PRESENTATION_TEMPLATES.length})</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('theme')}
-          className={`flex-1 min-h-[44px] flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'theme'
-              ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md'
-              : 'text-zinc-400 hover:text-white'
-          }`}
-        >
-          <Palette className="w-3.5 h-3.5" />
-          <span>Diseño</span>
-        </button>
-      </div>
-
-      {/* Barra de Asistente IA Generador Rápido */}
-      <div className="mb-8 glass-panel rounded-2xl p-4 flex flex-col lg:flex-row items-center justify-between gap-3 border border-indigo-500/20">
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Wand2 className="w-4 h-4 text-cyan-400 shrink-0" />
-            <span className="text-xs font-mono font-semibold text-white shrink-0">
-              Tema Rápido:
-            </span>
-          </div>
-          <input
-            type="text"
-            value={aiTopicPrompt}
-            onChange={(e) => setAiTopicPrompt(e.target.value)}
-            className="w-full sm:w-80 min-h-[44px] rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400"
-            placeholder="Tema central o pitch de la presentación..."
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full lg:w-auto">
+      {/* Barra de Control Compacta del Estudio: Pestañas de Vista */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl glass-panel border border-white/10 max-w-md">
           <button
-            onClick={() => setShowDecomposerModal(true)}
-            className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 text-xs font-semibold transition-all"
+            onClick={() => setActiveTab('editor')}
+            className={`min-h-[40px] flex items-center justify-center gap-2 py-1.5 px-3.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'editor'
+                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md'
+                : 'text-zinc-400 hover:text-white'
+            }`}
           >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span>Modo Avanzado (SCQA / Archivos)</span>
+            <FileText className="w-3.5 h-3.5" />
+            <span>Contenido</span>
           </button>
-
           <button
-            onClick={handleGenerateAi}
-            disabled={aiGenerating}
-            className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-cyan-300 hover:bg-indigo-600/50 text-xs font-semibold transition-all disabled:opacity-50"
+            onClick={() => setActiveTab('templates')}
+            className={`min-h-[40px] flex items-center justify-center gap-2 py-1.5 px-3.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'templates'
+                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md'
+                : 'text-zinc-400 hover:text-white'
+            }`}
           >
-            {aiGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Generando Diapositivas...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 text-cyan-300" />
-                <span>Generación Directa</span>
-              </>
-            )}
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>Plantillas ({PRESENTATION_TEMPLATES.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('theme')}
+            className={`min-h-[40px] flex items-center justify-center gap-2 py-1.5 px-3.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'theme'
+                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Palette className="w-3.5 h-3.5" />
+            <span>Diseño</span>
           </button>
         </div>
+
+        {/* Acceso Rápido Asistido para Cargar Documentos */}
+        <button
+          onClick={() => setShowDecomposerModal(true)}
+          className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-medium text-zinc-300 hover:text-white transition-all cursor-pointer"
+          title="Importar PDF o documento estructurado"
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Subir PDF / Texto</span>
+        </button>
       </div>
 
       {/* Grid Central: Visualizador 16:9 + Controles Laterales */}

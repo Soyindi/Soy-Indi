@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, ChevronRight } from 'lucide-react';
+import { BrandLogo } from '@/shared/ui/BrandLogo';
 
 interface AppEditorHeaderProps {
   sectionTitle: string;
@@ -20,8 +21,16 @@ export function AppEditorHeader({
   children,
 }: AppEditorHeaderProps) {
   return (
-    <header className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-white/10">
-      <div className="flex items-start gap-4">
+    <header className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b border-white/10">
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Isotipo Oficial INDI con enlace al Dashboard */}
+        <Link href="/dashboard" title="Panel Principal INDI" className="shrink-0 group">
+          <BrandLogo variant="symbol" size="sm" showText={false} />
+        </Link>
+
+        {/* Separador vertical sutil */}
+        <div className="h-7 w-[1px] bg-white/10 hidden sm:block shrink-0" />
+
         {/* Botón de Retroceso ergonómico con micro-animación (>= 44x44px) */}
         <Link
           href={categoryHref}
@@ -33,12 +42,12 @@ export function AppEditorHeader({
 
         <div>
           {/* Breadcrumb contextual */}
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400 mb-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-zinc-400 mb-1">
             <Link href="/dashboard" className="hover:text-white transition-colors">
               Panel
             </Link>
             <ChevronRight className="w-3 h-3 text-zinc-600" />
-            <Link href={categoryHref} className="hover:text-white transition-colors text-indigo-400">
+            <Link href={categoryHref} className="hover:text-white transition-colors text-cyan-400 font-medium">
               {categoryName}
             </Link>
             <span className="text-zinc-600">•</span>
@@ -48,7 +57,7 @@ export function AppEditorHeader({
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white">
             {sectionTitle}
           </h1>
         </div>

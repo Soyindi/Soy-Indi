@@ -156,9 +156,13 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Acción Contextual Única**: Erradicar botones de creación globales duplicados que compitan con la vertical activa. La acción de creación (`+ Nueva Tarjeta`, `+ Crear o Mejorar CV`, `+ Nueva Presentación`) debe ser 100% contextualizada y ubicarse de forma prominente en la barra de herramientas.
    - **Empty States Educativos**: Prohibido el uso de contenedores grises vacíos sin guía. Toda vertical sin registros debe utilizar `DashboardEmptyState` presentando una inducción progresiva en 3 pasos orientada al valor del recurso y un botón magnético de inicio con touch target $\ge 44\text{px}$.
    - **Buscador con Atajo Accesible**: Integrar atajo accesible global (`Ctrl + K` / `/`) y botón de reseteo instantáneo.
-   - **Thumb Zone Móvil**: En pantallas móviles ($\le 640\text{px}$), toda acción de creación debe proyectarse en la barra inferior flotante anclada (`fixed bottom-4 inset-x-4 sm:hidden`) con touch target $\ge 48\text{px}$.
+14. **Arquitectura de Editores de Subpáginas: Branding Persistente & Single AI Entrypoint:**
+   - **Identidad Corporativa en Cabecera (`AppEditorHeader`)**: Toda subpágina de edición debe integrar el Isotipo Oficial INDI en video loop (`<BrandLogo variant="symbol" size="sm" />`) junto al botón de retorno ($\ge 44\text{px}$) y breadcrumbs contextuales.
+   - **Zero Redundancia de IA en Pantalla**: Prohibido fragmentar las llamadas a modelos de IA en múltiples inputs y botones dispersos (evitar cajas como "Tema Rápido" + "Modo Avanzado" + "Botón Cabecera"). Toda interacción de generación debe unificarse en una única acción ejecutiva destacada que active el flujo multimodal completo (SCQA o Dropzone).
+   - **Eficiencia Vertical Above-the-Fold**: Mantener la cabecera y pestañas con una altura combinada $\le 120\text{px}$ para que el área de trabajo (lienzo 16:9, vista previa del CV o tarjeta) se visualice inmediatamente sin requerir scroll en portátiles estándar.
 
 ---
+
 
 
 ## 📦 6. Convenciones de Git y Commits Semánticos

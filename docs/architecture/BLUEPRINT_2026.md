@@ -1282,6 +1282,22 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (232 de 232 tests en 36 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Consolidación de Editores, Branding Persistente y Eficiencia Vertical (Octubre 2026)
+1. **Unificación de Branding en Cabecera de Editores (`AppEditorHeader`)**:
+   - Integración transversal del Isotipo Oficial animado INDI (`<BrandLogo variant="symbol" size="sm" />`) en las cabeceras de `/presentations`, `/cards/new` y `/cv`.
+   - Continuidad visual corporativa, separador vertical sutil y breadcrumbs contextuales con navegación de retorno protegida ($\ge 44\text{px}$).
+2. **Erradicación de Redundancias de IA en Orbital Studio**:
+   - Eliminación de la triple entrada de IA (barra horizontal "Tema Rápido" y botón duplicado "Modo Avanzado"), recuperando más de 80px de altura vertical útil.
+   - Unificación en un único botón magnético ejecutivo: `Crear con IA (SCQA)` conectado al modal multimodal inteligente `SmartPresentationDropzone`.
+3. **Optimización Above-the-Fold en Pantallas Laptop (13"-15")**:
+   - Proyección limpia del lienzo 16:9 y las miniaturas de diapositiva sin requerir scroll vertical en resoluciones comunes.
+   - Limpieza del pie decorativo de diapositiva (`SlideViewer.tsx`) manteniendo notas del orador legibles e indicador en vivo.
+4. **Control de Calidad y Pruebas Unitarias (234 Tests Passing)**:
+   - Nueva suite unitaria dedicada: `tests/unit/editor-branding-and-layout.test.ts`.
+   - 100% de la suite de pruebas unitarias aprobada (234 de 234 tests en 37 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
 
 

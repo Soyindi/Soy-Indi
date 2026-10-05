@@ -379,19 +379,22 @@ export function SlideViewer({
         </AnimatePresence>
       </div>
 
-      {/* 3. Pie de Diapositiva & Notas del Orador Opcionales */}
-      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-3 text-[11px] font-mono text-zinc-400">
+      {/* 3. Pie de Diapositiva & Notas del Orador */}
+      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-2.5 text-[11px] font-mono text-zinc-400">
         <div className="flex items-center gap-2">
-          <span>PRESENTACIÓN CINEMATOGRÁFICA INTERACTIVA</span>
-          {showNotes && slide.speakerNotes && (
-            <span className="text-amber-300/90 font-sans italic truncate max-w-md hidden sm:inline-block">
+          {showNotes && slide.speakerNotes ? (
+            <span className="text-amber-300 font-sans italic truncate max-w-lg">
               Notas: {slide.speakerNotes}
+            </span>
+          ) : (
+            <span className="text-zinc-500 font-sans text-[10px]">
+              Modo Edición • Diapositiva {slideNumber} de {totalSlides}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-zinc-300 font-semibold">ESTADO ACTIVO</span>
+        <div className="flex items-center gap-1.5 text-emerald-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[10px] font-semibold tracking-wider">EN VIVO</span>
         </div>
       </div>
     </div>
