@@ -8,6 +8,9 @@ import { HeroCtaButtons } from '@/features/onboarding/components/HeroCtaButtons'
 import { BottomCtaButton } from '@/features/onboarding/components/BottomCtaButton';
 import { GlobalNavbar } from '@/shared/ui/GlobalNavbar';
 import { BrandLogo } from '@/shared/ui/BrandLogo';
+import { BrandHeroBackdrop } from '@/shared/ui/BrandHeroBackdrop';
+import { BRAND_ASSETS } from '@/entities/brand/schemas';
+import Image from 'next/image';
 
 const PRODUCT_ICONS: Record<LandingProduct['id'], LucideIcon> = {
   card: QrCode,
@@ -26,26 +29,53 @@ const FOOTER_LINKS = [
  * Landing Minimalista INDI 2026 — presupuesto de 5 secciones:
  * Hero (marca + demo) · Por qué INDI · Herramientas · Precios · FAQ (+ cierre).
  */
+const DEMO_CARD = {
+  slug: 'demo',
+  title: 'Carlos Mendoza',
+  profession: 'Especialista en Marketing Digital',
+  about: 'Ayudo a marcas y empresas a escalar sus ventas mediante estrategias de adquisición y analítica de datos.',
+  whatsapp: '+56987654321',
+  emailContact: 'carlos@mendoza.com',
+  websiteUrl: 'https://carlosmendoza.com',
+  linkedinUrl: 'https://linkedin.com/in/carlosmendoza',
+  instagramUrl: 'https://instagram.com/carlosmendoza',
+  photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+  address: 'Av. Providencia 1208, Oficina 702, Santiago, Chile',
+  themeConfig: {
+    themeId: 'stellar',
+    primaryColorOklch: '#6366f1',
+    particleBehavior: 'ambient',
+    particleIntensity: 'balanced',
+    cardFinish: 'classic',
+    surfaceTexture: 'radial-glow',
+  },
+} as const;
+
 export default function HomePage() {
   const { hero, valueProps, products, closing } = LANDING_CONTENT;
+  const stacked = BRAND_ASSETS.stackedHero;
 
   return (
     <div className="relative min-h-screen flex flex-col">
       <div id="inicio" className="absolute top-0 left-0 w-0 h-0" aria-hidden="true" />
 
-      {/* Un único halo de marca (antes: 3 blobs que competían con el logo) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div className="absolute top-[-16%] left-1/2 -translate-x-1/2 w-[720px] h-[720px] rounded-full bg-indigo-600/16 blur-[160px]" />
-      </div>
-
       <GlobalNavbar />
 
       <main className="relative z-10 flex-1">
-        {/* 1 · HERO */}
-        <section className="max-w-6xl mx-auto px-6 pt-8 pb-24">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-            <div className="lg:col-span-7">
-              <BrandLogo variant="horizontal" size="xl" priority className="mb-8" />
+        {/* 1 · HERO CINEMÁTICO: video ambiental + logo vertical protagonista */}
+        <section className="relative isolate min-h-[calc(100svh-72px)] flex items-center justify-center px-6 py-16 overflow-hidden">
+          <BrandHeroBackdrop />
+          <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center text-center">
+            <div className="relative w-40 sm:w-48 aspect-[768/640] overflow-hidden mb-8">
+              <Image
+                src={stacked.url}
+                alt={stacked.alt}
+                fill
+                priority
+                sizes="(min-width: 640px) 192px, 160px"
+                className="object-cover mix-blend-screen drop-shadow-[0_0_32px_rgba(34,211,238,0.35)]"
+              />
+            </div>
               <p className="text-xs font-mono font-semibold uppercase tracking-widest text-cyan-300 mb-4">
                 {hero.eyebrow}
               </p>
@@ -55,9 +85,9 @@ export default function HomePage() {
                   {hero.highlight}
                 </span>
               </h1>
-              <p className="text-base sm:text-lg text-zinc-300 leading-relaxed mb-8 max-w-xl">{hero.subtitle}</p>
-              <HeroCtaButtons className="mb-8" />
-              <ul className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-zinc-400 font-medium">
+              <p className="text-base sm:text-lg text-zinc-200 leading-relaxed mb-8 max-w-xl">{hero.subtitle}</p>
+              <HeroCtaButtons className="mb-8 justify-center" />
+              <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-zinc-300 font-medium">
                 {hero.trustBadges.map((badge) => (
                   <li key={badge} className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-emerald-400" aria-hidden="true" />
@@ -65,36 +95,6 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            <div className="lg:col-span-5 flex flex-col items-center">
-              <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-400 mb-4">
-                Ejemplo real · interactivo
-              </span>
-              <DigitalCard
-                card={{
-                  slug: 'demo',
-                  title: 'Carlos Mendoza',
-                  profession: 'Especialista en Marketing Digital',
-                  about: 'Ayudo a marcas y empresas a escalar sus ventas mediante estrategias de adquisición y analítica de datos.',
-                  whatsapp: '+56987654321',
-                  emailContact: 'carlos@mendoza.com',
-                  websiteUrl: 'https://carlosmendoza.com',
-                  linkedinUrl: 'https://linkedin.com/in/carlosmendoza',
-                  instagramUrl: 'https://instagram.com/carlosmendoza',
-                  photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
-                  address: 'Av. Providencia 1208, Oficina 702, Santiago, Chile',
-                  themeConfig: {
-                    themeId: 'stellar',
-                    primaryColorOklch: '#6366f1',
-                    particleBehavior: 'ambient',
-                    particleIntensity: 'balanced',
-                    cardFinish: 'classic',
-                    surfaceTexture: 'radial-glow',
-                  },
-                }}
-              />
-            </div>
           </div>
         </section>
 
@@ -116,25 +116,35 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-8">
             Tres herramientas, una cuenta.
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 flex flex-col gap-4">
             {products.map((product) => {
               const Icon = PRODUCT_ICONS[product.id];
               return (
                 <Link
                   key={product.id}
                   href={product.href}
-                  className="group glass-panel rounded-3xl p-8 flex flex-col gap-4 hover:border-indigo-400/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                  className="group glass-panel rounded-3xl p-6 flex items-start gap-4 hover:border-indigo-400/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
                 >
-                  <Icon className="w-6 h-6 text-cyan-300" aria-hidden="true" />
-                  <h3 className="text-lg font-bold text-white">{product.title}</h3>
-                  <p className="text-sm text-zinc-400 leading-relaxed flex-1">{product.description}</p>
-                  <span className="inline-flex items-center gap-2 min-h-[44px] text-sm font-semibold text-cyan-300">
-                    {product.cta}
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-                  </span>
+                  <Icon className="w-6 h-6 text-cyan-300 shrink-0 mt-1" aria-hidden="true" />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white mb-2">{product.title}</h3>
+                    <p className="text-sm text-zinc-400 leading-relaxed">{product.description}</p>
+                    <span className="inline-flex items-center gap-2 min-h-[44px] text-sm font-semibold text-cyan-300">
+                      {product.cta}
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                    </span>
+                  </div>
                 </Link>
               );
             })}
+            </div>
+            <div className="lg:col-span-5 flex flex-col items-center">
+              <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-zinc-400 mb-4">
+                Ejemplo real · interactivo
+              </span>
+              <DigitalCard card={DEMO_CARD} />
+            </div>
           </div>
         </section>
 

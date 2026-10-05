@@ -155,7 +155,7 @@ INDI/
 │   │   ├── presentations/       # Estudio cinematográfico 16:9 con AppEditorHeader
 │   │   ├── pricing/             # Página comercial con comparativa, FAQ y garantías
 │   │   ├── start/               # Onboarding Hub interactivo (Prueba 3 días)
-│   │   └── page.tsx             # Landing Page de alta conversión en 7 bloques
+│   │   └── page.tsx             # Landing Page minimalista de 5 secciones con BrandHeroBackdrop
 │   ├── features/                # Módulos de lógica de negocio (FSD)
 │   │   ├── card-builder/        # Formularios reactivos, dashboard actions y temas
 │   │   ├── ai-smart-cv/         # Auditoría heurística ATS y motor vectorial jsPDF
@@ -178,7 +178,7 @@ INDI/
 │       ├── lib/fileSecurity.ts  # Validación Magic Bytes, Anti-DoS y Cero Persistencia Binaria en BD
 │       ├── lib/clientDocumentExtractor.ts # Extracción de texto PDF en navegador (anti-413)
 │       ├── lib/imageCompression.ts # Compresión client-side WebP / Canvas 2D
-│       └── ui/                  # UI Kit (GlobalNavbar, AppEditorHeader, MobileNavDrawer, PublicContextualHeader)
+│       └── ui/                  # UI Kit (GlobalNavbar, BrandHeroBackdrop, BrandLogo, MobileNavDrawer)
 ├── AGENTS.md                    # Guía corporativa de orquestación agéntica (FSD, WCAG, Base-8)
 └── SECURITY.md                  # Política de seguridad y reporte de vulnerabilidades
 ```

@@ -1137,3 +1137,15 @@ export default async function PublicCardPage({ params }: PageProps) {
 - Copia pública centralizada en `src/entities/landing/schemas.ts` (`LANDING_CONTENT`) validada con Zod: presupuesto máx. 5 secciones, longitudes de texto, precios canónicos ($2.500 / $6.000, 3 días) y solo rutas internas.
 - Marca protagonista: lockup animado `xl` en hero, isotipo en cierre, lockup en footer; un único halo indigo (antes 3 blobs).
 - Footer con touch targets ≥ 44px. Pruebas: `tests/unit/landing-content.test.ts`.
+
+### Fase: Hero Cinemático con Video Ambiental & Logo Vertical Protagonista (Octubre 2026)
+1. **Hero Cinemático a Pantalla Completa (`BrandHeroBackdrop.tsx`)**:
+   - Integración de video ambiental cinemático (`indi-brand-reveal.webm` y `.mp4`) en fondo con escala, desenfoque óptico (`blur-md`), opacidad sutil (50%) y gradiente vertical multicapa (`from-zinc-950/70 via-zinc-950/55 to-zinc-950`).
+   - Guardrail de rendimiento y ahorro de datos móvil: el elemento `<video>` solo se monta en resoluciones de escritorio (`min-width: 768px`) y bajo `prefers-reduced-motion: no-preference`. En móviles y conexiones sensibles se sirve exclusivamente el póster estático WebP (`indi-brand-reveal-poster.webp`, 9.5 KB), garantizando cero impacto en LCP.
+2. **Protagonismo de Marca con Logo Vertical (`indi-stacked-hero.webp`)**:
+   - Incorporación centralizada del isotipo y lockup vertical en el hero (`w-40 sm:w-48 aspect-[768/640]`) con filtro `mix-blend-screen` y resplandor atmosférico cyan (`drop-shadow-[0_0_32px_rgba(34,211,238,0.35)]`).
+   - La previsualización interactiva de la tarjeta digital (`DigitalCard`) desciende armónicamente a la sección *"Tres herramientas, una cuenta"* en un layout balanceado de 2 columnas junto al catálogo de productos.
+3. **Control de Calidad y Pruebas Unitarias**:
+   - Nuevos casos de prueba en `tests/unit/brand-identity-system.test.ts` verificando la existencia y límites de peso de `indi-brand-reveal.webm` (< 150 KB) y `indi-brand-reveal-poster.webp` (< 20 KB).
+   - 100% de la suite de pruebas unitarias aprobada (184 de 184 tests en 29 suites).
+

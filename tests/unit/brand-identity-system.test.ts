@@ -121,6 +121,24 @@ describe('Brand Identity System & Asset Optimization (WebP First)', () => {
     expect(webmSize).toBeLessThan(125); // Menos de 125 KB en VP9
     expect(posterSize).toBeLessThan(15); // Poster WebP < 15 KB (Zero CLS)
   });
+
+  it('debe validar la existencia y optimización del backdrop hero de marca (brand-reveal WebM y poster)', () => {
+    const brandReveal = BRAND_ASSETS.brandRevealVideo;
+    expect(brandReveal.webmUrl).toBe('/brand/indi-brand-reveal.webm');
+    expect(brandReveal.fallbackUrl).toBe('/brand/indi-brand-reveal-poster.webp');
+
+    const webmPath = path.join(process.cwd(), 'public', 'brand', 'indi-brand-reveal.webm');
+    const posterPath = path.join(process.cwd(), 'public', 'brand', 'indi-brand-reveal-poster.webp');
+
+    expect(fs.existsSync(webmPath), 'indi-brand-reveal.webm debe existir').toBe(true);
+    expect(fs.existsSync(posterPath), 'indi-brand-reveal-poster.webp debe existir').toBe(true);
+
+    const webmSizeKb = fs.statSync(webmPath).size / 1024;
+    const posterSizeKb = fs.statSync(posterPath).size / 1024;
+
+    expect(webmSizeKb).toBeLessThan(150); // Menos de 150 KB para carga ambiental rápida
+    expect(posterSizeKb).toBeLessThan(20); // Poster WebP < 20 KB
+  });
 });
 
 

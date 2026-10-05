@@ -132,6 +132,8 @@ export const BRAND_ASSETS: Record<string, BrandAsset> = {
     category: 'animation',
     format: 'mp4',
     url: '/brand/indi-brand-reveal.mp4',
+    webmUrl: '/brand/indi-brand-reveal.webm',
+    fallbackUrl: '/brand/indi-brand-reveal-poster.webp',
     width: 1920,
     height: 1080,
     aspectRatio: '16:9',
