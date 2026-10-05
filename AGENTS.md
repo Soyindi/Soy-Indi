@@ -142,7 +142,13 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - Inferencia con orquestador resiliente multi-proveedor (`callNvidiaNimChat`): Failover transparente NVIDIA NIM ➔ Google Gemini 1.5 Flash ➔ OpenRouter ➔ Motor Heurístico Determinista local, garantizando cero caídas en producción y desarrollo offline.
    - Ingesta exhaustiva de documentos (`document-parser.ts`): Extracción algorítmica de métricas complejas (UF, USD, CLP, %, deltas `+`/`-`, ratios `x`, rps, MoM/YoY), cronogramas y pares de contraste semántico problema/solución.
 
+12. **Identificadores Públicos Profesionales & Auto-Sincronización Inteligente (Smart Card Slugs):**
+   - Los enlaces públicos para tarjetas digitales (`/c/[slug]`) erradican identificadores temporales aleatorios como `tarjeta-xxxxx`.
+   - Se gestionan canónicamente mediante `slugifyCardName` (`@/entities/card/schemas`), normalizando tildes, caracteres especiales y colapsando guiones a formato URL-friendly (`carlos-mendoza`).
+   - El editor `CardBuilder.tsx` implementa auto-sincronización reactiva: al tipear el nombre completo, el slug se actualiza automáticamente a menos que el usuario lo haya editado manualmente (`isSlugManuallyEdited`). Incluye botones táctiles asistidos $\ge 44\text{px}$ para sincronizar desde el nombre y copiar el enlace con feedback inmediato.
+
 ---
+
 
 ## 📦 6. Convenciones de Git y Commits Semánticos
 

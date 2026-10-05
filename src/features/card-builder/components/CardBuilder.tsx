@@ -7,6 +7,7 @@ import { upsertCardAction } from '@/features/card-builder/actions';
 import { generateBioVariantsAction } from '@/features/card-builder/ai-bio-actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { CARD_DESIGN_PRESETS, CardDesignPreset } from '@/entities/card/themes';
+import { slugifyCardName, generateCardSlug } from '@/entities/card/schemas';
 import { compressImageClient } from '@/shared/lib/imageCompression';
 import { 
   Sparkles, 
@@ -24,7 +25,10 @@ import {
   ShieldCheck,
   MapPin,
   UploadCloud,
-  Trash2
+  Trash2,
+  RefreshCw,
+  Copy,
+  CheckCheck
 } from 'lucide-react';
 
 interface CardBuilderProps {
@@ -50,12 +54,15 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
   } | null>(null);
   const photoFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Generador de slug inicial seguro para evitar colisiones accidentales
+  // Inicialización inteligente del slug: derivado del nombre si existe o del default profesional
   const [initialSlug] = useState(() => {
     if (initialData?.slug) return initialData.slug;
-    const randomSuffix = Math.random().toString(36).substring(2, 7);
-    return `tarjeta-${randomSuffix}`;
+    return generateCardSlug(initialData?.title || 'carlos-mendoza');
   });
+
+  // Rastrear si el usuario modificó deliberadamente el slug a mano
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(() => Boolean(initialData?.slug));
+  const [isCopiedSlug, setIsCopiedSlug] = useState(false);
 
   // Estado reactivo del formulario
   const [formData, setFormData] = useState<CardData>({
@@ -80,12 +87,47 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
     },
   });
 
-  // Manejador genérico de inputs
+  // Manejador genérico de inputs con auto-sincronización del slug según el nombre
   const handleChange = (field: keyof CardData, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+      
+      // Auto-sincronizar el slug si el usuario escribe su nombre y aún no ha personalizado el slug a mano
+      if (field === 'title' && !isSlugManuallyEdited) {
+        const derivedSlug = slugifyCardName(value);
+        if (derivedSlug) {
+          updated.slug = derivedSlug;
+        }
+      }
+
+      return updated;
+    });
+  };
+
+  // Manejador manual de cambio de slug
+  const handleSlugChange = (rawSlug: string) => {
+    setIsSlugManuallyEdited(true);
+    const sanitized = rawSlug.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    setFormData((prev) => ({ ...prev, slug: sanitized }));
+  };
+
+  // Restablecer/regenerar slug desde el nombre actual
+  const handleRegenerateSlugFromName = () => {
+    const derivedSlug = slugifyCardName(formData.title || 'mi-tarjeta');
+    setFormData((prev) => ({ ...prev, slug: derivedSlug }));
+    setIsSlugManuallyEdited(false);
+  };
+
+  // Copiar URL pública de la tarjeta
+  const handleCopyPublicUrl = async () => {
+    try {
+      const url = `https://indi.bio/c/${formData.slug}`;
+      await navigator.clipboard.writeText(url);
+      setIsCopiedSlug(true);
+      setTimeout(() => setIsCopiedSlug(false), 2000);
+    } catch {
+      // Fallback silencioso
+    }
   };
 
   // Manejador del theme
@@ -296,18 +338,64 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
           {activeTab === 'profile' && (
             <div className="space-y-5 animate-fade-in">
               <div>
-                <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-2">
-                  Enlace Personalizado (Slug Público)
-                </label>
-                <div className="flex items-center rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm">
-                  <span className="text-zinc-500 font-mono">indi.bio/c/</span>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-mono font-semibold uppercase text-zinc-400">
+                    Enlace Personalizado (Slug Público)
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={handleRegenerateSlugFromName}
+                      title="Sincronizar slug con tu nombre"
+                      className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 hover:text-indigo-400 px-2 py-1 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      <span>Desde nombre</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyPublicUrl}
+                      title="Copiar enlace de tarjeta"
+                      className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 hover:text-emerald-400 px-2 py-1 rounded-md hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      {isCopiedSlug ? (
+                        <>
+                          <CheckCheck className="w-3 h-3 text-emerald-400" />
+                          <span className="text-emerald-400 font-semibold">Copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span>Copiar</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm focus-within:border-indigo-500/80 transition-colors">
+                  <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">indi.bio/c/</span>
                   <input
                     type="text"
                     value={formData.slug}
-                    onChange={(e) => handleChange('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                    className="flex-1 bg-transparent text-white font-mono focus:outline-none ml-1"
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                    className="flex-1 bg-transparent text-white font-mono text-xs sm:text-sm focus:outline-none pl-1"
                     placeholder="tu-nombre"
+                    spellCheck={false}
                   />
+                  {formData.slug && (
+                    <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      Activo
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between mt-1.5 px-1">
+                  <p className="text-[11px] text-zinc-500">
+                    {isSlugManuallyEdited
+                      ? 'Slug personalizado manualmente.'
+                      : 'Se actualiza automáticamente al cambiar tu nombre.'}
+                  </p>
+                  <span className="text-[10px] font-mono text-zinc-600">min. 3 car.</span>
                 </div>
               </div>
 

@@ -1199,4 +1199,20 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (193 de 193 tests en 29 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Normalización Profesional de Slugs Públicos & Auto-Sincronización (Octubre 2026)
+1. **Erradicación de Slugs Genéricos Provisionales**:
+   - Reemplazo del patrón de slug inicial aleatorio `tarjeta-xxxxx` por el estándar SaaS de clase mundial basado en la identidad profesional (`generateCardSlug` y `slugifyCardName` en `@/entities/card/schemas`).
+2. **Auto-Sincronización Reactiva & Modo No Invasivo**:
+   - En `CardBuilder.tsx`, al escribir el nombre completo, el slug se deriva y sincroniza automáticamente en tiempo real (`slugifyCardName(name)`) mientras el usuario no lo haya editado a mano (`isSlugManuallyEdited`).
+   - Si el usuario personaliza el slug deliberadamente, el sistema respeta su decisión y desactiva la sobreescritura automática.
+3. **Controles Táctiles Asistidos ($\ge 44\text{px}$)**:
+   - Botón *"Desde nombre"* para re-sincronizar el slug con el nombre del usuario en 1 toque.
+   - Botón *"Copiar"* para copiar la URL completa `https://indi.bio/c/[slug]` con confirmación visual reactiva (`Copiado!`).
+   - Remoción de desfases visuales entre el prefijo `indi.bio/c/` y el input, con validación inline de patrón URL.
+4. **Control de Calidad y Pruebas Unitarias (199 Tests Passing)**:
+   - Suite completa en `tests/unit/card-slug.test.ts` verificando normalización de acentos, caracteres especiales, colapso de guiones/espacios y compatibilidad con `cardFormSchema`.
+   - 100% de la suite de pruebas unitarias aprobada (199 de 199 tests en 30 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 

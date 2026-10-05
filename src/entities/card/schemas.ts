@@ -75,3 +75,33 @@ export const cardFormSchema = z.object({
 export type CardFormValues = z.infer<typeof cardFormSchema>;
 export type CardFormInput = z.input<typeof cardFormSchema>;
 export type CardBentoBlock = NonNullable<CardFormValues['bentoBlocks']>[number];
+
+/**
+ * Normaliza cualquier nombre o texto a un slug seguro y limpio para tarjetas de presentación
+ * Remueve tildes, eñes y caracteres especiales, preservando solo letras minúsculas, números y guiones.
+ */
+export function slugifyCardName(name: string): string {
+  const normalized = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remueve tildes y diacríticos
+    .replace(/[^a-z0-9]+/g, '-')     // Reemplaza caracteres no alfanuméricos por guión
+    .replace(/(^-|-$)+/g, '');       // Remueve guiones al inicio o final
+
+  return normalized || 'tarjeta';
+}
+
+/**
+ * Genera un slug profesional para tarjetas de presentación
+ * @param name Nombre o título profesional base
+ * @param withSuffix Si es true, añade un sufijo aleatorio de 4 caracteres para evitar colisiones
+ */
+export function generateCardSlug(name: string = 'carlos-mendoza', withSuffix: boolean = false): string {
+  const base = slugifyCardName(name);
+  if (!withSuffix) {
+    return base;
+  }
+  const suffix = Math.random().toString(36).substring(2, 6);
+  return `${base}-${suffix}`;
+}
+
