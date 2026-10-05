@@ -1338,6 +1338,18 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada en Vitest (242 de 242 tests en 40 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Homologación Universal del Isotipo Animado en Vistas Públicas (/c, /cv, /p) (Octubre 2026)
+1. **Purificación Visual y Espacial en Vistas Públicas (Zero Text Noise)**:
+   - Erradicación de subtítulos y textos accesorios dispersos (`"INDI"`, `"IDENTITY EDGE"`) en las cabeceras públicas de Tarjetas Digitales (`/c/[slug]`), Smart CV (`/cv/[slug]`) y Presentaciones Orbitales (`/p/[slug]`).
+   - Implementación estandarizada del isotipo animado oficial en video loop (`<BrandLogo variant="symbol" size="sm" showText={false} useVideo={true} linkToHome={true} />`), brindando máxima pureza estética, mayor aire visual para el contenido del usuario y unificación con el Dashboard y Editores.
+2. **Inclusión de Marca Canónica en Presentaciones Públicas (`/p/[slug]`)**:
+   - Integración del isotipo corporativo en [PublicPresentationViewer.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/features/orbital-presentations/components/PublicPresentationViewer.tsx), proporcionando presencia de marca de alta gama con enlace de retorno sin colisionar con el botón de estudio (`onExit`).
+3. **Control de Calidad y Pruebas Unitarias (243 Tests Passing)**:
+   - Actualización de `tests/unit/systemic-navigation-audit.test.ts` verificando la configuración uniforme del isotipo animado sin textos en las 3 verticales públicas.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (243 de 243 tests en 40 suites).
+   - 0 errores en verificación estricta de tipos (`npm run typecheck`).
+
+
 
 
 

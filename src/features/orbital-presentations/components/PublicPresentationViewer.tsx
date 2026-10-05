@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SlideViewer } from '@/features/orbital-presentations/components/SlideViewer';
 import { PresentationSlide, PresentationTheme } from '@/entities/presentation/schemas';
+import { BrandLogo } from '@/shared/ui/BrandLogo';
 import {
   ChevronLeft,
   ChevronRight,
@@ -178,6 +179,18 @@ export function PublicPresentationViewer({
       {/* Barra Superior */}
       <header className="flex items-center justify-between z-20 pb-4">
         <div className="flex items-center gap-3">
+          {/* Isotipo Oficial Animado INDI */}
+          <BrandLogo
+            variant="symbol"
+            size="sm"
+            showText={false}
+            useVideo={true}
+            linkToHome={true}
+            className="min-h-[44px] min-w-[44px] p-0.5 rounded-xl transition-transform hover:scale-105 active:scale-95"
+          />
+
+          <div className="h-6 w-[1px] bg-white/10 hidden sm:block shrink-0" />
+
           {onExit ? (
             <button
               onClick={onExit}

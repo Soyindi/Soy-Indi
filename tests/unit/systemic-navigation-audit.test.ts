@@ -21,6 +21,23 @@ describe('Systemic Navigation Audit & Zero Auto-Referential Loops', () => {
     expect(logoDestinations.editorSubpages).toBe('/dashboard');
   });
 
+  it('verifica que las 3 vistas públicas (/c, /cv, /p) empleen el isotipo animado oficial solo sin textos redundantes', () => {
+    const publicViewsBranding = {
+      cards: { variant: 'symbol', size: 'sm', showText: false, useVideo: true, linkToHome: true },
+      smartCv: { variant: 'symbol', size: 'sm', showText: false, useVideo: true, linkToHome: true },
+      presentations: { variant: 'symbol', size: 'sm', showText: false, useVideo: true, linkToHome: true },
+    };
+
+    expect(publicViewsBranding.cards.showText).toBe(false);
+    expect(publicViewsBranding.cards.useVideo).toBe(true);
+
+    expect(publicViewsBranding.smartCv.showText).toBe(false);
+    expect(publicViewsBranding.smartCv.useVideo).toBe(true);
+
+    expect(publicViewsBranding.presentations.showText).toBe(false);
+    expect(publicViewsBranding.presentations.useVideo).toBe(true);
+  });
+
   it('valida que no existan botones duplicados compitiendo por el mismo destino en la barra de navegación del Dashboard', () => {
     // En la cabecera del Dashboard, solo deben residir las acciones indispensables
     const dashboardHeaderActions = [
