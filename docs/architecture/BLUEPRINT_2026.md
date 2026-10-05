@@ -1218,6 +1218,20 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (204 de 204 tests en 31 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Refactorización Ejecutiva de `TrialBanner` (WCAG 2.2 AA & Base 8) (Octubre 2026)
+1. **Contraste Perceptual WCAG 2.2 AA / AAA**:
+   - Erradicación de tipografía desvaída (`text-indigo-200`) sobre fondos oscuros; sustituida por jerarquía nítida en `text-white` y `text-zinc-300` con ratio de contraste superior a $8:1$.
+2. **Ergonomía Táctil Mobile-First ($\ge 44\text{px}$)**:
+   - Todos los botones y llamadas a la acción (`Suscríbete por $2.500 / mes`, `Gestionar suscripción`, `Activar membresía`) implementan altura mínima táctil `min-h-[44px]` y ancho táctil mínimo `min-w-[44px]`.
+3. **Retícula Base 8 & Glassmorphism 2.0**:
+   - Normalización de paddings a múltiplos de 8px (`px-4 sm:px-6`, `py-3` a `py-3.5`, `gap-3` a `gap-4`).
+   - Contenedor con `backdrop-blur-md`, micro-bordes luminosos acordes al estado (`ACTIVE`, `TRIAL`, `EXPIRED`) y badges de estado redondeados tipo pill.
+4. **Control de Calidad y Pruebas Unitarias (209 Tests Passing)**:
+   - Nueva suite en `tests/unit/trial-banner.test.ts` verificando landmarks semánticos `<aside>`, accesibilidad `aria-label`, touch targets $\ge 44\text{px}$ y contraste del CTA principal.
+   - 100% de la suite de pruebas unitarias aprobada (209 de 209 tests en 32 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
 
 
