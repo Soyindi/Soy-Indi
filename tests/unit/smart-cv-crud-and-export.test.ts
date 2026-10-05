@@ -242,4 +242,82 @@ describe('Smart CV Persistence, Multi-Tenant Security & Enterprise Export', () =
       expect(totalPages).toBeGreaterThanOrEqual(1);
     });
   });
+
+  describe('parseCvTextToStructuredData (References Contact Extraction)', () => {
+    it('debe extraer referencias con contacto (teléfono y email) en formato de una sola línea', async () => {
+      const { parseCvTextToStructuredData } = await import('@/features/ai-smart-cv/lib/cv-text-parser');
+      const cvText = `
+Matias Riquelme
+Psicólogo Clínico
+matias@test.com
++56 9 1234 5678
+
+RESUMEN PROFESIONAL
+Psicólogo con experiencia en intervención clínica y psicodiagnóstico.
+
+EXPERIENCIA LABORAL
+Hospital Clínico
+Psicólogo Clínico
+2023 - Presente
+• Atención a pacientes.
+
+EDUCACIÓN
+Psicología
+Universidad de Magallanes
+2020
+
+REFERENCIAS LABORALES
+• Cecilia Vivallo Corvalán — Enfermera encargada, Hospital Clínico — Tel: +56 9 9123 4567 • cecilia@redsalud.gob.cl
+• Carlos Domínguez Parra - Médico Cirujano, Clínica Magallanes - Fono: +56987654321
+`;
+      const result = parseCvTextToStructuredData(cvText, 'cv_matias.pdf');
+      expect(result.references.length).toBe(2);
+      expect(result.references[0].name).toBe('Cecilia Vivallo Corvalán');
+      expect(result.references[0].role).toBe('Enfermera encargada');
+      expect(result.references[0].company).toBe('Hospital Clínico');
+      expect(result.references[0].contact).toContain('56 9 9123 4567');
+      expect(result.references[0].contact).toContain('cecilia@redsalud.gob.cl');
+
+      expect(result.references[1].name).toBe('Carlos Domínguez Parra');
+      expect(result.references[1].role).toBe('Médico Cirujano');
+      expect(result.references[1].contact).toContain('56987654321');
+    });
+
+    it('debe extraer referencias en formato multilínea (Nombre en l1, Cargo/Empresa en l2, Teléfono en l3)', async () => {
+      const { parseCvTextToStructuredData } = await import('@/features/ai-smart-cv/lib/cv-text-parser');
+      const cvText = `
+Rodrigo Sanchez
+Ingeniero Civil
+rodrigo@test.com
+
+EXPERIENCIA LABORAL
+Tech SpA
+Ingeniero
+2022 - Presente
+• Desarrollo de software.
+
+REFERENCIAS
+María José Carrasco
+Jefa de Proyectos - Empresa Minera
+Contacto: +56 9 5555 4444
+
+Andrés Morales Soto
+Director de Operaciones - Logística Austral
+Teléfono: +56 9 8888 7777 • andres.morales@austral.cl
+`;
+      const result = parseCvTextToStructuredData(cvText, 'cv_rodrigo.pdf');
+      expect(result.references.length).toBe(2);
+      expect(result.references[0].name).toBe('María José Carrasco');
+      expect(result.references[0].role).toBe('Jefa de Proyectos');
+      expect(result.references[0].company).toBe('Empresa Minera');
+      expect(result.references[0].contact).toContain('56 9 5555 4444');
+
+      expect(result.references[1].name).toBe('Andrés Morales Soto');
+      expect(result.references[1].role).toBe('Director de Operaciones');
+      expect(result.references[1].company).toBe('Logística Austral');
+      expect(result.references[1].contact).toContain('56 9 8888 7777');
+      expect(result.references[1].contact).toContain('andres.morales@austral.cl');
+    });
+  });
 });
+

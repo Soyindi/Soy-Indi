@@ -1155,12 +1155,24 @@ export default async function PublicCardPage({ params }: PageProps) {
 2. **Referencias Laborales con Contacto Verificable Prominente**:
    - Rediseño de la sección de referencias tanto en el motor PDF vectorial (`pdf-engine.ts`) como en el visor web A4 (`CvDocumentPreview.tsx`) y el editor interactivo (`SmartCvBuilder.tsx`).
    - Layout en 2 columnas con tipografía jerárquica clara (Nombre ➔ Cargo • Empresa ➔ `Contacto: [Teléfono / Email]` destacado para el reclutador).
-   - Detección multilínea de teléfonos y correos en el parser heurístico de texto para asociar contactos a cada referente automáticamente.
 3. **Guardrail Anti-Página Huérfana y Control de Márgenes**:
    - Prevención estricta de páginas adicionales vacías: la línea de firma ejecutiva solo se dibuja en PDF si existe una firma digital configurada por el usuario.
    - Cálculo dinámico de altura requerida (`neededHeight`) y comprobación de saltos de página con encabezado de continuación corporativo.
 4. **Control de Calidad y Suite de Pruebas Unitarias (186 Tests Passing)**:
    - Nuevas pruebas en `tests/unit/smart-cv-crud-and-export.test.ts` verificando la sanitización de artefactos de OCR (`%Ï`), inclusión de contactos en referencias y prevención de páginas huérfanas en exportación PDF A4.
-   - 100% de la suite de pruebas unitarias aprobada (186 de 186 tests en 29 archivos de prueba).
+
+### Fase: Extracción Robusta de Contacto en Referencias al Subir CV (Octubre 2026)
+1. **Auditoría de Ingesta y Diagnóstico de Causa Raíz**:
+   - **Pipeline Multimodal LLM (`multimodal-parser.ts`)**: El meta-prompt `MULTIMODAL_CV_PROMPT` no incluía la sección `"references"` en el esquema JSON esperado, provocando que la inferencia visual/documental descartara completamente las referencias con sus teléfonos/emails.
+   - **Pipeline Heurístico de Texto (`cv-text-parser.ts`)**:
+     - Las expresiones regulares de teléfono restringían los formatos de 8-9 dígitos de telefonía móvil y fija chilena (`+56 9 XXXX XXXX`, `+569...`, `9XXXXXXXX`).
+     - Al procesar referencias estructuradas en múltiples líneas consecutivas (Línea 1: Nombre, Línea 2: Cargo - Empresa, Línea 3: Teléfono/Email), el avance de puntero y la detección de límites de referente no desacoplaban apropiadamente las líneas de contacto.
+2. **Implementación de Extracción Adaptativa Multilínea y Monolínea**:
+   - Se añadió la clave `"references"` con campos `name`, `role`, `company` y `contact` en el prompt multimodal de IA.
+   - Se optimizó el analizador determinista en `cv-text-parser.ts` para extraer teléfonos e emails tanto en línea única con separadores (`—`, `–`, `·`, `|`, `Tel:`) como en formato de bloque de 2 a 3 líneas sin viñetas, sanitizando los datos de contacto para que no contaminen los campos de cargo o institución.
+3. **Suite de Pruebas y Validación Integral (188 Tests Passing)**:
+   - Casos de prueba exhaustivos en `tests/unit/smart-cv-crud-and-export.test.ts` verificando formatos monolínea y multilínea con múltiples referentes.
+   - 100% de la suite de pruebas unitarias aprobada (188 de 188 tests en 29 suites).
+   - 0 errores de tipado TypeScript (`npm run typecheck`).
 
 

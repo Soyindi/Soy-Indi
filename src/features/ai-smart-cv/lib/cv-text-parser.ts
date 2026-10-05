@@ -554,36 +554,107 @@ export function parseCvTextToStructuredData(
       }
     }
 
-    // Separar por em-dash, guión o punto medio
-    const parts = cleanLine.split(/[—|–·]/).map((p) => p.trim()).filter(Boolean);
+    // Helper para extraer contactos (teléfono y/o email) de un texto dado
+    const extractContactInfo = (text: string): { phone?: string; email?: string } => {
+      // Teléfonos chilenos e internacionales (+56 9 XXXX XXXX, +569XXXXXXXX, etc.)
+      const phoneMatch = text.match(/(?:\+?56\s?(?:9\s?)?|\b9\s?)?\d{4}[\s.-]?\d{4}\b|\b(?:\+?\d{1,3}[\s.-]?)?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}\b/);
+      const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i);
+      const phone = phoneMatch && phoneMatch[0].replace(/\D/g, '').length >= 8 ? phoneMatch[0].trim() : undefined;
+      const email = emailMatch ? emailMatch[0].trim() : undefined;
+      return { phone, email };
+    };
 
     let name = '';
     let role = '';
     let company = '';
     let contact = '';
 
-    // Buscar email o teléfono en la línea actual
-    let phoneInLine = cleanLine.match(/(?:\+?56\s?9|\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/);
-    let emailInLine = cleanLine.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i);
+    // 1. Extraer contacto de la línea actual si existe
+    const currentContacts = extractContactInfo(cleanLine);
+    let contactParts: string[] = [];
+    if (currentContacts.phone) contactParts.push(currentContacts.phone);
+    if (currentContacts.email) contactParts.push(currentContacts.email);
 
-    // Si la línea actual no tiene contacto, mirar si la línea siguiente contiene teléfono o email de esta persona
-    if (!phoneInLine && !emailInLine && i + 1 < refLines.length) {
-      const nextCandidate = refLines[i + 1].trim();
-      const nextPhone = nextCandidate.match(/(?:\+?56\s?9|\+?\d{1,3})?[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/);
-      const nextEmail = nextCandidate.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i);
-      if (nextPhone || nextEmail) {
-        if (nextPhone && nextPhone[0].length >= 8) contact = nextPhone[0].trim();
-        if (nextEmail) contact = contact ? `${contact} • ${nextEmail[0]}` : nextEmail[0];
-        i++; // Consumir línea de contacto de la referencia
+    let extraRoleOrCompanyCandidate = '';
+    let linesConsumed = 0;
+
+    // Helper para saber si una línea es de contacto
+    const isContactLine = (text: string): boolean => {
+      if (/^(?:contacto|tel[ée]fono|fono|celular|cel|whatsapp|mail|correo|email)[:\s]/i.test(text.trim())) return true;
+      const contacts = extractContactInfo(text);
+      if (contacts.phone || contacts.email) return true;
+      return false;
+    };
+
+    // Helper para determinar si una línea representa una NUEVA referencia (viñeta explícita o nueva persona)
+    const isExplicitNewBullet = (rawLine: string): boolean => {
+      const trimmed = rawLine.trim();
+      return /^[•\-\*]\s/.test(trimmed);
+    };
+
+    // 2. Si es formato multilínea (o la línea actual no tiene contacto completo), inspeccionar las siguientes 1 o 2 líneas
+    if (i + 1 < refLines.length && !isExplicitNewBullet(refLines[i + 1])) {
+      const next1Raw = stripLeadingBullet(refLines[i + 1]).trim();
+      if (
+        next1Raw.length >= 3 &&
+        !isCertificateOrNoise(next1Raw) &&
+        !next1Raw.includes('______') &&
+        !(fullName && next1Raw.includes(fullName) && (next1Raw.includes('RUT') || next1Raw.includes('18.')))
+      ) {
+        if (isContactLine(next1Raw)) {
+          // Línea i+1 es contacto directo
+          const c1 = extractContactInfo(next1Raw);
+          if (c1.phone && !contactParts.includes(c1.phone)) contactParts.push(c1.phone);
+          if (c1.email && !contactParts.includes(c1.email)) contactParts.push(c1.email);
+          linesConsumed = 1;
+        } else if (next1Raw.length < 80) {
+          // Línea i+1 es cargo / empresa
+          extraRoleOrCompanyCandidate = next1Raw;
+          linesConsumed = 1;
+
+          // Ver si línea i+2 es el contacto
+          if (i + 2 < refLines.length && !isExplicitNewBullet(refLines[i + 2])) {
+            const next2Raw = stripLeadingBullet(refLines[i + 2]).trim();
+            if (
+              next2Raw.length >= 3 &&
+              !isCertificateOrNoise(next2Raw) &&
+              isContactLine(next2Raw)
+            ) {
+              const c2 = extractContactInfo(next2Raw);
+              if (c2.phone && !contactParts.includes(c2.phone)) contactParts.push(c2.phone);
+              if (c2.email && !contactParts.includes(c2.email)) contactParts.push(c2.email);
+              linesConsumed = 2;
+            }
+          }
+        }
       }
     }
 
-    if (phoneInLine && phoneInLine[0].length >= 8) contact = phoneInLine[0].trim();
-    if (emailInLine) contact = contact ? `${contact} • ${emailInLine[0]}` : emailInLine[0];
+    // Avanzar el cursor de líneas por las líneas consumidas en este bloque de referencia
+    i += linesConsumed;
+
+    if (contactParts.length > 0) {
+      contact = contactParts.join(' • ');
+    }
+
+    // 3. Separar nombre, cargo y empresa
+    // Normalizar separadores: em-dash, en-dash, guiones estándar rodeados de espacio o tabs
+    let lineForSplitting = cleanLine;
+    // Eliminar fragmentos de contacto de la línea antes de separar los campos para no contaminar role o company
+    if (contactParts.length > 0) {
+      contactParts.forEach((cp) => {
+        lineForSplitting = lineForSplitting.replace(cp, '');
+      });
+      lineForSplitting = lineForSplitting.replace(/(?:tel[ée]fono|fono|celular|cel|mail|correo|email|contacto)[:\s]*/gi, ' ').trim();
+    }
+
+    const parts = lineForSplitting
+      .split(/[—–|·\t]|\s-\s/)
+      .map((p) => p.trim())
+      .filter(Boolean);
 
     if (parts.length >= 3) {
       name = parts[0];
-      // Si el segundo término contiene cargo y empresa separados por coma
       const roleCompanyPart = parts[1];
       if (roleCompanyPart.includes(',')) {
         const [r, ...c] = roleCompanyPart.split(',');
@@ -601,22 +672,37 @@ export function parseCvTextToStructuredData(
         company = c.join(',').trim();
       } else {
         role = parts[1];
+        company = extraRoleOrCompanyCandidate || 'Institución de Referencia';
+      }
+    } else if (parts.length === 1 && extraRoleOrCompanyCandidate) {
+      name = parts[0];
+      const extraParts = extraRoleOrCompanyCandidate.split(/[—–|·\t,]|\s-\s/).map((p) => p.trim()).filter(Boolean);
+      if (extraParts.length >= 2) {
+        role = extraParts[0];
+        company = extraParts.slice(1).join(' - ');
+      } else {
+        role = extraRoleOrCompanyCandidate;
         company = 'Institución de Referencia';
       }
     }
 
-    // Validar que el nombre no sea ruido ni el propio usuario
+    // Validar que el nombre no sea ruido ni metadatos de folios o librerías PDF
     if (name && name.length >= 4 && !name.toLowerCase().includes('tcpdf') && !name.toLowerCase().includes('folio')) {
-      // Limpiar datos de contacto del cargo/empresa
       const cleanField = (s: string) =>
-        s.replace(/(?:\+?56\s?9|\b9\d{8}\b|tel|fono|email|correo).*$/i, '').trim();
+        s.replace(/(?:\+?56\s?9|\b9\d{8}\b|tel[ée]fono|fono|email|correo|celular).*$/i, '').trim();
 
-      references.push({
-        name: cleanField(name),
-        role: cleanField(role) || 'Referencia Profesional',
-        company: cleanField(company) || 'Institución',
-        contact: contact || undefined,
-      });
+      const cleanedName = cleanField(name);
+      const cleanedRole = cleanField(role) || 'Referencia Profesional';
+      const cleanedCompany = cleanField(company) || 'Institución';
+
+      if (cleanedName.length >= 3) {
+        references.push({
+          name: cleanedName,
+          role: cleanedRole,
+          company: cleanedCompany,
+          contact: contact || undefined,
+        });
+      }
     }
   }
 

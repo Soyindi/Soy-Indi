@@ -55,6 +55,14 @@ REGLAS DE PROCESAMIENTO CRÍTICAS:
       "institution": string,
       "year": string
     }
+  ],
+  "references": [
+    {
+      "name": string (nombre completo de la persona de referencia),
+      "role": string (cargo o jefatura),
+      "company": string (empresa o institución),
+      "contact": string (teléfono de contacto y/o email)
+    }
   ]
 }
 `;
