@@ -27,12 +27,12 @@ const squareSizeMap: Record<BrandLogoSize, { box: string; imgSize: number; text:
 };
 
 const cinematicSizeMap: Record<BrandLogoSize, { box: string; width: number; height: number }> = {
-  xs: { box: 'h-7 aspect-[16/9] min-w-[50px]', width: 50, height: 28 },
-  sm: { box: 'h-9 aspect-[16/9] min-w-[64px]', width: 64, height: 36 },
-  md: { box: 'h-11 sm:h-12 aspect-[16/9] min-w-[80px] sm:min-w-[86px]', width: 86, height: 48 },
-  lg: { box: 'h-14 sm:h-16 aspect-[16/9] min-w-[100px] sm:min-w-[114px]', width: 114, height: 64 },
-  xl: { box: 'h-20 sm:h-24 aspect-[16/9] min-w-[142px] sm:min-w-[170px]', width: 170, height: 96 },
-  '2xl': { box: 'h-28 sm:h-36 aspect-[16/9] min-w-[200px] sm:min-w-[256px]', width: 256, height: 144 },
+  xs: { box: 'h-8 aspect-[3/2] min-w-[48px]', width: 48, height: 32 },
+  sm: { box: 'h-10 aspect-[3/2] min-w-[60px]', width: 60, height: 40 },
+  md: { box: 'h-12 sm:h-14 aspect-[3/2] min-w-[72px] sm:min-w-[84px]', width: 84, height: 56 },
+  lg: { box: 'h-16 sm:h-20 aspect-[3/2] min-w-[96px] sm:min-w-[120px]', width: 120, height: 80 },
+  xl: { box: 'h-24 sm:h-28 aspect-[3/2] min-w-[144px] sm:min-w-[168px]', width: 168, height: 112 },
+  '2xl': { box: 'h-32 sm:h-40 aspect-[3/2] min-w-[192px] sm:min-w-[240px]', width: 240, height: 160 },
 };
 
 export function BrandLogo({
@@ -69,7 +69,7 @@ export function BrandLogo({
   })();
 
   const posterUrl = isCinematic
-    ? '/brand/indi-logo-video-poster.webp'
+    ? '/brand/indi-logo-tight-poster.webp'
     : asset.url;
 
   const content = (
@@ -78,9 +78,9 @@ export function BrandLogo({
       <div
         className={`relative ${
           useVideo && isCinematic ? currentCinematic.box : currentSquare.box
-        } rounded-xl sm:rounded-2xl overflow-hidden bg-black/60 border border-cyan-500/25 p-0.5 shadow-lg shadow-cyan-500/15 group-hover:scale-105 group-hover:shadow-cyan-400/30 group-hover:border-cyan-400/50 transition-all duration-300 shrink-0`}
+        } rounded-xl sm:rounded-2xl overflow-hidden bg-black/80 border border-cyan-500/30 p-0 shadow-lg shadow-cyan-500/20 group-hover:scale-105 group-hover:shadow-cyan-400/40 group-hover:border-cyan-400/60 transition-all duration-300 shrink-0`}
       >
-        <div className="w-full h-full rounded-[10px] sm:rounded-[14px] flex items-center justify-center relative overflow-hidden bg-black">
+        <div className="w-full h-full rounded-[11px] sm:rounded-[15px] flex items-center justify-center relative overflow-hidden bg-black">
           {useVideo ? (
             <>
               <video
@@ -90,13 +90,13 @@ export function BrandLogo({
                 playsInline
                 preload="auto"
                 poster={posterUrl}
-                className="w-full h-full object-contain filter drop-shadow-[0_2px_12px_rgba(34,211,238,0.35)] motion-reduce:hidden transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-full object-cover filter drop-shadow-[0_2px_12px_rgba(34,211,238,0.35)] motion-reduce:hidden transition-transform duration-500 group-hover:scale-105"
                 aria-label="Logotipo oficial animado INDI"
               >
                 {isCinematic ? (
                   <>
-                    <source src="/brand/indi-logo-wide-animated.webm" type="video/webm" />
-                    <source src="/brand/indi-logo-wide-animated.mp4" type="video/mp4" />
+                    <source src="/brand/indi-logo-tight.webm" type="video/webm" />
+                    <source src="/brand/indi-logo-tight.mp4" type="video/mp4" />
                   </>
                 ) : (
                   <>
@@ -110,7 +110,7 @@ export function BrandLogo({
                   width={isCinematic ? currentCinematic.width : currentSquare.imgSize}
                   height={isCinematic ? currentCinematic.height : currentSquare.imgSize}
                   priority={priority}
-                  className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)]"
+                  className="w-full h-full object-cover filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)]"
                 />
               </video>
               {/* Fallback accesible para usuarios con preferencia de movimiento reducido */}

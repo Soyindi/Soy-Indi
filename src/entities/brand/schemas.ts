@@ -194,5 +194,21 @@ export const BRAND_ASSETS: Record<string, BrandAsset> = {
     description: 'Animación panorámica ligera (<70 KB) para vitrinas y cabeceras horizontales.',
     recommendedUse: 'Hero, presentaciones y banners animados.',
   },
+  logoTightAnimated: {
+    id: 'logo-tight-animated',
+    name: 'Logotipo Cinemático Ceñido Tight-Crop 3:2 (Imponente)',
+    category: 'animation',
+    format: 'mp4',
+    url: '/brand/indi-logo-tight.mp4',
+    webmUrl: '/brand/indi-logo-tight.webm',
+    fallbackUrl: '/brand/indi-logo-tight-poster.webp',
+    width: 480,
+    height: 320,
+    aspectRatio: 'custom',
+    alt: 'Logotipo Oficial Animado INDI en Alta Escala Tight-Crop',
+    description: 'Encuadre ceñido al núcleo luminoso que cuadruplica el tamaño del isotipo y texto en barras de navegación.',
+    recommendedUse: 'GlobalNavbar, MobileNavDrawer, Dashboard y cabeceras principales.',
+  },
 };
+
 

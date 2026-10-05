@@ -1115,15 +1115,14 @@ export default async function PublicCardPage({ params }: PageProps) {
      - Reproductor de video ambient MP4/WebP con controles glassmórficos flotantes para reproducción, pausa y silencio (touch targets $\ge 44\text{px}$).
      - Selector interactivo de activos de marca en tiempo real con panel de metadatos (resolución, peso, formato) y botón de descarga directa de assets.
      - Telemetría de rendimiento y Core Web Vitals en tiempo real destacando compresión de 98.3% y peso promedio < 15 KB.
-5. **Control de Calidad y Pruebas Unitarias (176 Tests Passing)**:
-   - Suite `tests/unit/brand-identity-system.test.ts` (6 pruebas unitarias):
+5. **Control de Calidad y Pruebas Unitarias (177 Tests Passing)**:
+   - Suite `tests/unit/brand-identity-system.test.ts` (7 pruebas unitarias):
      - Validación estricta con Zod de los activos canónicos registrados.
      - Verificación de existencia física de los archivos WebP, WebM y MP4 en `public/brand/`.
-     - Guardrail de peso máximo por activo WebP (< 45 KB), video 1:1 (< 80 KB) y video panorámico 16:9 (< 100 KB).
-     - Validación de formatos duales WebM/MP4 y poster WebP (4.4 KB) para Zero CLS.
-     - Conformidad de categorías de arquetipos de diseño (`symbol`, `lockup`, `vector`, `stacked`, `animation`).
+     - Guardrail de peso máximo por activo WebP (< 45 KB), video 1:1 (< 80 KB) y video tight-crop 3:2 (< 120 KB).
+     - Validación de encuadre ceñido Tight-Crop 3:2 (`indi-logo-tight.mp4`, `indi-logo-tight.webm`, `indi-logo-tight-poster.webp`) que incrementa el área activa del 23.9% al 80.2%, cuadruplicando la escala real del isotipo en cabeceras.
      - Protagonismo visual exclusivo sin textos redundantes HTML a los lados (`showText=false`).
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (176 de 176 tests en 27 suites).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (177 de 177 tests en 27 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`) y build de producción Next.js exitoso.
 
 

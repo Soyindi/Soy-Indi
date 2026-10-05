@@ -103,5 +103,24 @@ describe('Brand Identity System & Asset Optimization (WebP First)', () => {
     expect(wideWebmSize).toBeLessThan(90);  // Menos de 90 KB
     expect(posterSize).toBeLessThan(15);   // Poster WebP ultra liviano (<15 KB)
   });
+
+  it('debe validar la existencia y ratio de área activa del logotipo cinemático tight-crop 3:2', () => {
+    const tightMp4 = path.join(process.cwd(), 'public', 'brand', 'indi-logo-tight.mp4');
+    const tightWebm = path.join(process.cwd(), 'public', 'brand', 'indi-logo-tight.webm');
+    const tightPoster = path.join(process.cwd(), 'public', 'brand', 'indi-logo-tight-poster.webp');
+
+    expect(fs.existsSync(tightMp4), 'indi-logo-tight.mp4 debe existir').toBe(true);
+    expect(fs.existsSync(tightWebm), 'indi-logo-tight.webm debe existir').toBe(true);
+    expect(fs.existsSync(tightPoster), 'indi-logo-tight-poster.webp debe existir').toBe(true);
+
+    const mp4Size = fs.statSync(tightMp4).size / 1024;
+    const webmSize = fs.statSync(tightWebm).size / 1024;
+    const posterSize = fs.statSync(tightPoster).size / 1024;
+
+    expect(mp4Size).toBeLessThan(120); // Menos de 120 KB para streaming instantáneo
+    expect(webmSize).toBeLessThan(125); // Menos de 125 KB en VP9
+    expect(posterSize).toBeLessThan(15); // Poster WebP < 15 KB (Zero CLS)
+  });
 });
+
 
