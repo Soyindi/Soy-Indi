@@ -147,7 +147,13 @@ export function parseCvTextToStructuredData(
     if (
       lower.includes('referencia') ||
       lower.includes('references') ||
-      lower.includes('contactos de referencia')
+      lower.includes('contactos de referencia') ||
+      lower.includes('personas de referencia') ||
+      lower.includes('contacto de referencia') ||
+      lower.includes('referencias profesionales') ||
+      lower.includes('referencias laborales') ||
+      lower === 'referencias' ||
+      lower === 'referentes'
     ) {
       return { isHeader: true, type: 'references' };
     }
@@ -592,41 +598,35 @@ export function parseCvTextToStructuredData(
       return /^[•\-\*]\s/.test(trimmed);
     };
 
-    // 2. Si es formato multilínea (o la línea actual no tiene contacto completo), inspeccionar las siguientes 1 o 2 líneas
-    if (i + 1 < refLines.length && !isExplicitNewBullet(refLines[i + 1])) {
-      const next1Raw = stripLeadingBullet(refLines[i + 1]).trim();
-      if (
-        next1Raw.length >= 3 &&
-        !isCertificateOrNoise(next1Raw) &&
-        !next1Raw.includes('______') &&
-        !(fullName && next1Raw.includes(fullName) && (next1Raw.includes('RUT') || next1Raw.includes('18.')))
-      ) {
-        if (isContactLine(next1Raw)) {
-          // Línea i+1 es contacto directo
-          const c1 = extractContactInfo(next1Raw);
-          if (c1.phone && !contactParts.includes(c1.phone)) contactParts.push(c1.phone);
-          if (c1.email && !contactParts.includes(c1.email)) contactParts.push(c1.email);
-          linesConsumed = 1;
-        } else if (next1Raw.length < 80) {
-          // Línea i+1 es cargo / empresa
-          extraRoleOrCompanyCandidate = next1Raw;
-          linesConsumed = 1;
+    // 2. Si es formato multilínea (o la línea actual no tiene contacto completo), inspeccionar las siguientes 1 a 3 líneas
+    let lookAheadOffset = 1;
+    while (i + lookAheadOffset < refLines.length && lookAheadOffset <= 3) {
+      const candidateRaw = refLines[i + lookAheadOffset];
+      if (isExplicitNewBullet(candidateRaw)) break;
 
-          // Ver si línea i+2 es el contacto
-          if (i + 2 < refLines.length && !isExplicitNewBullet(refLines[i + 2])) {
-            const next2Raw = stripLeadingBullet(refLines[i + 2]).trim();
-            if (
-              next2Raw.length >= 3 &&
-              !isCertificateOrNoise(next2Raw) &&
-              isContactLine(next2Raw)
-            ) {
-              const c2 = extractContactInfo(next2Raw);
-              if (c2.phone && !contactParts.includes(c2.phone)) contactParts.push(c2.phone);
-              if (c2.email && !contactParts.includes(c2.email)) contactParts.push(c2.email);
-              linesConsumed = 2;
-            }
-          }
-        }
+      const nextRaw = stripLeadingBullet(candidateRaw).trim();
+      if (
+        nextRaw.length < 3 ||
+        isCertificateOrNoise(nextRaw) ||
+        nextRaw.includes('______') ||
+        (fullName && nextRaw.includes(fullName) && (nextRaw.includes('RUT') || nextRaw.includes('18.')))
+      ) {
+        break;
+      }
+
+      if (isContactLine(nextRaw)) {
+        const c = extractContactInfo(nextRaw);
+        if (c.phone && !contactParts.includes(c.phone)) contactParts.push(c.phone);
+        if (c.email && !contactParts.includes(c.email)) contactParts.push(c.email);
+        linesConsumed = lookAheadOffset;
+        lookAheadOffset++;
+      } else if (!extraRoleOrCompanyCandidate && nextRaw.length < 80 && !isContactLine(nextRaw)) {
+        // Podría ser la línea de cargo / institución (ej: "Jefa de Proyectos - Empresa Minera")
+        extraRoleOrCompanyCandidate = nextRaw;
+        linesConsumed = lookAheadOffset;
+        lookAheadOffset++;
+      } else {
+        break;
       }
     }
 
@@ -682,6 +682,25 @@ export function parseCvTextToStructuredData(
         company = extraParts.slice(1).join(' - ');
       } else {
         role = extraRoleOrCompanyCandidate;
+        company = 'Institución de Referencia';
+      }
+    } else if (parts.length === 1) {
+      // Si la línea era solo el nombre (y el contacto venía en línea separada o ya fue extraído)
+      name = parts[0];
+      // Si el nombre contiene comas (ej. "Nombre Apellido, Cargo, Empresa")
+      if (name.includes(',')) {
+        const commaParts = name.split(',').map((p) => p.trim()).filter(Boolean);
+        if (commaParts.length >= 3) {
+          name = commaParts[0];
+          role = commaParts[1];
+          company = commaParts.slice(2).join(' - ');
+        } else if (commaParts.length === 2) {
+          name = commaParts[0];
+          role = commaParts[1];
+          company = 'Institución de Referencia';
+        }
+      } else {
+        role = 'Referencia Profesional';
         company = 'Institución de Referencia';
       }
     }
