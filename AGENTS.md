@@ -137,6 +137,11 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - La home (src/app/page.tsx) admite como máximo LANDING_MAX_SECTIONS (5) secciones; toda copia pública se edita en @/entities/landing/schemas (LANDING_CONTENT), nunca hardcodeada en JSX.
    - Vitrinas internas de assets (BrandIdentityShowcase) no se exponen en la landing pública.
 
+11. **Estudio Cinemático Orbital & Copiloto IA de Diapositiva (McKinsey SCQA Standard):**
+   - El estudio de presentaciones (`PresentationStudio.tsx`) integra un copiloto IA por diapositiva (`SlideAiAssistant.tsx`) con botones táctiles ergonómicos $\ge 44\text{px}$ para optimizar en un toque: *Action Title McKinsey* (<14 palabras asertivas), *Viñetas de Impacto* con verbos de acción y *Notas del Orador* temporalizadas (~45-60s).
+   - Inferencia con orquestador resiliente multi-proveedor (`callNvidiaNimChat`): Failover transparente NVIDIA NIM ➔ Google Gemini 1.5 Flash ➔ OpenRouter ➔ Motor Heurístico Determinista local, garantizando cero caídas en producción y desarrollo offline.
+   - Ingesta exhaustiva de documentos (`document-parser.ts`): Extracción algorítmica de métricas complejas (UF, USD, CLP, %, deltas `+`/`-`, ratios `x`, rps, MoM/YoY), cronogramas y pares de contraste semántico problema/solución.
+
 ---
 
 ## 📦 6. Convenciones de Git y Commits Semánticos

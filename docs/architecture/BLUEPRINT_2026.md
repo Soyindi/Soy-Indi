@@ -1178,4 +1178,25 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (189 de 189 tests en 29 suites).
    - 0 errores de tipado TypeScript (`npm run typecheck`).
 
+### Fase: Copiloto de IA por Diapositiva & Extracción Exhaustiva de Métricas (Octubre 2026)
+1. **Auditoría de Ingesta y Brechas en Presentaciones**:
+   - Detección de métricas numéricas rígidas en `document-parser.ts`: se mejoró el analizador con una expresión regular robusta que extrae magnitudes de moneda (`$`, `USD`, `CLP`, `EUR`, `UF`), ratios cuantitativos (`4.5x`), deltas interanuales (`+240% YoY`, `-75%`), unidades de tráfico (`req/s`, `rps`, `visitas`) y fases cronológicas (`Q1-Q4`).
+2. **Orquestador Resiliente Multi-Proveedor de IA (`nvidia-nim.ts`)**:
+   - Implementación de failover automático de 3 capas:
+     1. **NVIDIA NIM** (`deepseek-r1` / `llama-3.2-11b-vision-instruct`).
+     2. **Google Gemini** (`gemini-1.5-flash`).
+     3. **OpenRouter** (`google/gemini-2.0-flash-001`).
+     4. **Motor Heurístico Determinista Local** (cero dependencias de red, 100% offline).
+3. **Copiloto Granular de IA por Diapositiva (`SlideAiAssistant.tsx` & `refineSlideWithAiAction`)**:
+   - Integrado en el editor de diapositiva de `PresentationStudio.tsx` con accesibilidad táctil WCAG 2.2 AA (touch targets $\ge 44\text{px}$).
+   - Acciones de optimización en 1 clic:
+     - **Action Title McKinsey**: genera titulares activos asertivos (<14 palabras) que comunican la conclusión ("So what?").
+     - **Viñetas de Impacto (Punchy Bullets)**: reescribe oraciones extensas iniciando con verbos ejecutivos.
+     - **Notas del Orador (Speaker Script)**: genera un guion oral en primera persona temporalizado (~45-60s).
+     - **Optimización Completa**: sintetiza título, puntos y guion simultáneamente.
+4. **Control de Calidad y Pruebas Unitarias (193 Tests Passing)**:
+   - Nuevos casos de prueba en `tests/unit/presentation-adaptive-pipeline.test.ts` verificando la extracción de métricas complejas (UF, deltas, ratios) y las acciones del asistente granular de IA por diapositiva.
+   - 100% de la suite de pruebas unitarias aprobada (193 de 193 tests en 29 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
 

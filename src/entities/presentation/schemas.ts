@@ -153,6 +153,24 @@ export const presentationDecompositionRequestSchema = z.object({
   documentArchetype: documentArchetypeSchema.optional(),
 });
 
+export const refineSlideRequestSchema = z.object({
+  slide: presentationSlideSchema,
+  action: z.enum(['action_title', 'punchy_bullets', 'speaker_notes', 'all_enhancements']),
+  presentationContext: z.object({
+    presentationTitle: z.string().optional(),
+    targetAudience: targetAudienceSchema.optional(),
+    tone: presentationToneSchema.optional(),
+  }).optional(),
+});
+
+export const refineSlideSuggestionSchema = z.object({
+  actionTitle: z.string().optional(),
+  keyPoints: z.array(z.string()).optional(),
+  speakerNotes: z.string().optional(),
+  suggestedVisualType: presentationVisualTypeSchema.optional(),
+  rationale: z.string().optional(),
+});
+
 export type PresentationVisualType = z.infer<typeof presentationVisualTypeSchema>;
 export type PresentationLayout = z.infer<typeof presentationLayoutSchema>;
 export type SemanticIntent = z.infer<typeof semanticIntentSchema>;
@@ -167,6 +185,8 @@ export type PresentationSlide = z.infer<typeof presentationSlideSchema>;
 export type PresentationTheme = z.infer<typeof presentationThemeSchema>;
 export type PresentationFormValues = z.infer<typeof presentationFormSchema>;
 export type PresentationDecompositionRequest = z.infer<typeof presentationDecompositionRequestSchema>;
+export type RefineSlideRequest = z.infer<typeof refineSlideRequestSchema>;
+export type RefineSlideSuggestion = z.infer<typeof refineSlideSuggestionSchema>;
 
 /**
  * Normaliza cualquier título a un slug válido URL-friendly para presentaciones

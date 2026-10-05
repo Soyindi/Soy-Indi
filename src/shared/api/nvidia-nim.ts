@@ -25,59 +25,127 @@ export async function callNvidiaNimChat(
   messages: NvidiaChatMessage[],
   options: NvidiaNimOptions = {}
 ): Promise<{ success: boolean; content?: string; error?: string; modelUsed?: string }> {
-  const apiKey = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY;
+  const nvidiaApiKey = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY;
+  const geminiApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+  const openRouterApiKey = process.env.OPENROUTER_API_KEY;
   const defaultModel = options.model || 'meta/llama-3.2-11b-vision-instruct';
 
-  // Si no hay API key configurada de NVIDIA, retornar inmediatamente para ejecutar failover
-  if (!apiKey) {
-    return {
-      success: false,
-      error: 'NVIDIA_API_KEY no configurada. Activando fallback de inferencia.',
-    };
+  // 1. Intentar NVIDIA NIM si existe la API Key
+  if (nvidiaApiKey) {
+    try {
+      const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${nvidiaApiKey}`,
+        },
+        body: JSON.stringify({
+          model: defaultModel,
+          messages,
+          temperature: options.temperature ?? 0.2,
+          max_tokens: options.maxTokens ?? 3000,
+          response_format: options.responseFormat,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const messageContent = data.choices?.[0]?.message?.content;
+        if (messageContent) {
+          return {
+            success: true,
+            content: messageContent,
+            modelUsed: defaultModel,
+          };
+        }
+      } else {
+        const errText = await response.text();
+        console.warn(`[NVIDIA NIM Warning] Status ${response.status}: ${errText}`);
+      }
+    } catch (err: any) {
+      console.warn('[NVIDIA NIM Warning] Error de conexión, intentando failover:', err?.message);
+    }
   }
 
-  try {
-    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: defaultModel,
-        messages,
-        temperature: options.temperature ?? 0.2,
-        max_tokens: options.maxTokens ?? 3000,
-        response_format: options.responseFormat,
-      }),
-    });
+  // 2. Failover a Google Gemini (Directo / Vercel AI SDK compatible)
+  if (geminiApiKey) {
+    try {
+      const systemMsg = messages.find((m) => m.role === 'system')?.content || '';
+      const userMsgs = messages.filter((m) => m.role !== 'system');
+      const combinedPrompt = systemMsg
+        ? `${systemMsg}\n\n${userMsgs.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`
+        : userMsgs.map((m) => m.content).join('\n\n');
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.warn(`[NVIDIA NIM Warning] Status ${response.status}: ${errText}`);
-      return {
-        success: false,
-        error: `NVIDIA NIM API responded with ${response.status}: ${errText}`,
-      };
+      const geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: combinedPrompt }] }],
+            generationConfig: {
+              temperature: options.temperature ?? 0.2,
+              maxOutputTokens: options.maxTokens ?? 3000,
+              responseMimeType: options.responseFormat?.type === 'json_object' ? 'application/json' : undefined,
+            },
+          }),
+        }
+      );
+
+      if (geminiRes.ok) {
+        const geminiData = await geminiRes.json();
+        const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (geminiText) {
+          return {
+            success: true,
+            content: geminiText,
+            modelUsed: 'gemini-1.5-flash',
+          };
+        }
+      }
+    } catch (geminiErr: any) {
+      console.warn('[Gemini Failover Warning]:', geminiErr?.message);
     }
-
-    const data = await response.json();
-    const messageContent = data.choices?.[0]?.message?.content;
-
-    if (!messageContent) {
-      return { success: false, error: 'Respuesta vacía de NVIDIA NIM.' };
-    }
-
-    return {
-      success: true,
-      content: messageContent,
-      modelUsed: defaultModel,
-    };
-  } catch (err: any) {
-    console.error('[NVIDIA NIM Connection Error]:', err);
-    return {
-      success: false,
-      error: err.message || 'Error de conexión con NVIDIA NIM',
-    };
   }
+
+  // 3. Failover a OpenRouter
+  if (openRouterApiKey) {
+    try {
+      const openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openRouterApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://indi.bio',
+          'X-Title': 'INDI Presentations AI Engine',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.0-flash-001',
+          messages,
+          temperature: options.temperature ?? 0.2,
+          max_tokens: options.maxTokens ?? 3000,
+          response_format: options.responseFormat,
+        }),
+      });
+
+      if (openRouterRes.ok) {
+        const orData = await openRouterRes.json();
+        const orContent = orData.choices?.[0]?.message?.content;
+        if (orContent) {
+          return {
+            success: true,
+            content: orContent,
+            modelUsed: 'openrouter/gemini-2.0-flash-001',
+          };
+        }
+      }
+    } catch (orErr: any) {
+      console.warn('[OpenRouter Failover Warning]:', orErr?.message);
+    }
+  }
+
+  return {
+    success: false,
+    error: 'Sin proveedores de IA configurados o activos. Activando fallback determinista.',
+  };
 }

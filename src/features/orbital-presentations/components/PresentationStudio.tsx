@@ -17,6 +17,7 @@ import {
 import { SlideViewer } from '@/features/orbital-presentations/components/SlideViewer';
 import { PublicPresentationViewer } from '@/features/orbital-presentations/components/PublicPresentationViewer';
 import { SmartPresentationDropzone } from '@/features/orbital-presentations/components/SmartPresentationDropzone';
+import { SlideAiAssistant } from '@/features/orbital-presentations/components/SlideAiAssistant';
 import {
   generateAiSlidesAction,
   upsertPresentationAction,
@@ -709,6 +710,25 @@ export function PresentationStudio({
                   {showSpeakerNotes ? 'Ocultar Notas' : 'Ver Notas'}
                 </button>
               </div>
+
+              {/* ASISTENTE COPILOTO IA POR DIAPOSITIVA */}
+              <SlideAiAssistant
+                slide={activeSlide}
+                presentationTitle={presentation.title}
+                targetAudience={presentation.targetAudience || 'investors'}
+                tone={presentation.presentationTone || 'orbital_cyber'}
+                onApplyEnhancements={(updates) => {
+                  const updated = [...presentation.slidesData];
+                  updated[currentSlideIndex] = {
+                    ...updated[currentSlideIndex],
+                    ...updates,
+                  };
+                  setPresentation((prev) => ({
+                    ...prev,
+                    slidesData: updated,
+                  }));
+                }}
+              />
 
               {/* Selector de Tipo Visual / Layout */}
               <div>

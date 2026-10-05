@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-189_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-193_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -70,6 +70,9 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 - **Separación Robusta Modo Edición vs Creación**: Server Action `upsertPresentationAction` protegida contra sobrescritura silenciosa con validación de identificador primario inmutable (`/presentations?id=...`) y guardrails anti-IDOR.
 - **Efectos Cinemáticos & Aura Ambiental Reactiva**: Transiciones fluidas (*Crossfade*, *Slide Keynote*, *Zoom Focus*), auras volumétricas perimetrales (*Backdrop Aura* acelerada por GPU) y modos tipográficos (*Modern Sans*, *Editorial Serif*, *Técnica Mono*).
 - **Estudio Cinemático Profesional**: Diapositivas interactivas en relación 16:9 para reuniones de alto impacto, conferencias y videollamadas.
+- **Copiloto Granular de IA por Diapositiva (`SlideAiAssistant`)**: Asistente integrado en el editor con touch targets $\ge 44\text{px}$ para optimizar la diapositiva en un toque: genera *Action Titles* ejecutivos (<14 palabras), viñetas de impacto con verbos de acción y guion oral para el presentador (~45-60s).
+- **Orquestador Resiliente Multi-Proveedor de IA**: Enrutamiento inteligente con failover automático de 3 capas (NVIDIA NIM ➔ Google Gemini 1.5 Flash ➔ OpenRouter ➔ Motor Heurístico Determinista local) que garantiza alta disponibilidad en todo entorno.
+- **Ingesta Exhaustiva de Métricas Cuantitativas & Documentos**: Analizador semántico con soporte para magnitudes monetarias ($/USD/CLP/EUR/UF), deltas (+/-), ratios (4.5x), tráfico (req/s) y cronogramas por fases.
 - **Ampliación Profesional de Diapositiva Individual**: Botón ergonómico dedicado en cabecera de `SlideViewer` para proyectar únicamente el lienzo de la diapositiva en pantalla completa nativa sin barras de navegación del navegador ni distracciones del estudio.
 - **Deconstrucción Inteligente Multimodal & Pacing**: Extracción real de texto y analítica semántica desde archivos subidos (PDF con `unpdf`, TXT, Markdown, CSV, JSON) o conceptos libres, calculando el pacing y ritmo por diapositiva (3, 5, 10 o 20 min).
 - **Pipeline Semántico Adaptativo (SAP Engine)**: Detección automática del arquetipo del documento (*Pitch Deck*, *Arquitectura Técnica*, *Informe de Auditoría*, *Estrategia Ejecutiva*, *Educacional*), extracción de polaridad de contrastes (problema/solución), pasos de procesos y conceptos técnicos reales sin alucinaciones numéricas.

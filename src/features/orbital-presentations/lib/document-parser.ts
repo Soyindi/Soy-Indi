@@ -197,7 +197,7 @@ export function analyzeDocumentContent(
     .map((s) => s.trim())
     .filter((s) => s.length > 15 && s.length < 250);
 
-  // 2. Detección de Métricas Cuantitativas reales en el texto
+  // 2. Detección de Métricas Cuantitativas reales en el texto (Monedas, Ratios, Deltas, UF, Clientes)
   const detectedMetrics: Array<{
     label: string;
     value: string;
@@ -205,27 +205,32 @@ export function analyzeDocumentContent(
     trend: 'up' | 'down' | 'neutral';
   }> = [];
 
-  const metricRegex = /(?:([a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,25})[:=]\s*)?(\$?\d+(?:[.,]\d+)?\s*(?:%|k|M|B|x|ms|s|dias|días|usuarios|clientes)?)/gi;
+  // Expresión regular robusta de métricas cuantitativas
+  const metricRegex = /(?:([a-zA-ZáéíóúÁÉÍÓÚñÑ\s/]{3,30})[:=]\s*)?((?:\$|USD|CLP|EUR|UF)?\s*[+-]?\d+(?:[.,]\d+)?\s*(?:%|k|M|B|x|ms|s|dias|días|usuarios|clientes|cuentas|transacciones|visitas|hits|req\/s|rps)?(?:\s*(?:YoY|MoM|QoQ|anual|mensual))?)/gi;
   const matches = cleanContent.matchAll(metricRegex);
   
   for (const match of matches) {
     const rawVal = match[2]?.trim();
     const rawLabel = match[1]?.trim();
-    if (rawVal && (rawVal.includes('%') || rawVal.includes('$') || rawVal.includes('x') || /\d/.test(rawVal))) {
+    if (rawVal && (rawVal.includes('%') || rawVal.includes('$') || rawVal.includes('x') || rawVal.toLowerCase().includes('uf') || /\d/.test(rawVal))) {
       // Filtrar números triviales o años de 4 dígitos aislados
-      if (/^(19|20)\d{2}$/.test(rawVal)) continue;
+      if (/^(19|20)\d{2}$/.test(rawVal.trim())) continue;
+      // Filtrar si el número no tiene ningún sufijo, símbolo o magnitud y es muy pequeño (<3 caracteres)
+      if (/^\d{1,2}$/.test(rawVal.trim()) && !rawLabel) continue;
       
-      const label = rawLabel && rawLabel.length > 3 && rawLabel.length < 30
-        ? rawLabel
+      const label = rawLabel && rawLabel.length > 2 && rawLabel.length < 35
+        ? rawLabel.replace(/^[-•*#]\s*/, '').trim()
         : 'Indicador Clave';
+
+      const isDown = rawVal.includes('-') || (rawLabel && /ca[ií]da|reducci[óo]n|disminuci[óo]n|baja|churn/i.test(rawLabel));
 
       detectedMetrics.push({
         label: label.charAt(0).toUpperCase() + label.slice(1),
         value: rawVal,
-        trend: rawVal.includes('-') ? 'down' : 'up',
+        trend: isDown ? 'down' : 'up',
       });
 
-      if (detectedMetrics.length >= 6) break;
+      if (detectedMetrics.length >= 8) break;
     }
   }
 
@@ -269,32 +274,33 @@ export function analyzeDocumentContent(
     }
   }
 
-  // 5. Detección de Secuencias / Fases / Pasos Cronológicos
+  // 5. Detección de Secuencias / Fases / Pasos Cronológicos (Fase, Paso, Etapa, Hito, Q1-Q4)
   const sequenceSteps: ExtractedSequenceStep[] = [];
-  const stepRegex = /(?:fase|paso|etapa|hito|step|phase)\s*([0-9ivx]+)[:.\-\s]+([^\n.]+)/gi;
+  const stepRegex = /(?:fase|paso|etapa|hito|step|phase|q[1-4])\s*([0-9ivx]+)?[:.\-\s]+([^\n.]+)/gi;
   const stepMatches = cleanContent.matchAll(stepRegex);
   let stepIdx = 1;
   for (const sm of stepMatches) {
+    const stepLabel = sm[1] ? sm[1] : String(stepIdx);
     if (sm[2] && sm[2].trim().length > 4) {
       sequenceSteps.push({
         stepIndex: stepIdx++,
-        title: `Fase ${sm[1]}: ${sm[2].trim().slice(0, 35)}`,
+        title: `Fase ${stepLabel}: ${sm[2].trim().slice(0, 35)}`,
         detail: sm[2].trim(),
       });
-      if (sequenceSteps.length >= 4) break;
+      if (sequenceSteps.length >= 5) break;
     }
   }
 
   // 6. Detección de Conceptos y Definiciones Clave
   const conceptDefinitions: ExtractedConceptDefinition[] = [];
-  const conceptRegex = /(?:^|\n)(?:[-•*]\s*)?([A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s]{3,30})[:\-—]\s+([A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s,.;()%$]{15,140})/g;
+  const conceptRegex = /(?:^|\n)(?:[-•*]\s*)?([A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s/]{3,35})[:\-—]\s+([A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s,.;()%$]{12,160})/g;
   const conceptMatches = cleanContent.matchAll(conceptRegex);
   for (const cm of conceptMatches) {
     const term = cm[1].trim();
     const definition = cm[2].trim();
     if (term.length > 2 && definition.length > 10 && !term.toLowerCase().startsWith('http')) {
       conceptDefinitions.push({ term, definition });
-      if (conceptDefinitions.length >= 4) break;
+      if (conceptDefinitions.length >= 5) break;
     }
   }
 

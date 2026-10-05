@@ -748,6 +748,175 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 }
 
 /**
+ * Server Action: Asistente Granular de IA por Diapositiva (Slide-Level AI Copilot)
+ * Permite optimizar selectivamente el Action Title tipo McKinsey, viñetas de impacto o notas de orador.
+ */
+export async function refineSlideWithAiAction(
+  request: {
+    slide: PresentationSlide;
+    action: 'action_title' | 'punchy_bullets' | 'speaker_notes' | 'all_enhancements';
+    presentationContext?: {
+      presentationTitle?: string;
+      targetAudience?: TargetAudience;
+      tone?: PresentationTone;
+    };
+  }
+): Promise<{
+  success: boolean;
+  data?: {
+    actionTitle?: string;
+    keyPoints?: string[];
+    speakerNotes?: string;
+    suggestedVisualType?: any;
+    rationale?: string;
+  };
+  modelUsed?: string;
+  error?: string;
+}> {
+  try {
+    const { slide, action, presentationContext } = request;
+    const cleanTitle = slide.title || 'Diapositiva';
+    const cleanSubtitle = slide.subtitle || '';
+    const currentPoints = Array.isArray(slide.keyPoints) ? slide.keyPoints.filter(Boolean) : [];
+    const audience = presentationContext?.targetAudience || 'investors';
+    const tone = presentationContext?.tone || 'orbital_cyber';
+    const deckTitle = presentationContext?.presentationTitle || 'Presentación Ejecutiva';
+
+    // 1. Construir prompt contextual para el modelo de IA
+    const prompt = `
+Eres un Principal Executive Presentation Designer y consultor McKinsey senior.
+Tu tarea es optimizar con rigor y elocuencia profesional la siguiente diapositiva de una presentación ejecutiva.
+
+CONTEXTO GENERAL:
+- Presentación: "${deckTitle}"
+- Audiencia Objetivo: ${audience}
+- Tono Visual: ${tone}
+
+DIAPOSITIVA ACTUAL:
+- Título: "${cleanTitle}"
+- Subtítulo: "${cleanSubtitle}"
+- Tipo Visual Actual: ${slide.visualType || 'concept'}
+- Action Title Actual: "${slide.actionTitle || ''}"
+- Puntos Clave Actuales:
+${currentPoints.map((p, i) => `  ${i + 1}. ${p}`).join('\n') || '  (Sin puntos)'}
+- Notas del Orador Actuales: "${slide.speakerNotes || ''}"
+
+ACCIÓN SOLICITADA: "${action}"
+
+REGLAS DE DISEÑO MCKINSEY:
+1. "actionTitle": Titular asertivo tipo consultoría (máximo 14 palabras) que sintetice la conclusión o tesis clave ("So what?"). Ejemplo: "La arquitectura distribuida reduce la latencia en un 70% asegurando disponibilidad continua".
+2. "keyPoints": De 2 a 4 viñetas directas, de alto impacto, que inicien con verbos de acción o conceptos clave en negrita, sin relleno innecesario.
+3. "speakerNotes": Guion conversacional en primera persona de 2-3 oraciones (~45-60s) que le indique al orador exactamente qué enfatizar frente a la audiencia.
+4. "suggestedVisualType": uno entre ["concept", "metrics", "comparison", "timeline", "quote", "architecture"].
+
+RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
+{
+  "actionTitle": string,
+  "keyPoints": string[],
+  "speakerNotes": string,
+  "suggestedVisualType": "concept" | "metrics" | "comparison" | "timeline" | "architecture",
+  "rationale": string (breve explicación en 1 frase)
+}
+`;
+
+    // 2. Invocar cliente resiliente con soporte dual NVIDIA NIM / Google Gemini / OpenRouter
+    const aiResult = await callNvidiaNimChat(
+      [
+        {
+          role: 'system',
+          content: 'Eres un copiloto de diseño de presentaciones ejecutivas McKinsey. Respondes únicamente en formato JSON estructurado.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      {
+        model: 'meta/llama-3.2-11b-vision-instruct',
+        temperature: 0.3,
+        responseFormat: { type: 'json_object' },
+      }
+    );
+
+    if (aiResult.success && aiResult.content) {
+      try {
+        let cleanJson = aiResult.content.trim();
+        const jsonMatch = cleanJson.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch) cleanJson = jsonMatch[1].trim();
+
+        const parsed = JSON.parse(cleanJson);
+        return {
+          success: true,
+          data: {
+            actionTitle: parsed.actionTitle || undefined,
+            keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints.filter(Boolean) : undefined,
+            speakerNotes: parsed.speakerNotes || undefined,
+            suggestedVisualType: parsed.suggestedVisualType || undefined,
+            rationale: parsed.rationale || 'Optimización semántica completada.',
+          },
+          modelUsed: aiResult.modelUsed || 'AI Model',
+        };
+      } catch (parseErr) {
+        console.warn('[RefineSlide AI] Error parseando respuesta JSON, activando fallback:', parseErr);
+      }
+    }
+
+    // 3. Fallback Heurístico Determinista de Alta Calidad (Garantía Offline y Cero Latencia)
+    let fallbackActionTitle = slide.actionTitle;
+    let fallbackKeyPoints = currentPoints.length > 0 ? [...currentPoints] : ['Fundamento clave del proyecto.'];
+    let fallbackSpeakerNotes = slide.speakerNotes;
+    let fallbackVisualType = slide.visualType || 'concept';
+
+    // Generar Action Title McKinsey heurístico
+    if (action === 'action_title' || action === 'all_enhancements' || !fallbackActionTitle) {
+      if (slide.visualType === 'metrics' || (slide.metricsData && slide.metricsData.length > 0)) {
+        fallbackActionTitle = `Validar el desempeño cuantitativo y tracción con métricas verificables`;
+      } else if (slide.visualType === 'comparison') {
+        fallbackActionTitle = `Superar las limitaciones tradicionales mediante una solución escalable`;
+      } else if (slide.visualType === 'timeline') {
+        fallbackActionTitle = `Ejecutar la hoja de ruta estratégica cumpliendo hitos críticos`;
+      } else {
+        fallbackActionTitle = `Alinear la visión de ${cleanTitle.toLowerCase()} con los objetivos clave de negocio`;
+      }
+    }
+
+    // Generar viñetas ejecutivas con verbos de acción
+    if (action === 'punchy_bullets' || action === 'all_enhancements') {
+      fallbackKeyPoints = fallbackKeyPoints.map((kp) => {
+        const cleaned = kp.replace(/^[-•*#]\s*/, '').trim();
+        if (/^(liderar|diseñar|implementar|reducir|aumentar|optimizar|garantizar|consolidar)/i.test(cleaned)) {
+          return cleaned;
+        }
+        return `Optimizar: ${cleaned}`;
+      });
+      if (fallbackKeyPoints.length === 0) {
+        fallbackKeyPoints = [
+          `Establecer los pilares estratégicos de ${cleanTitle}.`,
+          `Consolidar la adopción en la audiencia clave.`,
+        ];
+      }
+    }
+
+    // Generar notas del orador
+    if (action === 'speaker_notes' || action === 'all_enhancements' || !fallbackSpeakerNotes) {
+      fallbackSpeakerNotes = `Presentar con claridad ${cleanTitle}. Destacar el titular de impacto: "${fallbackActionTitle}". Guiar a la audiencia a través de los puntos argumentales manteniendo un ritmo firme de exposición.`;
+    }
+
+    return {
+      success: true,
+      data: {
+        actionTitle: fallbackActionTitle,
+        keyPoints: fallbackKeyPoints,
+        speakerNotes: fallbackSpeakerNotes,
+        suggestedVisualType: fallbackVisualType,
+        rationale: 'Sugerencia generada mediante el motor heurístico determinista McKinsey.',
+      },
+      modelUsed: 'INDI Heuristic Copilot',
+    };
+  } catch (err: any) {
+    console.error('Error en refineSlideWithAiAction:', err);
+    return { success: false, error: err.message || 'Error refinando la diapositiva con IA' };
+  }
+}
+
+/**
  * Guardar o Actualizar Presentación en Turso con Guardrails Multi-Tenant
  */
 export async function upsertPresentationAction(

@@ -154,5 +154,112 @@ describe('Pipeline Semántico Adaptativo (SAP Engine) - Clasificación y Fidelid
         expect(metricSlide?.metricsData?.length).toBeGreaterThanOrEqual(1);
       }
     });
+
+    it('extrae métricas de alta precisión (UF, ratios, porcentajes con signos y deltas)', () => {
+      const complexMetricsText = `
+        Métricas Clave de Rendimiento:
+        Valor de suscripción: UF 1.5 anuales
+        Crecimiento interanual: +240% YoY
+        Reducción de latencia: -75% en el Edge
+        Ratio LTV/CAC: 4.5x
+        Throughput pico: 12000 req/s
+      `;
+      const analysis = analyzeDocumentContent(complexMetricsText);
+      expect(analysis.hasMetrics).toBe(true);
+      expect(analysis.detectedMetrics.length).toBeGreaterThanOrEqual(4);
+
+      const labels = analysis.detectedMetrics.map((m) => m.label.toLowerCase());
+      const values = analysis.detectedMetrics.map((m) => m.value);
+
+      expect(values.some((v) => v.includes('UF') || v.includes('1.5'))).toBe(true);
+      expect(values.some((v) => v.includes('240%') || v.includes('+240%'))).toBe(true);
+      expect(values.some((v) => v.includes('4.5x'))).toBe(true);
+    });
+  });
+
+  describe('Asistente Granular de IA por Diapositiva (refineSlideWithAiAction)', () => {
+    it('genera un Action Title estilo McKinsey asertivo y conciso para la diapositiva activa', async () => {
+      const { refineSlideWithAiAction } = await import('@/features/orbital-presentations/actions');
+      const sampleSlide = {
+        id: 'slide-test-1',
+        title: 'Arquitectura de Datos y Resiliencia',
+        subtitle: 'Bases de datos distribuidas con LibSQL',
+        visualType: 'architecture' as const,
+        layout: 'standard' as const,
+        keyPoints: [
+          'Replicación en el borde con Turso.',
+          'Cero tiempo de inactividad durante despliegues.',
+        ],
+        speakerNotes: '',
+      };
+
+      const res = await refineSlideWithAiAction({
+        slide: sampleSlide,
+        action: 'action_title',
+        presentationContext: {
+          presentationTitle: 'Plataforma INDI 2026',
+          targetAudience: 'engineering',
+          tone: 'orbital_cyber',
+        },
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.data).toBeDefined();
+      if (res.data) {
+        expect(res.data.actionTitle).toBeDefined();
+        expect(typeof res.data.actionTitle).toBe('string');
+        expect(res.data.actionTitle!.length).toBeGreaterThan(10);
+      }
+    });
+
+    it('genera notas de orador conversacionales y estructuradas para guiar la exposición', async () => {
+      const { refineSlideWithAiAction } = await import('@/features/orbital-presentations/actions');
+      const sampleSlide = {
+        id: 'slide-test-2',
+        title: 'Tracción Comercial y Expansión',
+        actionTitle: 'El crecimiento acelerado valida el modelo SaaS de alta retención',
+        subtitle: 'Resultados del ejercicio 2026',
+        visualType: 'metrics' as const,
+        layout: 'standard' as const,
+        keyPoints: ['ARR de $1.2M.', 'Retención neta del 115%.'],
+        speakerNotes: '',
+      };
+
+      const res = await refineSlideWithAiAction({
+        slide: sampleSlide,
+        action: 'speaker_notes',
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.data?.speakerNotes).toBeDefined();
+      expect(res.data!.speakerNotes!.length).toBeGreaterThan(20);
+    });
+
+    it('optimiza viñetas con verbos de acción ejecutivos (punchy bullets)', async () => {
+      const { refineSlideWithAiAction } = await import('@/features/orbital-presentations/actions');
+      const sampleSlide = {
+        id: 'slide-test-3',
+        title: 'Estrategia de Crecimiento',
+        subtitle: 'Pilares de ejecución',
+        visualType: 'concept' as const,
+        layout: 'standard' as const,
+        keyPoints: [
+          'plataforma digital para profesionales',
+          'alianzas comerciales con gremios',
+        ],
+        speakerNotes: '',
+      };
+
+      const res = await refineSlideWithAiAction({
+        slide: sampleSlide,
+        action: 'punchy_bullets',
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.data?.keyPoints).toBeDefined();
+      expect(res.data!.keyPoints!.length).toBe(2);
+      expect(res.data!.keyPoints![0].length).toBeGreaterThan(5);
+    });
   });
 });
+
