@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useSession } from '@/shared/lib/auth-client';
 import { Sparkles, ArrowRight, LayoutDashboard } from 'lucide-react';
+import { BrandLogo } from '@/shared/ui/BrandLogo';
 
 interface PublicHeaderProps {
   ownerMode?: boolean;
@@ -15,18 +16,14 @@ export function PublicContextualHeader({ ownerMode = false }: PublicHeaderProps)
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex items-center justify-between z-30">
-      {/* Lado Izquierdo: Marca / Contexto */}
-      <Link
-        href="/"
-        className="min-h-[44px] inline-flex items-center gap-2 px-3 py-1.5 rounded-xl glass-panel text-xs font-mono text-zinc-300 hover:text-white border border-white/10 transition-all hover:scale-105 active:scale-95"
-      >
-        <div className="w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-cyan-400 p-[1px]">
-          <div className="w-full h-full bg-black rounded-[5px] flex items-center justify-center">
-            <span className="font-bold text-[9px] text-white">IN</span>
-          </div>
-        </div>
-        <span className="font-semibold tracking-tight">INDI</span>
-      </Link>
+      {/* Lado Izquierdo: Marca Oficial Canónica */}
+      <BrandLogo
+        variant="symbol"
+        size="xs"
+        showText={true}
+        linkToHome={true}
+        className="min-h-[44px] px-2.5 py-1.5 rounded-xl glass-panel border border-white/10 hover:border-white/20 transition-all hover:scale-105 active:scale-95"
+      />
 
       {/* Lado Derecho: Acción contextual (Autenticado vs Visitante Viral) */}
       {isAuthenticated ? (

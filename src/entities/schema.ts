@@ -115,6 +115,10 @@ export const cards = sqliteTable('cards', {
     particleIntensity: 'subtle' | 'balanced' | 'prominent';
     fontFamily: string;
     enableGlassRefraction: boolean;
+    badgeText?: string | null;
+    ctaLabel?: string | null;
+    cardFinish?: 'classic' | 'holographic' | 'titanium' | 'obsidian' | 'minimal';
+    surfaceTexture?: 'none' | 'dot-grid' | 'radial-glow';
   }>().notNull(),
   isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
   viewsCount: integer('views_count').default(0).notNull(),

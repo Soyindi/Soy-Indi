@@ -1326,6 +1326,19 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (240 de 240 tests en 39 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Auditoría Integral de Flujo, Persistencia y Gobernanza de Marca Canónica (Octubre 2026)
+1. **Alineación Estricta Drizzle ORM vs Contratos Zod**:
+   - Actualización del tipo genérico `$type` de la columna `themeConfig` en la tabla `cards` ([src/entities/schema.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/entities/schema.ts)) para sincronizar propiedades visuales avanzadas (`cardFinish`, `surfaceTexture`, `badgeText`, `ctaLabel`) validadas en `cardFormSchema`.
+2. **Erradicación de Infracciones de Identidad Visual (Zero Ad-Hoc Placeholders)**:
+   - Reemplazo del placeholder manual CSS `"IN"` en [src/shared/ui/PublicContextualHeader.tsx](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/shared/ui/PublicContextualHeader.tsx) por el componente corporativo canónico `<BrandLogo variant="symbol" size="xs" showText={true} linkToHome={true} />`, en total acatamiento del estándar de diseño y marca de `AGENTS.md`.
+3. **Skill de Ingeniería de Flujo & Persistencia**:
+   - Creación de la skill formal de agentes [.agents/skills/flow-and-persistence-audit/SKILL.md](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/.agents/skills/flow-and-persistence-audit/SKILL.md) que documenta el protocolo de verificación en 5 fases (Zod vs Drizzle, Multi-Tenancy IDOR, Batching LibSQL, UI/UX Base 8 y Navegación sin Loops).
+4. **Control de Calidad y Pruebas Unitarias (242 Tests Passing)**:
+   - Nueva suite unitaria dedicada: `tests/unit/flow-and-persistence-audit.test.ts`.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (242 de 242 tests en 40 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
 
 
