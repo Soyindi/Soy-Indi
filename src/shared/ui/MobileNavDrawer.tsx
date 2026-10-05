@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useSession, signOut } from '@/shared/lib/auth-client';
 import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, Tag, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
@@ -9,6 +10,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export function MobileNavDrawer() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  // Cerrar con Escape (accesibilidad teclado)
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setIsOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen]);
   const { data: sessionData } = useSession();
   const user = sessionData?.user;
 
@@ -34,13 +46,13 @@ export function MobileNavDrawer() {
     {
       title: '¿Por qué elegir INDI?',
       href: '#comparativa',
-      description: 'La diferencia frente a las tarjetas de papel tradicionales',
+      description: 'Siempre actualizada, WhatsApp en un toque y métricas reales',
       icon: Sparkles,
     },
     {
-      title: 'Precios ($1.000 pesos al mes)',
+      title: 'Precios',
       href: '#precios',
-      description: 'Prueba 3 días gratis y luego solo $6.000 cada 6 meses',
+      description: '3 días gratis · $2.500/mes o $6.000 por 6 meses',
       icon: Tag,
     },
     {
@@ -93,9 +105,10 @@ export function MobileNavDrawer() {
       </button>
 
       {/* Drawer Móvil con Glassmorphism */}
+      {mounted && createPortal(
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="md:hidden fixed inset-0 z-[60] flex justify-end" role="dialog" aria-modal="true" aria-label="Menú de navegación">
             {/* Backdrop oscuro con desenfoque */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -232,7 +245,9 @@ export function MobileNavDrawer() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+      )}
     </div>
   );
 }
