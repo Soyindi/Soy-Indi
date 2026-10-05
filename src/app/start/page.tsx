@@ -18,7 +18,7 @@ export default async function OnboardingStartPage() {
 
       {/* Barra de Marca Minimalista con Retícula Base 8 */}
       <header className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 mb-8 flex items-center justify-between">
-        <Link href="/dashboard" title="Panel Principal INDI" className="flex items-center gap-2 group">
+        <Link href="/" title="Ir a la portada de INDI" className="flex items-center gap-2 group">
           <BrandLogo size="md" showText={false} />
         </Link>
 

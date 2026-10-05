@@ -1312,6 +1312,21 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada (237 de 237 tests en 38 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+### Fase: Saneamiento Integral de Navegación, Cero Auto-Enlaces y Minimalismo Ejecutivo (Octubre 2026)
+1. **Erradicación de Bucles Autorreferenciales (Zero Self-Referencing Loops)**:
+   - Configuración canónica del logotipo corporativo `BrandLogo`: en `/dashboard` y `/start` enlaza de forma universal a la portada web (`/`), eliminando recargas redundantes hacia la misma página activa.
+   - Erradicación del botón secundario redundante *"Ver Web"* en la barra de navegación del panel.
+2. **Consolidación de Triggers de Precios (Single Point of Conversion)**:
+   - Retiro del enlace duplicado *"Planes y Membresía"* del header del Dashboard, delegando la conversión al componente prominente `TrialBanner` con contador regresivo de prueba.
+3. **Limpieza de Cabecera en Autenticación (`/login`)**:
+   - Sustitución de textos y flechas duplicadas por el `BrandLogo` oficial y un botón de retorno unificado hacia la portada (`/`).
+4. **Control de Calidad y Pruebas Unitarias (240 Tests Passing)**:
+   - Nueva suite unitaria dedicada: `tests/unit/systemic-navigation-audit.test.ts`.
+   - Verificación de ausencia de auto-enlaces en todas las cabeceras del ecosistema.
+   - 100% de la suite de pruebas unitarias aprobada (240 de 240 tests en 39 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`).
+
+
 
 
 

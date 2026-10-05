@@ -166,6 +166,10 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Dual Layout Móvil Ergonómico**: En smartphones ($\le 640\text{px}$), el grid debe ofrecer desplazamiento horizontal suave con `snap-x snap-mandatory` para evitar fatiga de scroll vertical y permitir comparar las opciones con el pulgar.
    - **Touch Targets y Válvula de Escape**: Botones de acción principales con altura táctil $\ge 48\text{px}$ (`min-h-[48px]`) y enlace destacado de salto al Dashboard (`/dashboard`) para usuarios recurrentes.
 
+16. **Gobernanza de Navegación Sistémica y Cero Auto-Enlaces (Zero Self-Referential Loops):**
+   - **Destino Canónico de Marca**: En aplicaciones autenticadas o hubs internos (`/dashboard`, `/start`, `/login`), el logotipo oficial (`<BrandLogo />`) debe apuntar canónicamente a la raíz pública (`/`) para permitir al usuario explorar la portada o salir del contexto de trabajo, erradicando loops autorreferenciales (ej. enlazar a la misma URL donde se está posicionado).
+   - **Erradicación de Acciones Redundantes en Cabeceras**: Se prohíbe duplicar botones de navegación externa (`"Ver Web"`, `"Planes y Membresía"`) cuando la misma funcionalidad ya se encuentra cubierta por el logotipo o banners contextuales prioritarios (`TrialBanner`). Toda barra de herramientas debe preservar máxima pureza visual y ratio de señal-ruido.
+
 ---
 
 

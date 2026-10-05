@@ -257,32 +257,17 @@ export function UnifiedDashboardView({
         </div>
       )}
 
-      {/* Barra de Navegación Global del Dashboard (Cero Redundancia de Creación) */}
+      {/* Barra de Navegación Global del Dashboard (Minimalista & Cero Redundancias) */}
       <header className="flex items-center justify-between pb-4 sm:pb-6 mb-6 sm:mb-8 border-b border-white/10">
         <div className="flex items-center gap-3">
-          {/* Logo Oficial INDI en Panel de Control */}
-          <Link href="/dashboard" title="Mi Panel de Control" className="flex items-center gap-2 group">
+          {/* Logo Oficial INDI con retorno a la Portada Web */}
+          <Link href="/" title="Ir a la portada de INDI" className="flex items-center gap-2 group">
             <BrandLogo size="md" showText={false} />
-          </Link>
-
-          {/* Enlace sutil hacia la portada web */}
-          <Link
-            href="/"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-medium text-zinc-400 hover:text-white transition-all shadow-sm ml-2"
-            title="Ver la página web principal"
-          >
-            <span>Ver Web</span>
-            <ExternalLink className="w-3 h-3 text-zinc-500" />
           </Link>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/pricing"
-            className="text-xs font-medium text-zinc-400 hover:text-white transition hidden md:inline-block px-3 py-1.5 rounded-xl hover:bg-white/5"
-          >
-            Planes y Membresía
-          </Link>
+          {/* Estado de Cuenta / Autenticación Multi-Cuenta */}
 
           {/* Estado de Cuenta / Autenticación Multi-Cuenta */}
           {sessionData?.user ? (

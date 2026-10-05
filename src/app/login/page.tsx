@@ -43,18 +43,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="absolute top-[-10%] left-[20%] w-[550px] h-[550px] rounded-full bg-indigo-600/15 blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[20%] w-[500px] h-[500px] rounded-full bg-cyan-500/10 blur-[140px] pointer-events-none" />
 
-      {/* Header minimalista */}
+      {/* Header minimalista con Retícula Base 8 */}
       <header className="relative z-10 w-full max-w-5xl mx-auto flex items-center justify-between mb-8">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-white transition-colors min-h-[44px] px-3 py-2 rounded-xl hover:bg-white/5"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Volver al Inicio</span>
+        <Link href="/" title="Ir a la portada de INDI" className="flex items-center gap-2 group">
+          <BrandLogo size="md" showText={false} />
         </Link>
 
-        <Link href="/" title="Ir a la portada">
-          <BrandLogo size="md" showText={false} />
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-white transition-colors min-h-[44px] px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Inicio</span>
         </Link>
       </header>
 
