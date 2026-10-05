@@ -64,4 +64,25 @@ describe('Brand Identity System & Asset Optimization (WebP First)', () => {
     expect(categories.has('vector')).toBe(true);
     expect(categories.has('animation')).toBe(true);
   });
+
+  it('debe validar la optimización y formatos duales (MP4 y WebM) del video del logotipo animado viviente', () => {
+    const logoAnimated = BRAND_ASSETS.logoAnimated;
+    expect(logoAnimated).toBeDefined();
+    expect(logoAnimated.format).toBe('mp4');
+    expect(logoAnimated.webmUrl).toBe('/brand/indi-logo-animated.webm');
+    expect(logoAnimated.fallbackUrl).toBe('/brand/indi-alien-symbol-sm.webp');
+
+    // Verificar archivo MP4
+    const mp4Path = path.join(process.cwd(), 'public', 'brand', 'indi-logo-animated.mp4');
+    expect(fs.existsSync(mp4Path), 'El archivo MP4 del logo animado debe existir').toBe(true);
+    const mp4SizeKb = fs.statSync(mp4Path).size / 1024;
+    expect(mp4SizeKb).toBeLessThan(80); // Debe pesar menos de 80 KB para streaming instantáneo
+
+    // Verificar archivo WebM
+    const webmPath = path.join(process.cwd(), 'public', 'brand', 'indi-logo-animated.webm');
+    expect(fs.existsSync(webmPath), 'El archivo WebM del logo animado debe existir').toBe(true);
+    const webmSizeKb = fs.statSync(webmPath).size / 1024;
+    expect(webmSizeKb).toBeLessThan(70); // WebM debe pesar menos de 70 KB
+  });
 });
+

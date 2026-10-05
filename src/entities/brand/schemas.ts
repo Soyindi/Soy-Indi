@@ -8,7 +8,7 @@ export const brandAssetCategorySchema = z.enum([
   'animation',
 ]);
 
-export const brandAssetFormatSchema = z.enum(['webp', 'svg', 'mp4']);
+export const brandAssetFormatSchema = z.enum(['webp', 'svg', 'mp4', 'webm']);
 
 export const brandAssetSchema = z.object({
   id: z.string(),
@@ -17,6 +17,7 @@ export const brandAssetSchema = z.object({
   format: brandAssetFormatSchema,
   url: z.string(),
   fallbackUrl: z.string().optional(),
+  webmUrl: z.string().optional(),
   width: z.number().int().positive(),
   height: z.number().int().positive(),
   aspectRatio: z.enum(['1:1', '16:9', '9:16', 'custom']),
@@ -164,4 +165,34 @@ export const BRAND_ASSETS: Record<string, BrandAsset> = {
     description: 'Logotipo completo con isotipo y lema IDENTITY EDGE en vector puro.',
     recommendedUse: 'Cabeceras web premium y presentaciones de alta resolución.',
   },
+  logoAnimated: {
+    id: 'logo-animated',
+    name: 'Logotipo Animado Viviente (1:1 Loop Ultra-Ligero)',
+    category: 'animation',
+    format: 'mp4',
+    url: '/brand/indi-logo-animated.mp4',
+    webmUrl: '/brand/indi-logo-animated.webm',
+    fallbackUrl: '/brand/indi-alien-symbol-sm.webp',
+    width: 320,
+    height: 320,
+    aspectRatio: '1:1',
+    alt: 'Logotipo Animado Oficial INDI 2026',
+    description: 'Animación en bucle suave y optimizada (<66 KB) para navbars, cabeceras y logotipos vivientes.',
+    recommendedUse: 'Logotipo principal en GlobalNavbar, headers y badges.',
+  },
+  logoWideAnimated: {
+    id: 'logo-wide-animated',
+    name: 'Logotipo Panorámico Animado (16:9 Loop)',
+    category: 'animation',
+    format: 'mp4',
+    url: '/brand/indi-logo-wide-animated.mp4',
+    fallbackUrl: '/brand/indi-tech-lockup.webp',
+    width: 640,
+    height: 360,
+    aspectRatio: '16:9',
+    alt: 'Logotipo Panorámico Animado Oficial INDI',
+    description: 'Animación panorámica ligera (<70 KB) para vitrinas y cabeceras horizontales.',
+    recommendedUse: 'Hero, presentaciones y banners animados.',
+  },
 };
+

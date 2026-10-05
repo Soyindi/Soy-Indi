@@ -1094,30 +1094,37 @@ export default async function PublicCardPage({ params }: PageProps) {
      - `indi-stacked-hero.webp` (768x1376): **12.0 KB** (Reducción del 99.0% frente a 1.25 MB).
      - `indi-vector-mark.webp` (800x800): **11.2 KB** (Reducción del 99.1% frente a 1.23 MB).
      - `indi-brand-reveal.mp4` (1080p, 575 KB): video corporativo ambient background integrado sin bloqueo de hilo principal.
-   - **Eficiencia Global**: Reducción del peso visual de 6.15 MB a ~104 KB (**98.3% de reducción total**). Los originales 2K fueron preservados en `public/brand/source/` como repositorio histórico máster.
+     - `indi-logo-animated.mp4` (320x320 1:1, **66.2 KB**): video loop ultra-ligero para logotipo interactivo en streaming nativo.
+     - `indi-logo-animated.webm` (320x320 1:1, **55.3 KB**): video loop VP9 ultra-comprimido para Chrome/Edge/Firefox con cero latencia.
+     - `indi-logo-wide-animated.mp4` (640x360 16:9, **69.8 KB**): variante panorámica sin audio.
+   - **Eficiencia Global**: Reducción del peso visual de 6.15 MB a ~104 KB en imágenes (**98.3% de reducción total**) y videos de logotipo de solo 55-66 KB. Los originales 2K fueron preservados en `public/brand/source/` como repositorio histórico máster.
 3. **Arquitectura FSD & Contratos Tipados en Capa de Entidades**:
    - **Contratos Zod (`src/entities/brand/schemas.ts`)**:
-     - `brandAssetCategorySchema`, `brandAssetFormatSchema`, `brandAssetSchema`.
-     - Catálogo canónico inmutable `BRAND_ASSETS` con 10 referencias oficiales, metadata de dimensiones, propósito y rutas relativas seguras.
+     - `brandAssetCategorySchema`, `brandAssetFormatSchema` (soporte `webp`, `svg`, `mp4`, `webm`), `brandAssetSchema`.
+     - Catálogo canónico inmutable `BRAND_ASSETS` expandido con activos de animación de logo (`logoAnimated`, `logoWideAnimated`).
    - **Componente Reutilizable Universal (`src/shared/ui/BrandLogo.tsx`)**:
-     - Implementado con Next.js `<Image>` para optimización automática en Edge y prevención de CLS (Cumulative Layout Shift = 0.00).
-     - Variantes `symbol`, `horizontal`, `stacked`, `svg-symbol`, `svg-horizontal` con tamaños estandarizados `xs` a `2xl` y microinteracción de brillo gradiente al hover.
+     - Implementado con soporte nativo de **Logotipo Viviente por Video** (`useVideo={true}` por defecto).
+     - Reproducción dual WebM / MP4 en bucle continuo silenciado (`autoPlay`, `loop`, `muted`, `playsInline`, `preload="auto"`).
+     - Respaldo visual instantáneo mediante `poster={asset.url}` y `<Image priority />` en Edge (Zero CLS).
+     - Cumplimiento estricto WCAG 2.2 AA para usuarios con preferencia de movimiento reducido (`motion-reduce:hidden` en video y fallback estático automático).
    - **Unificación Transversal del Ecosistema**:
-     - `GlobalNavbar.tsx`: Integración oficial de `<BrandLogo linkToHome priority />`.
-     - `MobileNavDrawer.tsx`, `UnifiedDashboardView.tsx`, `login/page.tsx`, `start/page.tsx`: Reemplazo de marcadores genéricos por el logotipo corporativo oficial.
+     - `GlobalNavbar.tsx`: Integración del logotipo animado viviente `<BrandLogo linkToHome priority />`.
+     - `MobileNavDrawer.tsx`, `UnifiedDashboardView.tsx`, `login/page.tsx`, `start/page.tsx`: Logotipo viviente animado continuo.
 4. **Experiencia de Usuario: Brand Identity Showcase (`src/features/brand/components/BrandIdentityShowcase.tsx`)**:
    - Bloque interactivo incorporado en la Landing Page (`src/app/page.tsx`):
      - Reproductor de video ambient MP4/WebP con controles glassmórficos flotantes para reproducción, pausa y silencio (touch targets $\ge 44\text{px}$).
      - Selector interactivo de activos de marca en tiempo real con panel de metadatos (resolución, peso, formato) y botón de descarga directa de assets.
      - Telemetría de rendimiento y Core Web Vitals en tiempo real destacando compresión de 98.3% y peso promedio < 15 KB.
-5. **Control de Calidad y Pruebas Unitarias (174 Tests Passing)**:
-   - Nueva suite `tests/unit/brand-identity-system.test.ts` (4 pruebas unitarias):
-     - Validación estricta con Zod de los 10 activos canónicos registrados.
-     - Verificación de existencia física de los archivos WebP y MP4 en `public/brand/`.
-     - Guardrail de peso máximo por activo WebP (< 45 KB).
-     - Conformidad de categorías de arquetipos de diseño (`symbol`, `lockup`, `vector`, `stacked`, `video`).
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (174 de 174 tests en 27 suites).
-   - 0 errores en compilación TypeScript (`npm run typecheck`).
+5. **Control de Calidad y Pruebas Unitarias (175 Tests Passing)**:
+   - Nueva suite `tests/unit/brand-identity-system.test.ts` (5 pruebas unitarias):
+     - Validación estricta con Zod de los activos canónicos registrados.
+     - Verificación de existencia física de los archivos WebP, WebM y MP4 en `public/brand/`.
+     - Guardrail de peso máximo por activo WebP (< 45 KB) y video de logo animado (< 80 KB).
+     - Validación de formatos duales WebM/MP4 y fallback WebP.
+     - Conformidad de categorías de arquetipos de diseño (`symbol`, `lockup`, `vector`, `stacked`, `animation`).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (175 de 175 tests en 27 suites).
+   - 0 errores en compilación TypeScript (`npm run typecheck`) y build de producción Next.js exitoso.
+
 
 
 

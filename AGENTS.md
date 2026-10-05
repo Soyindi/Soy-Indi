@@ -128,7 +128,8 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - La identidad gráfica de la plataforma está centralizada en el contrato canónico `@/entities/brand/schemas` (`BRAND_ASSETS`) y se renderiza universalmente a través de `@/shared/ui/BrandLogo` (`<BrandLogo />`).
    - Se prohíbe terminantemente el uso de placeholders genéricos con letras iniciales CSS (`IN`) o inserción de SVGs/imágenes dispersas sin pasar por el componente canónico.
    - Todos los activos estáticos de identidad visual deben residir en `public/brand/` convertidos a formato **WebP** con factor de calidad balanceado (80-85%) y peso ultra-ligero (&lt;45 KB), preservando los archivos fuente 2K sin comprimir en `public/brand/source/`.
-   - Elementos multimedia de identidad (video reveal 1080p) deben contar con controles táctiles ergonómicos $\ge 44\text{px}$, accesibilidad WCAG y reproducción en bucle silenciada de bajo consumo.
+   - **Logotipo Animado Viviente (Video Loop Ultra-Ligero)**: `<BrandLogo />` implementa soporte nativo de video loop (`useVideo={true}`) utilizando variantes duales en formato **WebM** (`indi-logo-animated.webm`, &lt;56 KB) y **MP4** (`indi-logo-animated.mp4`, &lt;67 KB), sin audio (`-an`), con reproducción continua silenciada (`muted`, `autoPlay`, `loop`, `playsInline`), `poster` WebP instantáneo (Zero CLS) y desactivación automática ante preferencias de accesibilidad `motion-reduce:hidden` conforme a WCAG 2.2 AA.
+   - Elementos multimedia de identidad extendidos (video reveal 1080p) deben contar con controles táctiles ergonómicos $\ge 44\text{px}$ y reproducción controlada.
 
 ---
 

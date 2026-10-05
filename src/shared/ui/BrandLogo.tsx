@@ -14,6 +14,7 @@ interface BrandLogoProps {
   className?: string;
   linkToHome?: boolean;
   priority?: boolean;
+  useVideo?: boolean;
 }
 
 const sizeMap: Record<BrandLogoSize, { box: string; imgSize: number; text: string; subText: string }> = {
@@ -33,6 +34,7 @@ export function BrandLogo({
   className = '',
   linkToHome = false,
   priority = false,
+  useVideo = true,
 }: BrandLogoProps) {
   const currentSize = sizeMap[size];
 
@@ -61,15 +63,50 @@ export function BrandLogo({
       <div
         className={`relative ${currentSize.box} rounded-xl overflow-hidden bg-gradient-to-br from-indigo-500/30 to-cyan-500/20 p-[1px] shadow-lg shadow-indigo-500/15 group-hover:scale-105 group-hover:shadow-cyan-500/25 transition-all duration-300 shrink-0`}
       >
-        <div className="w-full h-full bg-black/90 rounded-[11px] flex items-center justify-center p-1 relative overflow-hidden">
-          <Image
-            src={asset.url}
-            alt={asset.alt}
-            width={currentSize.imgSize}
-            height={currentSize.imgSize}
-            priority={priority}
-            className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)]"
-          />
+        <div className="w-full h-full bg-black/90 rounded-[11px] flex items-center justify-center p-0.5 relative overflow-hidden">
+          {useVideo ? (
+            <>
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                poster={asset.url}
+                className="w-full h-full object-cover rounded-[9px] filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)] motion-reduce:hidden"
+                aria-label="Logotipo animado oficial INDI"
+              >
+                <source src="/brand/indi-logo-animated.webm" type="video/webm" />
+                <source src="/brand/indi-logo-animated.mp4" type="video/mp4" />
+                <Image
+                  src={asset.url}
+                  alt={asset.alt}
+                  width={currentSize.imgSize}
+                  height={currentSize.imgSize}
+                  priority={priority}
+                  className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)]"
+                />
+              </video>
+              {/* Fallback accesible para usuarios con preferencia de movimiento reducido */}
+              <Image
+                src={asset.url}
+                alt={asset.alt}
+                width={currentSize.imgSize}
+                height={currentSize.imgSize}
+                priority={priority}
+                className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)] hidden motion-reduce:block"
+              />
+            </>
+          ) : (
+            <Image
+              src={asset.url}
+              alt={asset.alt}
+              width={currentSize.imgSize}
+              height={currentSize.imgSize}
+              priority={priority}
+              className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)]"
+            />
+          )}
         </div>
       </div>
 
