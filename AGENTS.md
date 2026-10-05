@@ -131,6 +131,10 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Logotipo Animado Viviente (Video Loop Ultra-Ligero)**: `<BrandLogo />` implementa soporte nativo de video loop (`useVideo={true}`) utilizando variantes duales en formato **WebM** (`indi-logo-animated.webm`, &lt;56 KB) y **MP4** (`indi-logo-animated.mp4`, &lt;67 KB), sin audio (`-an`), con reproducción continua silenciada (`muted`, `autoPlay`, `loop`, `playsInline`), `poster` WebP instantáneo (Zero CLS) y desactivación automática ante preferencias de accesibilidad `motion-reduce:hidden` conforme a WCAG 2.2 AA.
    - Elementos multimedia de identidad extendidos (video reveal 1080p) deben contar con controles táctiles ergonómicos $\ge 44\text{px}$ y reproducción controlada.
 
+10. **Landing Minimalista con Presupuesto de Secciones:**
+   - La home (src/app/page.tsx) admite como máximo LANDING_MAX_SECTIONS (5) secciones; toda copia pública se edita en @/entities/landing/schemas (LANDING_CONTENT), nunca hardcodeada en JSX.
+   - Vitrinas internas de assets (BrandIdentityShowcase) no se exponen en la landing pública.
+
 ---
 
 ## 📦 6. Convenciones de Git y Commits Semánticos

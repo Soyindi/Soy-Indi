@@ -64,7 +64,7 @@ export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
                 ¿Por qué INDI?
               </a>
               <a href="#precios" className="hover:text-white transition-colors">
-                Precios ($1.000/mes)
+                Precios
               </a>
               <a href="#faq" className="hover:text-white transition-colors">
                 Preguntas Frecuentes

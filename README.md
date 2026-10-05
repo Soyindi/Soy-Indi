@@ -164,7 +164,7 @@ INDI/
 │   │   ├── visual-effects/      # SmartParticles v3.0 anti-colisión acelerado por GPU
 │   │   ├── onboarding/          # Grid interactivo de selección de proyectos
 │   │   └── pricing/             # Actions de suscripción, FaqAccordion y TrialBanner
-│   ├── entities/                # Modelos de dominio y acceso a datos
+│   ├── entities/                # Modelos de dominio y acceso a datos (landing/: contrato Zod de la home minimalista)
 │   │   ├── auth/                # Schemas Zod de redirección y Open Redirect guardrail
 │   │   ├── card/                # Entidad DigitalCard y temas
 │   │   ├── cv/                  # Tipado de Smart CV y contratos

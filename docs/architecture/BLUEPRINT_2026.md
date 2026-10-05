@@ -1130,3 +1130,10 @@ export default async function PublicCardPage({ params }: PageProps) {
 
 
 
+
+### Fase: Landing Minimalista & Auditoría de Marca (Octubre 2026)
+- Landing reducida de 8 a 5 secciones (Hero · Por qué INDI · Herramientas · Precios · FAQ + cierre).
+- Se retiran de la home `BrandIdentityShowcase` (catálogo interno de assets) y `MetricsShowcaseSection` (duplicaba la propuesta de valor).
+- Copia pública centralizada en `src/entities/landing/schemas.ts` (`LANDING_CONTENT`) validada con Zod: presupuesto máx. 5 secciones, longitudes de texto, precios canónicos ($2.500 / $6.000, 3 días) y solo rutas internas.
+- Marca protagonista: lockup animado `xl` en hero, isotipo en cierre, lockup en footer; un único halo indigo (antes 3 blobs).
+- Footer con touch targets ≥ 44px. Pruebas: `tests/unit/landing-content.test.ts`.
