@@ -293,7 +293,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 | `GOOGLE_CLIENT_SECRET` | Client Secret obtenido en Google Cloud Console | `GOCSPX-xxxxxxxxxxxxx` |
 | `NVIDIA_API_KEY` | Clave de API de NVIDIA NIM para inferencia de IA | `nvapi-...` |
 | `MERCADOPAGO_ACCESS_TOKEN` | Token de acceso de producción / sandbox de Mercado Pago | `APP_USR-...` o `TEST-...` |
-| `NEXT_PUBLIC_MP_PUBLIC_KEY` | Clave pública de Mercado Pago para frontend | `APP_USR-...` o `TEST-...` |
+| `MERCADOPAGO_PUBLIC_KEY` | Clave pública de Mercado Pago protegida en servidor | `APP_USR-...` o `TEST-...` |
 
 ### 2. Configurar Google Cloud Console (OAuth 2.0)
 1. Ve a [Google Cloud Console](https://console.cloud.google.com/) > **APIs & Services > Credentials**.
