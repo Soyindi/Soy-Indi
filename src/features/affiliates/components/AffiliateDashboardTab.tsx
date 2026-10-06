@@ -17,7 +17,6 @@ import {
   Users, 
   DollarSign, 
   Calendar, 
-  Link as LinkIcon, 
   Check, 
   Building2, 
   CreditCard, 
@@ -39,7 +38,6 @@ interface AffiliateDashboardTabProps {
 }
 
 export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboardTabProps) {
-  const [copied, setCopied] = useState(false);
   const [copiedDirect, setCopiedDirect] = useState(false);
   const [bankName, setBankName] = useState(overview.bankAccount?.bankName || CHILEAN_BANKS[0]);
   const [accountType, setAccountType] = useState(overview.bankAccount?.accountType || ACCOUNT_TYPES[0]);
@@ -65,14 +63,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
   const [codeSuccessMessage, setCodeSuccessMessage] = useState<string | null>(null);
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://soyindi.cl');
-  const referralUrl = `${baseUrl}/start?ref=${currentCode}`;
   const directSignupUrl = `${baseUrl}/login?mode=signup&ref=${currentCode}`;
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(referralUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
 
   const handleCopyDirect = () => {
     navigator.clipboard.writeText(directSignupUrl);
@@ -202,64 +193,26 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
           </div>
         )}
 
-        {/* Enlace 1: Onboarding Hub */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-white/5 border border-white/5">
-          <div className="space-y-1">
+        {/* Enlace Único de Referido: Registro Directo */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-indigo-950/30 border border-indigo-500/25 shadow-lg shadow-indigo-950/40">
+          <div className="space-y-1.5 flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase tracking-wider text-cyan-300 font-semibold">
-                1. Enlace al Onboarding Hub (Muestra la suite completa)
+              <span className="text-xs font-mono uppercase tracking-wider text-indigo-300 font-bold">
+                Tu Enlace Oficial de Afiliado (Registro Directo)
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-[10px] border border-cyan-500/30">
-                Recomendado
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm font-mono text-zinc-300 break-all select-all">
-              {referralUrl}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={handleCopy}
-              className={`min-h-[44px] min-w-[140px] px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                copied
-                  ? 'bg-emerald-500 text-zinc-950'
-                  : 'bg-white/10 hover:bg-white/15 text-white border border-white/10'
-              }`}
-            >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4 stroke-[3]" />
-                  <span>¡Copiado!</span>
-                </>
-              ) : (
-                <>
-                  <LinkIcon className="w-4 h-4" />
-                  <span>Copiar Hub</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Enlace 2: Registro Directo */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-indigo-950/30 border border-indigo-500/20">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase tracking-wider text-indigo-300 font-semibold">
-                2. Enlace Directo al Formulario de Registro (Conversión Rápida)
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono text-[10px] border border-indigo-500/30">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/30">
                 Alta Conversión
               </span>
             </div>
-            <p className="text-xs sm:text-sm font-mono text-zinc-300 break-all select-all">
+            <p className="text-xs sm:text-sm font-mono text-zinc-200 break-all select-all font-medium">
               {directSignupUrl}
+            </p>
+            <p className="text-[11px] text-zinc-400">
+              Lleva a tus invitados directo al formulario de creación de cuenta con tu beneficio VIP pre-aplicado.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -267,7 +220,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
                 setCodeCandidate(currentCode);
                 setCodeStatus({ available: true, message: '', status: 'idle' });
               }}
-              className="min-h-[44px] px-3.5 py-2 rounded-xl glass-pill text-zinc-300 hover:text-white hover:bg-white/10 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border border-white/10"
+              className="min-h-[44px] px-3.5 py-2.5 rounded-xl glass-pill text-zinc-300 hover:text-white hover:bg-white/10 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border border-white/10"
               title="Personalizar tu código de afiliado"
             >
               <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
@@ -277,10 +230,10 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
             <button
               type="button"
               onClick={handleCopyDirect}
-              className={`min-h-[44px] min-w-[140px] px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`min-h-[44px] min-w-[140px] px-5 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
                 copiedDirect
-                  ? 'bg-emerald-500 text-zinc-950'
-                  : 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-white hover:opacity-90 shadow-lg shadow-cyan-500/20'
+                  ? 'bg-emerald-500 text-zinc-950 shadow-emerald-500/20'
+                  : 'bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white shadow-cyan-500/20'
               }`}
             >
               {copiedDirect ? (
@@ -291,7 +244,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
               ) : (
                 <>
                   <Share2 className="w-4 h-4" />
-                  <span>Copiar Registro</span>
+                  <span>Copiar Enlace</span>
                 </>
               )}
             </button>
@@ -304,7 +257,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500 font-mono text-xs">
-                  soyindi.cl/start?ref=
+                  soyindi.cl/login?mode=signup&ref=
                 </div>
                 <input
                   type="text"
@@ -312,7 +265,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
                   onChange={(e) => handleCodeChange(e.target.value)}
                   placeholder="mi-nombre-o-marca"
                   maxLength={24}
-                  className="w-full min-h-[44px] pl-36 pr-10 py-2 rounded-xl bg-zinc-900 border border-cyan-500/30 text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                  className="w-full min-h-[44px] pl-60 pr-10 py-2 rounded-xl bg-zinc-900 border border-cyan-500/30 text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   {isCheckingCode && <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />}
