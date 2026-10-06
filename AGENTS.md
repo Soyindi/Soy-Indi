@@ -66,9 +66,11 @@ src/
 10. **Enforcement de Entitlements en Mutaciones Críticas & Cuenta Regresiva de Alta Precisión:**
    - Toda Server Action de mutación estructural (`upsertCardAction`, `upsertSmartCvAction`, `upsertPresentationAction`) debe ejecutar el guardrail server-side `assertUserEntitlementAction(targetUserId)`. Si el período de prueba o suscripción del usuario ha finalizado (`status === 'EXPIRED'`), la mutación se rechaza de forma atómica y segura con mensaje formal de renovación, previniendo bypass por cliente.
    - El período de prueba cuenta con un desglose temporal exacto en milisegundos (`calculateTimeRemaining`), expuesto reactivamente en el cliente mediante `<TrialCountdownTimer />` (`02d : 14h : 35m : 18s`) con prevención de hydration mismatch y cumplimiento estricto de accesibilidad WCAG 2.2 AA.
-11. **Matriz Comercial Multi-Tier "El Semestre Irresistible" (Starter, Pro, Max):**
+11. **Matriz Comercial Multi-Tier "El Semestre Irresistible" (Starter, Pro, Max) & Política Cero Marca de Agua:**
    - Toda la oferta de planes se rige por el catálogo canónico `PRICING_TIERS` en `@/entities/subscription/types` con 3 niveles escalonados (**Starter 🟢**, **Pro 🔵 Recomendado**, **Max 🟣**) y facturación dual (Mensual / Semestral).
    - Los Route Handlers de checkout (`/api/checkout/mercadopago`) validan contratos Zod fuertemente tipados `{ tier, planInterval }` resolviendo precios en CLP ($2.500/$6.000 Starter, $4.990/$15.000 Pro, $8.990/$29.990 Max). Las comisiones de afiliados se liquidan atómicamente al 25% sobre el valor real cobrado.
+   - **Cero Marcas de Agua en Todos los Planes (`hasWatermark: false`)**: Para certificar la máxima calidad y profesionalismo desde el nivel inicial, se suprime cualquier marca de agua invasiva o visible en los recursos generados (Tarjetas Digitales, Smart CV y Presentaciones), entregando un producto pulcro y de estándar corporativo sin restricciones cosméticas degradadas.
+
 
 ---
 

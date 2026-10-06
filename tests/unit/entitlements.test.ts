@@ -13,7 +13,7 @@ describe('Subscription & Entitlements Logic', () => {
     expect(PRICING_TIERS.starter.limits.cards).toBe(3);
     expect(PRICING_TIERS.starter.limits.cvs).toBe(1);
     expect(PRICING_TIERS.starter.limits.presentations).toBe(2);
-    expect(PRICING_TIERS.starter.limits.hasWatermark).toBe(true);
+    expect(PRICING_TIERS.starter.limits.hasWatermark).toBe(false);
 
     // 2. Pro (Recomendado)
     expect(PRICING_TIERS.pro.monthly.priceClp).toBe(4990);

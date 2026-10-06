@@ -46,7 +46,7 @@ export const PRICING_TIERS: Record<PlanTier, TierPlanConfig> = {
       cards: 3,
       cvs: 1,
       presentations: 2,
-      hasWatermark: true,
+      hasWatermark: false,
       analyticsLevel: 'basic',
       aiTier: 'standard',
     },
@@ -72,7 +72,7 @@ export const PRICING_TIERS: Record<PlanTier, TierPlanConfig> = {
       { text: 'Visitas Edge básicas y contador' },
       { text: 'Botón directo a WhatsApp y código QR' },
       { text: 'Copiloto de IA estándar' },
-      { text: 'Marca de agua INDI visible en el footer' },
+      { text: 'Sin marca de agua (Identidad profesional limpia)', highlight: true },
     ],
   },
   pro: {
