@@ -45,9 +45,26 @@ export function AuthModal({
       setIsLoadingGoogle(true);
       setErrorMsg(null);
 
+      // Si existe cookie o param de referido, enriquecer callbackURL para garantizar atribución instantánea al retornar
+      let targetCallback = safeCallbackUrl;
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refFromUrl = urlParams.get('ref');
+        const refFromCookie = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('indi_ref_code='))
+          ?.split('=')[1];
+        const activeRef = refFromUrl || refFromCookie;
+
+        if (activeRef && !targetCallback.includes('ref=')) {
+          const separator = targetCallback.includes('?') ? '&' : '?';
+          targetCallback = `${targetCallback}${separator}ref=${encodeURIComponent(activeRef)}`;
+        }
+      }
+
       await signIn.social({
         provider: 'google',
-        callbackURL: safeCallbackUrl,
+        callbackURL: targetCallback,
       });
     } catch (err: any) {
       console.error('Error Google OAuth:', err);
@@ -62,19 +79,44 @@ export function AuthModal({
     setErrorMsg(null);
     setIsLoadingEmail(true);
 
+    let targetCallback = safeCallbackUrl;
+    let clientRef: string | null = null;
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const refFromUrl = urlParams.get('ref');
+      const refFromCookie = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('indi_ref_code='))
+        ?.split('=')[1];
+      clientRef = refFromUrl || refFromCookie || null;
+
+      if (clientRef && !targetCallback.includes('ref=')) {
+        const separator = targetCallback.includes('?') ? '&' : '?';
+        targetCallback = `${targetCallback}${separator}ref=${encodeURIComponent(clientRef)}`;
+      }
+    }
+
     try {
       if (mode === 'signup') {
         const res = await authClient.signUp.email({
           email,
           password,
           name: name.trim() || email.split('@')[0],
-          callbackURL: safeCallbackUrl,
+          callbackURL: targetCallback,
         });
 
         if (res.error) {
           setErrorMsg(res.error.message || 'Error al crear tu cuenta.');
         } else {
-          router.push(safeCallbackUrl);
+          if (clientRef && res.data?.user?.id) {
+            try {
+              const { attributeReferralAction } = await import('@/features/affiliates/actions');
+              await attributeReferralAction(res.data.user.id, clientRef);
+            } catch {
+              // Silencioso
+            }
+          }
+          router.push(targetCallback);
           router.refresh();
           handleClose();
         }
@@ -82,13 +124,21 @@ export function AuthModal({
         const res = await authClient.signIn.email({
           email,
           password,
-          callbackURL: safeCallbackUrl,
+          callbackURL: targetCallback,
         });
 
         if (res.error) {
           setErrorMsg(res.error.message || 'Credenciales incorrectas.');
         } else {
-          router.push(safeCallbackUrl);
+          if (clientRef && res.data?.user?.id) {
+            try {
+              const { attributeReferralAction } = await import('@/features/affiliates/actions');
+              await attributeReferralAction(res.data.user.id, clientRef);
+            } catch {
+              // Silencioso
+            }
+          }
+          router.push(targetCallback);
           router.refresh();
           handleClose();
         }

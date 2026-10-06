@@ -308,11 +308,53 @@ export async function saveAffiliateBankAccountAction(
   }
 }
 
+export interface ReferralPartnerInfo {
+  valid: boolean;
+  referralCode: string;
+  partnerName?: string;
+}
+
 /**
- * Atribuir referido mediante código de referido
+ * Obtiene información pública del referente para mostrar bienvenida personalizada
  */
-export async function attributeReferralAction(newUserId: string, referralCode: string) {
+export async function getReferralPartnerInfoAction(rawCode?: string | null): Promise<ReferralPartnerInfo | null> {
   try {
+    const { sanitizeReferralCode } = await import('@/entities/affiliate/referral-cookie');
+    const sanitized = sanitizeReferralCode(rawCode);
+    if (!sanitized) return null;
+
+    const referrer = await db.query.user.findFirst({
+      where: eq(user.referralCode, sanitized),
+      columns: {
+        id: true,
+        name: true,
+        referralCode: true,
+      },
+    });
+
+    if (!referrer || !referrer.referralCode) return null;
+
+    // Extraer primer nombre o alias público para privacidad
+    const firstName = referrer.name ? referrer.name.trim().split(' ')[0] : undefined;
+
+    return {
+      valid: true,
+      referralCode: referrer.referralCode,
+      partnerName: firstName,
+    };
+  } catch (err) {
+    console.error('Error obteniendo información de referente:', err);
+    return null;
+  }
+}
+
+/**
+ * Atribuir referido mediante código de referido (con soporte de sanitización y cookies)
+ */
+export async function attributeReferralAction(newUserId: string, rawReferralCode: string) {
+  try {
+    const { sanitizeReferralCode } = await import('@/entities/affiliate/referral-cookie');
+    const referralCode = sanitizeReferralCode(rawReferralCode);
     if (!referralCode || !newUserId) return;
 
     // Verificar que el usuario no tenga ya un referente asignado (first-touch / sticky attribution)

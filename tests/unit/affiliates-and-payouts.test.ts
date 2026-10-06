@@ -127,6 +127,29 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
       }
     });
   });
+
+  describe('Gobernanza de Cookies & Sanitización de Referidos en Tránsito', () => {
+    it('sanitiza códigos válidos y rechaza códigos maliciosos o reservados', async () => {
+      const { sanitizeReferralCode, REFERRAL_COOKIE_NAME, REFERRAL_COOKIE_MAX_AGE } = await import(
+        '@/entities/affiliate/referral-cookie'
+      );
+
+      expect(REFERRAL_COOKIE_NAME).toBe('indi_ref_code');
+      expect(REFERRAL_COOKIE_MAX_AGE).toBe(30 * 24 * 60 * 60);
+
+      // Sanitización exitosa
+      expect(sanitizeReferralCode('matias')).toBe('matias');
+      expect(sanitizeReferralCode('  Dev_Chile--2026 ')).toBe('dev-chile-2026');
+
+      // Rechazos seguros (retornan null)
+      expect(sanitizeReferralCode('admin')).toBe(null);
+      expect(sanitizeReferralCode('indi')).toBe(null);
+      expect(sanitizeReferralCode('')).toBe(null);
+      expect(sanitizeReferralCode(null)).toBe(null);
+      expect(sanitizeReferralCode('a')).toBe(null);
+      expect(sanitizeReferralCode('código_con_más_de_veinticuatro_caracteres_totales')).toBe(null);
+    });
+  });
 });
 
 

@@ -16,11 +16,15 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+import { ReferralWelcomeBanner } from '@/features/affiliates/components/ReferralWelcomeBanner';
+import type { ReferralPartnerInfo } from '@/features/affiliates/actions';
+
 interface OnboardingChoiceGridProps {
   daysRemaining: number;
+  referralPartner?: ReferralPartnerInfo | null;
 }
 
-export function OnboardingChoiceGrid({ daysRemaining }: OnboardingChoiceGridProps) {
+export function OnboardingChoiceGrid({ daysRemaining, referralPartner }: OnboardingChoiceGridProps) {
   const options = [
     {
       id: 'card',
@@ -77,6 +81,15 @@ export function OnboardingChoiceGrid({ daysRemaining }: OnboardingChoiceGridProp
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+      {/* Banner de Invitación de Referido si aplica */}
+      {referralPartner?.valid && (
+        <ReferralWelcomeBanner
+          referralCode={referralPartner.referralCode}
+          partnerName={referralPartner.partnerName}
+          daysRemaining={daysRemaining}
+        />
+      )}
+
       {/* Banner de Estado VIP de Bienvenida */}
       <div className="mb-8 sm:mb-12 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-indigo-500/30 text-xs font-semibold text-indigo-300 mb-4 shadow-lg shadow-indigo-500/10">

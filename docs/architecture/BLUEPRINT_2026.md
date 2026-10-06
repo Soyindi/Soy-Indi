@@ -1426,10 +1426,44 @@ Tras la adquisición y habilitación del dominio canónico **`soyindi.cl`**, exi
    - **Editores e Interfaces UI (`CardBuilder.tsx`, `SmartCvBuilder.tsx`, `PresentationStudio.tsx`, `AffiliateDashboardTab.tsx`)**: Prefijos visuales de enlace actualizados a `soyindi.cl/...` y acciones de copia usando el origen canónico.
 5. **Skill Corporativo Especializado (`.agents/skills/canonical-domain-audit/SKILL.md`)**:
    - Guía paso a paso y checklist de verificación para configuración de DNS, Vercel Domains, Google Cloud OAuth y webhooks de Mercado Pago.
-6. **Control de Calidad y Pruebas Unitarias (261 Tests Passing)**:
+6. **Control de Calidad y Pruebas Unitarias**:
    - Suite completa en `tests/unit/canonical-domain-governance.test.ts` con 7 pruebas que validan la redirección HTTP 308 de dominios Vercel y legacy, la persistencia en desarrollo local y la construcción de URLs canónicas.
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (261 de 261 tests en 42 suites).
+   - 100% de la suite de pruebas unitarias aprobada en Vitest.
    - 0 errores en compilación TypeScript estricta (`npm run typecheck`).
+
+---
+
+## 27. Arquitectura de Referidos Interconectada & Atribución Resiliente (2026)
+
+### 27.1 Diagnóstico del Flujo Viral de Invitación
+El canal de crecimiento por referidos de INDI permite a cualquier creador o embajador compartir su enlace personalizado (`https://soyindi.cl/start?ref=CODIGO`). Para evitar fugas de atribución y garantizar una experiencia de usuario gratificante:
+
+```mermaid
+graph TD
+    A["Visitante ingresa a soyindi.cl/start?ref=CODIGO"] --> B["Sanitización Zod & Cookie First-Party (indi_ref_code, 30 días)"]
+    B --> C["Onboarding Hub: Detección de Referente (getReferralPartnerInfoAction)"]
+    C --> D["Renderizado de ReferralWelcomeBanner (Acceso VIP Concedido)"]
+    D --> E{"¿Usuario crea cuenta o navega?"}
+    E -->|"Registro con Google / Email"| F["AuthModal / SignIn: Propagación de ref en callbackUrl"]
+    E -->|"Navegación previa en la plataforma"| G["Cookie persistente indi_ref_code retiene el código"]
+    F --> H["Atribución Idempotente: attributeReferralAction(user.id, refCode)"]
+    G --> H
+    H --> I["Usuario realiza suscripción en Mercado Pago"]
+    I --> J["Webhook IPN: processAffiliateCommissionOnPayment"]
+    J --> K["Comisión Atómica del 25% acreditada en affiliate_commissions"]
+    K --> L["Liquidación Quincenal Directa a Cuenta RUT (Día 1 y 15)"]
+```
+
+### 27.2 Principios de Ingeniería Implementados
+1. **Resiliencia contra Pérdida de Atribución (First-Touch Sticky)**:
+   - Los visitantes no pierden su anfitrión si hacen clic en "Ver Planes" o exploran la plataforma antes de registrarse, gracias a la cookie `indi_ref_code` (expiración de 30 días, `sameSite: 'lax'`).
+2. **Feedback Visual Inmediato (`ReferralWelcomeBanner.tsx`)**:
+   - Cumple con WCAG 2.2 AA (ratio $\ge 4.5:1$), retícula Base 8 y Glassmorphism 2.0. Notifica al usuario invitado de su beneficio VIP y del nombre/código de su anfitrión sin invadir la navegación.
+3. **Propagación en Flujo de Autenticación (`AuthModal.tsx`)**:
+   - Tanto el login social (Google OAuth) como el registro con correo electrónico enriquecen su `callbackURL` con el parámetro de referido activo (`?ref=...`) y ejecutan la vinculación segura de forma atómica.
+4. **Contratos Zod Estrictos (`src/entities/affiliate/referral-cookie.ts`)**:
+   - Sanitización de formato (`formatReferralCode`), límite de longitud (3 a 24 caracteres), y bloqueo de códigos reservados del sistema (`isReservedReferralCode`).
+
 
 
 

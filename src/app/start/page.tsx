@@ -13,23 +13,54 @@ interface OnboardingStartPageProps {
 
 export default async function OnboardingStartPage({ searchParams }: OnboardingStartPageProps) {
   const params = searchParams ? await searchParams : {};
-  const refCode = params.ref;
+  const { cookies, headers } = await import('next/headers');
+  const cookieStore = await cookies();
+  const { REFERRAL_COOKIE_NAME, REFERRAL_COOKIE_MAX_AGE, sanitizeReferralCode } = await import(
+    '@/entities/affiliate/referral-cookie'
+  );
+
+  // 1. Obtener código desde searchParams o cookie persistente
+  const rawParamRef = params.ref;
+  const rawCookieRef = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
+  const activeRefCode = sanitizeReferralCode(rawParamRef) || sanitizeReferralCode(rawCookieRef);
+
+  // 2. Si viene por query param válido, persistir en cookie para navegación subsecuente
+  if (rawParamRef && activeRefCode) {
+    try {
+      cookieStore.set(REFERRAL_COOKIE_NAME, activeRefCode, {
+        maxAge: REFERRAL_COOKIE_MAX_AGE,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: false, // Accesible por cliente para sincronizar flujos si fuera necesario
+      });
+    } catch {
+      // Ignorar si se ejecuta en contexto de streaming read-only
+    }
+  }
+
   const entitlement = await checkUserEntitlementAction();
 
-  // Si viene un código de referido y hay sesión, atribuir
-  if (refCode) {
+  // 3. Si hay sesión activa y código válido, atribuir idempotentemente
+  if (activeRefCode) {
     try {
-      const { headers } = await import('next/headers');
       const { auth } = await import('@/shared/lib/auth');
       const headerList = await headers();
       const session = await auth.api.getSession({ headers: headerList });
       if (session?.user?.id) {
         const { attributeReferralAction } = await import('@/features/affiliates/actions');
-        await attributeReferralAction(session.user.id, refCode);
+        await attributeReferralAction(session.user.id, activeRefCode);
       }
     } catch (err) {
       // Atribución silenciosa
     }
+  }
+
+  // 4. Obtener información visual del referente si aplica
+  let referralPartner = null;
+  if (activeRefCode) {
+    const { getReferralPartnerInfoAction } = await import('@/features/affiliates/actions');
+    referralPartner = await getReferralPartnerInfoAction(activeRefCode);
   }
 
   return (
@@ -65,6 +96,7 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
       <main className="relative z-10 flex-1 flex items-center">
         <OnboardingChoiceGrid
           daysRemaining={entitlement.daysRemaining}
+          referralPartner={referralPartner}
         />
       </main>
 
