@@ -26,7 +26,7 @@ interface PricingSectionProps {
 
 export function PricingSection({ showTitle = true }: PricingSectionProps) {
   const router = useRouter();
-  const [interval, setInterval] = useState<PlanInterval>('semiannual');
+  const [interval, setInterval] = useState<PlanInterval>('monthly');
   const [selectedTier, setSelectedTier] = useState<PlanTier | null>(null);
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
@@ -85,7 +85,7 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
           </h2>
 
           <p className="text-sm sm:text-base text-zinc-300 leading-relaxed">
-            Empieza hoy con <strong>3 días de prueba gratis</strong>. Luego activa la suite profesional en ciclo semestral con hasta <strong>60% de ahorro</strong> o mensual flexible.
+            Empieza hoy con <strong>3 días de prueba gratis</strong>. Luego activa la suite profesional en plan mensual accesible o ahorra hasta <strong>60% con el pago semestral</strong>.
           </p>
         </div>
       )}
@@ -98,7 +98,7 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
             onClick={() => setInterval('monthly')}
             className={`min-h-[44px] min-w-[44px] relative z-10 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               interval === 'monthly'
-                ? 'bg-zinc-800 text-white shadow-md border border-white/10'
+                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25'
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
