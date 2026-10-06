@@ -73,6 +73,9 @@ src/
 12. **Gobernanza de Rendimiento Perimetral (ISR 60s & Telemetría Desacoplada):**
    - Las rutas públicas dinámicas (`/c/[slug]`, `/p/[slug]`, `/cv/[slug]`) deben implementar regeneración estática incremental (`export const revalidate = 60;`) para servirse directamente desde el CDN perimetral, reduciendo en un 99% el consumo de funciones serverless en Vercel.
    - Se prohíbe terminantemente ejecutar escrituras sincrónicas en base de datos (`UPDATE viewsCount`, `INSERT card_events`) dentro del renderizado de página. Toda telemetría de visualización se despacha de forma asíncrona mediante el Route Handler `/api/telemetry/view` consumido por `trackResourceView` (`navigator.sendBeacon` / `keepalive: true`) con deduplicación por sesión.
+13. **Conversión Viral & Redirección a Login en Vistas Públicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`):**
+   - Cuando un tercero/visitante no autenticado interactúa con una tarjeta digital, Smart CV o presentación orbital pública, todos los enlaces de llamada a la acción ("Crea tu perfil gratis", "Crear mi CV", "Crear Presentación", badges de autoría "CREADO CON INDI") deben dirigir obligatoriamente a la pasarela de autenticación con modo registro y destino contextual (`/login?mode=signup&callbackUrl=...`).
+   - Se prohíbe derivar a visitantes no autenticados directamente a rutas desprotegidas o genéricas sin pasar por el onboarding de autenticación. Si el usuario ya cuenta con sesión activa, el sistema le proveerá acceso inmediato a su panel (`/dashboard`).
 
 
 

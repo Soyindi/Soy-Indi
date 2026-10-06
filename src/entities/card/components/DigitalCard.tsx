@@ -577,7 +577,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         {/* Badge Sutil de INDI */}
         <div className="mt-5 text-center">
           <a
-            href="/"
+            href="/login?mode=signup&callbackUrl=/start"
             className="inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300 tracking-wider font-mono transition-colors"
           >
             <Sparkles className="w-2.5 h-2.5" style={{ color: primaryColor }} />

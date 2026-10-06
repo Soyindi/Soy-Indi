@@ -262,7 +262,7 @@ export function PublicPresentationViewer({
           </button>
 
           <Link
-            href="/start"
+            href="/login?mode=signup&callbackUrl=/presentations"
             className="hidden sm:inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold transition-all active:scale-95"
           >
             <Sparkles className="w-3.5 h-3.5" />

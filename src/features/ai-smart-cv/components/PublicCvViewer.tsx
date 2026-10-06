@@ -165,6 +165,15 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
               <span>A4 Ejecutivo (ISO 216)</span>
             </div>
 
+            {/* CTA Viral: Crear tu CV gratis */}
+            <Link
+              href="/login?mode=signup&callbackUrl=/cv"
+              className="hidden sm:inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-semibold transition-all active:scale-95"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Crear mi CV</span>
+            </Link>
+
             {/* Botón Compartir */}
             <button
               type="button"
@@ -312,7 +321,16 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
 
       {/* Footer Minimalista */}
       <footer className="w-full py-6 text-center text-xs text-zinc-600 border-t border-white/5">
-        <p>Currículum digital impulsado por INDI • Plataforma de Identidad y Productividad 2026</p>
+        <p>
+          Currículum digital impulsado por{' '}
+          <Link
+            href="/login?mode=signup&callbackUrl=/cv"
+            className="text-zinc-400 hover:text-cyan-300 transition-colors font-medium underline underline-offset-4"
+          >
+            INDI
+          </Link>{' '}
+          • Plataforma de Identidad y Productividad 2026
+        </p>
       </footer>
     </div>
   );

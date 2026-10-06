@@ -63,4 +63,26 @@ describe('Systemic Navigation Audit & Zero Auto-Referential Loops', () => {
     expect(pricingTriggersInDashboard.trialBannerCta).toBe('/pricing');
     expect(pricingTriggersInDashboard.headerNavigationButton).toBeNull();
   });
+
+  it('audita que los CTAs de registro/creación en vistas públicas (/c, /cv, /p) redirijan directamente a iniciar sesión / registro', () => {
+    // Matriz de conversión viral para visitantes no autenticados
+    const publicVisitorCtas = {
+      cardsContextualHeader: '/login?mode=signup&callbackUrl=/start',
+      cardBadgeFooter: '/login?mode=signup&callbackUrl=/start',
+      presentationHeader: '/login?mode=signup&callbackUrl=/presentations',
+      smartCvHeader: '/login?mode=signup&callbackUrl=/cv',
+      smartCvFooter: '/login?mode=signup&callbackUrl=/cv',
+    };
+
+    // Todos los CTAs de visitantes deben apuntar a la pasarela de autenticación (/login)
+    Object.values(publicVisitorCtas).forEach((target) => {
+      expect(target).toContain('/login');
+      expect(target).toContain('mode=signup');
+    });
+
+    // Ninguno debe apuntar directamente a rutas desprotegidas sin pasar por autenticación
+    expect(publicVisitorCtas.cardsContextualHeader).not.toBe('/start');
+    expect(publicVisitorCtas.presentationHeader).not.toBe('/start');
+    expect(publicVisitorCtas.cardBadgeFooter).not.toBe('/');
+  });
 });

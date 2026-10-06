@@ -465,8 +465,8 @@ export default async function PublicCardPage({ params }: PageProps) {
 3. **Normalización a Retícula Base 8 y Touch Targets $\ge 44\text{px}$**:
    - Redimensionamiento de iconos sociales a 44x44px (`w-11 h-11`) y botones de contacto a `min-h-[44px]` / `min-h-[48px]`.
    - Conversión de paddings a múltiplos de 8 (`p-6 sm:p-8`, `gap-4`).
-4. **Cabecera Contextual Adaptativa de Conversión (`PublicContextualHeader.tsx`)**:
-   - Enrutamiento inteligente en tarjetas públicas: visitantes anónimos ven CTA de conversión viral (*"Crea tu perfil gratis →"*), mientras que el propietario autenticado ve acceso rápido a su panel (*"← Panel"*).
+4. **Cabecera Contextual Adaptativa de Conversión (`PublicContextualHeader.tsx` & Vistas Públicas `/c`, `/cv`, `/p`)**:
+   - Enrutamiento inteligente de alta conversión viral: cuando un visitante no autenticado visualiza una tarjeta digital, Smart CV o presentación orbital, los enlaces de acción (*"Crea tu perfil gratis"*, *"Crear mi CV"*, *"Crear Presentación"*, badge *"CREADO CON INDI"*) dirigen directamente al flujo de registro e inicio de sesión (`/login?mode=signup&callbackUrl=...`), mientras que usuarios con sesión activa conservan acceso directo a su panel (*"Mi Panel"* / `/dashboard`).
 
 ### ✅ Fase 10: Estudio Cinemático de Presentaciones Orbitales Pro, Plantillas y Generación IA (COMPLETADA)
 1. **Motor Multi-Layout Reactivo y Heurístico (`SlideViewer.tsx` & `heuristics.ts`)**:

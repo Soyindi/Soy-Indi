@@ -149,9 +149,10 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 277 tests pasando al 100%)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 278 tests pasando al 100%)
 │   ├── affiliates-and-payouts.test.ts # Módulo 11 RUT, códigos de referido y liquidaciones
 │   ├── auth-flow.test.ts        # Validación de flujo de login, Open Redirect guardrail y sanitización
+│   ├── systemic-navigation-audit.test.ts # Auditoría de navegación sistémica y CTAs públicos a login
 │   ├── oauth-multi-tenant.test.ts # Aislamiento multi-tenant y Google OAuth
 │   ├── card-schema.test.ts      # Validación Zod de tarjetas de presentación
 │   ├── cv-schema.test.ts        # Contratos de datos CV y guardrails EU AI Act
