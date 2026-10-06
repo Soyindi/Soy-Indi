@@ -219,3 +219,20 @@ export interface AdminAffiliatePayoutItem {
   bankAccount: AffiliateBankAccountInput | null;
 }
 
+/**
+ * Registro de auditoría para la vista de crecimiento y referidos en el panel admin
+ */
+export interface AdminReferralAuditItem {
+  referredUserId: string;
+  referredUserName: string;
+  referredUserEmail: string;
+  referredUserStatus: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | string;
+  registeredAt: Date;
+  trialEndsAt: Date | null;
+  referrerId: string;
+  referrerName: string;
+  referrerEmail: string;
+  referrerCode: string;
+  totalCommissionsGeneratedClp: number;
+}
+

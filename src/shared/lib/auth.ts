@@ -46,6 +46,30 @@ export const auth = betterAuth({
           const randomSuffix = Math.random().toString(36).substring(2, 6);
           const referralCode = (userData as any).referralCode || `${cleanName || 'indi'}-${randomSuffix}`;
 
+          // Atribución nativa en el servidor si viene la cookie indi_ref_code
+          let referredBy = (userData as any).referredBy || null;
+          if (!referredBy) {
+            try {
+              const { headers } = await import('next/headers');
+              const headerList = await headers();
+              const cookieHeader = headerList.get('cookie') || '';
+              const match = cookieHeader.match(/indi_ref_code=([^;]+)/);
+              const refCode = match ? decodeURIComponent(match[1].trim()) : null;
+
+              if (refCode) {
+                const { eq } = await import('drizzle-orm');
+                const referrer = await db.query.user.findFirst({
+                  where: eq(schema.user.referralCode, refCode),
+                });
+                if (referrer?.id) {
+                  referredBy = referrer.id;
+                }
+              }
+            } catch {
+              // Fuera de contexto de request (ej. scripts o tests locales)
+            }
+          }
+
           return {
             data: {
               ...userData,
@@ -53,6 +77,7 @@ export const auth = betterAuth({
               trialEndsAt: (userData as any).trialEndsAt || new Date(Date.now() + threeDaysMs),
               role: (userData as any).role || 'user',
               referralCode,
+              ...(referredBy ? { referredBy } : {}),
             },
           };
         },

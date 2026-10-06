@@ -168,6 +168,26 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
       expect(signupUrl).toContain('/login?mode=signup&ref=mi-marca');
     });
   });
+
+  describe('Auditoría de Referidos en Panel de Administración (/admin)', () => {
+    it('ejecuta getAdminReferralsAuditAction y valida la estructura de los registros de auditoría', async () => {
+      const { getAdminReferralsAuditAction } = await import('@/features/affiliates/actions');
+      const res = await getAdminReferralsAuditAction();
+
+      expect(res.success).toBe(true);
+      expect(Array.isArray(res.data)).toBe(true);
+
+      if (res.data && res.data.length > 0) {
+        const item = res.data[0];
+        expect(item).toHaveProperty('referredUserId');
+        expect(item).toHaveProperty('referredUserName');
+        expect(item).toHaveProperty('referredUserEmail');
+        expect(item).toHaveProperty('referredUserStatus');
+        expect(item).toHaveProperty('referrerCode');
+        expect(item).toHaveProperty('totalCommissionsGeneratedClp');
+      }
+    });
+  });
 });
 
 

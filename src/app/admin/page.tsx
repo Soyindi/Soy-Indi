@@ -55,8 +55,16 @@ export default async function AdminPage() {
     );
   }
 
-  const payoutsRes = await getAdminAffiliatePayoutsAction(session.user.id);
+  const [payoutsRes, auditRes] = await Promise.all([
+    getAdminAffiliatePayoutsAction(session.user.id),
+    (async () => {
+      const { getAdminReferralsAuditAction } = await import('@/features/affiliates/actions');
+      return getAdminReferralsAuditAction(session.user.id);
+    })(),
+  ]);
+
   const payouts = payoutsRes.data || [];
+  const referralsAudit = auditRes.data || [];
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white relative overflow-hidden pb-16">
@@ -77,7 +85,7 @@ export default async function AdminPage() {
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Liquidaciones quincenales y auditoría de comisiones
+                Auditoría en tiempo real de registros referidos y liquidaciones quincenales
               </p>
             </div>
           </div>
@@ -96,7 +104,10 @@ export default async function AdminPage() {
 
       {/* Contenido principal */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 relative z-10">
-        <AdminPayoutsView initialPayouts={payouts} />
+        <AdminPayoutsView
+          initialPayouts={payouts}
+          initialReferralsAudit={referralsAudit}
+        />
       </main>
     </div>
   );

@@ -10,6 +10,7 @@ import {
   AffiliateBankAccountInput, 
   AffiliateOverview,
   AdminAffiliatePayoutItem,
+  AdminReferralAuditItem,
   AFFILIATE_COMMISSION_PERCENTAGE,
   calculateNextPayoutDate,
   formatReferralCode,
@@ -558,3 +559,85 @@ export async function markAffiliateCommissionsAsPaidAction(affiliateUserId: stri
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Panel de Administración: Auditoría en tiempo real de todos los usuarios registrados con código de referidos
+ */
+export async function getAdminReferralsAuditAction(userId?: string): Promise<{
+  success: boolean;
+  data?: AdminReferralAuditItem[];
+  error?: string;
+}> {
+  try {
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: 'Acceso no autorizado.' };
+    }
+
+    const currentUser = await db.query.user.findFirst({
+      where: eq(user.id, sessionResult.userId),
+    });
+
+    const adminEmails = (process.env.ADMIN_EMAILS || 'soyindi.cl@gmail.com,psmatrique@gmail.com,matiricardoo@gmail.com,demo@indi.bio')
+      .toLowerCase()
+      .split(',')
+      .map((e) => e.trim());
+
+    const isUserAdmin = currentUser?.role === 'admin' || (currentUser?.email && adminEmails.includes(currentUser.email.toLowerCase()));
+
+    if (!isUserAdmin && process.env.NODE_ENV === 'production') {
+      return { success: false, error: 'Permisos insuficientes de administrador.' };
+    }
+
+    // Obtener todos los usuarios que fueron referidos por alguien
+    const referredUsers = await db.query.user.findMany({
+      where: sql`${user.referredBy} IS NOT NULL`,
+      orderBy: [desc(user.createdAt)],
+      limit: 200,
+    });
+
+    // Obtener todas las comisiones para calcular el aporte por usuario
+    const allCommissions = await db.query.affiliateCommissions.findMany();
+    const commissionsByBuyer = new Map<string, number>();
+    for (const comm of allCommissions) {
+      const current = commissionsByBuyer.get(comm.buyerUserId) || 0;
+      commissionsByBuyer.set(comm.buyerUserId, current + comm.amountClp);
+    }
+
+    // Mapear referentes para no hacer queries en N+1
+    const referrerIds = Array.from(new Set(referredUsers.map((u) => u.referredBy).filter(Boolean))) as string[];
+    const referrersMap = new Map<string, any>();
+
+    for (const refId of referrerIds) {
+      const refData = await db.query.user.findFirst({
+        where: eq(user.id, refId),
+      });
+      if (refData) {
+        referrersMap.set(refId, refData);
+      }
+    }
+
+    const auditList: AdminReferralAuditItem[] = referredUsers.map((u) => {
+      const referrer = u.referredBy ? referrersMap.get(u.referredBy) : null;
+      return {
+        referredUserId: u.id,
+        referredUserName: u.name || 'Usuario sin nombre',
+        referredUserEmail: u.email || 'Sin correo',
+        referredUserStatus: (u.status as any) || 'TRIAL',
+        registeredAt: new Date(u.createdAt),
+        trialEndsAt: u.trialEndsAt ? new Date(u.trialEndsAt) : null,
+        referrerId: u.referredBy || '',
+        referrerName: referrer?.name || 'Afiliado desconocido',
+        referrerEmail: referrer?.email || '',
+        referrerCode: referrer?.referralCode || 'sin-codigo',
+        totalCommissionsGeneratedClp: commissionsByBuyer.get(u.id) || 0,
+      };
+    });
+
+    return { success: true, data: auditList };
+  } catch (error: any) {
+    console.error('Error en getAdminReferralsAuditAction:', error);
+    return { success: false, error: error.message || 'Error al obtener auditoría de referidos.' };
+  }
+}
+
