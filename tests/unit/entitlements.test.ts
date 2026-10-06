@@ -1,14 +1,53 @@
 import { describe, it, expect } from 'vitest';
-import { PRICING_PLANS, calculateTimeRemaining } from '@/entities/subscription/types';
-import { userEntitlementSchema } from '@/entities/subscription/schemas';
+import { PRICING_TIERS, PRICING_PLANS, calculateTimeRemaining } from '@/entities/subscription/types';
+import { userEntitlementSchema, createCheckoutPreferenceSchema } from '@/entities/subscription/schemas';
 import { checkUserEntitlementAction, assertUserEntitlementAction } from '@/features/pricing/actions';
 
 describe('Subscription & Entitlements Logic', () => {
-  it('debe tener configurados los planes comerciales oficiales (Mensual $2.500 CLP / Semestral $6.000 CLP)', () => {
-    expect(PRICING_PLANS.monthly.priceClp).toBe(2500);
-    expect(PRICING_PLANS.semiannual.priceClp).toBe(6000);
-    expect(PRICING_PLANS.semiannual.discountPercentage).toBe(60);
-    expect(PRICING_PLANS.semiannual.monthlyEquivalentClp).toBe(1000);
+  it('debe tener configurada la Matriz de 3 Planes: Starter 🟢, Pro 🔵 y Max 🟣 con ciclo mensual y semestral', () => {
+    // 1. Starter
+    expect(PRICING_TIERS.starter.monthly.priceClp).toBe(2500);
+    expect(PRICING_TIERS.starter.semiannual.priceClp).toBe(6000);
+    expect(PRICING_TIERS.starter.semiannual.discountPercentage).toBe(60);
+    expect(PRICING_TIERS.starter.semiannual.monthlyEquivalentClp).toBe(1000);
+    expect(PRICING_TIERS.starter.limits.cards).toBe(3);
+    expect(PRICING_TIERS.starter.limits.cvs).toBe(1);
+    expect(PRICING_TIERS.starter.limits.presentations).toBe(2);
+    expect(PRICING_TIERS.starter.limits.hasWatermark).toBe(true);
+
+    // 2. Pro (Recomendado)
+    expect(PRICING_TIERS.pro.monthly.priceClp).toBe(4990);
+    expect(PRICING_TIERS.pro.semiannual.priceClp).toBe(15000);
+    expect(PRICING_TIERS.pro.semiannual.discountPercentage).toBe(50);
+    expect(PRICING_TIERS.pro.semiannual.monthlyEquivalentClp).toBe(2500);
+    expect(PRICING_TIERS.pro.limits.cards).toBe(10);
+    expect(PRICING_TIERS.pro.limits.cvs).toBe(5);
+    expect(PRICING_TIERS.pro.limits.presentations).toBe(10);
+    expect(PRICING_TIERS.pro.limits.hasWatermark).toBe(false);
+
+    // 3. Max (Poder Ilimitado)
+    expect(PRICING_TIERS.max.monthly.priceClp).toBe(8990);
+    expect(PRICING_TIERS.max.semiannual.priceClp).toBe(29990);
+    expect(PRICING_TIERS.max.semiannual.discountPercentage).toBe(44);
+    expect(PRICING_TIERS.max.limits.cards).toBe('unlimited');
+    expect(PRICING_TIERS.max.limits.cvs).toBe('unlimited');
+    expect(PRICING_TIERS.max.limits.presentations).toBe('unlimited');
+    expect(PRICING_TIERS.max.limits.hasWatermark).toBe(false);
+  });
+
+  it('valida el contrato Zod de preferencia de checkout con tier y planInterval', () => {
+    const valid = createCheckoutPreferenceSchema.safeParse({
+      tier: 'pro',
+      planInterval: 'semiannual',
+    });
+    expect(valid.success).toBe(true);
+
+    const defaultFallback = createCheckoutPreferenceSchema.safeParse({});
+    expect(defaultFallback.success).toBe(true);
+    if (defaultFallback.success) {
+      expect(defaultFallback.data.tier).toBe('pro');
+      expect(defaultFallback.data.planInterval).toBe('semiannual');
+    }
   });
 
   it('calcula con precisión matemática determinista el tiempo restante en días, horas, minutos y segundos', () => {

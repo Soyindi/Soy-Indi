@@ -164,24 +164,25 @@ export async function assertUserEntitlementAction(userId?: string): Promise<{
  * Simulación de sesión de Checkout (MercadoPago / Stripe)
  */
 export async function createCheckoutSessionAction(
-  planInterval: 'monthly' | 'semiannual',
-  currency: 'CLP' | 'USD' = 'CLP'
+  planInterval: 'monthly' | 'semiannual' = 'semiannual',
+  currency: 'CLP' | 'USD' = 'CLP',
+  tier: 'starter' | 'pro' | 'max' = 'pro'
 ) {
-  // Simulador estructurado listo para conectar Webhooks
-  const amount = planInterval === 'semiannual' ? 6000 : 2500;
-  const description =
-    planInterval === 'semiannual'
-      ? 'INDI Membresía Semestral ($6.000 CLP cada 6 meses)'
-      : 'INDI Membresía Mensual ($2.500 CLP / mes)';
+  const { PRICING_TIERS } = await import('@/entities/subscription/types');
+  const tierConfig = PRICING_TIERS[tier] || PRICING_TIERS.pro;
+  const cycleDetail = tierConfig[planInterval];
+  const amount = cycleDetail.priceClp;
+  const description = `INDI: ${tierConfig.name} (${planInterval === 'semiannual' ? 'Semestral' : 'Mensual'})`;
 
   return {
     success: true,
     data: {
+      tier,
       planInterval,
       amount,
       currency,
       description,
-      checkoutUrl: `/checkout/success?plan=${planInterval}`,
+      checkoutUrl: `/checkout/success?tier=${tier}&plan=${planInterval}`,
     },
   };
 }

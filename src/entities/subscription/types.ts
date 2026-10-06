@@ -1,9 +1,158 @@
+export type PlanTier = 'starter' | 'pro' | 'max';
 export type PlanInterval = 'monthly' | 'semiannual';
 
 export interface PlanFeature {
   text: string;
   highlight?: boolean;
 }
+
+export interface TierLimits {
+  cards: number | 'unlimited';
+  cvs: number | 'unlimited';
+  presentations: number | 'unlimited';
+  hasWatermark: boolean;
+  analyticsLevel: 'basic' | 'standard' | 'advanced';
+  aiTier: 'standard' | 'fast_lane' | 'top_nim';
+}
+
+export interface TierPlanDetail {
+  priceClp: number;
+  priceUsd: number;
+  intervalText: string;
+  monthlyEquivalentClp: number;
+  monthlyEquivalentUsd: number;
+  discountPercentage?: number;
+}
+
+export interface TierPlanConfig {
+  id: PlanTier;
+  name: string;
+  badge: string;
+  tagline: string;
+  isPopular?: boolean;
+  limits: TierLimits;
+  monthly: TierPlanDetail;
+  semiannual: TierPlanDetail;
+  features: PlanFeature[];
+}
+
+export const PRICING_TIERS: Record<PlanTier, TierPlanConfig> = {
+  starter: {
+    id: 'starter',
+    name: 'Plan Starter',
+    badge: '🟢 Starter',
+    tagline: 'Ideal para profesionales independientes y nuevos negocios',
+    limits: {
+      cards: 3,
+      cvs: 1,
+      presentations: 2,
+      hasWatermark: true,
+      analyticsLevel: 'basic',
+      aiTier: 'standard',
+    },
+    monthly: {
+      priceClp: 2500,
+      priceUsd: 3,
+      intervalText: 'facturado cada mes',
+      monthlyEquivalentClp: 2500,
+      monthlyEquivalentUsd: 3,
+    },
+    semiannual: {
+      priceClp: 6000,
+      priceUsd: 7,
+      intervalText: 'facturado cada 6 meses ($1.000 CLP / mes)',
+      monthlyEquivalentClp: 1000,
+      monthlyEquivalentUsd: 1.16,
+      discountPercentage: 60,
+    },
+    features: [
+      { text: 'Hasta 3 perfiles de Tarjetas Digitales' },
+      { text: '1 currículum base en PDF ATS' },
+      { text: 'Hasta 2 presentaciones 16:9 con IA' },
+      { text: 'Visitas Edge básicas y contador' },
+      { text: 'Botón directo a WhatsApp y código QR' },
+      { text: 'Copiloto de IA estándar' },
+      { text: 'Marca de agua INDI visible en el footer' },
+    ],
+  },
+  pro: {
+    id: 'pro',
+    name: 'Plan Pro',
+    badge: '🔵 Recomendado',
+    tagline: 'La suite completa para escalar tu captación de clientes',
+    isPopular: true,
+    limits: {
+      cards: 10,
+      cvs: 5,
+      presentations: 10,
+      hasWatermark: false,
+      analyticsLevel: 'standard',
+      aiTier: 'fast_lane',
+    },
+    monthly: {
+      priceClp: 4990,
+      priceUsd: 6,
+      intervalText: 'facturado cada mes',
+      monthlyEquivalentClp: 4990,
+      monthlyEquivalentUsd: 6,
+    },
+    semiannual: {
+      priceClp: 15000,
+      priceUsd: 17,
+      intervalText: 'facturado cada 6 meses ($2.500 CLP / mes)',
+      monthlyEquivalentClp: 2500,
+      monthlyEquivalentUsd: 2.83,
+      discountPercentage: 50,
+    },
+    features: [
+      { text: 'Hasta 10 perfiles de Tarjetas Digitales', highlight: true },
+      { text: 'Hasta 5 versiones de Smart CV con auditoría ATS' },
+      { text: 'Hasta 10 presentaciones orbitales 16:9' },
+      { text: 'Analíticas completas: Visitas, clics WhatsApp y vCard' },
+      { text: 'Marca 100% Removida (Tu propia identidad blanca)', highlight: true },
+      { text: 'IA Copiloto con prioridad en fila (Fast-lane)' },
+      { text: 'Soporte prioritario y actualizaciones continuas' },
+    ],
+  },
+  max: {
+    id: 'max',
+    name: 'Plan Max',
+    badge: '🟣 Plan Max',
+    tagline: 'Poder y volumen ilimitado para líderes y agencias',
+    limits: {
+      cards: 'unlimited',
+      cvs: 'unlimited',
+      presentations: 'unlimited',
+      hasWatermark: false,
+      analyticsLevel: 'advanced',
+      aiTier: 'top_nim',
+    },
+    monthly: {
+      priceClp: 8990,
+      priceUsd: 10,
+      intervalText: 'facturado cada mes',
+      monthlyEquivalentClp: 8990,
+      monthlyEquivalentUsd: 10,
+    },
+    semiannual: {
+      priceClp: 29990,
+      priceUsd: 33,
+      intervalText: 'facturado cada 6 meses (~$4.990 CLP / mes)',
+      monthlyEquivalentClp: 4998,
+      monthlyEquivalentUsd: 5.5,
+      discountPercentage: 44,
+    },
+    features: [
+      { text: 'Tarjetas Digitales Ilimitadas para todos tus negocios', highlight: true },
+      { text: 'Currículums ATS Ilimitados sin restricciones', highlight: true },
+      { text: 'Presentaciones 16:9 Ilimitadas con diapositivas infinitas' },
+      { text: 'Panel de métricas avanzado y embudo de conversión' },
+      { text: 'Marca 100% Removida (Marca blanca absoluta)' },
+      { text: 'Modelos de IA tope de línea (NVIDIA NIM Llama 3.3 / DeepSeek)' },
+      { text: 'Soporte VIP directo y personalizaciones exclusivas' },
+    ],
+  },
+};
 
 export interface PlanConfig {
   id: string;
@@ -18,50 +167,32 @@ export interface PlanConfig {
   features: PlanFeature[];
 }
 
+/**
+ * Catálogo compatible hacia atrás para integraciones existentes
+ */
 export const PRICING_PLANS: Record<PlanInterval, PlanConfig> = {
   monthly: {
-    id: 'plan_monthly',
-    name: 'Plan Mensual Flexible',
-    priceClp: 2500,
-    priceUsd: 3,
-    intervalText: 'facturado cada mes',
-    monthlyEquivalentClp: 2500,
-    monthlyEquivalentUsd: 3,
+    id: 'plan_starter_monthly',
+    name: 'Plan Starter Mensual',
+    priceClp: PRICING_TIERS.starter.monthly.priceClp,
+    priceUsd: PRICING_TIERS.starter.monthly.priceUsd,
+    intervalText: PRICING_TIERS.starter.monthly.intervalText,
+    monthlyEquivalentClp: PRICING_TIERS.starter.monthly.monthlyEquivalentClp,
+    monthlyEquivalentUsd: PRICING_TIERS.starter.monthly.monthlyEquivalentUsd,
     trialDays: 3,
-    features: [
-      { text: '3 Días de Prueba Gratis (Sin ingresar tarjeta)' },
-      { text: 'Tarjetas Digitales Ilimitadas para todos tus negocios' },
-      { text: 'Botón directo para abrir chat de WhatsApp con tus clientes' },
-      { text: 'Código QR listo para imprimir en stickers o mostrar en tu celular' },
-      { text: 'Métricas y contador de visitas y clics en tiempo real' },
-      { text: 'Creador de Currículum en PDF listo para imprimir y postular' },
-      { text: 'Presentaciones cinemáticas en pantalla completa para propuestas' },
-      { text: 'Se ve impecable al compartir en WhatsApp, Facebook e Instagram' },
-      { text: 'Sin marcas de agua ni restricciones en tus tarjetas' },
-    ],
+    features: PRICING_TIERS.starter.features,
   },
   semiannual: {
-    id: 'plan_semiannual',
-    name: 'Plan Semestral Recomendado',
-    priceClp: 6000,
-    priceUsd: 7,
-    intervalText: 'facturado cada 6 meses ($1.000 CLP / mes)',
-    monthlyEquivalentClp: 1000,
-    monthlyEquivalentUsd: 1.16,
-    discountPercentage: 60,
+    id: 'plan_starter_semiannual',
+    name: 'Plan Starter Semestral',
+    priceClp: PRICING_TIERS.starter.semiannual.priceClp,
+    priceUsd: PRICING_TIERS.starter.semiannual.priceUsd,
+    intervalText: PRICING_TIERS.starter.semiannual.intervalText,
+    monthlyEquivalentClp: PRICING_TIERS.starter.semiannual.monthlyEquivalentClp,
+    monthlyEquivalentUsd: PRICING_TIERS.starter.semiannual.monthlyEquivalentUsd,
+    discountPercentage: PRICING_TIERS.starter.semiannual.discountPercentage,
     trialDays: 3,
-    features: [
-      { text: '🔥 Ahorras el 60% frente al pago mensual', highlight: true },
-      { text: '3 Días de Prueba Gratis (Sin ingresar tarjeta)' },
-      { text: 'Tarjetas Digitales Ilimitadas para todos tus negocios' },
-      { text: 'Botón directo para abrir chat de WhatsApp con tus clientes' },
-      { text: 'Código QR listo para imprimir en stickers o mostrar en tu celular' },
-      { text: 'Métricas completas de visitas y clics con analíticas en tiempo real' },
-      { text: 'Creador de Currículum en PDF listo para imprimir y postular' },
-      { text: 'Presentaciones cinemáticas en pantalla completa para propuestas' },
-      { text: 'Tu propia marca 100% limpia (Sin logos de INDI)' },
-      { text: 'Soporte prioritario y actualizaciones continuas' },
-    ],
+    features: PRICING_TIERS.starter.features,
   },
 };
 

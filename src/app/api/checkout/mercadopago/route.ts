@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { preferenceClient, isMercadoPagoConfigured } from '@/shared/lib/mercadopago';
-import { PRICING_PLANS, PlanInterval } from '@/entities/subscription/types';
+import { PRICING_TIERS, PRICING_PLANS, PlanInterval, PlanTier } from '@/entities/subscription/types';
 import { createCheckoutPreferenceSchema } from '@/entities/subscription/schemas';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 
@@ -26,14 +26,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { planInterval } = parsed.data;
-    const plan = PRICING_PLANS[planInterval];
-    if (!plan) {
-      return NextResponse.json(
-        { success: false, error: 'Configuración de plan no encontrada.' },
-        { status: 400 }
-      );
-    }
+    const { tier, planInterval } = parsed.data;
+    const tierConfig = PRICING_TIERS[tier] || PRICING_TIERS.pro;
+    const cycleDetail = tierConfig[planInterval];
+    
+    const planName = `${tierConfig.name} (${planInterval === 'semiannual' ? 'Semestral' : 'Mensual'})`;
+    const planPrice = cycleDetail.priceClp;
+    const planDescription = `${tierConfig.tagline} • ${cycleDetail.intervalText}`;
 
     const origin = req.nextUrl.origin || 'http://localhost:3000';
 
@@ -41,7 +40,7 @@ export async function POST(req: NextRequest) {
     if (!isMercadoPagoConfigured()) {
       return NextResponse.json({
         success: true,
-        checkoutUrl: `${origin}/checkout/success?plan=${planInterval}&demo=true`,
+        checkoutUrl: `${origin}/checkout/success?tier=${tier}&plan=${planInterval}&demo=true`,
         preferenceId: `pref_mock_${Date.now()}`,
         mode: 'demo_fallback',
       });
@@ -52,34 +51,35 @@ export async function POST(req: NextRequest) {
       body: {
         items: [
           {
-            id: plan.id,
-            title: `INDI Membresía: ${plan.name}`,
-            description: `Acceso total a Tarjetas Digitales, Métricas, CV y Presentaciones en Soyindi (${plan.intervalText})`,
+            id: `plan_${tier}_${planInterval}`,
+            title: `INDI: ${planName}`,
+            description: planDescription,
             quantity: 1,
-            unit_price: plan.priceClp,
+            unit_price: planPrice,
             currency_id: 'CLP',
           },
         ],
         back_urls: {
-          success: `${origin}/checkout/success?plan=${planInterval}`,
+          success: `${origin}/checkout/success?tier=${tier}&plan=${planInterval}`,
           failure: `${origin}/pricing?status=failure`,
           pending: `${origin}/pricing?status=pending`,
         },
         auto_return: 'approved',
         metadata: {
           user_id: userId,
+          plan_tier: tier,
           plan_interval: planInterval,
-          amount_clp: plan.priceClp,
+          amount_clp: planPrice,
         },
-        external_reference: `indi_${userId}_${planInterval}_${Date.now()}`,
-        statement_descriptor: 'SOYINDI PRO',
+        external_reference: `indi_${userId}_${tier}_${planInterval}_${Date.now()}`,
+        statement_descriptor: 'SOYINDI',
       },
     });
 
     const checkoutUrl =
       preferenceResponse.init_point ||
       preferenceResponse.sandbox_init_point ||
-      `${origin}/checkout/success?plan=${planInterval}`;
+      `${origin}/checkout/success?tier=${tier}&plan=${planInterval}`;
 
     return NextResponse.json({
       success: true,

@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
 export const createCheckoutPreferenceSchema = z.object({
-  planInterval: z.enum(['monthly', 'semiannual'], {
-    message: 'El plan debe ser monthly o semiannual',
-  }),
+  tier: z.enum(['starter', 'pro', 'max']).default('pro'),
+  planInterval: z.enum(['monthly', 'semiannual']).default('semiannual'),
 });
 
 export type CreateCheckoutPreferenceInput = z.infer<typeof createCheckoutPreferenceSchema>;

@@ -7,11 +7,14 @@ import { PRICING_PLANS } from '@/entities/subscription/types';
 
 describe('Mercado Pago Integration & Schema Contracts', () => {
   it('validates checkout preference input correctly', () => {
-    const validMonthly = createCheckoutPreferenceSchema.safeParse({ planInterval: 'monthly' });
+    const validMonthly = createCheckoutPreferenceSchema.safeParse({ tier: 'starter', planInterval: 'monthly' });
     expect(validMonthly.success).toBe(true);
 
-    const validSemiannual = createCheckoutPreferenceSchema.safeParse({ planInterval: 'semiannual' });
+    const validSemiannual = createCheckoutPreferenceSchema.safeParse({ tier: 'pro', planInterval: 'semiannual' });
     expect(validSemiannual.success).toBe(true);
+
+    const validMax = createCheckoutPreferenceSchema.safeParse({ tier: 'max', planInterval: 'semiannual' });
+    expect(validMax.success).toBe(true);
 
     const invalidPlan = createCheckoutPreferenceSchema.safeParse({ planInterval: 'annual' });
     expect(invalidPlan.success).toBe(false);

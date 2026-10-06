@@ -1502,3 +1502,23 @@ Inspirado en la investigación de sistemas distribuidos y redes de afiliados PLG
 - **Bloqueo Atómico de Mutaciones**: Todas las Server Actions de persistencia (`upsertCardAction`, `upsertSmartCvAction`, `upsertPresentationAction`) validan el derecho de acceso antes de escribir en la base de datos.
 - **Aislamiento Read-Only Garantizado**: Los usuarios con período vencido conservan la lectura de su panel y sus recursos públicos para evitar rotura de enlaces de networking, pero no pueden alterar ni generar nuevos ítems sin regularizar su membresía por $2.500 CLP.
 
+---
+
+## 29. Matriz Comercial de Suscripciones: "El Semestre Irresistible" (Starter, Pro, Max) (2026)
+
+### 29.1 Arquitectura de Pricing & Packaging Multi-Tier
+La plataforma implementa una jerarquía comercial de 3 niveles escalonados definida en `src/entities/subscription/types.ts` (`PRICING_TIERS`):
+1. **Plan Starter (🟢)**:
+   - **Precios**: $2.500 CLP/mes o $6.000 CLP/semestre ($1.000 CLP/mes, 60% de ahorro).
+   - **Cuotas**: Hasta 3 perfiles de tarjetas, 1 currículum base, hasta 2 presentaciones 16:9, analíticas básicas y marca de agua sutil en footer.
+2. **Plan Pro (🔵 Recomendado)**:
+   - **Precios**: $4.990 CLP/mes o $15.000 CLP/semestre ($2.500 CLP/mes, 50% de ahorro).
+   - **Cuotas**: Hasta 10 perfiles de tarjetas, hasta 5 versiones de Smart CV con auditoría ATS, hasta 10 presentaciones orbitales, analíticas completas (WhatsApp y vCard), 100% marca blanca y copiloto IA en Fast-lane.
+3. **Plan Max (🟣)**:
+   - **Precios**: $8.990 CLP/mes o $29.990 CLP/semestre (~$4.990 CLP/mes, 44% de ahorro).
+   - **Cuotas**: Tarjetas, Smart CV y Presentaciones ilimitadas, panel de embudo avanzado, modelos de frontera NVIDIA NIM (Llama 3.3 / DeepSeek) y soporte VIP.
+
+### 29.2 Integración Transaccional y Liquidaciones de Afiliados
+- **Contratos Zod**: Route Handlers de checkout (`/api/checkout/mercadopago`) validan `{ tier, planInterval }`, creando preferencias dinámicas con Mercado Pago SDK v2.
+- **Atribución de Comisiones (25% CLP)**: El webhook IPN liquida la comisión directamente sobre el monto real cobrado ($1.500 CLP en Starter Semestral, $3.750 CLP en Pro Semestral, $7.497 CLP en Max Semestral).
+
