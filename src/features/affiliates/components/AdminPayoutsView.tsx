@@ -233,12 +233,47 @@ export function AdminPayoutsView({
                             <div className="text-[11px] text-zinc-400 font-mono">{ref.referredUserEmail}</div>
                           </td>
 
-                          {/* Anfitrión / Código */}
+                          {/* Anfitrión / Código y Datos Bancarios */}
                           <td className="py-3.5 px-4">
                             <div className="font-medium text-cyan-300 flex items-center gap-1.5">
                               <span>@{ref.referrerCode}</span>
                             </div>
                             <div className="text-[11px] text-zinc-400">{ref.referrerName}</div>
+                            
+                            {/* Estado y detalle de cuenta bancaria */}
+                            <div className="mt-1 pt-1 border-t border-white/5">
+                              {ref.referrerBankAccount ? (
+                                <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-300">
+                                  <Building2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                                  <span className="truncate max-w-[180px]">
+                                    {ref.referrerBankAccount.bankName} • {ref.referrerBankAccount.accountType}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const b = ref.referrerBankAccount!;
+                                      const text = `Titular: ${b.holderName}\nRUT: ${b.rut}\nBanco: ${b.bankName}\nTipo: ${b.accountType}\nCuenta: ${b.accountNumber}`;
+                                      navigator.clipboard.writeText(text);
+                                      setCopiedAccount(ref.referrerId);
+                                      setTimeout(() => setCopiedAccount(null), 2500);
+                                    }}
+                                    className="p-1 rounded hover:bg-white/10 text-zinc-400 hover:text-white cursor-pointer ml-auto"
+                                    title="Copiar datos bancarios del anfitrión"
+                                  >
+                                    {copiedAccount === ref.referrerId ? (
+                                      <Check className="w-3 h-3 text-emerald-400" />
+                                    ) : (
+                                      <Copy className="w-3 h-3" />
+                                    )}
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3 text-amber-500/70" />
+                                  <span>Sin datos bancarios</span>
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           {/* Estado Membresía */}

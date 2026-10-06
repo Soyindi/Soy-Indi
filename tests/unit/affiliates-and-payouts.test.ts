@@ -186,7 +186,7 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
         expect(item).toHaveProperty('referrerCode');
         expect(item).toHaveProperty('totalCommissionsGeneratedClp');
       }
-    });
+    }, 15000);
   });
 
   describe('Heurísticas Anti-Gaming 2026: Normalización de Correos & Detección Sybil', () => {

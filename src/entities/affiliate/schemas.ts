@@ -260,6 +260,7 @@ export interface AdminReferralAuditItem {
   referrerName: string;
   referrerEmail: string;
   referrerCode: string;
+  referrerBankAccount?: AffiliateBankAccountInput | null;
   totalCommissionsGeneratedClp: number;
 }
 

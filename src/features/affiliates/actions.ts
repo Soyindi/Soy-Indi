@@ -661,21 +661,39 @@ export async function getAdminReferralsAuditAction(userId?: string): Promise<{
       commissionsByBuyer.set(comm.buyerUserId, current + comm.amountClp);
     }
 
-    // Mapear referentes para no hacer queries en N+1
+    // Mapear referentes y sus datos bancarios de manera eficiente sin N+1
     const referrerIds = Array.from(new Set(referredUsers.map((u) => u.referredBy).filter(Boolean))) as string[];
     const referrersMap = new Map<string, any>();
+    const bankAccountsMap = new Map<string, any>();
 
-    for (const refId of referrerIds) {
-      const refData = await db.query.user.findFirst({
-        where: eq(user.id, refId),
-      });
-      if (refData) {
-        referrersMap.set(refId, refData);
+    if (referrerIds.length > 0) {
+      const [allReferrerUsers, allBankAccounts] = await Promise.all([
+        db.query.user.findMany(),
+        db.query.affiliateBankAccounts.findMany(),
+      ]);
+
+      for (const u of allReferrerUsers) {
+        if (referrerIds.includes(u.id)) {
+          referrersMap.set(u.id, u);
+        }
+      }
+
+      for (const b of allBankAccounts) {
+        if (referrerIds.includes(b.userId)) {
+          bankAccountsMap.set(b.userId, {
+            bankName: b.bankName as any,
+            accountType: b.accountType as any,
+            accountNumber: b.accountNumber,
+            rut: b.rut,
+            holderName: b.holderName,
+          });
+        }
       }
     }
 
     const auditList: AdminReferralAuditItem[] = referredUsers.map((u) => {
       const referrer = u.referredBy ? referrersMap.get(u.referredBy) : null;
+      const bankAccount = u.referredBy ? bankAccountsMap.get(u.referredBy) || null : null;
       return {
         referredUserId: u.id,
         referredUserName: u.name || 'Usuario sin nombre',
@@ -687,6 +705,7 @@ export async function getAdminReferralsAuditAction(userId?: string): Promise<{
         referrerName: referrer?.name || 'Afiliado desconocido',
         referrerEmail: referrer?.email || '',
         referrerCode: referrer?.referralCode || 'sin-codigo',
+        referrerBankAccount: bankAccount,
         totalCommissionsGeneratedClp: commissionsByBuyer.get(u.id) || 0,
       };
     });
