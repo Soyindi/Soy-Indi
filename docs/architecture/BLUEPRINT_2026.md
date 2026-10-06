@@ -1474,17 +1474,14 @@ graph TD
 6. **Contratos Zod Estrictos (`src/entities/affiliate/referral-cookie.ts`)**:
    - Sanitización de formato (`formatReferralCode`), límite de longitud (3 a 24 caracteres), y bloqueo de códigos reservados del sistema (`isReservedReferralCode`).
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+### 27.3 Hardening de Seguridad Distribuida & Anti-Gaming (Auditoría Arquitectura Afiliados 2026)
+Inspirado en la investigación de sistemas distribuidos y redes de afiliados PLG Serverless (*Arquitectura Afiliados SaaS Serverless.md*):
+1. **Validación Criptográfica de Webhooks `x-signature` (HMAC-SHA256)**:
+   - En `src/app/api/webhooks/mercadopago/route.ts`, la ingestión de notificaciones valida la cabecera `x-signature` (`ts=[timestamp],v1=[hash]`) confrontándola con `id:[dataId];request-id:[requestId];ts:[ts];` mediante `verifyMercadoPagoWebhookSignature` con comparación en tiempo constante (`crypto.timingSafeEqual`) contra ataques de temporización.
+2. **Heurística Anti-Gaming y Prevención de Redes Sybil**:
+   - `normalizeEmailForAntiGaming` neutraliza la creación de cuentas de auto-referido mediante sub-direccionamiento (`+alias`) y eliminación de puntos en dominios Google (`gmail.com`, `googlemail.com`). Tanto `attributeReferralAction` como el hook server-side `databaseHooks.user.create.before` de Better-Auth abortan la atribución si las direcciones normalizadas del anfitrión y el invitado coinciden.
+3. **Digestión Asíncrona de Reembolsos y Contracargos**:
+   - La pasarela maneja eventos de reversión (`status: 'refunded' | 'charged_back'`), actualizando `payments_history` e invocando `processAffiliateRefundOnPayment` para revocar comisiones sin destruir la auditabilidad del registro.
+4. **Optimización de Índices en SQLite (Drizzle ORM)**:
+   - La tabla `affiliate_commissions` incorpora índices dedicados sobre sus claves foráneas (`affiliate_commissions_buyer_user_idx` y `affiliate_commissions_payment_idx`), asegurando que las consultas de agregación y auditoría en `/admin` se ejecuten en tiempo $O(\log n)$ sin table scans.
 

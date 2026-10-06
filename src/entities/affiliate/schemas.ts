@@ -95,6 +95,33 @@ export function formatChileanRut(rutString: string): string {
 }
 
 /**
+ * Normaliza una dirección de correo electrónico para prevenir ataques Sybil y granjas
+ * de auto-referidos básicas (ignora puntos en Gmail/Googlemail y sub-direccionamiento "+alias")
+ */
+export function normalizeEmailForAntiGaming(rawEmail: string): string {
+  if (!rawEmail || typeof rawEmail !== 'string') return '';
+  const trimmed = rawEmail.trim().toLowerCase();
+  const atIndex = trimmed.lastIndexOf('@');
+  if (atIndex === -1) return trimmed;
+
+  let local = trimmed.slice(0, atIndex);
+  const domain = trimmed.slice(atIndex + 1);
+
+  // Manejo de dominios de Google (gmail.com, googlemail.com)
+  if (domain === 'gmail.com' || domain === 'googlemail.com') {
+    // Quitar subdireccionamiento +algo
+    local = local.split('+')[0];
+    // Quitar puntos
+    local = local.replace(/\./g, '');
+    return `${local}@gmail.com`;
+  }
+
+  // Otros dominios: quitar sufijo '+' si existe
+  local = local.split('+')[0];
+  return `${local}@${domain}`;
+}
+
+/**
  * Schema de formulario para datos bancarios de abono quincenal
  */
 export const affiliateBankAccountSchema = z.object({
@@ -201,7 +228,7 @@ export interface AffiliateOverview {
   recentCommissions: {
     id: string;
     amountClp: number;
-    status: 'pending' | 'payable' | 'paid';
+    status: 'pending' | 'payable' | 'paid' | 'refunded' | 'charged_back';
     createdAt: Date;
     paidAt?: Date | null;
   }[];

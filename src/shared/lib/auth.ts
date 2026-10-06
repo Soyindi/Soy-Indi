@@ -58,11 +58,20 @@ export const auth = betterAuth({
 
               if (refCode) {
                 const { eq } = await import('drizzle-orm');
+                const { normalizeEmailForAntiGaming } = await import('@/entities/affiliate/schemas');
                 const referrer = await db.query.user.findFirst({
                   where: eq(schema.user.referralCode, refCode),
                 });
                 if (referrer?.id) {
-                  referredBy = referrer.id;
+                  // Guardrail Anti-Gaming 2026: Comprobar que no sea auto-referido con correos alias
+                  const isSameEmail =
+                    userData.email &&
+                    referrer.email &&
+                    normalizeEmailForAntiGaming(userData.email) === normalizeEmailForAntiGaming(referrer.email);
+
+                  if (!isSameEmail) {
+                    referredBy = referrer.id;
+                  }
                 }
               }
             } catch {

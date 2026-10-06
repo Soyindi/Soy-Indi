@@ -188,6 +188,75 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
       }
     });
   });
+
+  describe('Heurísticas Anti-Gaming 2026: Normalización de Correos & Detección Sybil', () => {
+    it('normaliza correctamente direcciones Gmail ignorando puntos y sub-direccionamiento +alias', async () => {
+      const { normalizeEmailForAntiGaming } = await import('@/entities/affiliate/schemas');
+
+      // Variantes de Gmail del mismo usuario
+      expect(normalizeEmailForAntiGaming('matias.riquelme@gmail.com')).toBe('matiasriquelme@gmail.com');
+      expect(normalizeEmailForAntiGaming('m.a.t.i.a.s.riquelme+test@gmail.com')).toBe('matiasriquelme@gmail.com');
+      expect(normalizeEmailForAntiGaming('matiasriquelme+afiliados123@gmail.com')).toBe('matiasriquelme@gmail.com');
+      expect(normalizeEmailForAntiGaming('matias.riquelme@googlemail.com')).toBe('matiasriquelme@gmail.com');
+
+      // Otros dominios corporativos
+      expect(normalizeEmailForAntiGaming('contacto+marketing@soyindi.cl')).toBe('contacto@soyindi.cl');
+      expect(normalizeEmailForAntiGaming('ceo@startup.cl')).toBe('ceo@startup.cl');
+    });
+  });
+
+  describe('Seguridad en Webhooks: Verificación Criptográfica x-signature (HMAC-SHA256)', () => {
+    it('valida firmas HMAC válidas de Mercado Pago y rechaza payloads manipulados o spoofing', async () => {
+      const { verifyMercadoPagoWebhookSignature } = await import('@/shared/lib/mercadopago');
+      const crypto = await import('crypto');
+
+      const testSecret = 'test_webhook_secret_key_indi_2026';
+      const dataId = '99887766';
+      const requestId = 'req-abc-123';
+      const ts = '1710000000';
+
+      const manifest = `id:${dataId};request-id:${requestId};ts:${ts};`;
+      const validHash = crypto.createHmac('sha256', testSecret).update(manifest).digest('hex');
+      const validSignatureHeader = `ts=${ts},v1=${validHash}`;
+
+      // 1. Firma válida
+      const isValid = verifyMercadoPagoWebhookSignature({
+        xSignatureHeader: validSignatureHeader,
+        xRequestIdHeader: requestId,
+        dataId,
+        webhookSecret: testSecret,
+      });
+      expect(isValid).toBe(true);
+
+      // 2. Firma alterada / falsa
+      const isFakeValid = verifyMercadoPagoWebhookSignature({
+        xSignatureHeader: `ts=${ts},v1=deadbeefdeadbeefdeadbeefdeadbeef`,
+        xRequestIdHeader: requestId,
+        dataId,
+        webhookSecret: testSecret,
+      });
+      expect(isFakeValid).toBe(false);
+
+      // 3. Header ausente
+      const isMissingValid = verifyMercadoPagoWebhookSignature({
+        xSignatureHeader: null,
+        xRequestIdHeader: requestId,
+        dataId,
+        webhookSecret: testSecret,
+      });
+      expect(isMissingValid).toBe(false);
+
+      // 4. Modo sin secreto configurado (permisivo seguro)
+      const isNoSecretValid = verifyMercadoPagoWebhookSignature({
+        xSignatureHeader: null,
+        xRequestIdHeader: null,
+        dataId,
+        webhookSecret: '',
+      });
+      expect(isNoSecretValid).toBe(true);
+    });
+  });
 });
+
 
 

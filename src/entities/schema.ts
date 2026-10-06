@@ -240,13 +240,15 @@ export const affiliateCommissions = sqliteTable('affiliate_commissions', {
   buyerUserId: text('buyer_user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
   paymentId: text('payment_id').references(() => paymentsHistory.id, { onDelete: 'cascade' }).notNull(),
   amountClp: integer('amount_clp').notNull(),
-  status: text('status', { enum: ['pending', 'payable', 'paid'] }).default('pending').notNull(),
+  status: text('status', { enum: ['pending', 'payable', 'paid', 'refunded', 'charged_back'] }).default('pending').notNull(),
   paidAt: integer('paid_at', { mode: 'timestamp_ms' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
 }, (table) => [
   index('affiliate_commissions_affiliate_user_idx').on(table.affiliateUserId),
+  index('affiliate_commissions_buyer_user_idx').on(table.buyerUserId),
+  index('affiliate_commissions_payment_idx').on(table.paymentId),
   index('affiliate_commissions_status_idx').on(table.status),
 ]);
 

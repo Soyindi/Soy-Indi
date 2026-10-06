@@ -117,7 +117,8 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 - **Analíticas de Conversión Pro en Vivo**: Desglose transparente en el panel de afiliados: usuarios en prueba (`TRIAL`), convertidos a Plan Pro (`ACTIVE`), tasa de conversión (%) y saldo acumulado por pagar.
 - **Experiencia de Bienvenida Contextual (`ReferralWelcomeBanner`)**: Detección del referente y despliegue de badge visual de confirmación de acceso VIP en el Onboarding Hub (`/start`) y formulario de registro (`/login`).
 - **Abono Quincenal a Cuentas Chilenas**: Módulo de datos bancarios para transferencia directa a Cuenta RUT, Cuenta Vista, Corriente o Ahorro en los principales bancos de Chile, con validador de RUT algoritmo Módulo 11.
-- **Panel de Administración (`/admin`)**: Vista protegida por rol (`role = 'admin'`) con consolidado quincenal de liquidaciones pendientes (días 1 y 15), detalle bancario con copia en 1 clic y confirmación de pago transferido.
+- **Seguridad Criptográfica & Anti-Gaming**: Verificación de firmas HMAC-SHA256 (`x-signature`) en webhooks de Mercado Pago, heurística anti-auto-referidos con normalización de correos (`+alias` y puntos en Gmail) y reversión atómica de comisiones ante reembolsos/contracargos.
+- **Panel de Administración (`/admin`)**: Vista dual con auditoría en tiempo real de usuarios referidos (`TRIAL` y `ACTIVE`), consolidado quincenal de liquidaciones pendientes (días 1 y 15), detalle bancario con copia en 1 clic y confirmación de pago transferido.
 
 ---
 

@@ -29,7 +29,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true, mode: 'demo_fallback' }, { status: 200 });
     }
 
-    // 1. Obtener la información del pago directamente de Mercado Pago (Anti-Spoofing)
+    // 1. Verificación criptográfica de firma x-signature (HMAC-SHA256) si está configurada
+    const { verifyMercadoPagoWebhookSignature } = await import('@/shared/lib/mercadopago');
+    const xSignature = req.headers.get('x-signature');
+    const xRequestId = req.headers.get('x-request-id');
+
+    const isSignatureValid = verifyMercadoPagoWebhookSignature({
+      xSignatureHeader: xSignature,
+      xRequestIdHeader: xRequestId,
+      dataId: String(paymentId),
+    });
+
+    if (!isSignatureValid) {
+      console.warn(`[Webhook Seguridad] Firma HMAC inválida para pago ${paymentId}`);
+      return NextResponse.json({ error: 'Firma de webhook inválida' }, { status: 401 });
+    }
+
+    // 2. Obtener la información del pago directamente de Mercado Pago (Anti-Spoofing oficial)
     const payment = await paymentClient.get({ id: String(paymentId) });
 
     if (!payment) {
@@ -44,7 +60,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true, warning: 'Sin user_id en metadatos' }, { status: 200 });
     }
 
-    // 2. Si el pago fue aprobado, extender o activar suscripción
+    // 3. Si el pago fue aprobado, extender o activar suscripción
     if (status === 'approved') {
       const durationDays = planInterval === 'semiannual' ? 180 : 30;
       const now = new Date();
@@ -86,6 +102,15 @@ export async function POST(req: NextRequest) {
         targetUserId,
         Math.round(transaction_amount || 0)
       );
+    } else if (status === 'refunded' || status === 'charged_back') {
+      // 4. Si el pago fue reembolsado o presenta contracargo, revertir comisión y actualizar historial
+      await db
+        .update(paymentsHistory)
+        .set({ status })
+        .where(eq(paymentsHistory.id, String(paymentId)));
+
+      const { processAffiliateRefundOnPayment } = await import('@/features/affiliates/actions');
+      await processAffiliateRefundOnPayment(String(paymentId), status as 'refunded' | 'charged_back');
     }
 
     return NextResponse.json({ success: true, paymentId, status }, { status: 200 });

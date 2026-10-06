@@ -376,6 +376,7 @@ export async function getReferralPartnerInfoAction(rawCode?: string | null): Pro
 export async function attributeReferralAction(newUserId: string, rawReferralCode: string) {
   try {
     const { sanitizeReferralCode } = await import('@/entities/affiliate/referral-cookie');
+    const { normalizeEmailForAntiGaming } = await import('@/entities/affiliate/schemas');
     const referralCode = sanitizeReferralCode(rawReferralCode);
     if (!referralCode || !newUserId) return;
 
@@ -392,12 +393,24 @@ export async function attributeReferralAction(newUserId: string, rawReferralCode
       where: eq(user.referralCode, referralCode),
     });
 
-    if (referrer && referrer.id !== newUserId) {
-      await db
-        .update(user)
-        .set({ referredBy: referrer.id })
-        .where(eq(user.id, newUserId));
+    if (!referrer || referrer.id === newUserId) {
+      return;
     }
+
+    // Heurística Anti-Gaming 2026: Detección de auto-referidos por normalización de correo
+    if (currentUser.email && referrer.email) {
+      const normalizedCurrent = normalizeEmailForAntiGaming(currentUser.email);
+      const normalizedReferrer = normalizeEmailForAntiGaming(referrer.email);
+      if (normalizedCurrent === normalizedReferrer) {
+        console.warn(`[Anti-Gaming] Intento de auto-referido bloqueado para usuario ${newUserId} con email derivado ${currentUser.email}`);
+        return;
+      }
+    }
+
+    await db
+      .update(user)
+      .set({ referredBy: referrer.id })
+      .where(eq(user.id, newUserId));
   } catch (err) {
     console.error('Error atribuyendo referido:', err);
   }
@@ -418,9 +431,24 @@ export async function processAffiliateCommissionOnPayment(paymentId: string, buy
     }
 
     const referrerId = buyer.referredBy;
+
+    // Protección anti-auto-comisión si las cuentas son idénticas
+    if (referrerId === buyerUserId) {
+      return;
+    }
+
     const commissionClp = Math.round(transactionAmount * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
 
     if (commissionClp <= 0) return;
+
+    // Idempotencia: Verificar si ya existe comisión registrada para este paymentId
+    const existingCommission = await db.query.affiliateCommissions.findFirst({
+      where: eq(affiliateCommissions.paymentId, paymentId),
+    });
+
+    if (existingCommission) {
+      return;
+    }
 
     await db.insert(affiliateCommissions).values({
       affiliateUserId: referrerId,
@@ -432,6 +460,35 @@ export async function processAffiliateCommissionOnPayment(paymentId: string, buy
     });
   } catch (err) {
     console.error('Error generando comisión de afiliado:', err);
+  }
+}
+
+/**
+ * Reversión de comisión ante reembolsos o contracargos (Refunds / Chargebacks de Mercado Pago)
+ */
+export async function processAffiliateRefundOnPayment(paymentId: string, reason: 'refunded' | 'charged_back' = 'refunded') {
+  try {
+    const existing = await db.query.affiliateCommissions.findFirst({
+      where: eq(affiliateCommissions.paymentId, paymentId),
+    });
+
+    if (!existing) return;
+
+    // Si ya está marcada como reembolsada o contra-cargo, no hacer nada
+    if (existing.status === 'refunded' || existing.status === 'charged_back') {
+      return;
+    }
+
+    await db
+      .update(affiliateCommissions)
+      .set({
+        status: reason,
+      })
+      .where(eq(affiliateCommissions.id, existing.id));
+
+    console.info(`[Affiliate Refund] Comisión ${existing.id} revertida con estado '${reason}' para pago ${paymentId}`);
+  } catch (err) {
+    console.error('Error procesando reversión de comisión:', err);
   }
 }
 
