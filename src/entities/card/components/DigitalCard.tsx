@@ -1,6 +1,5 @@
 'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SmartParticles } from '@/features/visual-effects/SmartParticles';
 import { 
@@ -19,6 +18,7 @@ import dynamic from 'next/dynamic';
 import { downloadVCard } from '@/shared/lib/vcard';
 import { getAccessibleTextColor } from '@/shared/lib/colorContrast';
 import { trackCardEventAction } from '@/features/card-builder/analytics-actions';
+import { trackResourceView } from '@/shared/lib/telemetryClient';
 
 // Importar QRCode dinámicamente para SSR seguro
 const QRCodeSVG = dynamic(
@@ -70,6 +70,13 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const [showQR, setShowQR] = useState(false);
   const [copied, setCopied] = useState(false);
   const [vcardSaved, setVcardSaved] = useState(false);
+
+  // Telemetría pasiva desacoplada del render SSR
+  useEffect(() => {
+    if (card.slug && card.slug !== 'demo') {
+      trackResourceView({ slug: card.slug, entityType: 'card' });
+    }
+  }, [card.slug]);
 
   const finish = card.themeConfig?.cardFinish || 'classic';
   const texture = card.themeConfig?.surfaceTexture || 'radial-glow';

@@ -70,6 +70,10 @@ src/
    - Toda la oferta de planes se rige por el catálogo canónico `PRICING_TIERS` en `@/entities/subscription/types` con 3 niveles escalonados (**Starter 🟢**, **Pro 🔵 Recomendado**, **Max 🟣**) y facturación dual (Mensual / Semestral).
    - Los Route Handlers de checkout (`/api/checkout/mercadopago`) validan contratos Zod fuertemente tipados `{ tier, planInterval }` resolviendo precios en CLP ($2.500/$6.000 Starter, $4.990/$15.000 Pro, $8.990/$29.990 Max). Las comisiones de afiliados se liquidan atómicamente al 25% sobre el valor real cobrado.
    - **Cero Marcas de Agua en Todos los Planes (`hasWatermark: false`)**: Para certificar la máxima calidad y profesionalismo desde el nivel inicial, se suprime cualquier marca de agua invasiva o visible en los recursos generados (Tarjetas Digitales, Smart CV y Presentaciones), entregando un producto pulcro y de estándar corporativo sin restricciones cosméticas degradadas.
+12. **Gobernanza de Rendimiento Perimetral (ISR 60s & Telemetría Desacoplada):**
+   - Las rutas públicas dinámicas (`/c/[slug]`, `/p/[slug]`, `/cv/[slug]`) deben implementar regeneración estática incremental (`export const revalidate = 60;`) para servirse directamente desde el CDN perimetral, reduciendo en un 99% el consumo de funciones serverless en Vercel.
+   - Se prohíbe terminantemente ejecutar escrituras sincrónicas en base de datos (`UPDATE viewsCount`, `INSERT card_events`) dentro del renderizado de página. Toda telemetría de visualización se despacha de forma asíncrona mediante el Route Handler `/api/telemetry/view` consumido por `trackResourceView` (`navigator.sendBeacon` / `keepalive: true`) con deduplicación por sesión.
+
 
 
 ---

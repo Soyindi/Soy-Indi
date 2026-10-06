@@ -10,6 +10,8 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export const revalidate = 60;
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
@@ -128,25 +130,6 @@ export default async function PublicCardPage({ params }: PageProps) {
   });
 
   if (!card) notFound();
-
-  // Incrementar métricas de visitas reales y registrar evento atómico de telemetría en Turso (1 roundtrip)
-  try {
-    const { cardEvents } = await import('@/entities/schema');
-    await db.batch([
-      db
-        .update(cards)
-        .set({ viewsCount: sql`${cards.viewsCount} + 1` })
-        .where(eq(cards.id, card.id)),
-      db.insert(cardEvents).values({
-        cardId: card.id,
-        eventType: 'view',
-        source: 'direct',
-        device: 'mobile',
-      }),
-    ]);
-  } catch (err) {
-    console.error('Error actualizando contador de visitas:', err);
-  }
 
   return (
     <div className="relative min-h-screen pb-16 flex flex-col justify-between overflow-hidden">

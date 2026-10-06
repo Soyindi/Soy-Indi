@@ -1526,4 +1526,24 @@ La plataforma implementa una jerarquía comercial de 3 niveles escalonados defin
 - **Auditoría Técnica Integral**: Se auditó la coherencia entre las promesas comerciales de la matriz de planes y la ejecución técnica en el código. El sistema procesa los pagos con Mercado Pago SDK v2, valida suscripciones mediante `assertUserEntitlementAction`, protege recursos mediante multi-tenancy estricto (anti-IDOR) y garantiza cuotas balanceadas.
 - **Supresión de Marca de Agua en Plan Starter (`hasWatermark: false`)**: Para elevar la percepción de valor y entregar un producto de máxima categoría desde el nivel inicial, se abolió cualquier imposición de marca de agua en tarjetas, Smart CVs y presentaciones. Todos los planes disfrutan de una estética ejecutiva pulcra y profesional.
 
+---
+
+## 30. Blindaje del Free-Tier: Caché ISR Perimetral & Telemetría Desacoplada (2026)
+
+### 30.1 Diagnóstico del Cuello de Botella Serverless
+En el plan gratuito de Vercel Hobby, el límite no es el almacenamiento (Turso provee 9 GB), sino la cuota de **100.000 ejecuciones serverless mensuales**. Cuando las rutas públicas (`/c/[slug]`, `/p/[slug]`, `/cv/[slug]`) ejecutan mutaciones en base de datos (`UPDATE viewsCount`) dentro del renderizado, la página se vuelve forzosamente dinámica, consumiendo 1 invocación por cada visita.
+
+### 30.2 Arquitectura de Doble Capa: ISR 60s + Beacon API
+1. **Caché Perimetral Incremental (`revalidate = 60`)**:
+   - Las páginas públicas activan regeneración estática incremental perimetral.
+   - Si una tarjeta recibe 1.000 visitas en un minuto, el CDN de Vercel responde el HTML en <50ms desde la caché de borde, ejecutando solo **1 función serverless** en lugar de 1.000 (reducción del 99.9% en consumo de funciones).
+2. **Telemetría Asíncrona Desacoplada (`/api/telemetry/view` & `trackResourceView`)**:
+   - Las escrituras en base de datos se eliminaron del renderizado SSR.
+   - El cliente despacha la visita en segundo plano mediante `navigator.sendBeacon` o `fetch(keepalive: true)`.
+   - Protección anti-inflación en `sessionStorage` para deduplicar múltiples recargas en la misma sesión.
+3. **Estrategia de Medios WebP vs Cloudflare R2**:
+   - Actualmente, las fotos se comprimen en cliente con `compressImageClient` a WebP (<40 KB) y se persisten directamente como texto estructurado en Turso, soportando con holgura más de 150.000 usuarios activos.
+   - Cloudflare R2 permanece parametrizado en `.env.example` como un puerto modular de expansión para cuando la base de usuarios supere dicho umbral.
+
+
 

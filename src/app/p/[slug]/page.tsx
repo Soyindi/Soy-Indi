@@ -12,6 +12,8 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export const revalidate = 60;
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
@@ -86,16 +88,6 @@ export default async function PublicPresentationPage({ params }: PageProps) {
   });
 
   if (presentation) {
-    // Incrementar métricas de visitas reales de forma atómica en Turso
-    try {
-      await db
-        .update(presentations)
-        .set({ viewsCount: sql`${presentations.viewsCount} + 1` })
-        .where(eq(presentations.id, presentation.id));
-    } catch (err) {
-      console.error('Error actualizando contador de visitas de presentación:', err);
-    }
-
     const slides = (presentation.slidesData as PresentationSlide[]) || [];
     const theme = (presentation.themeSettings as PresentationTheme) || {
       id: 'orbital-dark',

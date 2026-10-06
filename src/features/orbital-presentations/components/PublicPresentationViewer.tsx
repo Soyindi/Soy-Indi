@@ -18,6 +18,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
+import { trackResourceView } from '@/shared/lib/telemetryClient';
 
 interface PublicPresentationViewerProps {
   title: string;
@@ -40,6 +41,13 @@ export function PublicPresentationViewer({
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  // Telemetría pasiva desacoplada de la ruta SSR
+  useEffect(() => {
+    if (slug && slug !== 'demo') {
+      trackResourceView({ slug, entityType: 'presentation' });
+    }
+  }, [slug]);
 
   const total = slides.length;
   const currentSlide = slides[currentSlideIndex] || slides[0];

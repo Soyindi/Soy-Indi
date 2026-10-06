@@ -14,7 +14,7 @@ interface PublicCvPageProps {
   }>;
 }
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: PublicCvPageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -90,16 +90,6 @@ export default async function PublicCvPage({ params }: PublicCvPageProps) {
         </Link>
       </div>
     );
-  }
-
-  // Incrementar telemetría de visitas del CV en el Edge
-  try {
-    await db
-      .update(smartCvs)
-      .set({ viewsCount: sql`${smartCvs.viewsCount} + 1` })
-      .where(eq(smartCvs.id, cvRecord.id));
-  } catch (err) {
-    console.error('Error incrementando viewsCount del CV:', err);
   }
 
   const cvData: CVFormValues = {

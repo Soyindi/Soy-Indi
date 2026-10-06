@@ -1,6 +1,5 @@
 'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CVFormValues } from '@/entities/cv/schemas';
 import { CvDocumentPreview } from '@/features/ai-smart-cv/components/CvDocumentPreview';
@@ -22,6 +21,7 @@ import {
   ZoomOut,
   Maximize2,
 } from 'lucide-react';
+import { trackResourceView } from '@/shared/lib/telemetryClient';
 
 interface PublicCvViewerProps {
   cv: CVFormValues;
@@ -35,6 +35,13 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
   const [copiedLink, setCopiedLink] = useState(false);
   const [pageFormat] = useState<'a4' | 'letter'>('a4');
   const [zoomLevel, setZoomLevel] = useState<number>(1);
+
+  // Telemetría pasiva desacoplada del render SSR
+  useEffect(() => {
+    if (slug && slug !== 'demo') {
+      trackResourceView({ slug, entityType: 'cv' });
+    }
+  }, [slug]);
 
   const handleZoomIn = () => {
     setZoomLevel((prev) => Math.min(1.25, Number((prev + 0.1).toFixed(2))));
