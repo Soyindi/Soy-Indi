@@ -114,6 +114,74 @@ export const affiliateBankAccountSchema = z.object({
 export type AffiliateBankAccountInput = z.infer<typeof affiliateBankAccountSchema>;
 
 /**
+ * Códigos reservados del sistema que no pueden ser reclamados como códigos de referido
+ */
+export const RESERVED_REFERRAL_CODES = new Set([
+  'admin',
+  'api',
+  'indi',
+  'soyindi',
+  'pro',
+  'vip',
+  'support',
+  'help',
+  'auth',
+  'login',
+  'signup',
+  'start',
+  'dashboard',
+  'pricing',
+  'checkout',
+  'billing',
+  'official',
+  'team',
+  'app',
+  'null',
+  'undefined',
+]);
+
+/**
+ * Normaliza y formatea un código de referido (minúsculas, alfanumérico y guiones)
+ */
+export function formatReferralCode(rawCode: string): string {
+  if (!rawCode) return '';
+  return rawCode
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 24);
+}
+
+/**
+ * Verifica si un código de referido está en la lista de términos reservados
+ */
+export function isReservedReferralCode(code: string): boolean {
+  if (!code) return false;
+  return RESERVED_REFERRAL_CODES.has(code.toLowerCase().trim());
+}
+
+/**
+ * Schema Zod estricto para validación de código de referido personalizado
+ */
+export const updateReferralCodeSchema = z.object({
+  referralCode: z
+    .string()
+    .min(3, 'El código debe tener al menos 3 caracteres.')
+    .max(24, 'El código no puede superar los 24 caracteres.')
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Solo se permiten letras minúsculas, números y guiones sencillos.')
+    .refine((code) => !isReservedReferralCode(code), {
+      message: 'Este código está reservado para el sistema.',
+    }),
+});
+
+export type UpdateReferralCodeInput = z.infer<typeof updateReferralCodeSchema>;
+
+/**
  * Resumen del estado de afiliado para el panel de usuario
  */
 export interface AffiliateOverview {
@@ -146,3 +214,4 @@ export interface AdminAffiliatePayoutItem {
   pendingCommissionsCount: number;
   bankAccount: AffiliateBankAccountInput | null;
 }
+

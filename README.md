@@ -111,7 +111,8 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 
 ### 8. 💸 Programa de Afiliados, Liquidaciones Quincenales y Panel Admin (`/admin`)
 - **25% de Comisión Recurrente en CLP**: Gana el 25% de comisión ($625 CLP mensual / $1.500 CLP semestral) por cada usuario que se registre con tu enlace (`indi.bio/start?ref=CODIGO`) y complete su suscripción en Mercado Pago.
-- **Atribución Automatizada**: Todo nuevo usuario registrado recibe automáticamente su código de recomendación único en Better-Auth (`user.referralCode`).
+- **Códigos Personalizables en Tiempo Real**: Todo usuario recibe un código automático al registrarse y puede personalizarlo en cualquier momento desde su panel por uno memorable (`indi.bio/start?ref=mi-marca`) con validación en vivo y protección de rutas del sistema.
+- **Atribución Automatizada & Sticky**: Atribución transparente en el onboarding mediante parámetros `?ref=CODIGO`, protegiendo de reescrituras al afiliado original.
 - **Abono Quincenal a Cuentas Chilenas**: Módulo de datos bancarios para transferencia directa a Cuenta RUT, Cuenta Vista, Corriente o Ahorro en los principales bancos de Chile, con validador de RUT algoritmo Módulo 11.
 - **Panel de Administración (`/admin`)**: Vista protegida por rol (`role = 'admin'`) con consolidado quincenal de liquidaciones pendientes (días 1 y 15), detalle bancario con copia en 1 clic y confirmación de pago transferido.
 
@@ -140,7 +141,8 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 160 tests pasando)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 254 tests pasando)
+│   ├── affiliates-and-payouts.test.ts # Módulo 11 RUT, códigos de referido y liquidaciones
 │   ├── auth-flow.test.ts        # Validación de flujo de login, Open Redirect guardrail y sanitización
 │   ├── oauth-multi-tenant.test.ts # Aislamiento multi-tenant y Google OAuth
 │   ├── card-schema.test.ts      # Validación Zod de tarjetas de presentación

@@ -3,7 +3,7 @@
 import { db } from '@/shared/api/db';
 import { user, affiliateBankAccounts, affiliateCommissions, paymentsHistory } from '@/entities/schema';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
-import { eq, desc, and, sql } from 'drizzle-orm';
+import { eq, desc, and, ne, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { 
   affiliateBankAccountSchema, 
@@ -11,8 +11,134 @@ import {
   AffiliateOverview,
   AdminAffiliatePayoutItem,
   AFFILIATE_COMMISSION_PERCENTAGE,
-  calculateNextPayoutDate
+  calculateNextPayoutDate,
+  formatReferralCode,
+  isReservedReferralCode,
+  updateReferralCodeSchema
 } from '@/entities/affiliate/schemas';
+
+export interface ReferralCodeAvailabilityResult {
+  available: boolean;
+  status: 'available' | 'taken' | 'reserved' | 'invalid';
+  message: string;
+}
+
+/**
+ * Comprueba disponibilidad de un código de referido personalizado en tiempo real
+ */
+export async function checkReferralCodeAvailabilityAction(
+  rawCode: string,
+  userId?: string
+): Promise<ReferralCodeAvailabilityResult> {
+  try {
+    const formatted = formatReferralCode(rawCode);
+
+    if (!formatted || formatted.length < 3) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'El código debe tener al menos 3 caracteres alfanuméricos.',
+      };
+    }
+
+    if (formatted.length > 24) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'El código no puede superar los 24 caracteres.',
+      };
+    }
+
+    if (isReservedReferralCode(formatted)) {
+      return {
+        available: false,
+        status: 'reserved',
+        message: 'Este código está reservado por el sistema.',
+      };
+    }
+
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const currentUserId = sessionResult.userId;
+
+    // Verificar colisión en la base de datos
+    const existing = await db.query.user.findFirst({
+      where: currentUserId
+        ? and(eq(user.referralCode, formatted), ne(user.id, currentUserId))
+        : eq(user.referralCode, formatted),
+    });
+
+    if (existing) {
+      return {
+        available: false,
+        status: 'taken',
+        message: 'Este código ya está en uso por otro miembro.',
+      };
+    }
+
+    return {
+      available: true,
+      status: 'available',
+      message: '¡Código disponible!',
+    };
+  } catch (error: any) {
+    console.error('Error comprobando disponibilidad de código de referido:', error);
+    return {
+      available: false,
+      status: 'invalid',
+      message: 'Error al comprobar disponibilidad del código.',
+    };
+  }
+}
+
+/**
+ * Actualiza el código de referido del usuario autenticado
+ */
+export async function updateReferralCodeAction(
+  newCode: string,
+  userId?: string
+): Promise<{ success: boolean; referralCode?: string; error?: string }> {
+  try {
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: 'Debes iniciar sesión para personalizar tu código.' };
+    }
+    const currentUserId = sessionResult.userId;
+
+    const formatted = formatReferralCode(newCode);
+    const validation = updateReferralCodeSchema.safeParse({ referralCode: formatted });
+
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error.issues[0]?.message || 'Código de referido inválido.',
+      };
+    }
+
+    const targetCode = validation.data.referralCode;
+
+    // Verificar si ya está en uso por otro usuario
+    const collision = await db.query.user.findFirst({
+      where: and(eq(user.referralCode, targetCode), ne(user.id, currentUserId)),
+    });
+
+    if (collision) {
+      return { success: false, error: 'El código seleccionado ya está ocupado.' };
+    }
+
+    // Actualizar en base de datos
+    await db
+      .update(user)
+      .set({ referralCode: targetCode, updatedAt: new Date() })
+      .where(eq(user.id, currentUserId));
+
+    revalidatePath('/dashboard');
+    return { success: true, referralCode: targetCode };
+  } catch (error: any) {
+    console.error('Error actualizando código de referido:', error);
+    return { success: false, error: error.message || 'Error al actualizar el código de referido.' };
+  }
+}
+
 
 /**
  * Consulta de Resumen de Afiliado para el usuario conectado
@@ -188,6 +314,15 @@ export async function saveAffiliateBankAccountAction(
 export async function attributeReferralAction(newUserId: string, referralCode: string) {
   try {
     if (!referralCode || !newUserId) return;
+
+    // Verificar que el usuario no tenga ya un referente asignado (first-touch / sticky attribution)
+    const currentUser = await db.query.user.findFirst({
+      where: eq(user.id, newUserId),
+    });
+
+    if (!currentUser || currentUser.referredBy) {
+      return;
+    }
 
     const referrer = await db.query.user.findFirst({
       where: eq(user.referralCode, referralCode),

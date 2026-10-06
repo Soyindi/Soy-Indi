@@ -1385,17 +1385,19 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Atribución en onboarding vía parámetro `?ref=CODIGO` en `/start` y almacenamiento del vínculo de referido.
    - En el webhook de Mercado Pago (`/api/webhooks/mercadopago`), al confirmarse un pago como `approved`, se invoca `processAffiliateCommissionOnPayment`, calculando automáticamente el 25% ($625 CLP para mensual y $1.500 CLP para semestral) e insertando la comisión en estado `payable`.
 3. **Experiencia del Afiliado en Dashboard (`/dashboard?tab=affiliates`)**:
-   - Pestaña dedicada con copia en 1 clic del enlace único de referido (`indi.bio/start?ref=CODIGO`).
+   - Pestaña dedicada con copia en 1 clic del enlace oficial de referido (`indi.bio/start?ref=CODIGO`).
+   - **Personalización de Código en Tiempo Real:** El usuario puede modificar su código por defecto a uno personalizado y memorable (ej. `mi-marca`, `dev-pro`) mediante `updateReferralCodeAction` y verificación de colisiones en tiempo real (`checkReferralCodeAvailabilityAction`) con debounce y protección de palabras reservadas del sistema (`RESERVED_REFERRAL_CODES`).
    - Métricas en tiempo real: *Referidos Activos*, *Por Cobrar (Próximo Corte Quincenal)*, *Total Pagado* y *Próxima Fecha de Pago* (días 1 y 15).
    - Formulario de datos bancarios para transferencia (bancos chilenos, Cuenta RUT, Cuenta Vista, Corriente) con formateo y validación de RUT.
 4. **Panel de Administración (`/admin`)**:
    - Ruta protegida con guardrail de sesión y rol de usuario (`role = 'admin'`).
    - Resumen del monto consolidado a transferir en el corte quincenal actual.
    - Listado interactivo de afiliados con saldo por liquidar, datos bancarios con botón de copia en 1 toque y botón *"Marcar como Pagado"* que actualiza el estado a `paid`.
-5. **Control de Calidad (251 Tests Passing)**:
-   - Nueva suite en `tests/unit/affiliates-and-payouts.test.ts` con 7 pruebas que validan el algoritmo de Módulo 11 para RUT chileno, contratos Zod y el cálculo de comisiones y fechas de corte quincenales.
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (251 de 251 tests en 41 suites).
+5. **Control de Calidad (254 Tests Passing)**:
+   - Suite completa en `tests/unit/affiliates-and-payouts.test.ts` con 10 pruebas que validan el algoritmo de Módulo 11 para RUT chileno, contratos Zod, personalización y normalización de códigos de referido, protección de términos reservados y cálculo de comisiones/fechas de corte quincenales.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (254 de 254 tests en 41 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
+
 
 
 

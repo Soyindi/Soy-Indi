@@ -5,9 +5,14 @@ import {
   AffiliateOverview, 
   CHILEAN_BANKS, 
   ACCOUNT_TYPES, 
-  formatChileanRut 
+  formatChileanRut,
+  formatReferralCode
 } from '@/entities/affiliate/schemas';
-import { saveAffiliateBankAccountAction } from '../actions';
+import { 
+  saveAffiliateBankAccountAction, 
+  checkReferralCodeAvailabilityAction,
+  updateReferralCodeAction 
+} from '../actions';
 import { 
   Users, 
   DollarSign, 
@@ -21,7 +26,11 @@ import {
   Sparkles,
   ArrowRight,
   TrendingUp,
-  FileCheck
+  FileCheck,
+  Edit3,
+  Loader2,
+  AlertCircle,
+  Share2
 } from 'lucide-react';
 
 interface AffiliateDashboardTabProps {
@@ -41,11 +50,82 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Estado para Personalización del Código de Referido
+  const [currentCode, setCurrentCode] = useState(overview.referralCode);
+  const [isEditingCode, setIsEditingCode] = useState(false);
+  const [codeCandidate, setCodeCandidate] = useState(overview.referralCode);
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
+  const [codeStatus, setCodeStatus] = useState<{
+    available: boolean;
+    message: string;
+    status: 'idle' | 'available' | 'taken' | 'reserved' | 'invalid';
+  }>({ available: true, message: '', status: 'idle' });
+  const [isSavingCode, setIsSavingCode] = useState(false);
+  const [codeSuccessMessage, setCodeSuccessMessage] = useState<string | null>(null);
+
+  const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://indi.bio')}/start?ref=${currentCode}`;
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(overview.referralUrl);
+    navigator.clipboard.writeText(referralUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
+
+  const handleCodeChange = async (val: string) => {
+    const formatted = formatReferralCode(val);
+    setCodeCandidate(formatted);
+    setCodeSuccessMessage(null);
+
+    if (formatted === currentCode) {
+      setCodeStatus({ available: true, message: 'Tu código actual', status: 'idle' });
+      return;
+    }
+
+    if (formatted.length < 3) {
+      setCodeStatus({ available: false, message: 'Mínimo 3 caracteres', status: 'invalid' });
+      return;
+    }
+
+    setIsCheckingCode(true);
+    try {
+      const res = await checkReferralCodeAvailabilityAction(formatted);
+      setCodeStatus({
+        available: res.available,
+        message: res.message,
+        status: res.status,
+      });
+    } catch {
+      setCodeStatus({ available: false, message: 'Error al comprobar', status: 'invalid' });
+    } finally {
+      setIsCheckingCode(false);
+    }
+  };
+
+  const handleSaveCode = async () => {
+    if (!codeStatus.available || codeCandidate === currentCode) {
+      setIsEditingCode(false);
+      return;
+    }
+
+    setIsSavingCode(true);
+    try {
+      const res = await updateReferralCodeAction(codeCandidate);
+      if (res.success && res.referralCode) {
+        setCurrentCode(res.referralCode);
+        setIsEditingCode(false);
+        setCodeSuccessMessage('¡Código de afiliado actualizado con éxito!');
+        setTimeout(() => setCodeSuccessMessage(null), 3500);
+        if (onRefresh) onRefresh();
+      } else {
+        alert(res.error || 'No se pudo actualizar el código.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error inesperado.');
+    } finally {
+      setIsSavingCode(false);
+    }
+  };
+
 
   const handleSaveBank = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,40 +184,130 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
         </div>
       </div>
 
-      {/* Tarjeta de Enlace Único */}
-      <div className="glass-panel rounded-2xl p-6 border border-cyan-500/30 bg-cyan-950/20">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <span className="text-xs font-mono uppercase tracking-wider text-cyan-300 font-semibold">
-              Tu Enlace Único de Afiliado
-            </span>
-            <p className="text-sm font-mono text-white mt-1 break-all">
-              {overview.referralUrl}
+      {/* Tarjeta de Enlace Único y Personalización de Código */}
+      <div className="glass-panel rounded-2xl p-6 border border-cyan-500/30 bg-cyan-950/20 space-y-4">
+        {codeSuccessMessage && (
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 animate-fade-in">
+            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{codeSuccessMessage}</span>
+          </div>
+        )}
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono uppercase tracking-wider text-cyan-300 font-semibold">
+                Tu Enlace Oficial de Afiliado
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-[10px] border border-cyan-500/30">
+                Código: {currentCode}
+              </span>
+            </div>
+            <p className="text-sm font-mono text-white break-all select-all">
+              {referralUrl}
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleCopy}
-            className={`min-h-[44px] min-w-[140px] px-5 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              copied
-                ? 'bg-emerald-500 text-zinc-950'
-                : 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-white hover:opacity-90 shadow-lg shadow-cyan-500/20'
-            }`}
-          >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 stroke-[3]" />
-                <span>¡Copiado!</span>
-              </>
-            ) : (
-              <>
-                <LinkIcon className="w-4 h-4" />
-                <span>Copiar Enlace</span>
-              </>
-            )}
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditingCode(!isEditingCode);
+                setCodeCandidate(currentCode);
+                setCodeStatus({ available: true, message: '', status: 'idle' });
+              }}
+              className="min-h-[44px] px-4 py-2 rounded-xl glass-pill text-zinc-300 hover:text-white hover:bg-white/10 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border border-white/10"
+              title="Personalizar tu código de afiliado"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{isEditingCode ? 'Cancelar' : 'Personalizar Código'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleCopy}
+              className={`min-h-[44px] min-w-[140px] px-5 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                copied
+                  ? 'bg-emerald-500 text-zinc-950'
+                  : 'bg-gradient-to-r from-cyan-500 to-indigo-500 text-white hover:opacity-90 shadow-lg shadow-cyan-500/20'
+              }`}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>¡Copiado!</span>
+                </>
+              ) : (
+                <>
+                  <LinkIcon className="w-4 h-4" />
+                  <span>Copiar Enlace</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Panel Desplegable para Personalizar Código */}
+        {isEditingCode && (
+          <div className="pt-4 border-t border-cyan-500/20 animate-fade-in space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500 font-mono text-xs">
+                  indi.bio/start?ref=
+                </div>
+                <input
+                  type="text"
+                  value={codeCandidate}
+                  onChange={(e) => handleCodeChange(e.target.value)}
+                  placeholder="mi-nombre-o-marca"
+                  maxLength={24}
+                  className="w-full min-h-[44px] pl-36 pr-10 py-2 rounded-xl bg-zinc-900 border border-cyan-500/30 text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  {isCheckingCode && <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />}
+                  {!isCheckingCode && codeStatus.status === 'available' && (
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  )}
+                  {!isCheckingCode && (codeStatus.status === 'taken' || codeStatus.status === 'reserved' || codeStatus.status === 'invalid') && (
+                    <AlertCircle className="w-4 h-4 text-rose-400" />
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveCode}
+                disabled={isSavingCode || !codeStatus.available || codeCandidate === currentCode || codeCandidate.length < 3}
+                className="min-h-[44px] px-6 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-950 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-cyan-500/20"
+              >
+                {isSavingCode ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Guardando...</span>
+                  </>
+                ) : (
+                  <span>Guardar Nuevo Código</span>
+                )}
+              </button>
+            </div>
+
+            {/* Ayuda o Estado del Código */}
+            <div className="flex items-center justify-between text-[11px] px-1">
+              <span className={
+                codeStatus.status === 'available'
+                  ? 'text-emerald-400 font-medium'
+                  : codeStatus.status === 'taken' || codeStatus.status === 'reserved' || codeStatus.status === 'invalid'
+                  ? 'text-rose-400 font-medium'
+                  : 'text-zinc-400'
+              }>
+                {codeStatus.message || 'Elige un código memorable con letras minúsculas, números y guiones.'}
+              </span>
+              <span className="text-zinc-500 font-mono">
+                {codeCandidate.length}/24 caracteres
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Métricas Principales */}
