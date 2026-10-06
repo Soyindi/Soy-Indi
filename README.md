@@ -149,7 +149,7 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 254 tests pasando)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 277 tests pasando al 100%)
 │   ├── affiliates-and-payouts.test.ts # Módulo 11 RUT, códigos de referido y liquidaciones
 │   ├── auth-flow.test.ts        # Validación de flujo de login, Open Redirect guardrail y sanitización
 │   ├── oauth-multi-tenant.test.ts # Aislamiento multi-tenant y Google OAuth
@@ -159,6 +159,8 @@ INDI/
 │   ├── presentation-heuristics.test.ts # Motor heurístico determinista y Principio de Pirámide
 │   ├── ats-audit.test.ts        # Motor algorítmico de scoring ATS
 │   ├── entitlements.test.ts     # Planes comerciales y 3 días de prueba
+│   ├── r2-upload.test.ts        # Subida segura de imágenes a Cloudflare R2 con Magic Bytes
+│   ├── telemetry-route.test.ts  # Telemetría perimetral desacoplada y protección anti-inflación
 │   ├── document-upload-routes.test.ts # Handlers nativos HTTP de subida de archivos (25MB)
 │   ├── file-security-pipeline.test.ts # Magic bytes, anti-malware, anti-DoS y cero persistencia binaria
 │   └── security-guardrails.test.ts # Protección multi-tenant de Server Actions
@@ -168,6 +170,8 @@ INDI/
 │   │   │   ├── auth/[...all]/route.ts # Better-Auth universal
 │   │   │   ├── cv/parse/route.ts      # Ingesta resiliente de CVs y títulos (25MB)
 │   │   │   ├── presentations/parse/route.ts # Ingesta de documentos para diapositivas (25MB)
+│   │   │   ├── upload/image/route.ts  # Ingesta de fotos hacia Cloudflare R2 ($0 Egress)
+│   │   │   ├── telemetry/view/route.ts # Telemetría de visitas asíncrona sin romper ISR
 │   │   │   └── og/route.tsx     # Generador de Open Graph en Edge con @vercel/og
 │   │   ├── c/[slug]/page.tsx    # Vista pública de tarjeta con métricas atómicas
 │   │   ├── p/[slug]/page.tsx    # Vista pública interactiva de presentaciones 16:9
