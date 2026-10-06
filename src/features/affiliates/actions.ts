@@ -250,12 +250,19 @@ export async function getAdminAffiliatePayoutsAction(userId?: string): Promise<{
       return { success: false, error: 'Acceso no autorizado.' };
     }
 
-    // Verificar rol admin
+    // Verificar rol admin (por base de datos o correos autorizados)
     const currentUser = await db.query.user.findFirst({
       where: eq(user.id, sessionResult.userId),
     });
 
-    if (currentUser?.role !== 'admin' && process.env.NODE_ENV === 'production') {
+    const adminEmails = (process.env.ADMIN_EMAILS || 'soyindi.cl@gmail.com,psmatrique@gmail.com,matiricardoo@gmail.com,demo@indi.bio')
+      .toLowerCase()
+      .split(',')
+      .map((e) => e.trim());
+
+    const isUserAdmin = currentUser?.role === 'admin' || (currentUser?.email && adminEmails.includes(currentUser.email.toLowerCase()));
+
+    if (!isUserAdmin && process.env.NODE_ENV === 'production') {
       return { success: false, error: 'Permisos insuficientes de administrador.' };
     }
 
@@ -322,7 +329,14 @@ export async function markAffiliateCommissionsAsPaidAction(affiliateUserId: stri
       where: eq(user.id, sessionResult.userId),
     });
 
-    if (currentUser?.role !== 'admin' && process.env.NODE_ENV === 'production') {
+    const adminEmails = (process.env.ADMIN_EMAILS || 'soyindi.cl@gmail.com,psmatrique@gmail.com,matiricardoo@gmail.com,demo@indi.bio')
+      .toLowerCase()
+      .split(',')
+      .map((e) => e.trim());
+
+    const isUserAdmin = currentUser?.role === 'admin' || (currentUser?.email && adminEmails.includes(currentUser.email.toLowerCase()));
+
+    if (!isUserAdmin && process.env.NODE_ENV === 'production') {
       return { success: false, error: 'Permisos insuficientes de administrador.' };
     }
 

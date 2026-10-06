@@ -21,13 +21,18 @@ export default async function AdminPage() {
     redirect('/login?callbackUrl=/admin');
   }
 
-  // Verificar rol de administrador
+  // Verificar rol de administrador (por base de datos o por lista de correos autorizados)
   const dbUser = await db.query.user.findFirst({
     where: eq(user.id, session.user.id),
   });
 
-  // Guardrail de seguridad: solo rol admin (o usuario local en desarrollo)
-  const isAdmin = dbUser?.role === 'admin' || process.env.NODE_ENV !== 'production';
+  const adminEmails = (process.env.ADMIN_EMAILS || 'soyindi.cl@gmail.com,psmatrique@gmail.com,matiricardoo@gmail.com,demo@indi.bio')
+    .toLowerCase()
+    .split(',')
+    .map((e) => e.trim());
+
+  const userEmail = (session.user.email || dbUser?.email || '').toLowerCase();
+  const isAdmin = dbUser?.role === 'admin' || adminEmails.includes(userEmail) || process.env.NODE_ENV !== 'production';
 
   if (!isAdmin) {
     return (
