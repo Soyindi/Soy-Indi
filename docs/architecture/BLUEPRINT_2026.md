@@ -1398,6 +1398,39 @@ export default async function PublicCardPage({ params }: PageProps) {
    - 100% de la suite de pruebas unitarias aprobada en Vitest (254 de 254 tests en 41 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
+---
+
+## 🌐 FASE 19: GOBERNANZA DE DOMINIO CANÓNICO OFICIAL (`soyindi.cl`) & EDGE REDIRECTS (OCTUBRE 2026)
+
+### 1. Diagnóstico y Neutralización de Fragmentación de Tráfico
+Tras la adquisición y habilitación del dominio canónico **`soyindi.cl`**, existían rutas residuales que abrían bajo subdominios generados por la plataforma de hosting (`*.vercel.app`), dominios de desarrollo previo (`indi.bio`) o prefijos alternativos (`www.soyindi.cl`). Esta fragmentación afectaba:
+- El posicionamiento SEO e indexación en motores de búsqueda (contenido duplicado).
+- La consistencia de marca en tarjetas digitales, currículums inteligentes y presentaciones compartidas.
+- La trazabilidad y entrega de cookies de sesión seguras en Better-Auth.
+
+### 2. Arquitectura de Gobernanza Canónica Multi-Nivel
+1. **Middleware Perimetral Next.js (`src/middleware.ts`)**:
+   - Inspecciona en el Edge la cabecera `host` de cada solicitud entrante.
+   - Si la solicitud proviene de `*.vercel.app`, `indi.bio`, `www.indi.bio` o `www.soyindi.cl`, efectúa de inmediato una redirección **HTTP 308 (Permanent Redirect)** hacia `https://soyindi.cl`, preservando íntegramente la ruta (`pathname`) y parámetros de consulta (`searchParams`).
+   - Mantiene excepciones seguras para desarrollo local (`localhost`, `127.0.0.1`) y assets estáticos empaquetados (`_next/static`, `_next/image`, `public/brand/`).
+2. **Módulo de Contratos y Resolución Centralizada (`src/entities/brand/domain.ts`)**:
+   - Centraliza las constantes inmutables `PRIMARY_DOMAIN = 'soyindi.cl'` y `CANONICAL_ORIGIN = 'https://soyindi.cl'`.
+   - Expone los helpers `getAppBaseUrl()` y `buildCanonicalUrl()` con resolución adaptativa entre cliente (`window.location.origin`), servidor/Edge y variables de entorno (`NEXT_PUBLIC_APP_URL`, `BETTER_AUTH_URL`).
+3. **Metadatos SEO, Open Graph, Sitemap & Robots (`metadataBase`)**:
+   - `src/app/layout.tsx`: Configuración estricta de `metadataBase: new URL('https://soyindi.cl')` y `alternates.canonical: 'https://soyindi.cl'`.
+   - Rutas dinámicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`): Inyección de URLs canónicas y enlaces Open Graph absolutos bajo `https://soyindi.cl`.
+   - Generación automática de `src/app/robots.ts` y `src/app/sitemap.ts` apuntando a `https://soyindi.cl` y consumiendo las entidades activas en Turso SQLite.
+4. **Serialización Determinista en Documentos Exportables & Compartidos**:
+   - **vCard 3.0 (`vcard.ts`)**: Enlaces de perfil digital en tarjeta de contacto estandarizados a `${origin}/c/${slug}` con fallback absoluto a `https://soyindi.cl/c/${slug}`.
+   - **Generador de Portadas Open Graph (`/api/og`)**: Pie de identidad actualizado a `SOYINDI.CL • IDENTIDAD DIGITAL EN EL EDGE`.
+   - **Editores e Interfaces UI (`CardBuilder.tsx`, `SmartCvBuilder.tsx`, `PresentationStudio.tsx`, `AffiliateDashboardTab.tsx`)**: Prefijos visuales de enlace actualizados a `soyindi.cl/...` y acciones de copia usando el origen canónico.
+5. **Skill Corporativo Especializado (`.agents/skills/canonical-domain-audit/SKILL.md`)**:
+   - Guía paso a paso y checklist de verificación para configuración de DNS, Vercel Domains, Google Cloud OAuth y webhooks de Mercado Pago.
+6. **Control de Calidad y Pruebas Unitarias (261 Tests Passing)**:
+   - Suite completa en `tests/unit/canonical-domain-governance.test.ts` con 7 pruebas que validan la redirección HTTP 308 de dominios Vercel y legacy, la persistencia en desarrollo local y la construcción de URLs canónicas.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (261 de 261 tests en 42 suites).
+   - 0 errores en compilación TypeScript estricta (`npm run typecheck`).
+
 
 
 

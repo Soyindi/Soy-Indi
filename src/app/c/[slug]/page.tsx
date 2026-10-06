@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       openGraph: {
         title: 'Matías Riquelme — Ingeniero de Software',
         description: 'Tarjeta de identidad interactiva y networking profesional.',
-        url: 'https://indi.bio/c/demo',
+        url: 'https://soyindi.cl/c/demo',
         siteName: 'INDI Digital Identity',
         images: [{ url: ogImageUrl, width: 1200, height: 630, alt: 'Matías Riquelme' }],
         type: 'profile',
@@ -45,18 +45,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Tarjeta No Encontrada | INDI' };
   }
 
-  const ogImageUrl = `https://indi.bio/api/og?title=${encodeURIComponent(card.title)}&role=${encodeURIComponent(card.profession)}&about=${encodeURIComponent(card.about || '')}&photo=${encodeURIComponent(card.photoUrl || '')}`;
+  const ogImageUrl = `https://soyindi.cl/api/og?title=${encodeURIComponent(card.title)}&role=${encodeURIComponent(card.profession)}&about=${encodeURIComponent(card.about || '')}&photo=${encodeURIComponent(card.photoUrl || '')}`;
 
   return {
     title: `${card.title} — ${card.profession} | INDI`,
     description: card.about || `Conecta directamente con ${card.title} en un solo clic por WhatsApp o redes.`,
     alternates: {
-      canonical: `https://indi.bio/c/${card.slug}`,
+      canonical: `https://soyindi.cl/c/${card.slug}`,
     },
     openGraph: {
       title: `${card.title} — ${card.profession}`,
       description: card.about || `Conecta directamente con ${card.title} en un solo clic por WhatsApp o redes.`,
-      url: `https://indi.bio/c/${card.slug}`,
+      url: `https://soyindi.cl/c/${card.slug}`,
       siteName: 'INDI Digital Identity',
       locale: 'es_LA',
       type: 'profile',

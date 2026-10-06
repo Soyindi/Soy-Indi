@@ -714,7 +714,7 @@ export function PresentationStudio({
                       ? 'border-amber-500/50 focus-within:border-amber-500'
                       : 'border-white/10 focus-within:border-cyan-400/80'
                   }`}>
-                    <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">indi.bio/p/</span>
+                    <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">soyindi.cl/p/</span>
                     <input
                       type="text"
                       value={presentation.slug || ''}
@@ -1324,7 +1324,7 @@ export function PresentationStudio({
                   Enlace de Acceso Público
                 </label>
                 <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-xs font-mono text-cyan-300 truncate">
-                  indi.bio/p/{presentation.slug}
+                  soyindi.cl/p/{presentation.slug}
                 </div>
               </div>
             </div>

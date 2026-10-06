@@ -152,7 +152,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
   const fullUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/c/${card.slug}`
-    : `https://indi.bio/c/${card.slug}`;
+    : `https://soyindi.cl/c/${card.slug}`;
 
   const buttonTextColor = getAccessibleTextColor(primaryColor);
 

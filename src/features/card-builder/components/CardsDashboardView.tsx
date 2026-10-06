@@ -249,7 +249,7 @@ export function CardsDashboardView({ initialCards }: CardsDashboardViewProps) {
 
                 {/* Enlace público */}
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-black/50 border border-white/5 text-xs font-mono text-zinc-400 mb-5">
-                  <span className="truncate mr-2">indi.bio/c/{c.slug}</span>
+                  <span className="truncate mr-2">soyindi.cl/c/{c.slug}</span>
                   <button
                     onClick={() => handleCopyLink(c.slug)}
                     className="p-1 rounded hover:bg-white/10 text-zinc-300 hover:text-white transition-colors"

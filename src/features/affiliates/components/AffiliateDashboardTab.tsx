@@ -63,7 +63,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
   const [isSavingCode, setIsSavingCode] = useState(false);
   const [codeSuccessMessage, setCodeSuccessMessage] = useState<string | null>(null);
 
-  const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://indi.bio')}/start?ref=${currentCode}`;
+  const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://soyindi.cl')}/start?ref=${currentCode}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralUrl);
@@ -253,7 +253,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500 font-mono text-xs">
-                  indi.bio/start?ref=
+                  soyindi.cl/start?ref=
                 </div>
                 <input
                   type="text"

@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
               fontWeight: 600,
             }}
           >
-            INDI.BIO • IDENTIDAD DIGITAL EN EL EDGE
+            SOYINDI.CL • IDENTIDAD DIGITAL EN EL EDGE
           </div>
         </div>
       ),

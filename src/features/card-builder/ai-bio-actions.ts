@@ -63,7 +63,7 @@ Responde EXCLUSIVAMENTE con un JSON con la estructura:
             headers: {
               'Authorization': `Bearer ${openRouterApiKey}`,
               'Content-Type': 'application/json',
-              'HTTP-Referer': 'https://indi.bio',
+              'HTTP-Referer': 'https://soyindi.cl',
               'X-Title': 'INDI Card Bio Generator',
             },
             body: JSON.stringify({

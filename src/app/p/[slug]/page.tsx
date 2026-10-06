@@ -24,10 +24,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: `${presentation.title} — Presentación Orbital | INDI`,
       description: `Visualiza la presentación interactiva 16:9 "${presentation.title}" en INDI Orbital Studio.`,
+      alternates: {
+        canonical: `https://soyindi.cl/p/${presentation.slug}`,
+      },
       openGraph: {
         title: presentation.title,
         description: `Presentación cinematográfica 16:9 en INDI Orbital Studio.`,
-        url: `https://indi.bio/p/${presentation.slug}`,
+        url: `https://soyindi.cl/p/${presentation.slug}`,
         siteName: 'INDI Orbital Studio',
         type: 'article',
       },
@@ -39,10 +42,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: 'Presentación Demo Orbital • 16:9 | INDI',
       description: 'Estudio de presentaciones cinematográficas interactivas generadas con IA.',
+      alternates: {
+        canonical: 'https://soyindi.cl/p/demo',
+      },
       openGraph: {
         title: 'Presentación Demo Orbital | INDI',
         description: 'Diapositivas 16:9 con iluminación volumétrica y diseño cinemático.',
-        url: 'https://indi.bio/p/demo',
+        url: 'https://soyindi.cl/p/demo',
         siteName: 'INDI Orbital Studio',
         type: 'article',
       },
@@ -55,10 +61,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: `${templateMatch.name} — Presentación Orbital | INDI`,
       description: templateMatch.description,
+      alternates: {
+        canonical: `https://soyindi.cl/p/${slug}`,
+      },
       openGraph: {
         title: templateMatch.name,
         description: templateMatch.description,
-        url: `https://indi.bio/p/${slug}`,
+        url: `https://soyindi.cl/p/${slug}`,
         siteName: 'INDI Orbital Studio',
         type: 'article',
       },

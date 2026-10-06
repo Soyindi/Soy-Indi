@@ -84,7 +84,9 @@ export function generateVCardString(card: VCardOptions): string {
     lines.push(`LABEL;TYPE=WORK;CHARSET=UTF-8:${escapeVCardText(card.address.trim())}`);
   }
 
-  const profileUrl = `https://indi.bio/c/${card.slug}`;
+  const profileUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/c/${card.slug}`
+    : `https://soyindi.cl/c/${card.slug}`;
   lines.push(`URL;TYPE=INDI_PROFILE:${profileUrl}`);
 
   if (card.about) {

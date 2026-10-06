@@ -172,7 +172,8 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
   // Copiar URL pública de la tarjeta
   const handleCopyPublicUrl = async () => {
     try {
-      const url = `https://indi.bio/c/${formData.slug}`;
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://soyindi.cl';
+      const url = `${origin}/c/${formData.slug}`;
       await navigator.clipboard.writeText(url);
       setIsCopiedSlug(true);
       setTimeout(() => setIsCopiedSlug(false), 2000);
@@ -429,7 +430,7 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                     ? 'border-amber-500/50 focus-within:border-amber-500'
                     : 'border-white/10 focus-within:border-indigo-500/80'
                 }`}>
-                  <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">indi.bio/c/</span>
+                  <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">soyindi.cl/c/</span>
                   <input
                     type="text"
                     value={formData.slug}

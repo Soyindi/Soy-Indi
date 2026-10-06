@@ -39,8 +39,8 @@ describe('vCard 3.0 / RFC 2426 Deterministic Generator', () => {
 
   it('debe incluir enlace al perfil INDI y nota explicativa', () => {
     const vcard = generateVCardString(sampleCard);
-    expect(vcard).toContain('URL;TYPE=INDI_PROFILE:https://indi.bio/c/carlos-mendoza');
-    expect(vcard).toContain('NOTE;CHARSET=UTF-8:Consultor estratégico de crecimiento B2B.\\nPerfil digital: https://indi.bio/c/carlos-mendoza');
+    expect(vcard).toContain('URL;TYPE=INDI_PROFILE:https://soyindi.cl/c/carlos-mendoza');
+    expect(vcard).toContain('NOTE;CHARSET=UTF-8:Consultor estratégico de crecimiento B2B.\\nPerfil digital: https://soyindi.cl/c/carlos-mendoza');
   });
 
   it('debe manejar nombres de una sola palabra sin romper la sección N', () => {

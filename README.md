@@ -300,8 +300,8 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 | `TURSO_DATABASE_URL` | Endpoint de tu base de datos Turso Cloud distribuida | `libsql://soyindi-soyindi.aws-us-west-2.turso.io` |
 | `TURSO_AUTH_TOKEN` | Token de autenticación de Turso generado con `turso db tokens create` | `eyJhbGciOi...` |
 | `BETTER_AUTH_SECRET` | Clave secreta criptográfica (mínimo 32 caracteres) | `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | URL canónica de producción en Vercel | `https://indi.bio` o `https://tu-proyecto.vercel.app` |
-| `NEXT_PUBLIC_APP_URL` | Misma URL pública para el cliente React | `https://indi.bio` o `https://tu-proyecto.vercel.app` |
+| `BETTER_AUTH_URL` | URL canónica de producción en Vercel | `https://soyindi.cl` |
+| `NEXT_PUBLIC_APP_URL` | Misma URL pública para el cliente React | `https://soyindi.cl` |
 | `ADMIN_EMAILS` | Lista de correos autorizados para gestionar liquidaciones en `/admin` | `soyindi.cl@gmail.com,psmatrique@gmail.com,matiricardoo@gmail.com` |
 | `GOOGLE_CLIENT_ID` | Client ID obtenido en Google Cloud Console | `123456789-abc.apps.googleusercontent.com` |
 | `GOOGLE_CLIENT_SECRET` | Client Secret obtenido en Google Cloud Console | `GOCSPX-xxxxxxxxxxxxx` |
@@ -314,7 +314,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 ### 2. Configurar Webhook IPN en Mercado Pago Developers
 1. Ve a tu aplicación en [Mercado Pago Developers](https://www.mercadopago.cl/developers/panel/app).
 2. En la sección **Webhooks / Notificaciones IPN**, agrega tu URL pública de producción:
-   - `https://indi.bio/api/webhooks/mercadopago` (o `https://tu-proyecto.vercel.app/api/webhooks/mercadopago`).
+   - `https://soyindi.cl/api/webhooks/mercadopago`
 3. Selecciona el evento **Pagos (`payment`)**.
 
 ### 3. Configurar Google Cloud Console (OAuth 2.0)
@@ -322,12 +322,10 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 2. Crea unas nuevas credenciales de tipo **OAuth 2.0 Client ID** (Web Application).
 3. En **Authorized JavaScript origins**, añade:
    - `http://localhost:3000` (desarrollo local)
-   - `https://tu-proyecto.vercel.app` (preview Vercel)
-   - `https://indi.bio` (dominio de producción)
+   - `https://soyindi.cl` (dominio de producción oficial)
 4. En **Authorized redirect URIs**, añade la ruta oficial de callback de Better Auth:
    - `http://localhost:3000/api/auth/callback/google`
-   - `https://tu-proyecto.vercel.app/api/auth/callback/google`
-   - `https://indi.bio/api/auth/callback/google`
+   - `https://soyindi.cl/api/auth/callback/google`
 5. Guarda y copia el **Client ID** y **Client Secret** en las variables de entorno de Vercel.
 
 

@@ -116,7 +116,7 @@ export async function callNvidiaNimChat(
         headers: {
           Authorization: `Bearer ${openRouterApiKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://indi.bio',
+          'HTTP-Referer': 'https://soyindi.cl',
           'X-Title': 'INDI Presentations AI Engine',
         },
         body: JSON.stringify({

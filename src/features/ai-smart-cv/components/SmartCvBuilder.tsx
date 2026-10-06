@@ -782,7 +782,7 @@ export function SmartCvBuilder({
                     ? 'border-amber-500/50 focus-within:border-amber-500'
                     : 'border-white/10 focus-within:border-cyan-400/80'
                 }`}>
-                  <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">indi.bio/cv/</span>
+                  <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">soyindi.cl/cv/</span>
                   <input
                     type="text"
                     value={formData.slug || ''}

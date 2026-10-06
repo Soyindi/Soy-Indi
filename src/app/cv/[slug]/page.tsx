@@ -38,9 +38,14 @@ export async function generateMetadata({ params }: PublicCvPageProps): Promise<M
     return {
       title: `${name} • ${role} | Smart CV`,
       description: `Revisa la trayectoria profesional y credenciales verificables de ${name} (${role}) en INDI. Descarga su CV en PDF vectorial ATS.`,
+      alternates: {
+        canonical: `https://soyindi.cl/cv/${slug}`,
+      },
       openGraph: {
         title: `${name} • ${role} | Smart CV`,
         description: `Revisa la trayectoria profesional de ${name} (${role}) en INDI.`,
+        url: `https://soyindi.cl/cv/${slug}`,
+        siteName: 'INDI Smart CV',
         type: 'profile',
       },
     };

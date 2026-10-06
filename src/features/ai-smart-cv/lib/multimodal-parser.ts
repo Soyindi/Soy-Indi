@@ -153,7 +153,7 @@ export async function parseCvDocumentMultimodal(
         headers: {
           'Authorization': `Bearer ${openRouterApiKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://indi.bio',
+          'HTTP-Referer': 'https://soyindi.cl',
           'X-Title': 'INDI Smart CV Parser',
         },
         body: JSON.stringify({

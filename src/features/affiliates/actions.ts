@@ -213,7 +213,7 @@ export async function getAffiliateOverviewAction(userId?: string): Promise<{
       where: eq(user.referredBy, currentUserId),
     });
 
-    const origin = process.env.BETTER_AUTH_URL || 'https://indi.bio';
+    const origin = process.env.BETTER_AUTH_URL || 'https://soyindi.cl';
     const referralUrl = `${origin}/start?ref=${referralCode}`;
 
     const overview: AffiliateOverview = {

@@ -56,7 +56,10 @@ src/
 7. **Guardrail de Experiencia para Sesiones Activas (Zero Redundant Logins):**
    - Si un usuario ya autenticado accede a la página de login (`/login`), debe ser redirigido de inmediato en el servidor mediante `auth.api.getSession({ headers })` hacia el `callbackUrl` validado o hacia su panel (`/dashboard`), previniendo formularios de inicio de sesión redundantes.
    - Los componentes de llamada a la acción públicos (Hero CTA, Pricing CTA, Public Contextual Header, Mobile Drawer) deben consumir reactivamente `useSession()` para adaptar sus enlaces directamente hacia `/start` o `/dashboard`, evitando fricción en la navegación del usuario registrado.
-8. **Pasarela de Pagos Mercado Pago SDK v2 & Verificación Anti-Spoofing de Webhooks:**
+8. **Gobernanza de Dominio Canónico Oficial (`https://soyindi.cl`) & Redirección Edge 308:**
+   - Todo tráfico que ingrese por dominios de despliegue por defecto (`*.vercel.app`), dominios legacy (`indi.bio`, `www.indi.bio`) o subdominios `www.soyindi.cl` debe ser redirigido de forma inmediata y permanente mediante `src/middleware.ts` (código HTTP 308) hacia `https://soyindi.cl`, preservando la ruta y parámetros de búsqueda.
+   - Toda generación de enlaces públicos, códigos QR, Open Graph (`og:url`, `og:image`), Sitemap (`sitemap.xml`), Robots (`robots.txt`), archivos de contacto vCard 3.0 (`URL;TYPE=INDI_PROFILE:`) y documentos ATS debe consumir el dominio canónico centralizado desde `@/entities/brand/domain` (`getAppBaseUrl`, `buildCanonicalUrl`).
+9. **Pasarela de Pagos Mercado Pago SDK v2 & Verificación Anti-Spoofing de Webhooks:**
    - La creación de preferencias de pago se realiza exclusivamente del lado del servidor en Route Handlers dedicados (`/api/checkout/mercadopago`), validando la sesión activa y contratos Zod.
    - En el webhook IPN (`/api/webhooks/mercadopago`), se prohíbe confiar en el cuerpo de la notificación entrante. Es obligatorio consultar la API de Mercado Pago (`paymentClient.get({ id })`) para verificar la autenticidad, monto y estado (`approved`) antes de activar la membresía del usuario o extender `subscriptionEndsAt` en Turso.
    - Toda transacción aprobada se registra para trazabilidad contable en `payments_history`.
