@@ -33,16 +33,19 @@ export default async function UnifiedDashboardPage({ searchParams }: DashboardPa
   const justCreatedSlug = params.created === 'true' ? params.slug : null;
 
   // Carga paralela de entidades y estado de membresía desde Turso SQLite
-  const [cardsResult, cvsResult, presentationsResult, entitlement] = await Promise.all([
+  const { getAffiliateOverviewAction } = await import('@/features/affiliates/actions');
+  const [cardsResult, cvsResult, presentationsResult, entitlement, affiliateResult] = await Promise.all([
     getUserCardsAction(session.user.id),
     getUserSmartCvsAction(session.user.id),
     getUserPresentationsAction(session.user.id),
     checkUserEntitlementAction(session.user.id),
+    getAffiliateOverviewAction(session.user.id),
   ]);
 
   const cards = cardsResult.data || [];
   const cvs = (cvsResult.data || []) as any[];
   const presentations = (presentationsResult.data || []) as any[];
+  const affiliateOverview = affiliateResult.success && affiliateResult.data ? affiliateResult.data : null;
 
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col bg-zinc-950">
@@ -59,7 +62,8 @@ export default async function UnifiedDashboardPage({ searchParams }: DashboardPa
           initialCards={cards}
           initialCvs={cvs}
           initialPresentations={presentations}
-          initialTab={initialTab}
+          initialAffiliateOverview={affiliateOverview}
+          initialTab={initialTab as any}
           justCreatedSlug={justCreatedSlug}
         />
       </main>

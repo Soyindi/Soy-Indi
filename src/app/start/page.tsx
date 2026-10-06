@@ -7,8 +7,30 @@ import { BrandLogo } from '@/shared/ui/BrandLogo';
 
 export const dynamic = 'force-dynamic';
 
-export default async function OnboardingStartPage() {
+interface OnboardingStartPageProps {
+  searchParams?: Promise<{ ref?: string }>;
+}
+
+export default async function OnboardingStartPage({ searchParams }: OnboardingStartPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const refCode = params.ref;
   const entitlement = await checkUserEntitlementAction();
+
+  // Si viene un código de referido y hay sesión, atribuir
+  if (refCode) {
+    try {
+      const { headers } = await import('next/headers');
+      const { auth } = await import('@/shared/lib/auth');
+      const headerList = await headers();
+      const session = await auth.api.getSession({ headers: headerList });
+      if (session?.user?.id) {
+        const { attributeReferralAction } = await import('@/features/affiliates/actions');
+        await attributeReferralAction(session.user.id, refCode);
+      }
+    } catch (err) {
+      // Atribución silenciosa
+    }
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-zinc-950 flex flex-col justify-between py-12">

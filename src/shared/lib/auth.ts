@@ -28,11 +28,22 @@ export const auth = betterAuth({
       create: {
         before: async (userData) => {
           const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+          const cleanName = (userData.name || 'user')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]/g, '')
+            .slice(0, 10);
+          const randomSuffix = Math.random().toString(36).substring(2, 6);
+          const referralCode = (userData as any).referralCode || `${cleanName || 'indi'}-${randomSuffix}`;
+
           return {
             data: {
               ...userData,
               status: (userData as any).status || 'TRIAL',
               trialEndsAt: (userData as any).trialEndsAt || new Date(Date.now() + threeDaysMs),
+              role: (userData as any).role || 'user',
+              referralCode,
             },
           };
         },

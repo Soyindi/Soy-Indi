@@ -17,6 +17,9 @@ export const user = sqliteTable('user', {
   trialEndsAt: integer('trial_ends_at', { mode: 'timestamp_ms' }),
   subscriptionEndsAt: integer('subscription_ends_at', { mode: 'timestamp_ms' }),
   aiCredits: integer('ai_credits').default(30).notNull(),
+  role: text('role', { enum: ['user', 'admin'] }).default('user').notNull(),
+  referralCode: text('referral_code').unique(),
+  referredBy: text('referred_by'),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
@@ -213,15 +216,80 @@ export const paymentsHistory = sqliteTable('payments_history', {
 ]);
 
 // ============================================================================
-// 6. RELACIONES DECLARATIVAS
+// 6. PROGRAMA DE AFILIADOS Y PAGOS QUINCENALES
 // ============================================================================
-export const userRelations = relations(user, ({ many }) => ({
+export const affiliateBankAccounts = sqliteTable('affiliate_bank_accounts', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).unique().notNull(),
+  bankName: text('bank_name').notNull(),
+  accountType: text('account_type').notNull(),
+  accountNumber: text('account_number').notNull(),
+  rut: text('rut').notNull(),
+  holderName: text('holder_name').notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .$onUpdate(() => new Date())
+    .notNull(),
+}, (table) => [
+  index('affiliate_bank_accounts_user_idx').on(table.userId),
+]);
+
+export const affiliateCommissions = sqliteTable('affiliate_commissions', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  affiliateUserId: text('affiliate_user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
+  buyerUserId: text('buyer_user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
+  paymentId: text('payment_id').references(() => paymentsHistory.id, { onDelete: 'cascade' }).notNull(),
+  amountClp: integer('amount_clp').notNull(),
+  status: text('status', { enum: ['pending', 'payable', 'paid'] }).default('pending').notNull(),
+  paidAt: integer('paid_at', { mode: 'timestamp_ms' }),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+}, (table) => [
+  index('affiliate_commissions_affiliate_user_idx').on(table.affiliateUserId),
+  index('affiliate_commissions_status_idx').on(table.status),
+]);
+
+// ============================================================================
+// 7. RELACIONES DECLARATIVAS
+// ============================================================================
+export const userRelations = relations(user, ({ one, many }) => ({
   cards: many(cards),
   smartCvs: many(smartCvs),
   presentations: many(presentations),
   payments: many(paymentsHistory),
   sessions: many(session),
   accounts: many(account),
+  bankAccount: one(affiliateBankAccounts, {
+    fields: [user.id],
+    references: [affiliateBankAccounts.userId],
+  }),
+  commissions: many(affiliateCommissions, {
+    relationName: 'affiliateUserCommissions',
+  }),
+}));
+
+export const affiliateBankAccountsRelations = relations(affiliateBankAccounts, ({ one }) => ({
+  user: one(user, {
+    fields: [affiliateBankAccounts.userId],
+    references: [user.id],
+  }),
+}));
+
+export const affiliateCommissionsRelations = relations(affiliateCommissions, ({ one }) => ({
+  affiliateUser: one(user, {
+    fields: [affiliateCommissions.affiliateUserId],
+    references: [user.id],
+    relationName: 'affiliateUserCommissions',
+  }),
+  buyerUser: one(user, {
+    fields: [affiliateCommissions.buyerUserId],
+    references: [user.id],
+  }),
+  payment: one(paymentsHistory, {
+    fields: [affiliateCommissions.paymentId],
+    references: [paymentsHistory.id],
+  }),
 }));
 
 export const paymentsHistoryRelations = relations(paymentsHistory, ({ one }) => ({

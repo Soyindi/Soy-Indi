@@ -1374,7 +1374,27 @@ export default async function PublicCardPage({ params }: PageProps) {
 3. **Actualización de Skill & Suite de Pruebas Unitarias (244 Tests Passing)**:
    - Expansión de [.agents/skills/flow-and-persistence-audit/SKILL.md](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/.agents/skills/flow-and-persistence-audit/SKILL.md) con el protocolo formal de auditoría de esquema de 9 tablas, cero persistencia binaria y sincronización de migraciones.
    - Actualización de [tests/unit/turso-batch-and-schema.test.ts](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/tests/unit/turso-batch-and-schema.test.ts) validando las 9 tablas del esquema y los campos de auditoría financiera de `payments_history`.
-   - 100% de la suite de pruebas unitarias aprobada en Vitest (244 de 244 tests en 40 suites).
+### Fase: Programa de Afiliados, Liquidaciones Quincenales y Panel Admin (Octubre 2026)
+1. **Línea Base de 11 Tablas de Dominio & Migración 0005**:
+   - Extensión de la tabla `user` con columnas `role` (`'user' | 'admin'`), `referralCode` (código único de recomendación) y `referredBy` (ID del afiliado que refirió la cuenta).
+   - Creación de la tabla `affiliate_bank_accounts`: Almacenamiento seguro de institución bancaria, tipo de cuenta, número, nombre del titular y RUT verificado con algoritmo de Módulo 11 chileno.
+   - Creación de la tabla `affiliate_commissions`: Registro granular de cada comisión generada por pago aprobado en Mercado Pago (25% en CLP), con estados de trazabilidad (`pending`, `payable`, `paid`) y fecha de abono.
+   - Sincronización de snapshot y script SQL en `drizzle/migrations/0005_superb_dust.sql`.
+2. **Atribución Automatizada & Disparo en Webhook**:
+   - Todo nuevo usuario registrado recibe un código de referido único (`user.create.before` en Better-Auth).
+   - Atribución en onboarding vía parámetro `?ref=CODIGO` en `/start` y almacenamiento del vínculo de referido.
+   - En el webhook de Mercado Pago (`/api/webhooks/mercadopago`), al confirmarse un pago como `approved`, se invoca `processAffiliateCommissionOnPayment`, calculando automáticamente el 25% ($625 CLP para mensual y $1.500 CLP para semestral) e insertando la comisión en estado `payable`.
+3. **Experiencia del Afiliado en Dashboard (`/dashboard?tab=affiliates`)**:
+   - Pestaña dedicada con copia en 1 clic del enlace único de referido (`indi.bio/start?ref=CODIGO`).
+   - Métricas en tiempo real: *Referidos Activos*, *Por Cobrar (Próximo Corte Quincenal)*, *Total Pagado* y *Próxima Fecha de Pago* (días 1 y 15).
+   - Formulario de datos bancarios para transferencia (bancos chilenos, Cuenta RUT, Cuenta Vista, Corriente) con formateo y validación de RUT.
+4. **Panel de Administración (`/admin`)**:
+   - Ruta protegida con guardrail de sesión y rol de usuario (`role = 'admin'`).
+   - Resumen del monto consolidado a transferir en el corte quincenal actual.
+   - Listado interactivo de afiliados con saldo por liquidar, datos bancarios con botón de copia en 1 toque y botón *"Marcar como Pagado"* que actualiza el estado a `paid`.
+5. **Control de Calidad (251 Tests Passing)**:
+   - Nueva suite en `tests/unit/affiliates-and-payouts.test.ts` con 7 pruebas que validan el algoritmo de Módulo 11 para RUT chileno, contratos Zod y el cálculo de comisiones y fechas de corte quincenales.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (251 de 251 tests en 41 suites).
    - 0 errores en compilación TypeScript (`npm run typecheck`).
 
 

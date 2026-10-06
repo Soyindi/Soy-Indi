@@ -93,9 +93,10 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 5. **Precedencia de Persistencia & Zero Template Shadowing:**
    - En rutas públicas dinámicas (`/p/[slug]`, `/c/[slug]`, `/cv/[slug]`), la consulta a la base de datos (`db.query.*.findFirst`) tiene precedencia absoluta sobre diccionarios o plantillas estáticas de demostración. Los templates curados o mocks en código actúan estrictamente como fallback ante la ausencia de registro en base de datos, garantizando que el contenido generado o editado por los usuarios nunca sea eclipsado por fixtures estáticos.
    - En editores y asistentes de creación, las entidades nuevas deben inicializarse con identificadores o slugs únicos generados dinámicamente (`generatePresentationSlug`, `generateCvSlug`) y los enlaces de apertura desde paneles o dashboards deben vincularse por clave primaria inmutable (`?id=${item.id}`).
-6. **Línea Base de 9 Tablas de Dominio & Contratos JSON Fuertemente Tipados:**
-   - La base de datos centraliza 9 tablas de dominio: `user`, `session`, `account`, `verification`, `cards`, `card_events`, `smart_cvs`, `presentations` y `payments_history`.
+6. **Línea Base de 11 Tablas de Dominio & Contratos JSON Fuertemente Tipados:**
+   - La base de datos centraliza 11 tablas de dominio: `user`, `session`, `account`, `verification`, `cards`, `card_events`, `smart_cvs`, `presentations`, `payments_history`, `affiliate_bank_accounts` y `affiliate_commissions`.
    - Las columnas JSON en SQLite (`themeConfig`, `content`, `slidesData`, `themeSettings`) deben estar fuertemente tipadas mediante `.$type<...>()` en concordancia con sus esquemas Zod en `src/entities/*/schemas.ts`, admitiendo interoperabilidad con generadores de semillas y pruebas. Toda migración Drizzle debe quedar sincronizada en `drizzle/migrations/`.
+   - **Programa de Afiliados & Liquidaciones Quincenales (25% CLP)**: Los usuarios registrados disponen de enlace único (`user.referralCode`). Todo pago aprobado en Mercado Pago genera una comisión atómica del 25% en `affiliate_commissions`. Los afiliados ingresan sus datos bancarios validados con Módulo 11 chileno en `affiliate_bank_accounts` y los cortes se liquidan los días 1 y 15 en `/admin`.
 
 ---
 

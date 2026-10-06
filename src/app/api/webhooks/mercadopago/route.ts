@@ -78,6 +78,14 @@ export async function POST(req: NextRequest) {
           })
           .onConflictDoNothing(),
       ]);
+
+      // c. Procesar comisión de afiliados si el usuario fue referido
+      const { processAffiliateCommissionOnPayment } = await import('@/features/affiliates/actions');
+      await processAffiliateCommissionOnPayment(
+        String(paymentId),
+        targetUserId,
+        Math.round(transaction_amount || 0)
+      );
     }
 
     return NextResponse.json({ success: true, paymentId, status }, { status: 200 });
