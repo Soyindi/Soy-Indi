@@ -21,3 +21,21 @@ export const mercadopagoWebhookPayloadSchema = z.object({
 });
 
 export type MercadopagoWebhookPayload = z.infer<typeof mercadopagoWebhookPayloadSchema>;
+
+export const timeRemainingSchema = z.object({
+  days: z.number().int().min(0),
+  hours: z.number().int().min(0).max(23),
+  minutes: z.number().int().min(0).max(59),
+  seconds: z.number().int().min(0).max(59),
+  isExpired: z.boolean(),
+  totalMs: z.number().int().min(0),
+});
+
+export const userEntitlementSchema = z.object({
+  hasAccess: z.boolean(),
+  isTrial: z.boolean(),
+  status: z.enum(['TRIAL', 'ACTIVE', 'EXPIRED', 'CANCELLED']),
+  daysRemaining: z.number().int().min(0),
+  expiresAt: z.number().nullable(),
+  timeRemaining: timeRemainingSchema,
+});

@@ -64,3 +64,69 @@ export const PRICING_PLANS: Record<PlanInterval, PlanConfig> = {
     ],
   },
 };
+
+export interface TimeRemainingBreakdown {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  isExpired: boolean;
+  totalMs: number;
+}
+
+export interface UserEntitlement {
+  hasAccess: boolean;
+  isTrial: boolean;
+  status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
+  daysRemaining: number;
+  expiresAt: number | null;
+  timeRemaining: TimeRemainingBreakdown;
+}
+
+/**
+ * Función pura determinista para desglosar el tiempo restante en días, horas, minutos y segundos.
+ */
+export function calculateTimeRemaining(
+  targetDate: number | Date | null | undefined,
+  currentDate: number | Date = Date.now()
+): TimeRemainingBreakdown {
+  if (!targetDate) {
+    return {
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      isExpired: true,
+      totalMs: 0,
+    };
+  }
+
+  const targetMs = typeof targetDate === 'number' ? targetDate : targetDate.getTime();
+  const currentMs = typeof currentDate === 'number' ? currentDate : currentDate.getTime();
+  const diffMs = targetMs - currentMs;
+
+  if (diffMs <= 0) {
+    return {
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      isExpired: true,
+      totalMs: 0,
+    };
+  }
+
+  const seconds = Math.floor((diffMs / 1000) % 60);
+  const minutes = Math.floor((diffMs / (1000 * 60)) % 60);
+  const hours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  return {
+    days,
+    hours,
+    minutes,
+    seconds,
+    isExpired: false,
+    totalMs: diffMs,
+  };
+}

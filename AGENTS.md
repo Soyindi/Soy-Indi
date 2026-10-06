@@ -63,6 +63,9 @@ src/
    - La creación de preferencias de pago se realiza exclusivamente del lado del servidor en Route Handlers dedicados (`/api/checkout/mercadopago`), validando la sesión activa y contratos Zod.
    - En el webhook IPN (`/api/webhooks/mercadopago`), se prohíbe confiar en el cuerpo de la notificación entrante. Es obligatorio consultar la API de Mercado Pago (`paymentClient.get({ id })`) para verificar la autenticidad, monto y estado (`approved`) antes de activar la membresía del usuario o extender `subscriptionEndsAt` en Turso.
    - Toda transacción aprobada se registra para trazabilidad contable en `payments_history`.
+10. **Enforcement de Entitlements en Mutaciones Críticas & Cuenta Regresiva de Alta Precisión:**
+   - Toda Server Action de mutación estructural (`upsertCardAction`, `upsertSmartCvAction`, `upsertPresentationAction`) debe ejecutar el guardrail server-side `assertUserEntitlementAction(targetUserId)`. Si el período de prueba o suscripción del usuario ha finalizado (`status === 'EXPIRED'`), la mutación se rechaza de forma atómica y segura con mensaje formal de renovación, previniendo bypass por cliente.
+   - El período de prueba cuenta con un desglose temporal exacto en milisegundos (`calculateTimeRemaining`), expuesto reactivamente en el cliente mediante `<TrialCountdownTimer />` (`02d : 14h : 35m : 18s`) con prevención de hydration mismatch y cumplimiento estricto de accesibilidad WCAG 2.2 AA.
 
 ---
 

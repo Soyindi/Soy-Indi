@@ -1485,3 +1485,20 @@ Inspirado en la investigación de sistemas distribuidos y redes de afiliados PLG
 4. **Optimización de Índices en SQLite (Drizzle ORM)**:
    - La tabla `affiliate_commissions` incorpora índices dedicados sobre sus claves foráneas (`affiliate_commissions_buyer_user_idx` y `affiliate_commissions_payment_idx`), asegurando que las consultas de agregación y auditoría en `/admin` se ejecuten en tiempo $O(\log n)$ sin table scans.
 
+---
+
+## 28. Ciclo de Vida del Trial, Cuenta Regresiva de Precisión y Hardening de Entitlements (2026)
+
+### 28.1 Diagnóstico de Auditoría Temporal
+1. **Precisión Matemática del Servidor**: El vencimiento de prueba se fija en `user.trialEndsAt` como timestamp Unix milisegundos (`INTEGER` en Turso LibSQL SQLite). No depende de la hora local del dispositivo del cliente.
+2. **Cómputo Granular de Tiempo**: Se sustituyó el redondeo estático en días por `calculateTimeRemaining`, una función pura que desglosa en tiempo real: días, horas, minutos, segundos y bandera `isExpired`.
+
+### 28.2 Cuenta Regresiva Reactiva en Vivo (`TrialCountdownTimer.tsx`)
+- **Cero Hydration Mismatch**: El temporizador se hidrata con los datos precomputados por el servidor (`initialTimeRemaining`) y activa un pulso reactivo de $1\text{s}$ únicamente tras el montaje en cliente (`useEffect`).
+- **Tipografía Tabular y Monospace**: Aplica `font-mono tracking-wider tabular-nums` para erradicar cualquier oscilación de ancho o parpadeo visual del layout al alternar dígitos.
+- **Accesibilidad y Ergonomía Base 8**: Semántica `role="timer"` con `aria-label`, contraste perceptual WCAG 2.2 AA y touch targets $\ge 44\text{px}$ en el botón contiguo de suscripción.
+
+### 28.3 Gatekeeper Server-Side contra Bypass de Expiración (`assertUserEntitlementAction`)
+- **Bloqueo Atómico de Mutaciones**: Todas las Server Actions de persistencia (`upsertCardAction`, `upsertSmartCvAction`, `upsertPresentationAction`) validan el derecho de acceso antes de escribir en la base de datos.
+- **Aislamiento Read-Only Garantizado**: Los usuarios con período vencido conservan la lectura de su panel y sus recursos públicos para evitar rotura de enlaces de networking, pero no pueden alterar ni generar nuevos ítems sin regularizar su membresía por $2.500 CLP.
+

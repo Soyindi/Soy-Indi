@@ -34,4 +34,9 @@ describe('TrialBanner Executive Component (WCAG 2.2 AA & Base 8 Grid Standards)'
     expect(src).toContain('from-amber-400 to-amber-500');
     expect(src).toContain('text-zinc-950 font-bold');
   });
+
+  it('integra el componente TrialCountdownTimer para renderizar la cuenta regresiva en vivo', () => {
+    expect(src).toContain('TrialCountdownTimer');
+    expect(src).toContain('expiresAt={entitlement.expiresAt}');
+  });
 });

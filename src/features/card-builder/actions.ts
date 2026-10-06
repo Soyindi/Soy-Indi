@@ -52,6 +52,13 @@ export async function upsertCardAction(
     }
     const targetUserId = sessionResult.userId;
 
+    // 2.1 Guardrail de Seguridad: Bloqueo de mutaciones por membresía/trial expirado
+    const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
+    const entitlementCheck = await assertUserEntitlementAction(targetUserId);
+    if (!entitlementCheck.allowed) {
+      return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere suscripción activa.' };
+    }
+
     if (cardId) {
       // ================= MODO EDICIÓN EXPLÍCITA =================
       // 3a. Verificar propiedad de la tarjeta (Anti-IDOR)

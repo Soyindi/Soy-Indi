@@ -6,15 +6,13 @@ import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-export interface UserEntitlement {
-  hasAccess: boolean;
-  isTrial: boolean;
-  status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
-  daysRemaining: number;
-}
+import { UserEntitlement, calculateTimeRemaining } from '@/entities/subscription/types';
+import { userEntitlementSchema } from '@/entities/subscription/schemas';
+
+export type { UserEntitlement };
 
 /**
- * Consulta de derecho de acceso (Entitlement) del usuario
+ * Consulta de derecho de acceso (Entitlement) del usuario con cómputo temporal exacto.
  */
 export async function checkUserEntitlementAction(userId?: string): Promise<UserEntitlement> {
   try {
@@ -32,71 +30,134 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
       }
     }
 
+    const now = new Date();
+
     if (!targetUser) {
+      // Estado seguro por defecto: 3 días desde ahora para demos y nuevos visitantes
+      const defaultExpiresAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).getTime();
+      const timeRemaining = calculateTimeRemaining(defaultExpiresAt, now);
       return {
         hasAccess: true,
         isTrial: true,
         status: 'TRIAL',
         daysRemaining: 3,
+        expiresAt: defaultExpiresAt,
+        timeRemaining,
       };
     }
 
-    const now = new Date();
     const trialEndsAt = targetUser.trialEndsAt ? new Date(targetUser.trialEndsAt) : null;
     const subscriptionEndsAt = targetUser.subscriptionEndsAt ? new Date(targetUser.subscriptionEndsAt) : null;
 
-    // Si tiene suscripción activa vigente
+    // 1. Si tiene suscripción activa vigente
     if (targetUser.status === 'ACTIVE') {
-      const days = subscriptionEndsAt && now <= subscriptionEndsAt
-        ? Math.ceil((subscriptionEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-        : 30;
-      return {
-        hasAccess: true,
-        isTrial: false,
-        status: 'ACTIVE',
-        daysRemaining: days,
-      };
+      const expiresAt = subscriptionEndsAt ? subscriptionEndsAt.getTime() : null;
+      const isStillValid = !subscriptionEndsAt || now <= subscriptionEndsAt;
+
+      if (isStillValid) {
+        const timeRemaining = calculateTimeRemaining(expiresAt, now);
+        const days = subscriptionEndsAt
+          ? Math.max(1, Math.ceil((subscriptionEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+          : 30;
+
+        return {
+          hasAccess: true,
+          isTrial: false,
+          status: 'ACTIVE',
+          daysRemaining: days,
+          expiresAt,
+          timeRemaining,
+        };
+      }
     }
 
-    // Si está en período de prueba (3 días)
+    // 2. Si está en período de prueba (3 días) y no ha expirado
     if (targetUser.status === 'TRIAL' && trialEndsAt && now <= trialEndsAt) {
-      const days = Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const expiresAt = trialEndsAt.getTime();
+      const timeRemaining = calculateTimeRemaining(expiresAt, now);
+      const days = Math.max(1, Math.ceil((expiresAt - now.getTime()) / (1000 * 60 * 60 * 24)));
+
       return {
         hasAccess: true,
         isTrial: true,
         status: 'TRIAL',
         daysRemaining: days,
+        expiresAt,
+        timeRemaining,
       };
     }
 
-    // Si no tiene fecha definida o trial vigente pero recién creado
+    // 3. Si no tiene fecha definida de trial pero tiene status TRIAL
     if (targetUser.status === 'TRIAL' && !trialEndsAt) {
+      const defaultExpiresAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).getTime();
+      const timeRemaining = calculateTimeRemaining(defaultExpiresAt, now);
       return {
         hasAccess: true,
         isTrial: true,
         status: 'TRIAL',
         daysRemaining: 3,
+        expiresAt: defaultExpiresAt,
+        timeRemaining,
       };
     }
 
-    // Acceso expirado
+    // 4. Acceso expirado
+    const expiredAt = trialEndsAt?.getTime() || subscriptionEndsAt?.getTime() || null;
     return {
       hasAccess: false,
       isTrial: false,
       status: 'EXPIRED',
       daysRemaining: 0,
+      expiresAt: expiredAt,
+      timeRemaining: {
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        isExpired: true,
+        totalMs: 0,
+      },
     };
   } catch (err: any) {
     if (process.env.NODE_ENV !== 'test' && !err?.message?.includes('no such table')) {
       console.error('Error verificando entitlement:', err);
     }
+    const defaultExpiresAt = Date.now() + 3 * 24 * 60 * 60 * 1000;
     return {
       hasAccess: true,
       isTrial: true,
       status: 'TRIAL',
       daysRemaining: 3,
+      expiresAt: defaultExpiresAt,
+      timeRemaining: calculateTimeRemaining(defaultExpiresAt),
     };
   }
+}
+
+/**
+ * Guardrail de Seguridad Server-Side: Valida si el usuario tiene permiso activo
+ * para mutaciones críticas (creación, edición o publicación).
+ */
+export async function assertUserEntitlementAction(userId?: string): Promise<{
+  allowed: boolean;
+  entitlement: UserEntitlement;
+  error?: string;
+}> {
+  const entitlement = await checkUserEntitlementAction(userId);
+
+  if (!entitlement.hasAccess) {
+    return {
+      allowed: false,
+      entitlement,
+      error:
+        'Tu período de prueba ha finalizado. Suscríbete a INDI Pro por $2.500 CLP para continuar creando y editando tus recursos profesionales.',
+    };
+  }
+
+  return {
+    allowed: true,
+    entitlement,
+  };
 }
 
 /**
