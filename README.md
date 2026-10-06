@@ -295,20 +295,29 @@ INDI está 100% optimizado para desplegarse en **Vercel** con rendimiento perime
 ### 1. Variables de Entorno Requeridas en Vercel Dashboard
 En la sección **Project Settings > Environment Variables** de tu proyecto en Vercel, agrega:
 
-| Variable | Descripción / Origen | Ejemplo |
+| Variable | Propósito | Ejemplo / Valor Recomendado |
 | :--- | :--- | :--- |
 | `TURSO_DATABASE_URL` | Endpoint de tu base de datos Turso Cloud distribuida | `libsql://soyindi-soyindi.aws-us-west-2.turso.io` |
 | `TURSO_AUTH_TOKEN` | Token de autenticación de Turso generado con `turso db tokens create` | `eyJhbGciOi...` |
 | `BETTER_AUTH_SECRET` | Clave secreta criptográfica (mínimo 32 caracteres) | `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | URL canónica de producción en Vercel | `https://indi.bio` o `https://tu-proyecto.vercel.app` |
 | `NEXT_PUBLIC_APP_URL` | Misma URL pública para el cliente React | `https://indi.bio` o `https://tu-proyecto.vercel.app` |
+| `ADMIN_EMAILS` | Lista de correos autorizados para gestionar liquidaciones en `/admin` | `soyindi.cl@gmail.com,psmatrique@gmail.com,matiricardoo@gmail.com` |
 | `GOOGLE_CLIENT_ID` | Client ID obtenido en Google Cloud Console | `123456789-abc.apps.googleusercontent.com` |
 | `GOOGLE_CLIENT_SECRET` | Client Secret obtenido en Google Cloud Console | `GOCSPX-xxxxxxxxxxxxx` |
 | `NVIDIA_API_KEY` | Clave de API de NVIDIA NIM para inferencia de IA | `nvapi-...` |
-| `MERCADOPAGO_ACCESS_TOKEN` | Token de acceso de producción / sandbox de Mercado Pago | `APP_USR-...` o `TEST-...` |
-| `MERCADOPAGO_PUBLIC_KEY` | Clave pública de Mercado Pago protegida en servidor | `APP_USR-...` o `TEST-...` |
+| `MERCADOPAGO_ACCESS_TOKEN` | Token de acceso de producción de Mercado Pago | `APP_USR-...` |
+| `MERCADOPAGO_PUBLIC_KEY` | Clave pública de Mercado Pago | `APP_USR-...` |
+| `MERCADOPAGO_CLIENT_ID` | Client ID de la integración de Mercado Pago | `7318955796450757` |
+| `MERCADOPAGO_CLIENT_SECRET` | Client Secret de la integración de Mercado Pago | `uKLwObXXrKbfcQOh...` |
 
-### 2. Configurar Google Cloud Console (OAuth 2.0)
+### 2. Configurar Webhook IPN en Mercado Pago Developers
+1. Ve a tu aplicación en [Mercado Pago Developers](https://www.mercadopago.cl/developers/panel/app).
+2. En la sección **Webhooks / Notificaciones IPN**, agrega tu URL pública de producción:
+   - `https://indi.bio/api/webhooks/mercadopago` (o `https://tu-proyecto.vercel.app/api/webhooks/mercadopago`).
+3. Selecciona el evento **Pagos (`payment`)**.
+
+### 3. Configurar Google Cloud Console (OAuth 2.0)
 1. Ve a [Google Cloud Console](https://console.cloud.google.com/) > **APIs & Services > Credentials**.
 2. Crea unas nuevas credenciales de tipo **OAuth 2.0 Client ID** (Web Application).
 3. En **Authorized JavaScript origins**, añade:
@@ -320,6 +329,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
    - `https://tu-proyecto.vercel.app/api/auth/callback/google`
    - `https://indi.bio/api/auth/callback/google`
 5. Guarda y copia el **Client ID** y **Client Secret** en las variables de entorno de Vercel.
+
 
 ---
 
