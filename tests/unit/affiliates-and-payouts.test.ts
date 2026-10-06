@@ -4,9 +4,10 @@ import {
   formatChileanRut, 
   affiliateBankAccountSchema, 
   CHILEAN_BANKS, 
-  ACCOUNT_TYPES 
+  ACCOUNT_TYPES,
+  calculateNextPayoutDate,
+  AFFILIATE_COMMISSION_PERCENTAGE
 } from '@/entities/affiliate/schemas';
-import { calculateNextPayoutDate, AFFILIATE_COMMISSION_PERCENTAGE } from '@/features/affiliates/actions';
 
 describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
   describe('Algoritmo de Módulo 11 para RUT Chileno', () => {

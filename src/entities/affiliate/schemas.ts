@@ -28,6 +28,29 @@ export const ACCOUNT_TYPES = [
 ] as const;
 
 /**
+ * Porcentaje de comisión estándar del programa de afiliados INDI (25%)
+ */
+export const AFFILIATE_COMMISSION_PERCENTAGE = 25;
+
+/**
+ * Calcula la próxima fecha de corte quincenal (día 1 o día 15 del mes)
+ */
+export function calculateNextPayoutDate(currentDate: Date = new Date()): string {
+  const day = currentDate.getDate();
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  if (day < 15) {
+    const nextDate = new Date(year, month, 15);
+    return nextDate.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+  } else {
+    // Día 1 del mes siguiente
+    const nextDate = new Date(year, month + 1, 1);
+    return nextDate.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+}
+
+/**
  * Validador estricto de RUT Chileno con algoritmo de dígito verificador módulo 11
  */
 export function validateChileanRut(rutString: string): boolean {

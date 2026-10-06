@@ -9,31 +9,10 @@ import {
   affiliateBankAccountSchema, 
   AffiliateBankAccountInput, 
   AffiliateOverview,
-  AdminAffiliatePayoutItem
+  AdminAffiliatePayoutItem,
+  AFFILIATE_COMMISSION_PERCENTAGE,
+  calculateNextPayoutDate
 } from '@/entities/affiliate/schemas';
-
-/**
- * Porcentaje de comisión estándar del programa de afiliados INDI (25%)
- */
-export const AFFILIATE_COMMISSION_PERCENTAGE = 25;
-
-/**
- * Calcula la próxima fecha de corte quincenal (día 1 o día 15 del mes)
- */
-export function calculateNextPayoutDate(currentDate: Date = new Date()): string {
-  const day = currentDate.getDate();
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  if (day < 15) {
-    const nextDate = new Date(year, month, 15);
-    return nextDate.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
-  } else {
-    // Día 1 del mes siguiente
-    const nextDate = new Date(year, month + 1, 1);
-    return nextDate.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-}
 
 /**
  * Consulta de Resumen de Afiliado para el usuario conectado
