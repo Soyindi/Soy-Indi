@@ -208,19 +208,40 @@ export async function getAffiliateOverviewAction(userId?: string): Promise<{
       }
     }
 
-    // Contar total de usuarios que fueron referidos por este usuario
+    // Clasificar usuarios referidos (Totales, Pro Activos, En Trial)
     const referredUsers = await db.query.user.findMany({
       where: eq(user.referredBy, currentUserId),
     });
 
+    let proReferralsCount = 0;
+    let trialReferralsCount = 0;
+
+    for (const refUser of referredUsers) {
+      if (refUser.status === 'ACTIVE') {
+        proReferralsCount += 1;
+      } else {
+        trialReferralsCount += 1;
+      }
+    }
+
+    const totalReferralsCount = referredUsers.length;
+    const conversionRate = totalReferralsCount > 0 
+      ? Math.round((proReferralsCount / totalReferralsCount) * 100) 
+      : 0;
+
     const origin = process.env.BETTER_AUTH_URL || 'https://soyindi.cl';
     const referralUrl = `${origin}/start?ref=${referralCode}`;
+    const directSignupUrl = `${origin}/login?mode=signup&ref=${referralCode}`;
 
     const overview: AffiliateOverview = {
       referralCode,
       referralUrl,
+      directSignupUrl,
       commissionPercentage: AFFILIATE_COMMISSION_PERCENTAGE,
-      totalReferralsCount: referredUsers.length,
+      totalReferralsCount,
+      proReferralsCount,
+      trialReferralsCount,
+      conversionRate,
       totalEarningsClp,
       pendingBalanceClp,
       paidBalanceClp,

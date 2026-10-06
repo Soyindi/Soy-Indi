@@ -19,6 +19,7 @@ interface LoginPageProps {
   searchParams: Promise<{
     mode?: string;
     callbackUrl?: string;
+    ref?: string;
   }>;
 }
 
@@ -29,11 +30,44 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     ? parsed.data
     : { mode: 'login' as const, callbackUrl: '/dashboard' };
 
+  // 1. Persistencia de referido en cookie si viene por query param (?ref=CODIGO)
+  const rawParamRef = rawParams?.ref;
+  if (rawParamRef) {
+    try {
+      const { cookies } = await import('next/headers');
+      const cookieStore = await cookies();
+      const { REFERRAL_COOKIE_NAME, REFERRAL_COOKIE_MAX_AGE, sanitizeReferralCode } = await import(
+        '@/entities/affiliate/referral-cookie'
+      );
+      const sanitized = sanitizeReferralCode(rawParamRef);
+      if (sanitized) {
+        cookieStore.set(REFERRAL_COOKIE_NAME, sanitized, {
+          maxAge: REFERRAL_COOKIE_MAX_AGE,
+          path: '/',
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
+          httpOnly: false,
+        });
+      }
+    } catch {
+      // Silencioso
+    }
+  }
+
   // Guardrail de Experiencia de Usuario: Si el usuario ya cuenta con sesión activa en Better-Auth,
   // evitar mostrar nuevamente el formulario y redirigir al destino contextual seguro (callbackUrl o /dashboard).
   const headerList = await headers();
   const session = await auth.api.getSession({ headers: headerList });
   if (session?.user) {
+    // Si viene código de referido y el usuario ya está conectado, atribuir
+    if (rawParamRef) {
+      try {
+        const { attributeReferralAction } = await import('@/features/affiliates/actions');
+        await attributeReferralAction(session.user.id, rawParamRef);
+      } catch {
+        // Silencioso
+      }
+    }
     redirect(callbackUrl);
   }
 
@@ -59,7 +93,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       </header>
 
       {/* Contenedor del Modal embebido en página */}
-      <main className="relative z-10 flex-1 flex items-center justify-center">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center">
+        {rawParamRef && (
+          <div className="w-full max-w-md mb-4 p-3 rounded-2xl glass-panel border border-emerald-500/30 bg-emerald-950/20 text-center animate-fade-in">
+            <span className="text-xs font-semibold text-emerald-300">
+              🎁 Invitación de @{rawParamRef} activada
+            </span>
+            <p className="text-[11px] text-zinc-400 mt-0.5">
+              Tu prueba VIP de 3 días con acceso total comenzará automáticamente al registrarte.
+            </p>
+          </div>
+        )}
+
         <AuthModal
           isOpen={true}
           defaultMode={mode}

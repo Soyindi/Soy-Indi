@@ -186,9 +186,13 @@ export type UpdateReferralCodeInput = z.infer<typeof updateReferralCodeSchema>;
  */
 export interface AffiliateOverview {
   referralCode: string;
-  referralUrl: string;
+  referralUrl: string;        // Enlace al Onboarding Hub (/start?ref=CODIGO)
+  directSignupUrl: string;    // Enlace directo al formulario de Registro (/login?mode=signup&ref=CODIGO)
   commissionPercentage: number;
   totalReferralsCount: number;
+  proReferralsCount: number;   // Usuarios referidos que convirtieron a Plan Pro activo
+  trialReferralsCount: number; // Usuarios referidos actualmente en prueba gratuita
+  conversionRate: number;      // % de conversión a Pro (0 a 100)
   totalEarningsClp: number;
   pendingBalanceClp: number; // Por pagar en el próximo corte quincenal
   paidBalanceClp: number;    // Ya transferido históricamente

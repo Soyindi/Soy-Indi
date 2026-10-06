@@ -1457,11 +1457,21 @@ graph TD
 ### 27.2 Principios de Ingeniería Implementados
 1. **Resiliencia contra Pérdida de Atribución (First-Touch Sticky)**:
    - Los visitantes no pierden su anfitrión si hacen clic en "Ver Planes" o exploran la plataforma antes de registrarse, gracias a la cookie `indi_ref_code` (expiración de 30 días, `sameSite: 'lax'`).
-2. **Feedback Visual Inmediato (`ReferralWelcomeBanner.tsx`)**:
+2. **Destinos Duales de Captación (Hub Onboarding vs Registro Directo)**:
+   - El generador de enlaces de afiliados ofrece dos modalidades con copiado en 1 toque:
+     - **Onboarding Hub (`/start?ref=CODIGO`)**: Permite descubrir la suite completa (Tarjetas, Smart CV, Presentaciones) con el banner de bienvenida VIP antes de registrarse.
+     - **Registro Directo (`/login?mode=signup&ref=CODIGO`)**: Abre inmediatamente el formulario de creación de cuenta (Google OAuth en 1 clic o email), vinculando al usuario sin fricción y mostrando el badge de beneficio VIP.
+3. **Analíticas de Conversión Pro en Tiempo Real**:
+   - El panel de control del afiliado (`AffiliateDashboardTab.tsx`) consulta directamente a Turso LibSQL y desglosa:
+     - **Registros Totales**: Suma de cuentas invitadas.
+     - **En Prueba Gratuita (`TRIAL`)**: Usuarios explorando los 3 días de cortesía.
+     - **Convertidos a Plan Pro (`ACTIVE`)**: Suscriptores que completaron su pago en Mercado Pago.
+     - **Tasa de Conversión (%)**: Razón porcentual $(\text{Pro} / \text{Total}) \times 100$.
+4. **Cálculo Atómico de Liquidaciones (25% CLP)**:
+   - Cada pago aprobado en Mercado Pago genera una comisión del 25% ($625 CLP mensual / $1.500 CLP semestral) en `affiliate_commissions`, acumulándose para abono a Cuenta RUT o bancos chilenos los días 1 y 15 en `/admin`.
+5. **Feedback Visual Inmediato (`ReferralWelcomeBanner.tsx`)**:
    - Cumple con WCAG 2.2 AA (ratio $\ge 4.5:1$), retícula Base 8 y Glassmorphism 2.0. Notifica al usuario invitado de su beneficio VIP y del nombre/código de su anfitrión sin invadir la navegación.
-3. **Propagación en Flujo de Autenticación (`AuthModal.tsx`)**:
-   - Tanto el login social (Google OAuth) como el registro con correo electrónico enriquecen su `callbackURL` con el parámetro de referido activo (`?ref=...`) y ejecutan la vinculación segura de forma atómica.
-4. **Contratos Zod Estrictos (`src/entities/affiliate/referral-cookie.ts`)**:
+6. **Contratos Zod Estrictos (`src/entities/affiliate/referral-cookie.ts`)**:
    - Sanitización de formato (`formatReferralCode`), límite de longitud (3 a 24 caracteres), y bloqueo de códigos reservados del sistema (`isReservedReferralCode`).
 
 

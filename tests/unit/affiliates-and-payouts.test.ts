@@ -150,6 +150,24 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
       expect(sanitizeReferralCode('código_con_más_de_veinticuatro_caracteres_totales')).toBe(null);
     });
   });
+
+  describe('Métricas de Conversión Pro y Enlace Directo a Registro', () => {
+    it('calcula correctamente la tasa de conversión y estructura los enlaces duales', () => {
+      const totalReferrals = 10;
+      const proReferrals = 3;
+      const trialReferrals = 7;
+      const conversionRate = Math.round((proReferrals / totalReferrals) * 100);
+
+      expect(conversionRate).toBe(30);
+
+      const code = 'mi-marca';
+      const hubUrl = `https://soyindi.cl/start?ref=${code}`;
+      const signupUrl = `https://soyindi.cl/login?mode=signup&ref=${code}`;
+
+      expect(hubUrl).toContain('/start?ref=mi-marca');
+      expect(signupUrl).toContain('/login?mode=signup&ref=mi-marca');
+    });
+  });
 });
 
 

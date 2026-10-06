@@ -113,7 +113,9 @@ A diferencia de las tarjetas de papel —que se pierden, se agotan o terminan en
 - **25% de Comisión Recurrente en CLP**: Gana el 25% de comisión ($625 CLP mensual / $1.500 CLP semestral) por cada usuario que se registre con tu enlace (`indi.bio/start?ref=CODIGO`) y complete su suscripción en Mercado Pago.
 - **Códigos Personalizables en Tiempo Real**: Todo usuario recibe un código automático al registrarse y puede personalizarlo en cualquier momento desde su panel por uno memorable (`indi.bio/start?ref=mi-marca`) con validación en vivo y protección de rutas del sistema.
 - **Atribución Automatizada & Sticky con Cookie First-Party**: Atribución transparente en el onboarding mediante parámetros `?ref=CODIGO` y persistencia de cookie de 30 días (`indi_ref_code`), protegiendo de pérdidas si el visitante navega antes de registrarse.
-- **Experiencia de Bienvenida Contextual (`ReferralWelcomeBanner`)**: Detección del referente y despliegue de badge visual de confirmación de acceso VIP en el Onboarding Hub (`/start`).
+- **Enlaces Duales de Afiliados (Hub vs Registro Directo)**: El creador puede copiar con 1 clic su enlace al Hub (`soyindi.cl/start?ref=CODIGO`) o directo al formulario de registro (`soyindi.cl/login?mode=signup&ref=CODIGO`).
+- **Analíticas de Conversión Pro en Vivo**: Desglose transparente en el panel de afiliados: usuarios en prueba (`TRIAL`), convertidos a Plan Pro (`ACTIVE`), tasa de conversión (%) y saldo acumulado por pagar.
+- **Experiencia de Bienvenida Contextual (`ReferralWelcomeBanner`)**: Detección del referente y despliegue de badge visual de confirmación de acceso VIP en el Onboarding Hub (`/start`) y formulario de registro (`/login`).
 - **Abono Quincenal a Cuentas Chilenas**: Módulo de datos bancarios para transferencia directa a Cuenta RUT, Cuenta Vista, Corriente o Ahorro en los principales bancos de Chile, con validador de RUT algoritmo Módulo 11.
 - **Panel de Administración (`/admin`)**: Vista protegida por rol (`role = 'admin'`) con consolidado quincenal de liquidaciones pendientes (días 1 y 15), detalle bancario con copia en 1 clic y confirmación de pago transferido.
 
