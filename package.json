@@ -19,6 +19,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.68",
     "@ai-sdk/google": "^4.0.85",
+    "@aws-sdk/client-s3": "^3.1146.0",
     "@libsql/client": "^0.18.0",
     "@vercel/og": "^1.0.3",
     "ai": "^7.0.122",

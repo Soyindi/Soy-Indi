@@ -209,7 +209,29 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
         mimeType: 'image/webp',
       });
 
-      handleChange('photoUrl', result.dataUrl);
+      // Intentar subir a Cloudflare R2 vía streaming multipart
+      let finalPhotoUrl = result.dataUrl;
+      try {
+        const formData = new FormData();
+        formData.append('file', result.file);
+        formData.append('category', 'avatars');
+
+        const uploadRes = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          if (uploadData.success && uploadData.url) {
+            finalPhotoUrl = uploadData.url;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('Fallback a almacenamiento local tras error en upload:', uploadErr);
+      }
+
+      handleChange('photoUrl', finalPhotoUrl);
       setPhotoCompressionInfo({
         originalKb: Math.round(result.originalSize / 1024),
         compressedKb: Math.round(result.compressedSize / 1024),
