@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-294_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-295_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -45,11 +45,12 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Asistente de Biografía con IA Multi-Tono**: Generación instantánea de bios con IA en 3 registros profesionales (*Ejecutivo*, *Innovador*, *Cercano*) directamente en el editor.
 - **Ubicación & Mapa Interactivo (Privacy-First)**: Módulo de geolocalización con visor OpenStreetMap embebido (sin API keys) y accesos directos One-Tap a Google Maps y Waze.
 - **Perfil Profesional Vivo**: Nombre, especialidad, biografía, enlaces a redes sociales y contacto directo.
-- **Botón Guardar Contacto (vCard 4.0 / RFC 6350 One-Tap con ADR)**: Descarga instantánea de archivo `.vcf` compatible con iOS Contacts, Google Contacts y Microsoft Outlook con codificación estricta UTF-8 y componente físico `ADR/LABEL`.
+- **Botón Guardar Contacto con Foto a Pantalla Completa (vCard 4.0 / RFC 6350)**: Descarga instantánea de archivo `.vcf` con resolución asíncrona de imagen en Base64 (`PHOTO;ENCODING=b;TYPE=JPEG:`), integrando la fotografía del usuario para que la agenda de iOS/Android la despliegue a pantalla completa durante llamadas telefónicas.
 - **Bloques Bento Modulares**: Vitrina interactiva para destacar proyectos, métricas cuantitativas (+150 clientes, +25% YoY), enlaces externos y testimonios.
-- **Botón de WhatsApp Pre-redactado**: Inicia conversaciones comerciales con un mensaje personalizado en 1 toque.
+- **Botón de WhatsApp con Tipografía de Alta Estética**: Mensaje estilizado con formato Markdown (*negrita*, _cursiva_, separadores visuales) que levanta en 1 toque la tarjeta con foto y datos verídicos.
 - **Código QR Dinámico Integrado**: Listo para escanear en pantalla, imprimir en stickers o proyectar.
-- **Web Share Modal Háptico & Canales Directos**: Diálogo accesible WCAG 2.2 AA con vibración háptica (`navigator.vibrate`), fallback seguro al portapapeles y canales de un toque para WhatsApp Web, LinkedIn y X (Twitter).
+- **Web Share Modal Háptico & Selector de Tonos**: Diálogo accesible WCAG 2.2 AA con vibración háptica (`navigator.vibrate`), selector de estilo de mensaje (*Networking*, *Comercial*, *Directo*), fallback seguro al portapapeles y canales de un toque para WhatsApp Web, LinkedIn y X (Twitter).
+- **Favicon Vectorial de Clase Mundial (`src/app/icon.svg`)**: Isotipo adaptativo con optical sizing y soporte automático para navegadores en tema claro y oscuro (`@media (prefers-color-scheme)`).
 - **Open Graph Dinámico con Safe Zone 1:1 (`/api/og`)**: Generador perimetral Edge ($1200\times630\text{ px}$) con zona central protegida ($630\times630\text{ px}$) para evitar recortes en feeds y chats de WhatsApp, Instagram y Telegram, complementado con auras volumétricas OKLCH y caché de alto rendimiento (`s-maxage=86400`).
 - **Copywriting Persuasivo Contextual (AIDA, Hook-Story-Offer, Curiosity Gap)**: Redacción inteligente con UTMs canónicos y atribución de afiliados integrada en un clic.
 - **Telemetría Atómica en Turso**: Registro granular de eventos (`view`, `contact_save`, `whatsapp_click`, `share`, `qr_scan`) y Tasa de Conversión en tiempo real.

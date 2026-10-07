@@ -15,7 +15,7 @@ import {
   Navigation
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { downloadVCard } from '@/shared/lib/vcard';
+import { downloadVCardWithPhoto } from '@/shared/lib/vcard';
 import { getAccessibleTextColor } from '@/shared/lib/colorContrast';
 import { trackCardEventAction } from '@/features/card-builder/analytics-actions';
 import { trackResourceView } from '@/shared/lib/telemetryClient';
@@ -174,7 +174,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
     // Telemetría silently
     trackCardEventAction({ slug: card.slug, eventType: 'contact_save' }).catch(() => {});
 
-    downloadVCard({
+    downloadVCardWithPhoto({
       slug: card.slug,
       title: card.title,
       profession: card.profession,
@@ -186,15 +186,16 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
       linkedinUrl: card.linkedinUrl,
       instagramUrl: card.instagramUrl,
       address: card.address,
+      photoUrl: card.photoUrl,
     });
     setVcardSaved(true);
     setTimeout(() => setVcardSaved(false), 2500);
   };
 
-  // Construir link de WhatsApp con mensaje personalizado
+  // Construir link de WhatsApp con mensaje personalizado de alta estética tipográfica
   const whatsappUrl = card.whatsapp
     ? `https://wa.me/${card.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
-        `Hola ${card.title}, vi tu tarjeta digital en INDI y me gustaría conectar contigo.`
+        `👋 ¡Hola ${card.title.trim()}! Vi tu *Tarjeta Digital INDI* (${card.profession.trim()}) y me gustaría conectar contigo sobre oportunidades y proyectos.`
       )}`
     : null;
 

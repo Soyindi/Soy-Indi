@@ -56,6 +56,8 @@ export function WebShareModal({
   const [canNativeShare, setCanNativeShare] = useState(false);
 
   // URLs canónicas para cada canal
+  const [tone, setTone] = useState<'networking' | 'business' | 'minimal'>('networking');
+
   const defaultUrl = buildCanonicalShareUrl({
     entityType,
     slug,
@@ -96,6 +98,7 @@ export function WebShareModal({
     title,
     role,
     url: defaultUrl,
+    tone,
   });
 
   useEffect(() => {
@@ -259,6 +262,62 @@ export function WebShareModal({
               <p className="text-[11px] text-zinc-500 truncate mt-0.5">soyindi.cl</p>
             </div>
           </div>
+
+          {/* Selector de Tono del Mensaje */}
+          {entityType === 'card' && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  Estilo de Mensaje
+                </span>
+                <span className="text-[11px] text-zinc-500">Formato WhatsApp</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptics();
+                    setTone('networking');
+                  }}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all ${
+                    tone === 'networking'
+                      ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-sm shadow-indigo-500/20'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  🤝 Networking
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptics();
+                    setTone('business');
+                  }}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all ${
+                    tone === 'business'
+                      ? 'bg-emerald-600/20 border-emerald-500 text-emerald-300 shadow-sm shadow-emerald-500/20'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  💼 Comercial
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptics();
+                    setTone('minimal');
+                  }}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all ${
+                    tone === 'minimal'
+                      ? 'bg-cyan-600/20 border-cyan-500 text-cyan-300 shadow-sm shadow-cyan-500/20'
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  ⚡ Directo
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Botón Primario: Web Share API si está disponible */}
           {canNativeShare && (

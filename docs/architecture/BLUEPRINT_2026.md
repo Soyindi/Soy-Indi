@@ -1671,3 +1671,26 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
     - `src/entities/card/components/DigitalCard.tsx`
     - `src/features/ai-smart-cv/components/PublicCvViewer.tsx`
     - `src/features/orbital-presentations/components/PublicPresentationViewer.tsx`
+
+---
+
+## 35. Favicon Vectorial de Clase Mundial (Dark/Light Mode), Tipografía Premium de WhatsApp & Foto de Perfil en vCard 4.0 (Fase 2)
+
+### 35.1 Favicon SVG con Optical Sizing & Soporte Bimodal (`src/app/icon.svg` & `src/app/layout.tsx`)
+- **Adaptación Perceptual**: El favicon SVG implementa directivas `@media (prefers-color-scheme: light)` para alternar la base contenedora y los contrastes del prisma geométrico.
+  - *Modo Oscuro*: Fondo `#090D16`, halo cian (`#22D3EE`) y trazo exterior suave.
+  - *Modo Claro*: Fondo blanco puro (`#FFFFFF`), bordes contrastados y halo índigo profundo (`#4F46E5`).
+- **Optical Sizing**: Trazo diagonal reforzado ($7\text{px}$) y reducción de detalles superfluos para evitar el empastado de píxeles a $16 \times 16\text{ px}$ y $32 \times 32\text{ px}$.
+- **Metadatos Canónicos de Iconos**: Vinculación explícita en `RootLayout` (`src/app/layout.tsx`) con soporte para SVG vectorial, WebP y `apple-touch-icon` (180x180 px).
+
+### 35.2 Copywriting Enriquecido para WhatsApp con Selector de Tono (`src/shared/lib/shareCopy.ts` & `WebShareModal.tsx`)
+- **Formateo Estético**: Integración de separadores visuales `━━━━━━━━━━━━━━━━━━━━`, negritas tipográficas (`*`), cursivas (`_`) y estructura de contacto directo.
+- **Selector de Tono en el Modal**:
+  - `Networking`: Fórmula AIDA predeterminada para conectar y guardar contacto.
+  - `Comercial`: Presentación de servicios, portafolio y propuesta formal.
+  - `Directo`: Mensaje condensado para mensajería instantánea ágil.
+
+### 35.3 Foto de Contacto Directa en vCard 4.0 / RFC 6350 (`src/shared/lib/vcard.ts`)
+- **Incrustación Base64**: La propiedad `PHOTO;ENCODING=b;TYPE=JPEG:` se inyecta en el archivo `.vcf` al presionar "Guardar Contacto" mediante `downloadVCardWithPhoto`.
+- **Resolución Asíncrona Resiliente**: Función de fetch de imagen con timeout de seguridad (2000ms) y degradación elegante a vCard sin foto ante fallos de red o conexiones lentas.
+- **Resultado en Clientes Móviles**: Al guardar el contacto en iOS Contacts o Google Contacts, la llamada entrante despliega el rostro y perfil del usuario a pantalla completa.

@@ -80,6 +80,9 @@ src/
    - La generación dinámica de tarjetas Open Graph (`/api/og`) se ejecuta en el Edge perimetral (`runtime = 'edge'`) con cabeceras `Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800`.
    - La retícula de composición $1200\times630\text{ px}$ reserva una **Zona Segura Central 1:1 ($630\times630\text{ px}$)** que concentra la tipografía, logotipo canónico y badges verificados, previniendo recortes visuales en feeds móviles e historias (WhatsApp, LinkedIn, Instagram, X).
    - Los módulos de compartir en vistas públicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`) utilizan `<WebShareModal />` con retroalimentación háptica (`navigator.vibrate`), fallback seguro al portapapeles, enlaces directos a WhatsApp/LinkedIn/X y fórmulas persuasivas de copywriting (`AIDA`, `Hook-Story-Offer`, `Curiosity Gap`) parametrizadas con UTMs canónicos y atribución de afiliados.
+15. **Favicon Vectorial Adaptativo (Dark/Light Mode) & Foto de Perfil en vCard 4.0:**
+   - La aplicación declara un favicon SVG oficial (`src/app/icon.svg`) con estilización interna mediante `@media (prefers-color-scheme: dark/light)` para contraste cristalino tanto en temas oscuros como claros del sistema operativo o navegador, acompañado de `apple-touch-icon` en `src/app/layout.tsx`.
+   - El generador de vCard (`src/shared/lib/vcard.ts`) admite la resolución e incrustación de fotos de contacto (`PHOTO;ENCODING=b;TYPE=JPEG:`) mediante `downloadVCardWithPhoto`, garantizando que la imagen del usuario se guarde en la agenda telefónica (iOS / Android) con degradación silenciosa y sin bloquear la interacción.
 
 ---
 

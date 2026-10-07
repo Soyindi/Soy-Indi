@@ -15,6 +15,8 @@ export interface VCardOptions {
   linkedinUrl?: string | null;
   instagramUrl?: string | null;
   address?: string | null;
+  photoUrl?: string | null;
+  photoBase64?: string | null;
   slug: string;
 }
 
@@ -95,10 +97,52 @@ export function generateVCardString(card: VCardOptions): string {
     lines.push(`NOTE;CHARSET=UTF-8:${escapeVCardText(`Perfil digital verificado: ${profileUrl}`)}`);
   }
 
+  // Incrustar foto de perfil en Base64 para que la agenda de iOS/Android muestre foto a pantalla completa
+  if (card.photoBase64) {
+    // Limpiar posible prefijo data:image/...;base64,
+    const cleanBase64 = card.photoBase64.replace(/^data:image\/[a-zA-Z]+;base64,/, '').trim();
+    if (cleanBase64) {
+      lines.push(`PHOTO;ENCODING=b;TYPE=JPEG:${cleanBase64}`);
+    }
+  }
+
   lines.push('REV:' + new Date().toISOString());
   lines.push('END:VCARD');
 
   return lines.join('\r\n');
+}
+
+/**
+ * Convierte una imagen remota o URL a cadena Base64 con timeout seguro para no bloquear la UX.
+ */
+async function fetchImageAsBase64(url: string, timeoutMs = 2000): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  if (url.startsWith('data:image/')) return url;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      cache: 'force-cache',
+    });
+    clearTimeout(timer);
+
+    if (!response.ok) return null;
+    const blob = await response.blob();
+
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(typeof reader.result === 'string' ? reader.result : null);
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -117,4 +161,24 @@ export function downloadVCard(card: VCardOptions, filename?: string): void {
   anchor.click();
   document.body.removeChild(anchor);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Descarga la vCard resolviendo de forma asíncrona la foto de perfil en Base64
+ * con fallback instantáneo a descarga sin foto si la red presenta latencia.
+ */
+export async function downloadVCardWithPhoto(card: VCardOptions, filename?: string): Promise<void> {
+  if (typeof window === 'undefined') return;
+
+  let photoBase64: string | null = card.photoBase64 || null;
+
+  if (!photoBase64 && card.photoUrl) {
+    try {
+      photoBase64 = await fetchImageAsBase64(card.photoUrl);
+    } catch {
+      // Degradación silenciosa: continúa sin foto
+    }
+  }
+
+  downloadVCard({ ...card, photoBase64 }, filename);
 }

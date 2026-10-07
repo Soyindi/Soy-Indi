@@ -63,5 +63,15 @@ describe('vCard 3.0 / RFC 2426 Deterministic Generator', () => {
     expect(vcard).toContain('ADR;TYPE=WORK;CHARSET=UTF-8:;;Av. Providencia 1208\\, Oficina 702\\, Santiago\\, Chile;;;;');
     expect(vcard).toContain('LABEL;TYPE=WORK;CHARSET=UTF-8:Av. Providencia 1208\\, Oficina 702\\, Santiago\\, Chile');
   });
+
+  it('debe incrustar la propiedad PHOTO codificada en Base64 para visualización en agenda telefónica', () => {
+    const cardWithPhoto: VCardOptions = {
+      ...sampleCard,
+      photoBase64: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD...',
+    };
+    const vcard = generateVCardString(cardWithPhoto);
+    expect(vcard).toContain('PHOTO;ENCODING=b;TYPE=JPEG:/9j/4AAQSkZJRgABAQEASABIAAD...');
+  });
 });
+
 

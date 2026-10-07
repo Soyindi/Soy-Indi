@@ -1,0 +1,47 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    :root {
+      --bg-box: #090D16;
+      --border-box: rgba(255, 255, 255, 0.2);
+      --halo-glow: #22D3EE;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-box: #FFFFFF;
+        --border-box: rgba(15, 23, 42, 0.15);
+        --halo-glow: #4F46E5;
+      }
+    }
+  </style>
+  <defs>
+    <linearGradient id="indi-prism-grad" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818CF8" />
+      <stop offset="50%" stop-color="#22D3EE" />
+      <stop offset="100%" stop-color="#2DD4BF" />
+    </linearGradient>
+    <radialGradient id="indi-node-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#A5F3FC" stop-opacity="1" />
+      <stop offset="60%" stop-color="#22D3EE" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Contenedor Base redondeado con soporte Dark/Light Mode -->
+  <rect x="3" y="3" width="58" height="58" rx="16" fill="var(--bg-box)" stroke="var(--border-box)" stroke-width="2" />
+
+  <!-- Órbita de fondo simplificada para legibilidad a 16px/32px -->
+  <ellipse cx="32" cy="32" rx="22" ry="11" transform="rotate(-32 32 32)" stroke="url(#indi-prism-grad)" stroke-width="2.5" stroke-dasharray="5 3" stroke-opacity="0.75" />
+
+  <!-- Pilar Isométrico Izquierdo -->
+  <rect x="15" y="24" width="9" height="26" rx="4.5" fill="url(#indi-prism-grad)" />
+
+  <!-- Diagonal de Conexión Dinámica -->
+  <path d="M20 27L42 47" stroke="url(#indi-prism-grad)" stroke-width="7" stroke-linecap="round" />
+
+  <!-- Pilar Isométrico Derecho -->
+  <rect x="38" y="20" width="9" height="30" rx="4.5" fill="url(#indi-prism-grad)" fill-opacity="0.95" />
+
+  <!-- Nodo Orbital Superior con Halo de Contraste -->
+  <circle cx="19.5" cy="14.5" r="7.5" fill="url(#indi-node-glow)" />
+  <circle cx="19.5" cy="14.5" r="4" fill="#FFFFFF" stroke="#22D3EE" stroke-width="1.8" />
+</svg>

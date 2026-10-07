@@ -87,6 +87,17 @@ describe('Motor Visual Open Graph y Módulo de Compartir (INDI 2026)', () => {
       expect(presCopy.headline).toContain('Presentación Orbital 16:9');
       expect(presCopy.body).toContain('propuesta comercial');
       expect(presCopy.fullMessage).toContain('https://soyindi.cl/p/propuesta-q4');
+
+      // Tarjeta con Tono Comercial
+      const businessCardCopy = generateShareCopy({
+        entityType: 'card',
+        title: 'Matias Riquelme',
+        role: 'Tech Lead',
+        url: 'https://soyindi.cl/c/matias-dev',
+        tone: 'business',
+      });
+      expect(businessCardCopy.fullMessage).toContain('💼 *MATIAS RIQUELME*');
+      expect(businessCardCopy.fullMessage).toContain('⚡ *Propuesta & Contacto Directo:*');
     });
 
     it('construye enlaces externos para redes sociales con texto codificado correctamente', () => {
