@@ -1721,3 +1721,21 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
   - **Smart CVs (`src/app/cv/[slug]/page.tsx`)**:
     - `ProfilePage` + `DigitalDocument`: Estructuración técnica orientada a motores de búsqueda laboral y ATS de recursos humanos.
 
+---
+
+## 37. Sistema de Efectos Fotónicos, Acabados Luminosos y Precisión Matemática de Color (Fase 4: Nivel Experto 2026)
+
+### 37.1 Acabados de Alto Contraste y Gama Clara (`luminous-glass`, `aurora-light`)
+- **Superación de la Monotonía Oscura**: Integración de acabados claros con alta luminosidad fotónica para usuarios que requieren tarjetas diurnas de alta elegancia editorial:
+  - `luminous-glass` (**Opal Light Glass**): Fondo translúcido blanco escarchado (`linear-gradient(150deg, rgba(255, 255, 255, 0.94) ...)`), borde especular claro (`rgba(255, 255, 255, 0.95)`), glow índigo suave y tipografía adaptativa `text-slate-900`/`text-slate-600`.
+  - `aurora-light` (**Aurora Lumina**): Gradiente nórdico cristalino con destellos cian/esmeralda sobre fondo claro y tipografía contrastante `text-slate-900`.
+- **Textura de Prisma Escarchado (`frosted-prism`)**: Difusión refractiva multicapa con overlay satinado sobre el lienzo.
+
+### 37.2 Micro-Efectos Fotónicos en SmartParticles v3.0
+- **Lente Especular Fotónica (`smart-particle::before`)**: Núcleo esférico con gradiente radial asimétrico ($32\% \times 28\%$) que simula reflexión especular de luz de estudio, caja de sombra luminosa y filtro `drop-shadow`.
+- **Dispersión Volumétrica Cáustica (`smart-particle::after`)**: Halo cáustico expandido al $380\%$ del diámetro con micro-blur óptico y aceleración por GPU (`will-change: transform, opacity`).
+
+### 37.3 Precisión Matemática OKLCH y WCAG 2.2 AA (`src/shared/lib/colorContrast.ts`)
+- **Transformación de Björn Ottosson (`oklchToRgb`)**: Mapeo matemático exacto de coordenadas OKLCH ($L, C, H$) a conos LMS y espacio sRGB con corrección gamma estándar.
+- **Verificación Automática de Accesibilidad (`meetsWcagAaContrast`)**: Garantía algorítmica de ratio de contraste $\ge 4.5:1$ en todos los estados interactivos, adaptando botones, badges, enlaces bento y barras de herramientas.
+

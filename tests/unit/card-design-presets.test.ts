@@ -3,9 +3,11 @@ import { cardFormSchema } from '@/entities/card/schemas';
 import { CARD_DESIGN_PRESETS } from '@/entities/card/themes';
 
 describe('Card Design Presets & Materials', () => {
-  it('debe contener los 5 arquetipos de diseño curados con paletas OKLCH válidas', () => {
-    expect(CARD_DESIGN_PRESETS).toHaveLength(5);
+  it('debe contener los 7 arquetipos de diseño curados con paletas OKLCH válidas incluyendo opciones claras', () => {
+    expect(CARD_DESIGN_PRESETS).toHaveLength(7);
     const ids = CARD_DESIGN_PRESETS.map((p) => p.id);
+    expect(ids).toContain('luminous-opal');
+    expect(ids).toContain('aurora-lumina');
     expect(ids).toContain('cyber-nebula');
     expect(ids).toContain('executive-titanium');
     expect(ids).toContain('emerald-botanical');
@@ -13,21 +15,21 @@ describe('Card Design Presets & Materials', () => {
     expect(ids).toContain('swiss-monochrome');
   });
 
-  it('debe validar exitosamente acabados de tarjeta (cardFinish) y texturas de superficie (surfaceTexture)', () => {
+  it('debe validar exitosamente acabados de tarjeta (cardFinish) claros y oscuros, y texturas de superficie', () => {
     const cardWithFinish = {
       slug: 'ana-silva',
       title: 'Ana Silva',
       profession: 'Chief Design Officer',
       themeConfig: {
-        themeId: 'cyber-nebula',
-        primaryColorOklch: '#6366f1',
-        backgroundColorOklch: '#090a10',
+        themeId: 'luminous-opal',
+        primaryColorOklch: '#4f46e5',
+        backgroundColorOklch: '#f8fafc',
         particleBehavior: 'interactive' as const,
         particleIntensity: 'balanced' as const,
         fontFamily: 'Inter',
         enableGlassRefraction: true,
-        cardFinish: 'holographic' as const,
-        surfaceTexture: 'dot-grid' as const,
+        cardFinish: 'luminous-glass' as const,
+        surfaceTexture: 'frosted-prism' as const,
         badgeText: 'Disponible para Consultoría',
       },
     };
@@ -35,8 +37,8 @@ describe('Card Design Presets & Materials', () => {
     const res = cardFormSchema.safeParse(cardWithFinish);
     expect(res.success).toBe(true);
     if (res.success) {
-      expect(res.data.themeConfig.cardFinish).toBe('holographic');
-      expect(res.data.themeConfig.surfaceTexture).toBe('dot-grid');
+      expect(res.data.themeConfig.cardFinish).toBe('luminous-glass');
+      expect(res.data.themeConfig.surfaceTexture).toBe('frosted-prism');
       expect(res.data.themeConfig.badgeText).toBe('Disponible para Consultoría');
     }
   });

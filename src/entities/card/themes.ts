@@ -13,12 +13,40 @@ export interface CardDesignPreset {
   particleBehavior: 'static' | 'interactive' | 'ambient';
   particleIntensity: 'subtle' | 'balanced' | 'prominent';
   fontFamily: string;
-  cardFinish: 'classic' | 'holographic' | 'titanium' | 'obsidian' | 'minimal';
-  surfaceTexture: 'none' | 'dot-grid' | 'radial-glow';
+  cardFinish: 'classic' | 'holographic' | 'titanium' | 'obsidian' | 'minimal' | 'luminous-glass' | 'aurora-light';
+  surfaceTexture: 'none' | 'dot-grid' | 'radial-glow' | 'frosted-prism';
   accentGlow: string;
 }
 
 export const CARD_DESIGN_PRESETS: CardDesignPreset[] = [
+  {
+    id: 'luminous-opal',
+    name: 'Opal Light Prism',
+    category: 'Vanguardia & Editorial',
+    description: 'Estética clara prismática con refracción translúcida, blanco escarchado y contraste perfecto.',
+    primaryColorOklch: '#4f46e5',
+    backgroundColorOklch: '#f8fafc',
+    particleBehavior: 'interactive',
+    particleIntensity: 'balanced',
+    fontFamily: 'Inter',
+    cardFinish: 'luminous-glass',
+    surfaceTexture: 'frosted-prism',
+    accentGlow: 'from-indigo-500/25 via-sky-300/35 to-transparent',
+  },
+  {
+    id: 'aurora-lumina',
+    name: 'Aurora Lumina',
+    category: 'Creatividad & Nuevos Medios',
+    description: 'Gradiente de luz nórdica esmeralda y turquesa sobre base cristalina ultra iluminada.',
+    primaryColorOklch: '#0284c7',
+    backgroundColorOklch: '#f0fdfa',
+    particleBehavior: 'ambient',
+    particleIntensity: 'prominent',
+    fontFamily: 'Inter',
+    cardFinish: 'aurora-light',
+    surfaceTexture: 'radial-glow',
+    accentGlow: 'from-cyan-400/35 via-teal-300/30 to-transparent',
+  },
   {
     id: 'cyber-nebula',
     name: 'Cyber Nebula',

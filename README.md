@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-302_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-304_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -39,9 +39,10 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Compresión Client-Side WebP (Ultra-Ligera & Cero Latencia)**: Pipeline de compresión de imágenes directo en el navegador con HTML5 Canvas y WebP (`compressImageClient`). Reduce hasta un 85% el peso de avatares y fotos antes de enviarse, con feedback en tiempo real y touch targets ergonómicos $\ge 44\text{px}$.
 - **Gestión Multi-Tarjeta Independiente & Flujo de Edición**: Crea múltiples identidades digitales independientes para diferentes negocios o roles profesionales. Edición bidireccional segura (`/cards/new?id=...`) con guardrails multi-tenant anti-IDOR.
 - **Generación Dinámica Anti-Colisión de Enlaces**: Algoritmo generador de identificadores únicos para tarjetas nuevas que previene reemplazos accidentales de tarjetas existentes.
-- **Presets de Diseño de Lujo**: 5 arquetipos curados (*Cyber Nebula*, *Executive Titanium*, *Emerald Botanical*, *Solar Obsidian*, *Swiss Monochrome*) con paletas OKLCH y Gamut P3.
-- **Acabados de Material & Texturas**: Acabados *Classic Glass*, *Holographic*, *Titanium*, *Obsidian* y *Minimal*, combinados con textura *Dot Matrix Grid* y halo de resplandor radial reactivo.
-- **Motor de Contraste Perceptual WCAG 2.2 AA**: Cálculo algorítmico de luminancia W3C para garantizar texto nítido y legible (`#ffffff` vs `#0f172a`) en cualquier tono primario.
+- **Presets de Diseño Curados (Gamas Claras y Oscuras)**: 7 arquetipos de diseño (*Opal Light Prism*, *Aurora Lumina*, *Cyber Nebula*, *Executive Titanium*, *Emerald Botanical*, *Solar Obsidian*, *Swiss Monochrome*) con paletas OKLCH y Gamut P3 de ultra contraste.
+- **Acabados de Material Fotónicos & Texturas**: Acabados *Opal Light Glass*, *Aurora Lumina*, *Classic Glass*, *Holographic*, *Titanium*, *Obsidian* y *Minimal*, combinados con texturas *Prisma Escarchado* (`frosted-prism`), *Dot Grid* y *Resplandor Radial* reactivo.
+- **Motor de Contraste Perceptual WCAG 2.2 AA**: Cálculo algorítmico de luminancia W3C y conversor matemático OKLCH a sRGB (`oklchToRgb`, `meetsWcagAaContrast`) para garantizar texto nítido y legible ($\ge 4.5:1$) en cualquier acabado claro u oscuro.
+- **SmartParticles v3.0 Fotónico**: Lente especular asimétrica con caja de sombra y halo cáustico volumétrico acelerado por GPU (`will-change: transform, opacity`).
 - **Asistente de Biografía con IA Multi-Tono**: Generación instantánea de bios con IA en 3 registros profesionales (*Ejecutivo*, *Innovador*, *Cercano*) directamente en el editor.
 - **Ubicación & Mapa Interactivo (Privacy-First)**: Módulo de geolocalización con visor OpenStreetMap embebido (sin API keys) y accesos directos One-Tap a Google Maps y Waze.
 - **Perfil Profesional Vivo**: Nombre, especialidad, biografía, enlaces a redes sociales y contacto directo.

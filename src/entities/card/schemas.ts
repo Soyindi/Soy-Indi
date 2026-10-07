@@ -10,8 +10,8 @@ export const cardThemeConfigSchema = z.object({
   enableGlassRefraction: z.boolean().default(true),
   badgeText: z.string().max(40).optional().nullable(),
   ctaLabel: z.string().max(40).optional().nullable(),
-  cardFinish: z.enum(['classic', 'holographic', 'titanium', 'obsidian', 'minimal']).default('classic').optional(),
-  surfaceTexture: z.enum(['none', 'dot-grid', 'radial-glow']).default('radial-glow').optional(),
+  cardFinish: z.enum(['classic', 'holographic', 'titanium', 'obsidian', 'minimal', 'luminous-glass', 'aurora-light']).default('classic').optional(),
+  surfaceTexture: z.enum(['none', 'dot-grid', 'radial-glow', 'frosted-prism']).default('radial-glow').optional(),
 });
 
 export const cardBentoBlockSchema = z.object({

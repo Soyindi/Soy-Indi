@@ -4,7 +4,9 @@ import {
   getRelativeLuminance, 
   getContrastRatio, 
   getAccessibleTextColor, 
-  adjustHexBrightness 
+  adjustHexBrightness,
+  oklchToRgb,
+  meetsWcagAaContrast
 } from '@/shared/lib/colorContrast';
 
 describe('WCAG 2.2 AA Contrast & Color Utilities', () => {
@@ -48,5 +50,32 @@ describe('WCAG 2.2 AA Contrast & Color Utilities', () => {
 
     const darkened = adjustHexBrightness('#ffffff', -0.5);
     expect(darkened).toBe('#808080');
+  });
+
+  it('debe convertir coordenadas OKLCH a RGB matemáticamente en gamut sRGB', () => {
+    // Blanco puro: L=1, C=0, H=0 -> ~255, 255, 255
+    const whiteRgb = oklchToRgb(1.0, 0, 0);
+    expect(whiteRgb.r).toBeGreaterThanOrEqual(250);
+    expect(whiteRgb.g).toBeGreaterThanOrEqual(250);
+    expect(whiteRgb.b).toBeGreaterThanOrEqual(250);
+
+    // Negro puro: L=0, C=0, H=0 -> 0, 0, 0
+    const blackRgb = oklchToRgb(0, 0, 0);
+    expect(blackRgb).toEqual({ r: 0, g: 0, b: 0 });
+
+    // Tono azul/índigo L=0.6, C=0.2, H=260
+    const blueRgb = oklchToRgb(0.6, 0.2, 260);
+    expect(blueRgb.b).toBeGreaterThan(blueRgb.r);
+  });
+
+  it('debe validar matemáticamente si se cumple el estándar WCAG 2.2 AA (>= 4.5:1)', () => {
+    // Blanco sobre negro: contraste máximo 21:1 -> Cumple AA
+    expect(meetsWcagAaContrast('#ffffff', '#000000')).toBe(true);
+
+    // Texto oscuro sobre acabado claro (slate-900 #0f172a sobre blanco #ffffff): ~18:1 -> Cumple AA
+    expect(meetsWcagAaContrast('#0f172a', '#ffffff')).toBe(true);
+
+    // Gris bajo contraste sobre blanco (#94a3b8 sobre #ffffff) -> Falla AA
+    expect(meetsWcagAaContrast('#94a3b8', '#ffffff')).toBe(false);
   });
 });

@@ -161,9 +161,10 @@ export default async function PublicCardPage({ params }: PageProps) {
       {/* Cabecera contextual ergonómica */}
       <PublicContextualHeader ownerMode={false} />
 
-      {/* Luces volumétricas de fondo de gran escala */}
-      <div className="absolute top-[-10%] left-[-10%] w-[650px] h-[650px] rounded-full bg-indigo-600/25 blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-cyan-500/20 blur-[140px] pointer-events-none" />
+      {/* Luces volumétricas de fondo de gran escala con auras claras */}
+      <div className="absolute top-[-10%] left-[-10%] w-[650px] h-[650px] rounded-full bg-indigo-500/25 blur-[150px] pointer-events-none" />
+      <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-sky-400/15 blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-cyan-400/20 blur-[140px] pointer-events-none" />
 
       <div className="my-auto px-4 sm:px-6 w-full max-w-lg mx-auto flex justify-center">
         <DigitalCard card={card} />

@@ -93,3 +93,49 @@ export function adjustHexBrightness(hex: string, percent: number): string {
   const toHex = (n: number) => n.toString(16).padStart(2, '0');
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
+
+/**
+ * Convierte coordenadas OKLCH (L [0..1], C [0..0.4], H [0..360]) a RGB sRGB estándar [0..255]
+ * basado en las transformaciones matemáticas exactas de Björn Ottosson (OKLab/OKLCH).
+ */
+export function oklchToRgb(l: number, c: number, h: number): RGB {
+  // Hue en radianes
+  const hRad = (h * Math.PI) / 180;
+  const a = c * Math.cos(hRad);
+  const b = c * Math.sin(hRad);
+
+  // OKLab a Cono LMS
+  const l_ = l + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = l - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = l - 0.0894841775 * a - 1.291485548 * b;
+
+  const lCube = l_ * l_ * l_;
+  const mCube = m_ * m_ * m_;
+  const sCube = s_ * s_ * s_;
+
+  // LMS a sRGB lineal
+  const rLinear = +4.0767416621 * lCube - 3.3077115913 * mCube + 0.2309699292 * sCube;
+  const gLinear = -1.2684380046 * lCube + 2.6097574011 * mCube - 0.3413193965 * sCube;
+  const bLinear = -0.0041960863 * lCube - 0.7034186147 * mCube + 1.707614701 * sCube;
+
+  // Gamma sRGB
+  const transfer = (val: number) => {
+    const clamped = Math.max(0, Math.min(1, val));
+    return clamped <= 0.0031308
+      ? 12.92 * clamped
+      : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055;
+  };
+
+  return {
+    r: Math.round(transfer(rLinear) * 255),
+    g: Math.round(transfer(gLinear) * 255),
+    b: Math.round(transfer(bLinear) * 255),
+  };
+}
+
+/**
+ * Valida matemáticamente si dos colores cumplen el umbral WCAG 2.2 AA (>= 4.5:1 para texto estándar)
+ */
+export function meetsWcagAaContrast(foregroundHex: string, backgroundHex: string): boolean {
+  return getContrastRatio(foregroundHex, backgroundHex) >= 4.5;
+}

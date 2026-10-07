@@ -846,8 +846,10 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                 <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-3">
                   Acabado de Tarjeta (Material Finish)
                 </label>
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {[
+                    { id: 'luminous-glass', label: 'Opal Light (Claro)' },
+                    { id: 'aurora-light', label: 'Aurora (Luminoso)' },
                     { id: 'classic', label: 'Clásico Glass' },
                     { id: 'holographic', label: 'Holográfico' },
                     { id: 'titanium', label: 'Titanio' },
@@ -860,7 +862,7 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                       onClick={() => handleThemeChange('cardFinish', f.id)}
                       className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold transition-all ${
                         (formData.themeConfig?.cardFinish || 'classic') === f.id
-                          ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-md'
+                          ? 'bg-indigo-600/40 border-indigo-400 text-white shadow-md ring-1 ring-indigo-400/50'
                           : 'glass-pill text-zinc-400 hover:text-white border-white/5'
                       }`}
                     >
@@ -875,8 +877,9 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                 <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-3">
                   Textura de Superficie
                 </label>
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {[
+                    { id: 'frosted-prism', label: 'Prisma Escarchado' },
                     { id: 'radial-glow', label: 'Resplandor' },
                     { id: 'dot-grid', label: 'Dot Grid' },
                     { id: 'none', label: 'Liso' },
@@ -887,7 +890,7 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                       onClick={() => handleThemeChange('surfaceTexture', t.id)}
                       className={`min-h-[44px] py-2.5 px-3 rounded-xl border text-xs font-semibold transition-all ${
                         (formData.themeConfig?.surfaceTexture || 'radial-glow') === t.id
-                          ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-md'
+                          ? 'bg-cyan-500/25 border-cyan-400 text-white shadow-md ring-1 ring-cyan-400/50'
                           : 'glass-pill text-zinc-400 hover:text-white border-white/5'
                       }`}
                     >
@@ -909,12 +912,18 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                 </div>
                 <div className="grid grid-cols-6 gap-2.5">
                   {[
-                    { name: 'Índigo', color: '#6366f1' },
-                    { name: 'Cian', color: '#06b6d4' },
-                    { name: 'Esmeralda', color: '#10b981' },
-                    { name: 'Oro', color: '#f59e0b' },
-                    { name: 'Rosa', color: '#ec4899' },
-                    { name: 'Púrpura', color: '#8b5cf6' },
+                    { name: 'Índigo Intenso', color: '#4f46e5' },
+                    { name: 'Cian Luminoso', color: '#0284c7' },
+                    { name: 'Menta Fresco', color: '#10b981' },
+                    { name: 'Ámbar Cálido', color: '#f59e0b' },
+                    { name: 'Rosa Magenta', color: '#ec4899' },
+                    { name: 'Violeta Eléctrico', color: '#8b5cf6' },
+                    { name: 'Zafiro Claro', color: '#38bdf8' },
+                    { name: 'Verde Esmeralda', color: '#059669' },
+                    { name: 'Coral Solar', color: '#f97316' },
+                    { name: 'Fucsia Neón', color: '#d946ef' },
+                    { name: 'Acero Claro', color: '#94a3b8' },
+                    { name: 'Blanco Nieve', color: '#f8fafc' },
                   ].map((c) => {
                     const isCurrent = formData.themeConfig?.primaryColorOklch === c.color;
                     return (

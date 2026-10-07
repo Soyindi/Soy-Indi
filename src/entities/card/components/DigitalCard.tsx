@@ -48,8 +48,8 @@ export interface CardData {
     particleIntensity?: 'subtle' | 'balanced' | 'prominent';
     badgeText?: string | null;
     ctaLabel?: string | null;
-    cardFinish?: 'classic' | 'holographic' | 'titanium' | 'obsidian' | 'minimal';
-    surfaceTexture?: 'none' | 'dot-grid' | 'radial-glow';
+    cardFinish?: 'classic' | 'holographic' | 'titanium' | 'obsidian' | 'minimal' | 'luminous-glass' | 'aurora-light';
+    surfaceTexture?: 'none' | 'dot-grid' | 'radial-glow' | 'frosted-prism';
   };
   bentoBlocks?: Array<{
     id: string;
@@ -92,7 +92,36 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
     backgroundStyle: React.CSSProperties;
     tagLabel: string;
     tagColor: string;
+    isLight?: boolean;
   }> = {
+    'luminous-glass': {
+      containerClass: 'shadow-[0_25px_60px_-15px_rgba(79,70,229,0.22)]',
+      borderStyle: {
+        borderColor: `${primaryColor}55`,
+        boxShadow: `inset 0 1px 3px rgba(255,255,255,0.95), 0 20px 45px -15px ${primaryColor}28`,
+      },
+      glowGradient: `radial-gradient(circle at 50% 0%, ${primaryColor}45 0%, #38bdf835 50%, transparent 80%)`,
+      backgroundStyle: {
+        background: `linear-gradient(150deg, rgba(255, 255, 255, 0.94) 0%, rgba(243, 244, 246, 0.92) 50%, rgba(224, 231, 255, 0.88) 100%)`,
+      },
+      tagLabel: 'Opal Light Glass',
+      tagColor: 'text-indigo-950 bg-indigo-100/90 border-indigo-300 font-bold',
+      isLight: true,
+    },
+    'aurora-light': {
+      containerClass: 'shadow-[0_25px_60px_-15px_rgba(2,132,199,0.22)]',
+      borderStyle: {
+        borderColor: `${primaryColor}66`,
+        boxShadow: `inset 0 1px 3px rgba(255,255,255,0.95), 0 20px 45px -12px ${primaryColor}30`,
+      },
+      glowGradient: `radial-gradient(circle at 50% 0%, #06b6d455 0%, #2dd4bf35 45%, transparent 75%)`,
+      backgroundStyle: {
+        background: `linear-gradient(135deg, rgba(240, 253, 250, 0.96) 0%, rgba(248, 250, 252, 0.93) 50%, rgba(224, 242, 254, 0.9) 100%)`,
+      },
+      tagLabel: 'Aurora Lumina',
+      tagColor: 'text-sky-950 bg-sky-100/90 border-sky-300 font-bold',
+      isLight: true,
+    },
     classic: {
       containerClass: 'shadow-2xl',
       borderStyle: { borderColor: `${primaryColor}33` },
@@ -199,6 +228,8 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
       )}`
     : null;
 
+  const isLightMode = Boolean(activeFinish.isLight);
+
   return (
     <SmartParticles
       enabled={true}
@@ -212,7 +243,9 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         whileHover={isInteractive ? { y: -4, scale: 1.01 } : undefined}
-        className={`relative rounded-[2rem] p-6 sm:p-8 text-white overflow-hidden transition-all duration-500 border backdrop-blur-2xl ${activeFinish.containerClass}`}
+        className={`relative rounded-[2rem] p-6 sm:p-8 overflow-hidden transition-all duration-500 border backdrop-blur-2xl ${
+          isLightMode ? 'text-slate-900' : 'text-white'
+        } ${activeFinish.containerClass}`}
         style={{
           ...activeFinish.backgroundStyle,
           ...activeFinish.borderStyle,
@@ -223,8 +256,21 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           <div 
             className="absolute inset-0 opacity-[0.22] pointer-events-none"
             style={{
-              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.85) 1.2px, transparent 1.2px)',
+              backgroundImage: isLightMode 
+                ? 'radial-gradient(rgba(15, 23, 42, 0.6) 1.2px, transparent 1.2px)'
+                : 'radial-gradient(rgba(255, 255, 255, 0.85) 1.2px, transparent 1.2px)',
               backgroundSize: '18px 18px',
+            }}
+          />
+        )}
+
+        {/* Textura Prisma Escarchado (Frosted Prism) */}
+        {texture === 'frosted-prism' && (
+          <div 
+            className="absolute inset-0 opacity-40 pointer-events-none mix-blend-overlay"
+            style={{
+              backgroundImage: `linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, transparent 40%, rgba(255, 255, 255, 0.4) 60%, transparent 100%), radial-gradient(circle at 20% 20%, ${primaryColor}22 0%, transparent 50%)`,
+              backgroundSize: '100% 100%, 100% 100%',
             }}
           />
         )}
@@ -251,7 +297,9 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
           {card.themeConfig?.badgeText && (
             <span 
-              className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase bg-white/10 border text-white shadow-sm"
+              className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase border shadow-sm ${
+                isLightMode ? 'bg-black/5 text-slate-800 border-slate-300' : 'bg-white/10 text-white'
+              }`}
               style={{ borderColor: `${primaryColor}55`, color: primaryColor }}
             >
               <span>{card.themeConfig.badgeText}</span>
@@ -284,9 +332,13 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
                 />
               ) : (
                 <div 
-                  className="w-full h-full rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-inner"
+                  className={`w-full h-full rounded-full flex items-center justify-center text-2xl font-bold shadow-inner ${
+                    isLightMode ? 'bg-slate-100 text-slate-800' : 'text-white'
+                  }`}
                   style={{
-                    background: `linear-gradient(145deg, #18181b 0%, #09090b 100%)`
+                    background: isLightMode 
+                      ? 'linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%)' 
+                      : 'linear-gradient(145deg, #18181b 0%, #09090b 100%)'
                   }}
                 >
                   <span style={{ color: primaryColor }}>{card.title.slice(0, 2).toUpperCase()}</span>
@@ -295,18 +347,22 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold tracking-tight text-white mb-1">
+          <h2 className={`text-2xl font-bold tracking-tight mb-1 ${
+            isLightMode ? 'text-slate-900' : 'text-white'
+          }`}>
             {card.title}
           </h2>
           <p 
-            className="text-xs uppercase tracking-widest font-semibold mb-4 font-mono transition-colors duration-500"
+            className="text-xs uppercase tracking-widest font-bold mb-4 font-mono transition-colors duration-500"
             style={{ color: primaryColor }}
           >
             {card.profession}
           </p>
 
           {card.about && (
-            <p className="text-sm text-zinc-300/90 font-normal leading-relaxed mb-6 max-w-xs">
+            <p className={`text-sm font-normal leading-relaxed mb-6 max-w-xs ${
+              isLightMode ? 'text-slate-600' : 'text-zinc-300/90'
+            }`}>
               {card.about}
             </p>
           )}
@@ -355,8 +411,12 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           {card.emailContact && (
             <a
               href={`mailto:${card.emailContact}`}
-              className="w-full min-h-[44px] inline-flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl glass-pill text-zinc-200 hover:text-white font-medium text-xs hover:bg-white/10 active:scale-[0.98] transition-all"
-              style={{ borderColor: `${primaryColor}33` }}
+              className={`w-full min-h-[44px] inline-flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl text-xs font-medium active:scale-[0.98] transition-all ${
+                isLightMode 
+                  ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800 border border-slate-300 shadow-sm' 
+                  : 'glass-pill text-zinc-200 hover:text-white hover:bg-white/10'
+              }`}
+              style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
             >
               <Mail className="w-3.5 h-3.5" style={{ color: primaryColor }} />
               <span>{card.emailContact}</span>
@@ -366,9 +426,13 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
         {/* Sección de Ubicación y Mapa Interactivo (si se definió dirección) */}
         {card.address && card.address.trim().length > 0 && (
-          <div className="relative z-10 mb-6 rounded-2xl overflow-hidden bg-black/40 border border-white/10 backdrop-blur-md">
+          <div className={`relative z-10 mb-6 rounded-2xl overflow-hidden border backdrop-blur-md ${
+            isLightMode ? 'bg-white/80 border-slate-200/90 shadow-sm' : 'bg-black/40 border-white/10'
+          }`}>
             {/* Cabecera de Dirección */}
-            <div className="p-3.5 flex items-start gap-2.5 border-b border-white/10">
+            <div className={`p-3.5 flex items-start gap-2.5 border-b ${
+              isLightMode ? 'border-slate-200/80' : 'border-white/10'
+            }`}>
               <div 
                 className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
                 style={{ background: `${primaryColor}22`, color: primaryColor }}
@@ -376,10 +440,14 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
                 <MapPin className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-[10px] font-mono font-semibold uppercase text-zinc-400 block tracking-wider">
+                <span className={`text-[10px] font-mono font-semibold uppercase block tracking-wider ${
+                  isLightMode ? 'text-slate-500' : 'text-zinc-400'
+                }`}>
                   Ubicación & Oficina
                 </span>
-                <p className="text-xs text-white font-medium leading-snug line-clamp-2 mt-0.5">
+                <p className={`text-xs font-medium leading-snug line-clamp-2 mt-0.5 ${
+                  isLightMode ? 'text-slate-900' : 'text-white'
+                }`}>
                   {card.address}
                 </p>
               </div>
@@ -398,12 +466,18 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             </div>
 
             {/* Botón de Navegación Rápida GPS (Google Maps / Waze / Apple Maps) con touch target >= 44px */}
-            <div className="p-2.5 bg-black/60 flex items-center justify-between gap-2">
+            <div className={`p-2.5 flex items-center justify-between gap-2 ${
+              isLightMode ? 'bg-slate-50 border-t border-slate-200/60' : 'bg-black/60'
+            }`}>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(card.address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-zinc-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all active:scale-[0.98]"
+                className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all active:scale-[0.98] ${
+                  isLightMode 
+                    ? 'text-slate-800 bg-white hover:bg-slate-100 border-slate-200 shadow-xs' 
+                    : 'text-zinc-200 hover:text-white bg-white/5 hover:bg-white/10 border-white/10'
+                }`}
               >
                 <Navigation className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                 <span>Abrir en Google Maps</span>
@@ -412,7 +486,11 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
                 href={`https://waze.com/ul?q=${encodeURIComponent(card.address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-h-[44px] px-3.5 py-2 inline-flex items-center justify-center rounded-xl text-xs font-semibold text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all active:scale-[0.98]"
+                className={`min-h-[44px] px-3.5 py-2 inline-flex items-center justify-center rounded-xl text-xs font-semibold border transition-all active:scale-[0.98] ${
+                  isLightMode 
+                    ? 'text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border-slate-200 shadow-xs' 
+                    : 'text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 border-white/10'
+                }`}
                 title="Abrir en Waze"
               >
                 <span>Waze</span>
@@ -427,15 +505,23 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             {card.bentoBlocks.map((block) => (
               <div
                 key={block.id}
-                className="p-3.5 rounded-xl bg-white/[0.04] border hover:border-white/20 transition-all flex items-center justify-between text-left"
-                style={{ borderColor: `${primaryColor}22` }}
+                className={`p-3.5 rounded-xl border transition-all flex items-center justify-between text-left ${
+                  isLightMode 
+                    ? 'bg-white/80 hover:bg-white border-slate-200/80 shadow-xs' 
+                    : 'bg-white/[0.04] hover:border-white/20'
+                }`}
+                style={{ borderColor: isLightMode ? undefined : `${primaryColor}22` }}
               >
                 <div>
-                  <h4 className="text-xs font-semibold text-white tracking-wide">
+                  <h4 className={`text-xs font-semibold tracking-wide ${
+                    isLightMode ? 'text-slate-900' : 'text-white'
+                  }`}>
                     {block.title}
                   </h4>
                   {block.subtitle && (
-                    <p className="text-[11px] text-zinc-400 mt-0.5 leading-tight">
+                    <p className={`text-[11px] mt-0.5 leading-tight ${
+                      isLightMode ? 'text-slate-500' : 'text-zinc-400'
+                    }`}>
                       {block.subtitle}
                     </p>
                   )}
@@ -449,7 +535,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
                       {block.metricValue}
                     </span>
                     {block.metricDelta && (
-                      <span className="block text-[9px] font-mono text-emerald-400">
+                      <span className="block text-[9px] font-mono text-emerald-600">
                         {block.metricDelta}
                       </span>
                     )}
@@ -460,7 +546,9 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
                     href={block.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-1 rounded-lg text-zinc-400 hover:text-white transition-colors"
+                    className={`p-1 rounded-lg transition-colors ${
+                      isLightMode ? 'text-slate-500 hover:text-slate-900' : 'text-zinc-400 hover:text-white'
+                    }`}
                   >
                     <Globe className="w-3.5 h-3.5" />
                   </a>
@@ -471,14 +559,20 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         )}
 
         {/* Redes Sociales y Enlaces Externos con Touch Target ergonómico >= 44x44px */}
-        <div className="relative z-10 flex items-center justify-center gap-3 mb-6 pt-4 border-t border-white/5">
+        <div className={`relative z-10 flex items-center justify-center gap-3 mb-6 pt-4 border-t ${
+          isLightMode ? 'border-slate-200' : 'border-white/5'
+        }`}>
           {card.websiteUrl && (
             <a
               href={card.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:scale-105 active:scale-95 transition-all"
-              style={{ borderColor: `${primaryColor}33` }}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${
+                isLightMode 
+                  ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' 
+                  : 'glass-pill text-zinc-300 hover:text-white'
+              }`}
+              style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
               title="Sitio Web"
             >
               <Globe className="w-4 h-4" />
@@ -489,8 +583,12 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               href={card.linkedinUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:scale-105 active:scale-95 transition-all"
-              style={{ borderColor: `${primaryColor}33` }}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${
+                isLightMode 
+                  ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' 
+                  : 'glass-pill text-zinc-300 hover:text-white'
+              }`}
+              style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
               title="LinkedIn"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -503,8 +601,12 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               href={card.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-11 h-11 rounded-xl glass-pill flex items-center justify-center text-zinc-300 hover:text-white hover:scale-105 active:scale-95 transition-all"
-              style={{ borderColor: `${primaryColor}33` }}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${
+                isLightMode 
+                  ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' 
+                  : 'glass-pill text-zinc-300 hover:text-white'
+              }`}
+              style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
               title="Instagram"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -529,10 +631,14 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         )}
 
         {/* Footer / Barra de Herramientas de la Tarjeta */}
-        <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-zinc-400">
+        <div className={`relative z-10 pt-4 border-t flex items-center justify-between text-xs ${
+          isLightMode ? 'border-slate-200 text-slate-600' : 'border-white/10 text-zinc-400'
+        }`}>
           <button
             onClick={() => setShowQR(!showQR)}
-            className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
+            className={`inline-flex items-center gap-1.5 transition-colors ${
+              isLightMode ? 'hover:text-slate-900 font-medium' : 'hover:text-white'
+            }`}
           >
             <QrCode className="w-4 h-4" style={{ color: primaryColor }} />
             <span>{showQR ? 'Ocultar QR' : 'Ver QR'}</span>
@@ -542,7 +648,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             onClick={handleShare}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white font-medium transition-all"
             style={{
-              background: `${primaryColor}26`,
+              background: isLightMode ? `${primaryColor}18` : `${primaryColor}26`,
               color: primaryColor,
               border: `1px solid ${primaryColor}44`,
             }}

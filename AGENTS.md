@@ -153,10 +153,11 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 
 1. **Espacio de Color OKLCH & Contraste Perceptual WCAG 2.2 AA:**
    - Utilizar las variables `@theme` definidas en [src/app/globals.css](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/src/app/globals.css) con Tailwind CSS v4.
-   - En componentes dinámicos con selección de color de usuario, utilizar el motor perceptual de luminancia relativa `@/shared/lib/colorContrast` (`getAccessibleTextColor`) para garantizar ratio $\ge 4.5:1$ en todo botón o badge interactivo.
-2. **Glassmorphism 2.0:**
-   - Utilizar las clases utilitarias `.glass-panel` y `.glass-pill`.
-   - Efectos de partículas deben emplear `SmartParticles.tsx` con aceleración por hardware (`will-change: transform, opacity`).
+   - En componentes dinámicos con selección de color de usuario, utilizar el motor perceptual de luminancia relativa `@/shared/lib/colorContrast` (`getAccessibleTextColor`, `oklchToRgb`, `meetsWcagAaContrast`) para garantizar ratio $\ge 4.5:1$ en todo botón, badge interactivo o tipografía tanto en temas oscuros como claros.
+   - **Acabados Luminous Glass & Aurora Light**: Las tarjetas admiten acabados de alto contraste y fondos claros (`luminous-glass`, `aurora-light`) con textura de prisma escarchado (`frosted-prism`), tipografía adaptativa (`text-slate-900`/`text-slate-600`) y bordes especulares fotónicos sin sacrificar la ergonomía visual ni el estándar WCAG 2.2 AA.
+2. **Glassmorphism 2.0 & Micro-Efectos Fotónicos:**
+   - Utilizar las clases utilitarias `.glass-panel`, `.glass-panel-light`, `.glass-pill` y `.glass-pill-light`.
+   - Efectos de partículas deben emplear `SmartParticles.tsx` con lentes especulares fotónicos (`smart-particle::before`) y halos de dispersión volumétrica cáustica (`smart-particle::after`), acelerados por hardware (`will-change: transform, opacity`).
 3. **Ergonomía Táctil & Retícula Base 8 (Mobile-First):**
    - **Touch Targets:** Todos los elementos interactivos (botones, enlaces, iconos de redes) deben tener un tamaño mínimo de **$44 \times 44\text{ px}$** (`min-h-[44px] min-w-[44px]` o `w-11 h-11`).
    - **Thumb Zone Móvil:** En vistas y editores extensos, las acciones primarias deben contar con barras de acción fijas inferiores (`fixed bottom-4 inset-x-4 sm:hidden`) para garantizar operabilidad con una sola mano.
