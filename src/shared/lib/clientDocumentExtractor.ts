@@ -14,10 +14,17 @@
 
 export async function extractTextFromPdfClient(file: File): Promise<string> {
   try {
-    const { extractText } = await import('unpdf');
     const arrayBuffer = await file.arrayBuffer();
     const uint8 = new Uint8Array(arrayBuffer);
 
+    // Intentar primero extracción espacial 2D layout-aware
+    const { extractSpatialTextFromPdf } = await import('@/shared/lib/spatialDocumentExtractor');
+    const spatialText = await extractSpatialTextFromPdf(uint8);
+    if (spatialText && spatialText.trim().length > 20) {
+      return spatialText.trim();
+    }
+
+    const { extractText } = await import('unpdf');
     const res = await extractText(uint8);
     const text = Array.isArray(res.text) ? res.text.join('\n\n') : (res.text || '');
     return text.trim();

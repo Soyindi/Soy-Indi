@@ -1822,3 +1822,20 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 
 ### 40.4 Sentinel de Entorno en Arranque del Servidor (`src/shared/lib/envSentinel.ts`)
 - **Detección Fail-Fast**: Validación determinista de variables de entorno críticas (`BETTER_AUTH_SECRET`, `TURSO_DATABASE_URL`) durante el arranque del servidor, alertando configuraciones erróneas antes de atender peticiones de producción.
+
+---
+
+## 41. Modernización de Extracción Espacial 2D & Enrutamiento de IA en Cascada (Fase 2026)
+
+### 41.1 Extracción Espacial Bidimensional (Spatial Layout-Aware Extraction)
+- Causa Raíz de Desorden en CVs y Presentaciones: Los motores de extracción lineal leen tokens horizontalmente. En plantillas de dos columnas, esto mezcla la columna izquierda con la derecha.
+- Implementación Geométrica (src/shared/lib/spatialDocumentExtractor.ts): Inspecciona matrices de transformación para ordenar columnas físicas independientes en Y.
+
+### 41.2 Cascade AI Router Unificado (src/features/ai-smart-cv/lib/multimodal-parser.ts)
+- Enrutador Multi-Proveedor de Alta Disponibilidad: Conecta NVIDIA NIM -> Google Gemini 2.0 Flash -> OpenRouter -> Motor Heurístico Determinista.
+
+### 41.3 Clusterización Temática en Presentaciones (Topic Density Clustering)
+- Sustitución de Partición Fija: Reemplazo de paragraphs.length / 5 por agrupación guiada por encabezados y densidad temática SCQA.
+
+### 41.4 Gobernanza de Skills Agénticas Especializadas
+- cv-intelligence-orchestrator y presentation-intelligence-engine integrados con cobertura en tests/unit/spatial-document-extraction.test.ts.

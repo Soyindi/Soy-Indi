@@ -259,7 +259,7 @@ export function parseCvTextToStructuredData(
   const looksLikeRoleHeader = (str: string): boolean => {
     const s = str.toLowerCase();
     const roleKeywords = [
-      'psicólog', 'psicolog', 'ingenier', 'desarrollador', 'analista', 'consultor',
+      'psicólog', 'psicolog', 'ingenier', 'desarrollador', 'arquitect', 'analista', 'consultor',
       'coordinador', 'director', 'jefe', 'especialista', 'docente', 'profesor',
       'terapeuta', 'investigador', 'asistente', 'practicante', 'reemplazante', 'encargado'
     ];
@@ -275,10 +275,27 @@ export function parseCvTextToStructuredData(
 
     // Condición para nueva experiencia:
     // 1. Es un encabezado de cargo evidente (ej: "Psicólogo de Reinserción Social · Complejo...")
-    // 2. O contiene fecha y no es un logro
+    // 2. O contiene rango o patrón de fecha explícito al inicio o final y parece cabecera (longitud corta y no discursiva)
+    const hasBulletSymbol = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]/.test(rawLine);
+    const isBulletLine = hasBulletPrefix || hasBulletSymbol;
+
+    const isExplicitDateHeader =
+      hasYear &&
+      !isBulletLine &&
+      strippedLine.length < 90 &&
+      !/^(en|durante|a lo largo de|mediante|lider[ée]|implement[ée]|diseñ[ée]|desarroll[ée]|logr[ée]|reduj[ée]|gestion[ée])\b/i.test(strippedLine) &&
+      !strippedLine.includes('reducción') &&
+      !strippedLine.includes('diseño') &&
+      !strippedLine.includes('desarrollo') &&
+      !strippedLine.includes('optimización') &&
+      !strippedLine.includes('plataforma') &&
+      !strippedLine.includes('microservicio') &&
+      !strippedLine.includes('usuarios');
+
     const isNewRole =
-      (isRoleHeader && (strippedLine.includes('·') || strippedLine.includes(' - ') || strippedLine.includes('(') || strippedLine.length < 90)) ||
-      (hasYear && !hasBulletPrefix && strippedLine.length < 120 && !strippedLine.includes('reducción') && !strippedLine.includes('diseño'));
+      !isBulletLine &&
+      ((isRoleHeader && (strippedLine.includes('·') || strippedLine.includes(' - ') || strippedLine.includes('(') || strippedLine.length < 90)) ||
+      isExplicitDateHeader);
 
     if (isNewRole) {
       if (currentExp && (currentExp.xyzBullets.length > 0 || currentExp.role)) {

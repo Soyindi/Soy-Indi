@@ -71,9 +71,16 @@ export async function extractTextFromDocument(
 
   if (isPdf) {
     try {
-      const { extractText } = await import('unpdf');
       const buffer = Buffer.from(fileBase64, 'base64');
       const uint8 = new Uint8Array(buffer);
+
+      const { extractSpatialTextFromPdf } = await import('@/shared/lib/spatialDocumentExtractor');
+      const spatialText = await extractSpatialTextFromPdf(uint8);
+      if (spatialText && spatialText.trim().length > 20) {
+        return spatialText.trim();
+      }
+
+      const { extractText } = await import('unpdf');
       const res = await extractText(uint8);
       const text = Array.isArray(res.text) ? res.text.join('\n\n') : (res.text || '');
       return text.trim();
@@ -304,7 +311,7 @@ export function analyzeDocumentContent(
     }
   }
 
-  // 7. Segmentación en Secciones Semánticas Adaptativas
+  // 7. Segmentación en Secciones Semánticas Adaptativas (Topic Density Clustering)
   const semanticSections: Array<{
     heading: string;
     actionSummary: string;
@@ -312,20 +319,50 @@ export function analyzeDocumentContent(
     suggestedIntent?: string;
   }> = [];
 
-  // Mapear cada párrafo o bloque a un eje temático
-  const step = Math.max(1, Math.floor(paragraphs.length / 5));
-  for (let i = 0; i < paragraphs.length; i += step) {
-    const blockParas = paragraphs.slice(i, i + step);
-    const combinedBlock = blockParas.join(' ');
-    
+  // Agrupar párrafos en clusters temáticos lógicos
+  // En lugar de dividir arbitrariamente por paragraphs.length / 5, detectar cortes temáticos reales
+  // (por encabezados Markdown, cambios de título, o acumulación de longitud)
+  const topicClusters: Array<{ heading?: string; paras: string[] }> = [];
+  let currentCluster: { heading?: string; paras: string[] } = { paras: [] };
+
+  for (const para of paragraphs) {
+    const isHeaderLine = /^(?:#+\s*|(?:\d+\.|\w\))\s*|\*\*)([^\n.:]{4,60})/m.test(para);
+    if (isHeaderLine && currentCluster.paras.length > 0) {
+      topicClusters.push(currentCluster);
+      const match = para.match(/^(?:#+\s*|(?:\d+\.|\w\))\s*|\*\*)([^\n.:]{4,60})/m);
+      currentCluster = { heading: match ? match[1].replace(/[*_#]/g, '').trim() : undefined, paras: [para] };
+    } else {
+      currentCluster.paras.push(para);
+      // Si el cluster acumuló más de 3 párrafos o más de 600 caracteres, cerrarlo elegantemente
+      const totalChars = currentCluster.paras.join(' ').length;
+      if (currentCluster.paras.length >= 3 || totalChars > 600) {
+        topicClusters.push(currentCluster);
+        currentCluster = { paras: [] };
+      }
+    }
+  }
+  if (currentCluster.paras.length > 0) {
+    topicClusters.push(currentCluster);
+  }
+
+  // Si no se formaron suficientes clusters (ej. texto compacto), usar división proporcional
+  const clustersToProcess: Array<{ heading?: string; paras: string[] }> =
+    topicClusters.length >= 2
+      ? topicClusters
+      : paragraphs.map((p) => ({ heading: undefined, paras: [p] }));
+
+  for (let idx = 0; idx < Math.min(8, clustersToProcess.length); idx++) {
+    const cluster = clustersToProcess[idx];
+    const combinedBlock = cluster.paras.join(' ');
+
     const blockSentences = combinedBlock
       .split(/[.!?]\s+/)
       .map((s) => s.replace(/^#+\s*/, '').trim())
-      .filter((s) => s.length > 15 && s.length < 200);
+      .filter((s) => s.length > 15 && s.length < 250);
 
     const rawFirst = blockSentences[0] || 'Análisis temático del documento';
     const firstSentence = rawFirst.replace(/^#+\s*/, '').trim();
-    const actionSummary = firstSentence.length > 130 ? `${firstSentence.slice(0, 127)}...` : firstSentence;
+    const actionSummary = firstSentence.length > 140 ? `${firstSentence.slice(0, 137)}...` : firstSentence;
 
     const points = blockSentences.slice(1, 4).map((pt) => {
       return pt.replace(/^[-•*#]\s*/, '').trim();
@@ -335,16 +372,16 @@ export function analyzeDocumentContent(
       points.push(firstSentence);
     }
 
-    // Deducir el encabezado del bloque directamente a partir del texto real
-    let heading = '';
-    const headingMatch = combinedBlock.match(/^(?:#+\s*|(?:\d+\.|\w\))\s*|\*\*)([^\n.:]{4,55})/m);
-    if (headingMatch && headingMatch[1].trim().length >= 4) {
-      heading = headingMatch[1].replace(/[*_#]/g, '').trim();
-    } else {
-      // Extraer una frase concisa de la primera oración
-      const cleanFirst = firstSentence.replace(/^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+/, '');
-      const words = cleanFirst.split(/\s+/).slice(0, 6).join(' ');
-      heading = words.length > 5 ? words : `Sección 0${semanticSections.length + 1}`;
+    let heading = cluster.heading || '';
+    if (!heading) {
+      const headingMatch = combinedBlock.match(/^(?:#+\s*|(?:\d+\.|\w\))\s*|\*\*)([^\n.:]{4,55})/m);
+      if (headingMatch && headingMatch[1].trim().length >= 4) {
+        heading = headingMatch[1].replace(/[*_#]/g, '').trim();
+      } else {
+        const cleanFirst = firstSentence.replace(/^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+/, '');
+        const words = cleanFirst.split(/\s+/).slice(0, 6).join(' ');
+        heading = words.length > 5 ? words : `Sección 0${idx + 1}`;
+      }
     }
 
     semanticSections.push({
@@ -352,8 +389,6 @@ export function analyzeDocumentContent(
       actionSummary,
       points: points.length > 0 ? points : [firstSentence],
     });
-
-    if (semanticSections.length >= 8) break;
   }
 
   if (semanticSections.length === 0 && sentences.length > 0) {

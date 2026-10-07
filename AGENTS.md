@@ -256,6 +256,12 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Cabeceras HTTP de Seguridad RFC 9111**: `next.config.ts` declara obligatoriamente para todas las rutas `X-Frame-Options: DENY` (anti-clickjacking), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
    - **Fail-Fast Environment Sentinel**: El servidor valida al inicio la integridad de variables críticas (`BETTER_AUTH_SECRET`, `TURSO_DATABASE_URL`) mediante `@/shared/lib/envSentinel` para prevenir fallos silenciosos en producción.
 
+20. **Gobernanza de Ingesta Inteligente de Documentos (Spatial 2D Extraction & Topic Density Clustering):**
+   - **Extracción Espacial 2D Layout-Aware (`spatialDocumentExtractor.ts`)**: Se prohíbe la lectura puramente lineal horizontal en PDFs con estructuras de dos columnas (común en plantillas de currículum y reportes ejecutivos). El motor inspecciona las matrices de transformación `[scaleX, skewY, skewX, scaleY, posX, posY]` para ordenar columnas físicas independientes y evitar la mezcla horizontal de habilidades o fechas con oraciones de experiencia.
+   - **Cascade AI Router 2026**: Toda inferencia de análisis de currículums o presentaciones orquesta una cascada de alta disponibilidad: **NVIDIA NIM** (Llama 3.3 70B / DeepSeek R1) ➔ **Google Gemini 2.0 Flash** ➔ **OpenRouter** ➔ **Motor Heurístico Determinista**. Cero caídas y tolerancia a rate-limits.
+   - **Topic Density Clustering en Presentaciones**: Sustituir divisiones matemáticas fijas (`paragraphs.length / 5`) por agrupación temática guiada por encabezados y densidad argumental, garantizando que los puntos clave y métricas nunca se corten a la mitad.
+   - **Skills Agénticas Especializadas**: El comportamiento de estas suites está gobernado por `.agents/skills/cv-intelligence-orchestrator` y `.agents/skills/presentation-intelligence-engine`. Blindado por `tests/unit/spatial-document-extraction.test.ts`.
+
 ---
 
 

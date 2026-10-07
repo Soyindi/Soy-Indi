@@ -97,7 +97,7 @@ export async function parseCvDocumentMultimodal(
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
   const geminiApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-  // 1. Extracción de texto real desde documentos PDF o texto plano
+  // 1. Extracción de texto real desde documentos PDF o texto plano con preservación espacial 2D
   let extractedRawText = '';
   const isPdf =
     mimeType.includes('pdf') ||
@@ -106,11 +106,18 @@ export async function parseCvDocumentMultimodal(
 
   if (isPdf) {
     try {
-      const { extractText } = await import('unpdf');
       const buffer = Buffer.from(fileBase64, 'base64');
       const uint8 = new Uint8Array(buffer);
-      const res = await extractText(uint8);
-      extractedRawText = Array.isArray(res.text) ? res.text.join('\n') : (res.text || '');
+
+      const { extractSpatialTextFromPdf } = await import('@/shared/lib/spatialDocumentExtractor');
+      const spatialText = await extractSpatialTextFromPdf(uint8);
+      if (spatialText && spatialText.trim().length > 20) {
+        extractedRawText = spatialText.trim();
+      } else {
+        const { extractText } = await import('unpdf');
+        const res = await extractText(uint8);
+        extractedRawText = Array.isArray(res.text) ? res.text.join('\n') : (res.text || '');
+      }
       console.log(`[IDP] Texto extraído exitosamente de PDF ${fileName} (${extractedRawText.length} caracteres)`);
     } catch (pdfErr) {
       console.warn('[IDP] Error extrayendo texto con unpdf:', pdfErr);
@@ -127,62 +134,40 @@ export async function parseCvDocumentMultimodal(
     }
   }
 
-  // 2. Si hay API key de OpenRouter configurada, invocar Qwen2.5-VL 72B / 7B
-  if (openRouterApiKey) {
-    try {
-      const promptContent: any[] = [
-        {
-          type: 'text',
-          text: extractedRawText
-            ? `Extrae y optimiza este CV respetando la fórmula Google XYZ y marcando needs_metric a partir del siguiente texto extraído del documento:\n\n${extractedRawText.slice(0, 12000)}`
-            : 'Extrae y optimiza este CV respetando la fórmula Google XYZ y marcando needs_metric.',
-        },
-      ];
+  // 2. Cascade AI Router: Invocación de Frontera (NVIDIA NIM / Gemini 2.0 Flash / OpenRouter)
+  try {
+    const { callNvidiaNimChat } = await import('@/shared/api/nvidia-nim');
+    const userPrompt = extractedRawText
+      ? `A continuación se encuentra el texto extraído del currículum con preservación espacial de columnas. Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIENTO CRÍTICAS (EU AI Act, Google XYZ y needs_metric):\n\n${extractedRawText.slice(0, 16000)}`
+      : 'Extrae y estructura la información de este currículum respetando las directrices de la EU AI Act y fórmula Google XYZ.';
 
-      if (!extractedRawText || extractedRawText.length < 50) {
-        promptContent.push({
-          type: 'image_url',
-          image_url: {
-            url: `data:${mimeType};base64,${fileBase64}`,
-          },
-        });
+    const nimResult = await callNvidiaNimChat(
+      [
+        { role: 'system', content: MULTIMODAL_CV_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      {
+        model: 'meta/llama-3.3-70b-instruct',
+        temperature: 0.1,
+        responseFormat: { type: 'json_object' },
       }
+    );
 
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openRouterApiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://soyindi.cl',
-          'X-Title': 'INDI Smart CV Parser',
-        },
-        body: JSON.stringify({
-          model: 'qwen/qwen-2.5-vl-72b-instruct:free',
-          messages: [
-            {
-              role: 'system',
-              content: MULTIMODAL_CV_PROMPT,
-            },
-            {
-              role: 'user',
-              content: promptContent,
-            },
-          ],
-          response_format: { type: 'json_object' },
-        }),
-      });
-
-      if (response.ok) {
-        const json = await response.json();
-        const content = json.choices?.[0]?.message?.content;
-        if (content) {
-          const parsed = JSON.parse(content);
-          return multimodalCvExtractionSchema.parse(parsed);
-        }
+    if (nimResult.success && nimResult.content) {
+      let cleanContent = nimResult.content.trim();
+      const jsonMatch = cleanContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        cleanContent = jsonMatch[1].trim();
       }
-    } catch (err) {
-      console.warn('Fallo en llamada a Qwen2.5-VL OpenRouter, recurriendo al motor heurístico/resiliente:', err);
+      const parsed = JSON.parse(cleanContent);
+      const validated = multimodalCvExtractionSchema.safeParse(parsed);
+      if (validated.success) {
+        console.log(`[IDP] Extracción estructurada exitosa vía ${nimResult.modelUsed || 'AI Engine'}`);
+        return validated.data;
+      }
     }
+  } catch (err) {
+    console.warn('[IDP] Fallo en Cascade AI Router, recurriendo al motor heurístico avanzado:', err);
   }
 
   // 3. Si se extrajo texto real del documento del usuario, parsearlo de inmediato
