@@ -32,11 +32,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
       { url: '/brand/indi-alien-symbol-sm.webp', sizes: '32x32', type: 'image/webp' },
-    ],
-    apple: [
-      { url: '/brand/indi-alien-symbol.webp', sizes: '180x180', type: 'image/webp' },
     ],
   },
 };
