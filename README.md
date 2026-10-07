@@ -157,7 +157,7 @@ INDI/
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
 ├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 322 tests pasando al 100% en 51 suites)
-│   ├── advanced-cache-governance.test.ts # Gobernanza de caché, Clear-Site-Data W3C y PWA manifest
+│   ├── advanced-cache-governance.test.ts # Gobernanza de caché web pura, desregistro de Service Workers y anti-PWA
 │   ├── affiliates-and-payouts.test.ts # Módulo 11 RUT, códigos de referido y liquidaciones
 │   ├── auth-flow.test.ts        # Validación de flujo de login, Open Redirect guardrail y sanitización
 │   ├── systemic-navigation-audit.test.ts # Auditoría de navegación sistémica y CTAs públicos a login

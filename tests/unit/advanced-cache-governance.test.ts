@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { NextRequest } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import {
   APP_CACHE_VERSION,
   CACHE_VERSION_COOKIE_NAME,
@@ -10,11 +12,10 @@ import {
   hasPurgeCacheQueryParam,
   isClientCacheVersionStale,
 } from '@/shared/lib/cacheGovernance';
-import manifest from '@/app/manifest';
 import { middleware } from '@/middleware';
 import nextConfig from '../../next.config';
 
-describe('Gobernanza Avanzada de Caché & Versionado Móvil (INDI 2026)', () => {
+describe('Gobernanza Avanzada de Caché & Experiencia Web Pura (INDI 2026)', () => {
   describe('1. Contratos y Utilidades de Gobernanza (cacheGovernance.ts)', () => {
     it('declara una versión de aplicación válida y directivas W3C seguras', () => {
       expect(APP_CACHE_VERSION).toBeDefined();
@@ -45,24 +46,15 @@ describe('Gobernanza Avanzada de Caché & Versionado Móvil (INDI 2026)', () => 
     });
   });
 
-  describe('2. Web App Manifest Nativo (src/app/manifest.ts)', () => {
-    it('genera un manifiesto con ID canónico versionado y branding cósmico consistente', () => {
-      const manifestData = manifest();
+  describe('2. Política Anti-PWA: Supresión Total de Versión Instalable Standalone', () => {
+    it('garantiza la ausencia deliberada de manifest.ts para erradicar splash screens estáticos del SO', () => {
+      const manifestPath = path.join(process.cwd(), 'src', 'app', 'manifest.ts');
+      const manifestJsonPath = path.join(process.cwd(), 'public', 'manifest.json');
+      const manifestWebmanifestPath = path.join(process.cwd(), 'public', 'manifest.webmanifest');
 
-      expect(manifestData.id).toContain(APP_CACHE_VERSION);
-      expect(manifestData.name).toBe('INDI — Plataforma SaaS de Identidad Digital y Networking');
-      expect(manifestData.short_name).toBe('INDI');
-      expect(manifestData.background_color).toBe('#080A12');
-      expect(manifestData.theme_color).toBe('#080A12');
-      expect(manifestData.display).toBe('standalone');
-
-      expect(manifestData.icons).toBeDefined();
-      expect(manifestData.icons?.length).toBeGreaterThanOrEqual(2);
-
-      // Cada icono debe incluir el parámetro de versionado para forzar actualización de splash screen
-      manifestData.icons?.forEach((icon) => {
-        expect(icon.src).toContain(`v=${APP_CACHE_VERSION}`);
-      });
+      expect(fs.existsSync(manifestPath), 'manifest.ts no debe existir en src/app').toBe(false);
+      expect(fs.existsSync(manifestJsonPath), 'manifest.json no debe existir en public').toBe(false);
+      expect(fs.existsSync(manifestWebmanifestPath), 'manifest.webmanifest no debe existir en public').toBe(false);
     });
   });
 

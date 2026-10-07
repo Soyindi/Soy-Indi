@@ -43,9 +43,6 @@ export const metadata: Metadata = {
       { url: `/brand/indi-isotipo-transparent.svg?v=${APP_CACHE_VERSION}`, type: 'image/svg+xml' },
       { url: `/brand/indi-alien-symbol-sm.webp?v=${APP_CACHE_VERSION}`, sizes: '32x32', type: 'image/webp' },
     ],
-    apple: [
-      { url: `/brand/indi-isotipo-transparent.svg?v=${APP_CACHE_VERSION}`, sizes: '180x180', type: 'image/svg+xml' },
-    ],
   },
 };
 
@@ -57,11 +54,11 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark">
       <head>
-        {/* Micro-Guard de Gestión de Caché Móvil: Invalida CacheStorage y cachés de assets obsoletos sin tocar sesiones de usuario */}
+        {/* Micro-Guard de Limpieza Móvil: Desregistra Service Workers y purga CacheStorage de cualquier versión PWA previa */}
         <script
           id="indi-cache-guard"
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var v="${APP_CACHE_VERSION}";if(localStorage.getItem("${CACHE_STORAGE_VERSION_KEY}")!==v){if('caches' in window){caches.keys().then(function(k){k.forEach(function(n){caches.delete(n)})});}localStorage.setItem("${CACHE_STORAGE_VERSION_KEY}",v);}}catch(e){}})();`,
+            __html: `(function(){try{if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){for(var i=0;i<regs.length;i++)regs[i].unregister()});}var v="${APP_CACHE_VERSION}";if(localStorage.getItem("${CACHE_STORAGE_VERSION_KEY}")!==v){if('caches' in window){caches.keys().then(function(k){k.forEach(function(n){caches.delete(n)})});}localStorage.setItem("${CACHE_STORAGE_VERSION_KEY}",v);}}catch(e){}})();`,
           }}
         />
       </head>

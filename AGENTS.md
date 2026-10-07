@@ -87,13 +87,13 @@ src/
    - Todas las rutas públicas principales (`/`, `/c/[slug]`, `/cv/[slug]`) deben inyectar esquemas tipados JSON-LD mediante el componente seguro `@/shared/ui/JsonLd` con sanitización de caracteres (`\u003c`) para prevenir inyecciones XSS.
    - La raíz (`src/app/page.tsx`) declara entidades `Organization`, `WebSite` y `FAQPage` para activar Google Rich Snippets interactivos. Las rutas de perfiles (`/c/[slug]`) inyectan `ProfilePage` y `Person` asociando credenciales y enlaces oficiales (`sameAs`), y los currículums (`/cv/[slug]`) inyectan `DigitalDocument` optimizado para rastreadores de empleo y reclutadores.
 
-17. **Gobernanza Avanzada de Caché & Versionado Móvil Zero-Intervention (Clear-Site-Data & Web App Manifest):**
+17. **Gobernanza de Caché Web Pura & Erradicación de Splash Screens de SO (Anti-PWA / Pure Web Model 2026):**
    - Queda estrictamente prohibido solicitar a los usuarios finales que borren manualmente la caché o datos del navegador en ajustes de sus dispositivos móviles (Safari / Chrome).
-   - Toda actualización o cambio de versión de despliegue (`APP_CACHE_VERSION` en `@/shared/lib/cacheGovernance`) se propaga mediante una arquitectura automatizada de 4 capas:
+   - **Supresión Total de PWA / Manifest**: Se prohíbe el uso de `manifest.ts` o directivas `standalone` que induzcan a los sistemas operativos móviles (iOS / Android) a generar splash screens estáticos sintéticos del sistema operativo o a ocultar la barra de navegación del navegador. INDI opera al 100% como una aplicación web responsiva estándar en el viewport nativo del navegador móvil.
+   - Toda actualización o cambio de versión de despliegue (`APP_CACHE_VERSION` en `@/shared/lib/cacheGovernance`) se propaga mediante una arquitectura automatizada de 3 capas:
      1. **Edge Middleware & W3C `Clear-Site-Data: "cache"`**: Si un cliente se conecta con una cookie de versión desactualizada o invoca `?purge=1`, el middleware emite `Clear-Site-Data: "cache"`. El motor del navegador purga su memoria de disco de forma transparente sin cerrar la sesión del usuario ni tocar las cookies de Better-Auth.
-     2. **Web App Manifest Nativo (`src/app/manifest.ts`)**: Declara `id: 'https://soyindi.cl/?v=...'`, `background_color: '#080A12'` e iconos vectoriales `purpose: 'any maskable'`. Permite que iOS (WebKit) y Android (Chromium WebAPK) actualicen el splash screen y los accesos directos en segundo plano sin reinstalación.
-     3. **Micro-Guard Client-Side en `<head>` (`src/app/layout.tsx`)**: Script inline ultra-ligero que invalida `window.caches` (CacheStorage API) en el primer render si `localStorage` detecta una versión obsoleta.
-     4. **Cabeceras HTTP RFC 9111 Estratificadas en `next.config.ts`**: Rutas dinámicas públicas con `Cache-Control: public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=300`. Garantiza que el móvil valide frescura antes de reusar caché local mientras el CDN de Vercel sirve en <15ms.
+     2. **Micro-Guard Client-Side en `<head>` (`src/app/layout.tsx`)**: Script inline ultra-ligero que desregistra activamente cualquier Service Worker previo (`navigator.serviceWorker.getRegistrations() -> unregister()`) e invalida `window.caches` (CacheStorage API) en el primer render si `localStorage` detecta una versión obsoleta.
+     3. **Cabeceras HTTP RFC 9111 Estratificadas en `next.config.ts`**: Rutas dinámicas públicas con `Cache-Control: public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=300`. Garantiza que el móvil valide frescura antes de reusar caché local mientras el CDN de Vercel sirve en <15ms.
 
 ---
 
