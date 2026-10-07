@@ -173,18 +173,23 @@ export function parseCvTextToStructuredData(
       lower.includes('historial laboral') ||
       lower.includes('historia laboral') ||
       lower.includes('work experience') ||
-      lower.includes('empleos')
+      lower.includes('empleos') ||
+      lower.includes('proyectos de desarrollo') ||
+      lower.includes('proyectos tecnologicos') ||
+      lower.includes('proyectos tecnológicos')
     ) {
       return { isHeader: true, type: 'experience' };
     }
     if (
-      lower.includes('educación') ||
+      (lower.includes('educación') ||
       lower.includes('educacion') ||
       lower.includes('formación') ||
       lower.includes('formacion') ||
       lower.includes('estudios') ||
       lower.includes('education') ||
-      lower.includes('antecedentes académicos')
+      lower.includes('antecedentes académicos')) &&
+      !lower.includes('complementaria') &&
+      !lower.includes('continua')
     ) {
       return { isHeader: true, type: 'education' };
     }
@@ -231,7 +236,7 @@ export function parseCvTextToStructuredData(
     }
   }
 
-  // 6. Procesar Experiencia Laboral (Con Desacoplamiento Multilínea de Empresa)
+  // 6. Procesar Experiencia Laboral y Proyectos (Con Desacoplamiento Multilínea y Paragraph Stitching)
   const expLines = getSectionLines('experience');
   const experience: Array<{
     company: string;
@@ -255,15 +260,26 @@ export function parseCvTextToStructuredData(
   const stripLeadingBullet = (s: string) => s.replace(bulletSymbolRegex, '').trim();
   let pendingCompanyCandidate = '';
 
-  // Helper para detectar si una línea parece un cargo profesional nuevo
+  // Helper para detectar si una línea parece un cargo profesional nuevo o proyecto
   const looksLikeRoleHeader = (str: string): boolean => {
     const s = str.toLowerCase();
     const roleKeywords = [
       'psicólog', 'psicolog', 'ingenier', 'desarrollador', 'arquitect', 'analista', 'consultor',
       'coordinador', 'director', 'jefe', 'especialista', 'docente', 'profesor',
-      'terapeuta', 'investigador', 'asistente', 'practicante', 'reemplazante', 'encargado'
+      'terapeuta', 'investigador', 'asistente', 'practicante', 'reemplazante', 'encargado',
+      'full stack', 'frontend', 'backend', 'lead', 'tech lead', 'creador', 'fundador', 'autor'
     ];
     return roleKeywords.some((k) => s.includes(k));
+  };
+
+  // Helper para detectar proyectos tecnológicos (ej. ClicLaboral, ContaPymePuq, Slingshot)
+  const looksLikeProjectHeader = (str: string): boolean => {
+    const s = str.trim();
+    if (s.length > 60 || s.includes('@') || s.startsWith('http')) return false;
+    // Nombres de proyectos típicamente en PascalCase o con descripción de stack entre paréntesis o guiones
+    if (/^[A-Z][a-zA-Z0-9_-]{2,25}(?:\s*\(.*\))?$/.test(s)) return true;
+    if (/^(proyecto|sistema|plataforma|software|aplicación|app)\s*[:–—\-·]/i.test(s)) return true;
+    return false;
   };
 
   for (let i = 0; i < expLines.length; i++) {
@@ -272,12 +288,18 @@ export function parseCvTextToStructuredData(
     const hasBulletPrefix = rawLine !== strippedLine;
     const hasYear = datePattern.test(strippedLine);
     const isRoleHeader = looksLikeRoleHeader(strippedLine);
+    const isProject = !hasBulletPrefix && looksLikeProjectHeader(strippedLine);
 
     // Condición para nueva experiencia:
-    // 1. Es un encabezado de cargo evidente (ej: "Psicólogo de Reinserción Social · Complejo...")
-    // 2. O contiene rango o patrón de fecha explícito al inicio o final y parece cabecera (longitud corta y no discursiva)
     const hasBulletSymbol = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]/.test(rawLine);
     const isBulletLine = hasBulletPrefix || hasBulletSymbol;
+
+    // Ignorar si es un subtítulo de sección dentro de experiencia
+    const isSubheader = /^(proyectos?\s+de\s+desarrollo|experiencia\s+laboral|trayectoria|empleos)/i.test(strippedLine);
+    if (isSubheader && !strippedLine.includes(':') && !hasYear) {
+      if (!pendingCompanyCandidate) pendingCompanyCandidate = 'Proyectos Independientes / Portafolio';
+      continue;
+    }
 
     const isExplicitDateHeader =
       hasYear &&
@@ -295,6 +317,7 @@ export function parseCvTextToStructuredData(
     const isNewRole =
       !isBulletLine &&
       ((isRoleHeader && (strippedLine.includes('·') || strippedLine.includes(' - ') || strippedLine.includes('(') || strippedLine.length < 90)) ||
+      (isProject && !hasYear && strippedLine.length < 50) ||
       isExplicitDateHeader);
 
     if (isNewRole) {
@@ -302,13 +325,13 @@ export function parseCvTextToStructuredData(
         experience.push(currentExp);
       }
 
-      // Si la línea siguiente es la fecha correspondiente a este cargo (ej: Línea 1 Cargo, Línea 2 "Ene. 2025 - Mar. 2025")
+      // Si la línea siguiente es la fecha correspondiente a este cargo
       let period = '';
       if (!hasYear && i + 1 < expLines.length) {
         const nextLine = stripLeadingBullet(expLines[i + 1]);
         if (datePattern.test(nextLine) && !looksLikeRoleHeader(nextLine) && !nextLine.startsWith('●') && !nextLine.startsWith('•')) {
           period = nextLine;
-          i++; // Consumir la línea de fecha para no crear un cargo duplicado
+          i++;
         }
       }
 
@@ -331,31 +354,81 @@ export function parseCvTextToStructuredData(
         }
       });
 
-      // Si no vino empresa en la misma línea, usar la línea candidata inmediatamente anterior
+      // Si es un proyecto tecnológico, asignar rol o nombre de proyecto
+      if (isProject && !role) {
+        role = `Proyecto: ${strippedLine}`;
+        inlineCompany = inlineCompany || 'Portafolio Técnico / Proyectos Independientes';
+      }
+
       const effectiveCompany = inlineCompany || pendingCompanyCandidate || 'Institución / Empresa';
       pendingCompanyCandidate = '';
 
       currentExp = {
         company: effectiveCompany,
         role: role || (isRoleHeader ? strippedLine : 'Cargo Profesional'),
-        period: period || (hasYear ? 'Periodo Registrado' : '2022 - Presente'),
+        period: period || (hasYear ? 'Periodo Registrado' : '2023 - Presente'),
         rawAchievements: [],
         xyzBullets: [],
       };
-    } else if (!hasBulletPrefix && strippedLine.length < 65 && !strippedLine.includes(':') && !hasYear) {
+    } else if (
+      currentExp &&
+      currentExp.xyzBullets.length > 0 &&
+      !isBulletLine &&
+      !isRoleHeader &&
+      !isProject &&
+      !hasYear &&
+      (strippedLine.startsWith('y ') ||
+       strippedLine.startsWith('e ') ||
+       strippedLine.startsWith('o ') ||
+       strippedLine.startsWith('de ') ||
+       strippedLine.startsWith('con ') ||
+       strippedLine.startsWith('en ') ||
+       strippedLine.startsWith('para ') ||
+       strippedLine.startsWith('http') ||
+       /^[a-z]/.test(strippedLine))
+    ) {
+      // Es una continuación directa de la viñeta anterior
+      const lastBulletIdx = currentExp.xyzBullets.length - 1;
+      const isUrl = strippedLine.startsWith('http://') || strippedLine.startsWith('https://') || strippedLine.startsWith('github.com');
+      if (isUrl) {
+        currentExp.xyzBullets[lastBulletIdx].text += ` (${strippedLine})`;
+        currentExp.rawAchievements[lastBulletIdx] += ` (${strippedLine})`;
+      } else {
+        currentExp.xyzBullets[lastBulletIdx].text += ` ${strippedLine}`;
+        currentExp.rawAchievements[lastBulletIdx] += ` ${strippedLine}`;
+      }
+    } else if (!hasBulletPrefix && strippedLine.length < 65 && !strippedLine.includes(':') && !hasYear && !strippedLine.startsWith('http')) {
       // Línea candidata a ser el nombre de la empresa u organización
       pendingCompanyCandidate = strippedLine;
     } else if (currentExp) {
       const cleanBullet = stripLeadingBullet(strippedLine);
-      if (cleanBullet.length > 5) {
-        const hasMetric = /\b(?:\d+[%kKmM]?|\$\d+|\d+\s?(?:personas|usuarios|pacientes|clientes|meses|días|proyectos))\b/i.test(
-          cleanBullet
-        );
-        currentExp.rawAchievements.push(cleanBullet);
-        currentExp.xyzBullets.push({
-          text: cleanBullet,
-          needs_metric: !hasMetric,
-        });
+      if (cleanBullet.length > 3) {
+        const isUrl = cleanBullet.startsWith('http://') || cleanBullet.startsWith('https://') || cleanBullet.startsWith('github.com');
+        const lastBulletIdx = currentExp.xyzBullets.length - 1;
+
+        // Paragraph Stitching: si es una URL o una línea huérfana continua sin viñeta que complementa la anterior
+        if (isUrl && lastBulletIdx >= 0) {
+          currentExp.xyzBullets[lastBulletIdx].text += ` (${cleanBullet})`;
+          currentExp.rawAchievements[lastBulletIdx] += ` (${cleanBullet})`;
+        } else if (
+          !isBulletLine &&
+          lastBulletIdx >= 0 &&
+          cleanBullet.length > 5 &&
+          !/^[A-Z][a-z]+:/.test(cleanBullet) &&
+          !currentExp.xyzBullets[lastBulletIdx].text.endsWith('.')
+        ) {
+          currentExp.xyzBullets[lastBulletIdx].text += ` ${cleanBullet}`;
+          currentExp.rawAchievements[lastBulletIdx] += ` ${cleanBullet}`;
+        } else {
+          const hasMetric = /\b(?:\d+[%kKmM]?|\$\d+|\d+\s?(?:personas|usuarios|pacientes|clientes|meses|días|proyectos))\b/i.test(
+            cleanBullet
+          );
+          currentExp.rawAchievements.push(cleanBullet);
+          currentExp.xyzBullets.push({
+            text: cleanBullet,
+            needs_metric: !hasMetric,
+          });
+        }
       }
     }
   }
@@ -380,7 +453,7 @@ export function parseCvTextToStructuredData(
     });
   }
 
-  // 7. Procesar Educación (Filtrando Rigurosamente Fechas Administrativas Espurias)
+  // 7. Procesar Educación (Filtrando Subtítulos y Fechas Administrativas Espurias)
   const eduLines = getSectionLines('education');
   const education: Array<{ degree: string; institution: string; year: string }> = [];
 
@@ -392,6 +465,26 @@ export function parseCvTextToStructuredData(
       /^\d{1,2}\s+de\s+[a-z]+\s+de\s+\d{4}/i.test(lower) ||
       /^fecha\s+de\s+emisi/i.test(lower)
     );
+  };
+
+  // Descartar subtítulos de sección como "ESPECIALIZACIONES Y FORMACIÓN COMPLEMENTARIA"
+  const isEduSubheader = (l: string): boolean => {
+    const lower = l.toLowerCase().trim();
+    if (
+      lower.includes('formación complementaria') ||
+      lower.includes('formacion complementaria') ||
+      lower.includes('especializaciones y formación') ||
+      lower.includes('especializaciones y formacion') ||
+      lower.includes('cursos y capacitaciones') ||
+      lower.includes('cursos y talleres') ||
+      lower === 'educación' ||
+      lower === 'educacion' ||
+      lower === 'formación' ||
+      lower === 'formacion'
+    ) {
+      return true;
+    }
+    return false;
   };
 
   // Palabras indispensables para considerar una línea como educación formal
@@ -428,8 +521,7 @@ export function parseCvTextToStructuredData(
   };
 
   for (const rawLine of eduLines) {
-    // Si la línea es solo una fecha de emisión de documento o certificado, omitirla
-    if (isDateOnlyLine(rawLine)) {
+    if (isDateOnlyLine(rawLine) || isEduSubheader(rawLine)) {
       continue;
     }
 
@@ -452,11 +544,20 @@ export function parseCvTextToStructuredData(
           p.toLowerCase().includes('universidad') ||
           p.toLowerCase().includes('instituto') ||
           p.toLowerCase().includes('subdirección') ||
-          p.toLowerCase().includes('servicio')
+          p.toLowerCase().includes('servicio') ||
+          p.toLowerCase().includes('adipa') ||
+          p.toLowerCase().includes('centro') ||
+          p.toLowerCase().includes('academia') ||
+          p.toLowerCase().includes('escuela') ||
+          p.toLowerCase().includes('platzi') ||
+          p.toLowerCase().includes('udemy') ||
+          p.toLowerCase().includes('coursera')
         ) {
           inst = p;
         } else if (!deg) {
           deg = p;
+        } else if (!inst) {
+          inst = p;
         }
       });
 
@@ -466,10 +567,15 @@ export function parseCvTextToStructuredData(
         if (yearMatch) year = yearMatch[0].replace(/[()]/g, '');
       }
 
+      // Si no se detectó institución pero hay más de una parte, asignar la segunda
+      if (!inst && parts.length > 1) {
+        inst = parts[1];
+      }
+
       education.push({
         degree: deg || line.replace(/\((?:19|20)\d{2}.*\)/, '').trim(),
-        institution: inst || 'Universidad / Institución de Formación',
-        year: year || 'Graduado',
+        institution: inst || 'Centro de Formación Profesional',
+        year: year || 'Graduado / Acreditado',
       });
     }
   }

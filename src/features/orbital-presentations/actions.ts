@@ -221,13 +221,14 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
       [
         {
           role: 'system',
-          content: 'Eres un sistema de generación de presentaciones empresariales. Respondes únicamente en JSON estructurado.',
+          content: 'Eres un sistema de generación de presentaciones empresariales de élite. Respondes exclusivamente en JSON estructurado válido.',
         },
         { role: 'user', content: nimPrompt },
       ],
       {
-        model: 'meta/llama-3.2-11b-vision-instruct',
-        temperature: 0.2,
+        model: 'meta/llama-3.3-70b-instruct',
+        temperature: 0.15,
+        responseFormat: { type: 'json_object' },
       }
     );
 

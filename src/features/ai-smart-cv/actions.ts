@@ -41,8 +41,8 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
     if (extractedTextParam && extractedTextParam.trim().length > 0) {
       const { sanitizeExtractedText } = await import('@/shared/lib/fileSecurity');
       const sanitized = sanitizeExtractedText(extractedTextParam, { maxChars: 250000 });
-      const { parseCvTextToStructuredData } = await import('@/features/ai-smart-cv/lib/cv-text-parser');
-      extracted = parseCvTextToStructuredData(sanitized, fileName);
+      const { parseCvTextWithAiCascade } = await import('@/features/ai-smart-cv/lib/multimodal-parser');
+      extracted = await parseCvTextWithAiCascade(sanitized, fileName);
     } else {
       if (!file) {
         return { success: false, error: 'No se ha adjuntado ningún archivo ni texto de currículum.' };

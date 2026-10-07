@@ -180,6 +180,50 @@ export async function parseCvDocumentMultimodal(
 }
 
 /**
+ * Procesa texto extraído de CV pasando por el Cascade AI Router
+ * con fallback a parseCvTextToStructuredData si la IA no está disponible.
+ */
+export async function parseCvTextWithAiCascade(
+  extractedRawText: string,
+  fileName: string = 'cv.pdf'
+): Promise<MultimodalCvExtraction> {
+  try {
+    const { callNvidiaNimChat } = await import('@/shared/api/nvidia-nim');
+    const userPrompt = `A continuación se encuentra el texto extraído del currículum con preservación espacial de columnas. Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIENTO CRÍTICAS (EU AI Act, Google XYZ y needs_metric):\n\n${extractedRawText.slice(0, 16000)}`;
+
+    const nimResult = await callNvidiaNimChat(
+      [
+        { role: 'system', content: MULTIMODAL_CV_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      {
+        model: 'meta/llama-3.3-70b-instruct',
+        temperature: 0.1,
+        responseFormat: { type: 'json_object' },
+      }
+    );
+
+    if (nimResult.success && nimResult.content) {
+      let cleanContent = nimResult.content.trim();
+      const jsonMatch = cleanContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        cleanContent = jsonMatch[1].trim();
+      }
+      const parsed = JSON.parse(cleanContent);
+      const validated = multimodalCvExtractionSchema.safeParse(parsed);
+      if (validated.success) {
+        console.log(`[IDP] Extracción estructurada desde texto exitosa vía ${nimResult.modelUsed || 'AI Engine'}`);
+        return validated.data;
+      }
+    }
+  } catch (err) {
+    console.warn('[IDP] Fallo en Cascade AI Router para texto, recurriendo a parseCvTextToStructuredData:', err);
+  }
+
+  return parseCvTextToStructuredData(extractedRawText, fileName);
+}
+
+/**
  * Analizador Inteligente de Diplomas, Títulos y Certificaciones Oficiales
  * Extrae texto real del documento (PDF o imagen), detecta emisor, título, fecha y código de verificación.
  */

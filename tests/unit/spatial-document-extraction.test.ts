@@ -117,4 +117,50 @@ Cumplimiento normativo del 100% frente a la EU AI Act y SERNAC.
       expect(costMetric).toBeDefined();
     });
   });
+
+  describe('Edge-case CV Ingestion: Independent Technical Projects & Education Sanitization', () => {
+    it('debe estructurar proyectos independientes sin partir viñetas ni separar URLs huérfanas', () => {
+      const technicalCvText = `
+Matías Riquelme
+Ingeniero de Software
+contacto@matias.cl
+
+EXPERIENCIA LABORAL
+PROYECTOS DE DESARROLLO TECNOLÓGICO (AUTODIDACTA)
+ClicLaboral
+• Plataforma de empleo descentralizada con contratos inteligentes
+y encadenamiento criptográfico para auditoría de postulaciones
+https://github.com/matias/cliclaboral
+
+ContaPymePuq
+• Software de facturación electrónica y gestión contable para pymes de Magallanes
+https://github.com/matias/contapyme
+
+EDUCACIÓN
+ESPECIALIZACIONES Y FORMACIÓN COMPLEMENTARIA
+• Diplomado en Psicodiagnóstico Laboral - Adipa (2024)
+• Formación en WISC-V · Centro de Neurociencias (2023)
+`;
+
+      const result = parseCvTextToStructuredData(technicalCvText, 'cv_tecnico.pdf');
+
+      // Validar Proyectos
+      expect(result.experience.length).toBeGreaterThanOrEqual(2);
+      const clicProject = result.experience.find((e) => e.role.includes('ClicLaboral'));
+      expect(clicProject).toBeDefined();
+      expect(clicProject?.company).toContain('Proyectos');
+      // Debe haber concatenado la descripción multilínea con la URL en lugar de crear 3 viñetas separadas
+      expect(clicProject?.xyzBullets[0].text).toContain('contratos inteligentes y encadenamiento');
+      expect(clicProject?.xyzBullets[0].text).toContain('https://github.com/matias/cliclaboral');
+
+      // Validar Educación: NO debe crear un grado universitario para el subtítulo "ESPECIALIZACIONES Y FORMACIÓN COMPLEMENTARIA"
+      const fakeDegree = result.education.find((e) => e.degree.toLowerCase().includes('especializaciones y formación'));
+      expect(fakeDegree).toBeUndefined();
+
+      // Debe extraer Adipa como institución en el diplomado
+      const adipaEdu = result.education.find((e) => e.degree.includes('Diplomado en Psicodiagnóstico'));
+      expect(adipaEdu).toBeDefined();
+      expect(adipaEdu?.institution.toLowerCase()).toContain('adipa');
+    });
+  });
 });
