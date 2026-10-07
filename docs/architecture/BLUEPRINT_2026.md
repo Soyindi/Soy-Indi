@@ -1523,7 +1523,7 @@ La plataforma implementa una jerarquía comercial de 3 niveles escalonados defin
    - **Cuotas**: Hasta 3 perfiles de tarjetas, 1 currículum base, hasta 2 presentaciones 16:9, analíticas básicas, copiloto IA y sin marca de agua (identidad profesional limpia de grado empresarial).
 2. **Plan Pro (🔵 Recomendado)**:
    - **Precios**: $4.990 CLP/mes o $15.000 CLP/semestre ($2.500 CLP/mes, 50% de ahorro).
-   - **Cuotas**: Hasta 10 perfiles de tarjetas, hasta 5 versiones de Smart CV con auditoría ATS, hasta 10 presentaciones orbitales, analíticas completas (WhatsApp y vCard), 100% marca blanca y copiloto IA en Fast-lane.
+   - **Cuotas**: Hasta 10 perfiles de tarjetas, hasta 5 versiones de Smart CV con auditoría ATS, hasta 10 presentaciones orbitales, analíticas completas (WhatsApp y vCard), dominio y enlaces profesionales personalizados y copiloto IA en Fast-lane.
 3. **Plan Max (🟣)**:
    - **Precios**: $8.990 CLP/mes o $29.990 CLP/semestre (~$4.990 CLP/mes, 44% de ahorro).
    - **Cuotas**: Tarjetas, Smart CV y Presentaciones ilimitadas, panel de embudo avanzado, modelos de frontera NVIDIA NIM (Llama 3.3 / DeepSeek) y soporte VIP.

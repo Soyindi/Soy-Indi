@@ -33,6 +33,15 @@ describe('Subscription & Entitlements Logic', () => {
     expect(PRICING_TIERS.max.limits.cvs).toBe('unlimited');
     expect(PRICING_TIERS.max.limits.presentations).toBe('unlimited');
     expect(PRICING_TIERS.max.limits.hasWatermark).toBe(false);
+
+    // 4. Verificación de Cero Redundancia en copy de marca de agua
+    const starterWatermarkText = PRICING_TIERS.starter.features.some(f => f.text.toLowerCase().includes('sin marca de agua'));
+    const proHasWatermarkDuplicate = PRICING_TIERS.pro.features.some(f => f.text.toLowerCase().includes('marca 100% removida'));
+    const maxHasWatermarkDuplicate = PRICING_TIERS.max.features.some(f => f.text.toLowerCase().includes('marca 100% removida'));
+
+    expect(starterWatermarkText).toBe(true);
+    expect(proHasWatermarkDuplicate).toBe(false);
+    expect(maxHasWatermarkDuplicate).toBe(false);
   });
 
   it('valida el contrato Zod de preferencia de checkout con tier y planInterval', () => {

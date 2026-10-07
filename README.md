@@ -27,9 +27,9 @@
 **INDI** es una plataforma diseñada para emprendedores, trabajadores independientes y profesionales que buscan captar más clientes y proyectar una imagen impecable de manera sencilla.
 
 Cuenta con la matriz comercial **"El Semestre Irresistible"**:
-- **Plan Starter 🟢**: $2.500 CLP/mes o $6.000 CLP/semestre ($1.000 CLP/mes, 60% OFF).
-- **Plan Pro 🔵 (Recomendado)**: $4.990 CLP/mes o $15.000 CLP/semestre ($2.500 CLP/mes, 50% OFF, marca 100% blanca).
-- **Plan Max 🟣**: $8.990 CLP/mes o $29.990 CLP/semestre (~$4.990 CLP/mes, 44% OFF, volumen ilimitado).
+- **Plan Starter 🟢**: $2.500 CLP/mes o $6.000 CLP/semestre ($1.000 CLP/mes, 60% OFF, sin marca de agua desde el día 1).
+- **Plan Pro 🔵 (Recomendado)**: $4.990 CLP/mes o $15.000 CLP/semestre ($2.500 CLP/mes, 50% OFF, dominio y enlaces personalizados).
+- **Plan Max 🟣**: $8.990 CLP/mes o $29.990 CLP/semestre (~$4.990 CLP/mes, 44% OFF, volumen ilimitado y multi-organización).
 
 ---
 
@@ -140,7 +140,7 @@ INDI implementa un modelo **Todo-en-Uno sin restricciones ocultas ni sistemas ar
 | :--- | :--- | :--- |
 | **Prueba Gratuita** | **Gratis 3 Días** (Sin tarjeta requerida) | Acceso total a los 3 productos (Tarjetas, Métricas, CV, Presentaciones) para probar la suite completa. |
 | **Plan Starter (🟢)** | **$2.500 CLP / mes** o **$6.000 semestral** (60% OFF) | Hasta 3 tarjetas, 1 Smart CV ATS, 2 presentaciones 16:9, copiloto IA y **sin marca de agua** (calidad profesional limpia). |
-| **Plan Pro (🔵 Recomendado)** | **$4.990 CLP / mes** o **$15.000 semestral** (50% OFF) | Hasta 10 tarjetas, 5 Smart CVs, 10 presentaciones, analíticas completas, IA Fast-lane y 100% marca blanca. |
+| **Plan Pro (🔵 Recomendado)** | **$4.990 CLP / mes** o **$15.000 semestral** (50% OFF) | Hasta 10 tarjetas, 5 Smart CVs, 10 presentaciones, analíticas completas, dominio y enlaces personalizados e IA Fast-lane. |
 | **Plan Max (🟣)** | **$8.990 CLP / mes** o **$29.990 semestral** (44% OFF) | Tarjetas, CVs y presentaciones ilimitadas, métricas avanzadas, modelos NVIDIA NIM Llama 3.3/DeepSeek y soporte VIP. |
 
 ---
