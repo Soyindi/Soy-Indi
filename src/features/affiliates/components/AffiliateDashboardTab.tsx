@@ -345,13 +345,13 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
 
         <div className="glass-panel rounded-2xl p-5 border border-white/5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-mono text-zinc-400 uppercase">Por Cobrar (Próx. Corte)</span>
+            <span className="text-xs font-mono text-zinc-400 uppercase">Por Cobrar (Líquido)</span>
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
           <p className="text-2xl font-black text-amber-400">{formatCLP(overview.pendingBalanceClp)}</p>
-          <span className="text-[11px] text-amber-300/80">Comisiones acumuladas quincenales</span>
+          <span className="text-[11px] text-amber-300/80">Líquido quincenal (Día 1 y 15)</span>
         </div>
 
         <div className="glass-panel rounded-2xl p-5 border border-white/5">
@@ -511,7 +511,8 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
               <li>Los cortes se ejecutan los días 1 y 15 de cada mes.</li>
               <li>Comisión del 25% garantizada por cada pago aprobado en Mercado Pago.</li>
               <li>Abono directo a Cuenta RUT o cualquier cuenta bancaria en Chile.</li>
-              <li>Sin costo por transferencia.</li>
+              <li>Sujeto a emisión de Boleta de Honorarios con retención legal SII (15,25% según Ley N° 21.133).</li>
+              <li>Sin costo ni comisión oculta por transferencia.</li>
             </ul>
           </div>
 

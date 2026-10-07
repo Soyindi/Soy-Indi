@@ -504,20 +504,28 @@ export function AdminPayoutsView({
                       )}
                     </div>
 
-                    {/* Monto y Botón de Acción */}
-                    <div className="flex items-center justify-between lg:justify-end gap-6 w-full lg:w-auto">
-                      <div className="text-left lg:text-right">
-                        <span className="text-[10px] font-mono text-zinc-400 uppercase">A Pagar</span>
+                    {/* Monto y Botón de Acción con Desglose Tributario Ley 21.133 */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between lg:justify-end gap-5 w-full lg:w-auto">
+                      <div className="text-left lg:text-right space-y-0.5">
+                        <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Monto Líquido a Transferir</span>
                         <p className="text-xl sm:text-2xl font-black text-emerald-400">
                           {formatCLP(p.totalPayableClp)}
                         </p>
+                        {p.grossHonorariosClp && (
+                          <div className="text-[11px] font-mono text-zinc-400">
+                            <span className="text-zinc-300 font-semibold">Bruto Boleta: {formatCLP(p.grossHonorariosClp)}</span>
+                            <span className="text-zinc-500 text-[10px] block">
+                              (Retención SII 15,25%: {formatCLP(p.retentionHonorariosClp || 0)})
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       <button
                         type="button"
                         onClick={() => setPendingConfirmPayout(p)}
                         disabled={isProcessing || !hasBank}
-                        className="min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-zinc-950 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md shadow-emerald-500/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="min-h-[44px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-zinc-950 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md shadow-emerald-500/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
                       >
                         <Send className="w-3.5 h-3.5" />
                         <span>Marcar como Pagado</span>
@@ -562,8 +570,20 @@ export function AdminPayoutsView({
                 <span className="text-zinc-400">RUT:</span>
                 <span className="text-white font-mono">{pendingConfirmPayout.bankAccount?.rut}</span>
               </div>
+              {pendingConfirmPayout.grossHonorariosClp && (
+                <div className="flex justify-between text-zinc-400 font-mono text-[11px]">
+                  <span>Bruto Boleta de Honorarios:</span>
+                  <span className="text-zinc-300 font-semibold">{formatCLP(pendingConfirmPayout.grossHonorariosClp)}</span>
+                </div>
+              )}
+              {pendingConfirmPayout.retentionHonorariosClp && (
+                <div className="flex justify-between text-zinc-400 font-mono text-[11px]">
+                  <span>Retención SII 15,25% (Ley 21.133):</span>
+                  <span className="text-amber-400">{formatCLP(pendingConfirmPayout.retentionHonorariosClp)}</span>
+                </div>
+              )}
               <div className="flex justify-between pt-2 border-t border-white/10 text-sm">
-                <span className="text-zinc-300 font-bold">Monto Transferido:</span>
+                <span className="text-zinc-300 font-bold">Monto Líquido a Transferir:</span>
                 <span className="text-emerald-400 font-black">{formatCLP(pendingConfirmPayout.totalPayableClp)}</span>
               </div>
             </div>
