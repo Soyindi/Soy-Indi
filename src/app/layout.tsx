@@ -39,7 +39,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/brand/indi-alien-symbol-sm.webp', sizes: '32x32', type: 'image/webp' },
+      { url: '/brand/indi-isotipo-transparent.svg?v=2026.2', type: 'image/svg+xml' },
+      { url: '/brand/indi-alien-symbol-sm.webp?v=2026.2', sizes: '32x32', type: 'image/webp' },
+    ],
+    apple: [
+      { url: '/brand/indi-isotipo-transparent.svg?v=2026.2', sizes: '180x180', type: 'image/svg+xml' },
     ],
   },
 };

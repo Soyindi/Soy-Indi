@@ -1772,3 +1772,8 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Gobernanza de Viewport (`src/app/layout.tsx`)**: Declaración explícita de `viewport: Viewport` con `themeColor: '#080A12'` y `colorScheme: 'dark'`, unificando la barra de estado del sistema operativo con el fondo de la plataforma sin parpadeos de contraste.
 - **Geometría Circular Suave en Icono Oficial (`src/app/icon.svg`)**: Reemplazo del elemento `<rect>` cuadrado rígido por una geometría circular orgánica (`<circle cx="32" cy="32" r="30">`) con halo perimetral fotónico, erradicando cajas toscas en accesos directos y pestañas móviles.
 
+### 38.4 Invalidación de Caché Perimetral & Purga de Accesos Directos Móviles
+- **Cache-Busting Paramétrico en Iconos (`?v=2026.2`)**: En `src/app/layout.tsx`, los enlaces de favicons e iconos Apple declaran versiones parametrizadas para forzar la actualización inmediata en proxies y clientes HTTP que conservan copias en caché del favicon cuadrado previo.
+- **Protocolo de Purga en Dispositivos Móviles (PWA / Web Shortcuts)**: Cuando un acceso directo se guarda en la pantalla de inicio de iOS o Android, el sistema operativo genera un archivo PNG estático interno en memoria flash que persiste de forma desacoplada de la web. Para que el dispositivo renueve su splash screen con el nuevo isotipo orgánico, el usuario debe desinstalar el acceso directo previo y regenerarlo desde la URL actualizada.
+
+

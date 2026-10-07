@@ -68,10 +68,6 @@ export function BrandLogo({
     }
   })();
 
-  const posterUrl = isCinematic
-    ? '/brand/indi-logo-tight-poster.webp'
-    : asset.url;
-
   const content = (
     <div className={`inline-flex items-center gap-3 group select-none ${className}`}>
       {/* Contenedor del Logotipo Cinemático Orgánico con Aura Cósmica */}

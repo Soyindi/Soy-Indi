@@ -111,7 +111,7 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **HeroBrandIdentity & Zero-Box Masking**: Erradicación definitiva de cajas cuadradas rígidas en la portada y precargas mediante máscara radial fotónica (`mask-image: radial-gradient(circle at center, black 60%, transparent 95%)`), fundiendo el video profesional del logo suavemente con el fondo cósmico sin artefactos de recorte.
 - **Experiencia de Precarga Cinemática (`SmartPreloader`)**: Pantalla de carga universal con Streaming SSR en `loading.tsx` para `/c/[slug]`, `/cv/[slug]`, `/p/[slug]` y app global. Monta el video oficial con pulso bioluminiscente, micro-barra fotónica y fallback vectorial accesible WCAG 2.2 AA.
 - **Sincronización de Viewport y Ergonomía Móvil**: Definición de `viewport` con `themeColor: '#080A12'` en `layout.tsx` para evitar contrastes o parpadeos en barras de navegación móvil, y contenedores con `min-h-dvh` y `overflow-x-hidden` para preservar la interfaz de usuario en iOS y Android.
-- **Logotipo Animado Viviente Tight-Crop 3:2 (`<BrandLogo />`)**: Primitiva universal con soporte nativo de video loop en encuadre ceñido 3:2 y contenedores orgánicos desvanecidos con bordes translúcidos y cero cajas negras rígidas.
+- **Cache Busting e Invalidación de Iconos (`?v=2026.2`)**: Declaración de iconos canónicos en `layout.tsx` con versión parametrizada (`indi-isotipo-transparent.svg?v=2026.2`) para forzar la purga instantánea de favicons o splashes obsoletos cacheados en navegadores móviles.
 - **Unificación Transversal del Ecosistema**: Reemplazo absoluto de marcadores de texto o SVGs dispersos en `GlobalNavbar`, `MobileNavDrawer`, `UnifiedDashboardView`, `login` y `start`.
 
 ### 7. 🚪 Onboarding Hub Guiado & Switchboard Sistémico (`/start`)
