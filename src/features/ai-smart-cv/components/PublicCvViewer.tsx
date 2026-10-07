@@ -86,14 +86,14 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
       <header className="sticky top-0 z-30 w-full backdrop-blur-xl bg-zinc-950/75 border-b border-white/10 px-4 sm:px-8 py-3.5 transition-all">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            {/* Isotipo Oficial Animado INDI */}
+            {/* Logotipo Oficial Cinemático INDI (Horizontal) */}
             <BrandLogo
-              variant="symbol"
+              variant="horizontal"
               size="sm"
               showText={false}
               useVideo={true}
               linkToHome={true}
-              className="min-h-[44px] min-w-[44px] p-0.5 rounded-xl transition-transform hover:scale-105 active:scale-95"
+              className="min-h-[44px] inline-flex items-center p-0.5 rounded-xl transition-transform hover:scale-105 active:scale-95"
             />
             <span className="text-zinc-600">/</span>
             <div className="flex items-center gap-2">

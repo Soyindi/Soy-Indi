@@ -16,14 +16,14 @@ export function PublicContextualHeader({ ownerMode = false }: PublicHeaderProps)
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex items-center justify-between z-30">
-      {/* Lado Izquierdo: Isotipo Animado Oficial Canónico */}
+      {/* Lado Izquierdo: Logotipo Cinemático Oficial Canónico (Horizontal) */}
       <BrandLogo
-        variant="symbol"
+        variant="horizontal"
         size="sm"
         showText={false}
         useVideo={true}
         linkToHome={true}
-        className="min-h-[44px] min-w-[44px] p-1 rounded-2xl glass-panel border border-white/10 hover:border-cyan-500/30 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-cyan-500/10"
+        className="min-h-[44px] inline-flex items-center p-0.5 rounded-2xl glass-panel border border-white/10 hover:border-cyan-500/30 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-cyan-500/10"
       />
 
       {/* Lado Derecho: Acción contextual (Autenticado vs Visitante Viral) */}

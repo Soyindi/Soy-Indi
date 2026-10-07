@@ -55,6 +55,7 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Inteligencia de Posicionamiento SEO & JSON-LD (`Schema.org`)**: Inyección estricta de datos estructurados para Google Rich Snippets: entidades `Organization`, `WebSite` y `FAQPage` en la Home, `ProfilePage` + `Person` en `/c/[slug]`, y `DigitalDocument` en `/cv/[slug]`.
 - **Open Graph Dinámico con Safe Zone 1:1 (`/api/og`)**: Generador perimetral Edge ($1200\times630\text{ px}$) con zona central protegida ($630\times630\text{ px}$) para evitar recortes en feeds y chats de WhatsApp, Instagram y Telegram, complementado con auras volumétricas OKLCH y caché de alto rendimiento (`s-maxage=86400`).
 - **Copywriting Persuasivo Contextual (AIDA, Hook-Story-Offer, Curiosity Gap)**: Redacción inteligente con UTMs canónicos y atribución de afiliados integrada en un clic.
+- **Cabeceras Públicas Adaptativas & Logotipo Horizontal Cinemático**: Las vistas públicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`) incorporan el lockup horizontal con micro-video loop oficial (`<BrandLogo variant="horizontal" size="sm" />`), aportando legibilidad corporativa, integración con la acción contextual del visitante y touch targets $\ge 44\text{px}$.
 - **Telemetría Atómica en Turso**: Registro granular de eventos (`view`, `contact_save`, `whatsapp_click`, `share`, `qr_scan`) y Tasa de Conversión en tiempo real.
 
 

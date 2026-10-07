@@ -21,19 +21,22 @@ describe('Systemic Navigation Audit & Zero Auto-Referential Loops', () => {
     expect(logoDestinations.editorSubpages).toBe('/dashboard');
   });
 
-  it('verifica que las 3 vistas públicas (/c, /cv, /p) empleen el isotipo animado oficial solo sin textos redundantes', () => {
+  it('verifica que las 3 vistas públicas (/c, /cv, /p) empleen el logotipo horizontal animado oficial sin textos redundantes', () => {
     const publicViewsBranding = {
-      cards: { variant: 'symbol', size: 'sm', showText: false, useVideo: true, linkToHome: true },
-      smartCv: { variant: 'symbol', size: 'sm', showText: false, useVideo: true, linkToHome: true },
-      presentations: { variant: 'symbol', size: 'sm', showText: false, useVideo: true, linkToHome: true },
+      cards: { variant: 'horizontal', size: 'sm', showText: false, useVideo: true, linkToHome: true },
+      smartCv: { variant: 'horizontal', size: 'sm', showText: false, useVideo: true, linkToHome: true },
+      presentations: { variant: 'horizontal', size: 'sm', showText: false, useVideo: true, linkToHome: true },
     };
 
+    expect(publicViewsBranding.cards.variant).toBe('horizontal');
     expect(publicViewsBranding.cards.showText).toBe(false);
     expect(publicViewsBranding.cards.useVideo).toBe(true);
 
+    expect(publicViewsBranding.smartCv.variant).toBe('horizontal');
     expect(publicViewsBranding.smartCv.showText).toBe(false);
     expect(publicViewsBranding.smartCv.useVideo).toBe(true);
 
+    expect(publicViewsBranding.presentations.variant).toBe('horizontal');
     expect(publicViewsBranding.presentations.showText).toBe(false);
     expect(publicViewsBranding.presentations.useVideo).toBe(true);
   });

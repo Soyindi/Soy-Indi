@@ -466,7 +466,8 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Redimensionamiento de iconos sociales a 44x44px (`w-11 h-11`) y botones de contacto a `min-h-[44px]` / `min-h-[48px]`.
    - Conversión de paddings a múltiplos de 8 (`p-6 sm:p-8`, `gap-4`).
 4. **Cabecera Contextual Adaptativa de Conversión (`PublicContextualHeader.tsx` & Vistas Públicas `/c`, `/cv`, `/p`)**:
-   - Enrutamiento inteligente de alta conversión viral: cuando un visitante no autenticado visualiza una tarjeta digital, Smart CV o presentación orbital, los enlaces de acción (*"Crea tu perfil gratis"*, *"Crear mi CV"*, *"Crear Presentación"*, badge *"CREADO CON INDI"*) dirigen directamente al flujo de registro e inicio de sesión (`/login?mode=signup&callbackUrl=...`), mientras que usuarios con sesión activa conservan acceso directo a su panel (*"Mi Panel"* / `/dashboard`).
+   - **Logotipo Horizontal Cinemático Canónico**: En todas las vistas públicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`), se adopta `<BrandLogo variant="horizontal" size="sm" showText={false} useVideo={true} linkToHome={true} />`, otorgando máxima presencia de marca en relación de aspecto panorámica con micro-video loop optimizado y touch targets $\ge 44\text{px}$.
+   - **Enrutamiento inteligente de alta conversión viral**: cuando un visitante no autenticado visualiza una tarjeta digital, Smart CV o presentación orbital, los enlaces de acción (*"Crea tu perfil gratis"*, *"Crear mi CV"*, *"Crear Presentación"*, badge *"CREADO CON INDI"*) dirigen directamente al flujo de registro e inicio de sesión (`/login?mode=signup&callbackUrl=...`), mientras que usuarios con sesión activa conservan acceso directo a su panel (*"Mi Panel"* / `/dashboard`).
 
 ### ✅ Fase 10: Estudio Cinemático de Presentaciones Orbitales Pro, Plantillas y Generación IA (COMPLETADA)
 1. **Motor Multi-Layout Reactivo y Heurístico (`SlideViewer.tsx` & `heuristics.ts`)**:
