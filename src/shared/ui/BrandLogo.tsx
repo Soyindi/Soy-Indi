@@ -88,7 +88,6 @@ export function BrandLogo({
                 loop
                 muted
                 playsInline
-                poster={posterUrl}
                 className="w-full h-full object-cover filter drop-shadow-[0_2px_12px_rgba(34,211,238,0.35)] motion-reduce:hidden transition-transform duration-500 group-hover:scale-105"
                 aria-label="Logotipo oficial animado INDI"
               >
@@ -103,14 +102,6 @@ export function BrandLogo({
                     <source src="/brand/indi-logo-animated.mp4" type="video/mp4" />
                   </>
                 )}
-                <Image
-                  src={posterUrl}
-                  alt={asset.alt}
-                  width={isCinematic ? currentCinematic.width : currentSquare.imgSize}
-                  height={isCinematic ? currentCinematic.height : currentSquare.imgSize}
-                  priority={priority}
-                  className="w-full h-full object-cover filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)]"
-                />
               </video>
               {/* Fallback accesible para usuarios con preferencia de movimiento reducido */}
               <Image
