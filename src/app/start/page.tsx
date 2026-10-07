@@ -24,21 +24,6 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
   const rawCookieRef = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
   const activeRefCode = sanitizeReferralCode(rawParamRef) || sanitizeReferralCode(rawCookieRef);
 
-  // 2. Si viene por query param válido, persistir en cookie para navegación subsecuente
-  if (rawParamRef && activeRefCode) {
-    try {
-      cookieStore.set(REFERRAL_COOKIE_NAME, activeRefCode, {
-        maxAge: REFERRAL_COOKIE_MAX_AGE,
-        path: '/',
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: false, // Accesible por cliente para sincronizar flujos si fuera necesario
-      });
-    } catch {
-      // Ignorar si se ejecuta en contexto de streaming read-only
-    }
-  }
-
   const entitlement = await checkUserEntitlementAction();
 
   // 3. Si hay sesión activa y código válido, atribuir idempotentemente

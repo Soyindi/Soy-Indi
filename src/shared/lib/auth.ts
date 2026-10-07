@@ -32,6 +32,17 @@ export const auth = betterAuth({
       enabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
     },
   },
+  user: {
+    additionalFields: {
+      status: { type: 'string', required: false, defaultValue: 'TRIAL' },
+      trialEndsAt: { type: 'date', required: false },
+      subscriptionEndsAt: { type: 'date', required: false },
+      aiCredits: { type: 'number', required: false, defaultValue: 30 },
+      role: { type: 'string', required: false, defaultValue: 'user' },
+      referralCode: { type: 'string', required: false },
+      referredBy: { type: 'string', required: false },
+    },
+  },
   databaseHooks: {
     user: {
       create: {
@@ -89,6 +100,32 @@ export const auth = betterAuth({
               ...(referredBy ? { referredBy } : {}),
             },
           };
+        },
+        after: async (createdUser) => {
+          // Garantía de persistencia atómica post-creación en Turso SQLite
+          try {
+            if (createdUser && createdUser.id) {
+              const { eq } = await import('drizzle-orm');
+              const currentInDb = await db.query.user.findFirst({
+                where: eq(schema.user.id, createdUser.id),
+              });
+
+              if (currentInDb && (!currentInDb.referralCode || (createdUser as any).referredBy && !currentInDb.referredBy)) {
+                const updates: Record<string, any> = {};
+                if (!currentInDb.referralCode && (createdUser as any).referralCode) {
+                  updates.referralCode = (createdUser as any).referralCode;
+                }
+                if (!currentInDb.referredBy && (createdUser as any).referredBy) {
+                  updates.referredBy = (createdUser as any).referredBy;
+                }
+                if (Object.keys(updates).length > 0) {
+                  await db.update(schema.user).set(updates).where(eq(schema.user.id, createdUser.id));
+                }
+              }
+            }
+          } catch (err) {
+            console.error('Error en hook post-creación de usuario:', err);
+          }
         },
       },
     },

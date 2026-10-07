@@ -32,6 +32,22 @@ export default async function UnifiedDashboardPage({ searchParams }: DashboardPa
   const initialTab = params.tab || 'cards';
   const justCreatedSlug = params.created === 'true' ? params.slug : null;
 
+  // Atribución complementaria de referidos si el usuario recién llega por enlace o cookie
+  const rawParamRef = (params as any)?.ref;
+  try {
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const { REFERRAL_COOKIE_NAME, sanitizeReferralCode } = await import('@/entities/affiliate/referral-cookie');
+    const rawCookieRef = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
+    const activeRefCode = sanitizeReferralCode(rawParamRef) || sanitizeReferralCode(rawCookieRef);
+    if (activeRefCode && session?.user?.id) {
+      const { attributeReferralAction } = await import('@/features/affiliates/actions');
+      await attributeReferralAction(session.user.id, activeRefCode);
+    }
+  } catch {
+    // Silencioso
+  }
+
   // Carga paralela de entidades y estado de membresía desde Turso SQLite
   const { getAffiliateOverviewAction } = await import('@/features/affiliates/actions');
   const [cardsResult, cvsResult, presentationsResult, entitlement, affiliateResult] = await Promise.all([

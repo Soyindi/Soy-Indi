@@ -55,16 +55,11 @@ export default async function AdminPage() {
     );
   }
 
-  const [payoutsRes, auditRes] = await Promise.all([
-    getAdminAffiliatePayoutsAction(session.user.id),
-    (async () => {
-      const { getAdminReferralsAuditAction } = await import('@/features/affiliates/actions');
-      return getAdminReferralsAuditAction(session.user.id);
-    })(),
-  ]);
+  const { getAdminDashboardDataAction } = await import('@/features/affiliates/actions');
+  const dashboardData = await getAdminDashboardDataAction(session.user.id);
 
-  const payouts = payoutsRes.data || [];
-  const referralsAudit = auditRes.data || [];
+  const payouts = dashboardData.payouts || [];
+  const referralsAudit = dashboardData.referralsAudit || [];
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white relative overflow-hidden pb-16">

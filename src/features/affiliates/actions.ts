@@ -3,7 +3,7 @@
 import { db } from '@/shared/api/db';
 import { user, affiliateBankAccounts, affiliateCommissions, paymentsHistory } from '@/entities/schema';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
-import { eq, desc, and, ne, sql } from 'drizzle-orm';
+import { eq, desc, and, ne, sql, inArray, isNotNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { 
   affiliateBankAccountSchema, 
@@ -536,15 +536,32 @@ export async function getAdminAffiliatePayoutsAction(userId?: string): Promise<{
       map.set(c.affiliateUserId, current);
     }
 
+    const affiliateIds = Array.from(map.keys());
+    if (affiliateIds.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // Batching sin consultas N+1
+    const [affiliatesList, bankAccountsList] = await Promise.all([
+      db.query.user.findMany({
+        where: inArray(user.id, affiliateIds),
+      }),
+      db.query.affiliateBankAccounts.findMany({
+        where: inArray(affiliateBankAccounts.userId, affiliateIds),
+      }),
+    ]);
+
+    const affiliatesMap = new Map<string, any>();
+    for (const u of affiliatesList) affiliatesMap.set(u.id, u);
+
+    const banksMap = new Map<string, any>();
+    for (const b of bankAccountsList) banksMap.set(b.userId, b);
+
     const results: AdminAffiliatePayoutItem[] = [];
 
     for (const [affiliateId, stats] of map.entries()) {
-      const affiliateData = await db.query.user.findFirst({
-        where: eq(user.id, affiliateId),
-      });
-      const bankData = await db.query.affiliateBankAccounts.findFirst({
-        where: eq(affiliateBankAccounts.userId, affiliateId),
-      });
+      const affiliateData = affiliatesMap.get(affiliateId);
+      const bankData = banksMap.get(affiliateId);
 
       if (affiliateData) {
         results.push({
@@ -646,14 +663,14 @@ export async function getAdminReferralsAuditAction(userId?: string): Promise<{
       return { success: false, error: 'Permisos insuficientes de administrador.' };
     }
 
-    // Obtener todos los usuarios que fueron referidos por alguien
+    // Obtener todos los usuarios que fueron referidos por alguien (filtrando nulos y cadenas vacías)
     const referredUsers = await db.query.user.findMany({
-      where: sql`${user.referredBy} IS NOT NULL`,
+      where: and(isNotNull(user.referredBy), ne(user.referredBy, '')),
       orderBy: [desc(user.createdAt)],
       limit: 200,
     });
 
-    // Obtener todas las comisiones para calcular el aporte por usuario
+    // Obtener comisiones para calcular el aporte por usuario
     const allCommissions = await db.query.affiliateCommissions.findMany();
     const commissionsByBuyer = new Map<string, number>();
     for (const comm of allCommissions) {
@@ -661,33 +678,33 @@ export async function getAdminReferralsAuditAction(userId?: string): Promise<{
       commissionsByBuyer.set(comm.buyerUserId, current + comm.amountClp);
     }
 
-    // Mapear referentes y sus datos bancarios de manera eficiente sin N+1
+    // Mapear referentes y sus datos bancarios de manera eficiente con inArray
     const referrerIds = Array.from(new Set(referredUsers.map((u) => u.referredBy).filter(Boolean))) as string[];
     const referrersMap = new Map<string, any>();
     const bankAccountsMap = new Map<string, any>();
 
     if (referrerIds.length > 0) {
       const [allReferrerUsers, allBankAccounts] = await Promise.all([
-        db.query.user.findMany(),
-        db.query.affiliateBankAccounts.findMany(),
+        db.query.user.findMany({
+          where: inArray(user.id, referrerIds),
+        }),
+        db.query.affiliateBankAccounts.findMany({
+          where: inArray(affiliateBankAccounts.userId, referrerIds),
+        }),
       ]);
 
       for (const u of allReferrerUsers) {
-        if (referrerIds.includes(u.id)) {
-          referrersMap.set(u.id, u);
-        }
+        referrersMap.set(u.id, u);
       }
 
       for (const b of allBankAccounts) {
-        if (referrerIds.includes(b.userId)) {
-          bankAccountsMap.set(b.userId, {
-            bankName: b.bankName as any,
-            accountType: b.accountType as any,
-            accountNumber: b.accountNumber,
-            rut: b.rut,
-            holderName: b.holderName,
-          });
-        }
+        bankAccountsMap.set(b.userId, {
+          bankName: b.bankName as any,
+          accountType: b.accountType as any,
+          accountNumber: b.accountNumber,
+          rut: b.rut,
+          holderName: b.holderName,
+        });
       }
     }
 
@@ -714,6 +731,39 @@ export async function getAdminReferralsAuditAction(userId?: string): Promise<{
   } catch (error: any) {
     console.error('Error en getAdminReferralsAuditAction:', error);
     return { success: false, error: error.message || 'Error al obtener auditoría de referidos.' };
+  }
+}
+
+/**
+ * Panel de Administración: Consulta consolidada para sincronización en tiempo real
+ */
+export async function getAdminDashboardDataAction(userId?: string): Promise<{
+  success: boolean;
+  payouts: AdminAffiliatePayoutItem[];
+  referralsAudit: AdminReferralAuditItem[];
+  error?: string;
+}> {
+  try {
+    const [payoutsRes, auditRes] = await Promise.all([
+      getAdminAffiliatePayoutsAction(userId),
+      getAdminReferralsAuditAction(userId),
+    ]);
+
+    if (!payoutsRes.success) {
+      return { success: false, payouts: [], referralsAudit: [], error: payoutsRes.error };
+    }
+    if (!auditRes.success) {
+      return { success: false, payouts: payoutsRes.data || [], referralsAudit: [], error: auditRes.error };
+    }
+
+    return {
+      success: true,
+      payouts: payoutsRes.data || [],
+      referralsAudit: auditRes.data || [],
+    };
+  } catch (error: any) {
+    console.error('Error en getAdminDashboardDataAction:', error);
+    return { success: false, payouts: [], referralsAudit: [], error: error.message };
   }
 }
 

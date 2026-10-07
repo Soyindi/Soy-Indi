@@ -137,6 +137,7 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
      - *Prevención de Auto-Referidos & Fraude Sybil*: Normalización algorítmica de correos electrónicos (`normalizeEmailForAntiGaming`) ignorando subdireccionamiento `+alias` y puntos en Gmail/Googlemail tanto en `attributeReferralAction` como en el hook server-side `databaseHooks.user.create.before`.
      - *Digestión de Reembolsos y Contracargos*: La pasarela revierte automáticamente las comisiones (`status: 'refunded' | 'charged_back'`) mediante `processAffiliateRefundOnPayment` ante notificaciones de devolución.
      - *Indexación Rigurosa en Drizzle SQLite*: La tabla `affiliate_commissions` mantiene índices explícitos sobre todas sus claves foráneas (`buyer_user_idx`, `payment_idx`, `affiliate_user_idx`, `status_idx`) erradicando full table scans.
+     - *Gobernanza Edge de Cookies & Cero N+1 en Auditoría (/admin)*: Toda captura de cookie de referido (`indi_ref_code`) se ejecuta a nivel de `src/middleware.ts` en la respuesta HTTP perimetral, erradicando fallos silenciosos de `cookies().set()` en Server Components. En Better-Auth, `user.additionalFields` declara explícitamente los campos del modelo y las consultas de auditoría y liquidaciones en `src/features/affiliates/actions.ts` utilizan batching con `inArray` y sincronización en vivo (`getAdminDashboardDataAction`, `<RefreshCw />`), garantizando latencia sub-50ms y cero bloqueos.
 
 ---
 

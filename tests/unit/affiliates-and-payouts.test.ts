@@ -187,6 +187,15 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
         expect(item).toHaveProperty('totalCommissionsGeneratedClp');
       }
     }, 15000);
+
+    it('ejecuta getAdminDashboardDataAction y retorna estructura consolidada de liquidaciones y auditoría', async () => {
+      const { getAdminDashboardDataAction } = await import('@/features/affiliates/actions');
+      const res = await getAdminDashboardDataAction();
+
+      expect(res.success).toBe(true);
+      expect(Array.isArray(res.payouts)).toBe(true);
+      expect(Array.isArray(res.referralsAudit)).toBe(true);
+    }, 15000);
   });
 
   describe('Heurísticas Anti-Gaming 2026: Normalización de Correos & Detección Sybil', () => {

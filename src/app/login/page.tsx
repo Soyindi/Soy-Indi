@@ -30,29 +30,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     ? parsed.data
     : { mode: 'login' as const, callbackUrl: '/dashboard' };
 
-  // 1. Persistencia de referido en cookie si viene por query param (?ref=CODIGO)
+  // 1. Obtención y resolución de código de referido (vía query param o cookie gestionada por Edge Middleware)
   const rawParamRef = rawParams?.ref;
-  if (rawParamRef) {
-    try {
-      const { cookies } = await import('next/headers');
-      const cookieStore = await cookies();
-      const { REFERRAL_COOKIE_NAME, REFERRAL_COOKIE_MAX_AGE, sanitizeReferralCode } = await import(
-        '@/entities/affiliate/referral-cookie'
-      );
-      const sanitized = sanitizeReferralCode(rawParamRef);
-      if (sanitized) {
-        cookieStore.set(REFERRAL_COOKIE_NAME, sanitized, {
-          maxAge: REFERRAL_COOKIE_MAX_AGE,
-          path: '/',
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-          httpOnly: false,
-        });
-      }
-    } catch {
-      // Silencioso
-    }
-  }
+  const { cookies } = await import('next/headers');
+  const cookieStore = await cookies();
+  const { REFERRAL_COOKIE_NAME, sanitizeReferralCode } = await import(
+    '@/entities/affiliate/referral-cookie'
+  );
+  const rawCookieRef = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
+  const activeReferralCode = sanitizeReferralCode(rawParamRef) || sanitizeReferralCode(rawCookieRef);
 
   // Guardrail de Experiencia de Usuario: Si el usuario ya cuenta con sesión activa en Better-Auth,
   // evitar mostrar nuevamente el formulario y redirigir al destino contextual seguro (callbackUrl o /dashboard).
@@ -60,10 +46,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await auth.api.getSession({ headers: headerList });
   if (session?.user) {
     // Si viene código de referido y el usuario ya está conectado, atribuir
-    if (rawParamRef) {
+    if (activeReferralCode) {
       try {
         const { attributeReferralAction } = await import('@/features/affiliates/actions');
-        await attributeReferralAction(session.user.id, rawParamRef);
+        await attributeReferralAction(session.user.id, activeReferralCode);
       } catch {
         // Silencioso
       }

@@ -1568,6 +1568,24 @@ El desarrollo asistido por IA implementa un pipeline de entrega continua cerrado
 3. **Sincronización Doc-as-Code**: Alineación en cascada de `README.md`, `BLUEPRINT_2026.md` y `AGENTS.md`.
 4. **Publicación Automatizada**: Ejecución de `git commit` semántico y `git push origin <branch>` con reporte ejecutivo de cierre.
 
+---
+
+## 32. Gobernanza de Auditoría Administrativa, Captura Edge de Cookies & Sincronización en Vivo (2026)
+
+### 32.1 Diagnóstico de Atribución y Fallos en Flujo de Referidos
+Durante la auditoría técnica profunda del panel de administración (`/admin`) y la red de referidos se identificaron y subsanaron los siguientes vectores críticos:
+1. **Captura Determinista de Cookies en Edge Middleware (`src/middleware.ts`)**:
+   - *Causa raíz*: Las invocaciones a `cookies().set()` dentro de Server Components (`page.tsx`) fallaban silenciosamente debido a la inmutabilidad de cabeceras en el ciclo de renderizado SSR de Next.js App Router.
+   - *Solución*: La captura del parámetro `?ref=CODIGO` se centralizó en `middleware.ts`, inyectando la cookie First-Party `indi_ref_code` (30 días, `SameSite=Lax`, `HttpOnly=false`) directamente en la respuesta HTTP perimetral antes de cualquier ejecución de página.
+2. **Declaración Explícita de `user.additionalFields` en Better-Auth (`src/shared/lib/auth.ts`)**:
+   - *Causa raíz*: El adaptador Drizzle de Better-Auth filtraba campos no estándar (`status`, `trialEndsAt`, `role`, `referralCode`, `referredBy`) si no se declaraban en la configuración de la instancia.
+   - *Solución*: Se agregaron los esquemas de campos adicionales en `betterAuth({ user: { additionalFields: ... } })` junto con un hook reactivo post-creación (`databaseHooks.user.create.after`) que garantiza la persistencia atómica en Turso SQLite.
+3. **Eliminación de Consultas N+1 & Batching con `inArray` (`src/features/affiliates/actions.ts`)**:
+   - *Causa raíz*: `getAdminAffiliatePayoutsAction` y `getAdminReferralsAuditAction` ejecutaban consultas secuenciales en bucle y `findMany()` sobre toda la base de datos para mapear anfitriones y cuentas bancarias.
+   - *Solución*: Refactorización completa utilizando `inArray(user.id, referrerIds)` e `inArray(affiliateBankAccounts.userId, referrerIds)` colapsando múltiples roundtrips en consultas agrupadas de alta velocidad.
+4. **Sincronización en Tiempo Real en Panel de Control (`AdminPayoutsView.tsx`)**:
+   - Integración de botón de refresco en vivo (`RefreshCw`) y Server Action unificada `getAdminDashboardDataAction`, permitiendo al equipo administrador auditar registros, comisiones y liquidaciones quincenales sin requerir recarga completa de página.
+
 
 
 

@@ -1,8 +1,6 @@
-'use client';
-
 import React, { useState } from 'react';
 import { AdminAffiliatePayoutItem, AdminReferralAuditItem } from '@/entities/affiliate/schemas';
-import { markAffiliateCommissionsAsPaidAction } from '../actions';
+import { markAffiliateCommissionsAsPaidAction, getAdminDashboardDataAction } from '../actions';
 import { 
   Users, 
   DollarSign, 
@@ -16,7 +14,8 @@ import {
   Search,
   Sparkles,
   Clock,
-  ArrowUpRight
+  ArrowUpRight,
+  RefreshCw
 } from 'lucide-react';
 
 interface AdminDashboardViewProps {
@@ -34,6 +33,9 @@ export function AdminPayoutsView({
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date());
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   const formatCLP = (amount: number) => {
     return new Intl.NumberFormat('es-CL', {
@@ -41,6 +43,27 @@ export function AdminPayoutsView({
       currency: 'CLP',
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const handleRefreshData = async () => {
+    try {
+      setIsRefreshing(true);
+      setFeedbackMessage(null);
+      const res = await getAdminDashboardDataAction();
+      if (res.success) {
+        setPayouts(res.payouts);
+        setReferrals(res.referralsAudit);
+        setLastRefreshedAt(new Date());
+        setFeedbackMessage('Datos sincronizados en tiempo real.');
+        setTimeout(() => setFeedbackMessage(null), 3000);
+      } else {
+        setFeedbackMessage(res.error || 'Error al actualizar datos.');
+      }
+    } catch (err: any) {
+      setFeedbackMessage(err.message || 'Error de conexión.');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleMarkAsPaid = async (affiliateId: string) => {
@@ -52,7 +75,7 @@ export function AdminPayoutsView({
       setProcessingId(affiliateId);
       const res = await markAffiliateCommissionsAsPaidAction(affiliateId);
       if (res.success) {
-        setPayouts((prev) => prev.filter((p) => p.affiliateId !== affiliateId));
+        await handleRefreshData();
       } else {
         alert(res.error || 'Error al procesar la liquidación.');
       }
@@ -135,18 +158,44 @@ export function AdminPayoutsView({
           </button>
         </div>
 
-        {/* Barra de Búsqueda */}
-        <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder={activeTab === 'audit' ? 'Buscar usuario, email o anfitrión...' : 'Buscar afiliado o banco...'}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full min-h-[44px] pl-10 pr-4 py-2 rounded-xl bg-zinc-900 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
-          />
+        {/* Barra de Búsqueda y Botón de Sincronización */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-72">
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder={activeTab === 'audit' ? 'Buscar usuario, email o anfitrión...' : 'Buscar afiliado o banco...'}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full min-h-[44px] pl-10 pr-4 py-2 rounded-xl bg-zinc-900 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleRefreshData}
+            disabled={isRefreshing}
+            className="min-h-[44px] min-w-[44px] px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white flex items-center justify-center gap-2 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
+            title="Sincronizar datos en tiempo real desde la base de datos"
+          >
+            <RefreshCw className={`w-4 h-4 text-cyan-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
+          </button>
         </div>
       </div>
+
+      {/* Notificación de Estado / Feedback de Sincronización */}
+      {feedbackMessage && (
+        <div className="p-3 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 text-xs flex items-center justify-between animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span>{feedbackMessage}</span>
+          </div>
+          <span className="text-[11px] font-mono text-zinc-400">
+            {lastRefreshedAt.toLocaleTimeString('es-CL')}
+          </span>
+        </div>
+      )}
 
       {/* Métricas Resumen */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

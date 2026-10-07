@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-278_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-282_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -260,7 +260,8 @@ Las pruebas validan de forma continua:
 5. El aislamiento multi-tenant y bloqueo de llamadas no autorizadas en producción.
 6. El flujo CRUD de Smart CV, persistencia multi-tenant anti-IDOR y renderizado vectorial A4 justificado (DIN EN ISO 216).
 7. El sistema de identidad visual corporativa unificada, contratos Zod de marca, logotipo viviente por video loop WebM/MP4, integridad física de assets y guardrails de peso (<45 KB en WebP y <80 KB en video).
-8. La arquitectura de base de datos Turso LibSQL: línea base de 9 tablas (`user`, `session`, `account`, `verification`, `cards`, `card_events`, `smart_cvs`, `presentations`, `payments_history`), sincronización de migraciones (`0004_friendly_ezekiel.sql`) y contratos JSON fuertemente tipados.
+8. La arquitectura de base de datos Turso LibSQL: línea base de 11 tablas (`user`, `session`, `account`, `verification`, `cards`, `card_events`, `smart_cvs`, `presentations`, `payments_history`, `affiliate_bank_accounts`, `affiliate_commissions`), sincronización de migraciones y contratos JSON fuertemente tipados.
+9. La gobernanza de referidos y auditoría en `/admin`: captura de cookies Edge First-Party (`indi_ref_code`), erradicación de consultas N+1 con batching `inArray`, sincronización en tiempo real y liquidaciones quincenales (25% CLP).
 
 ---
 
