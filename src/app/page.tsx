@@ -128,7 +128,7 @@ export default function HomePage() {
       <GlobalNavbar />
 
       <main className="relative z-10 flex-1">
-        {/* 1 · HERO CINEMÁTICO: video ambiental + logo vertical protagonista */}
+        {/* 1 · HERO: halo CSS (zero-media) + logo vertical como único protagonista */}
         <section className="relative isolate min-h-[calc(100svh-72px)] flex items-center justify-center px-6 py-16 overflow-hidden">
           <BrandHeroBackdrop />
           <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center text-center">

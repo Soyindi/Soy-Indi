@@ -189,7 +189,7 @@ INDI/
 │   │   ├── presentations/       # Estudio cinematográfico 16:9 con AppEditorHeader
 │   │   ├── pricing/             # Página comercial con comparativa, FAQ y garantías
 │   │   ├── start/               # Onboarding Hub interactivo (Prueba 3 días)
-│   │   └── page.tsx             # Landing Page minimalista de 5 secciones con BrandHeroBackdrop
+│   │   └── page.tsx             # Landing Page minimalista de 5 secciones con BrandHeroBackdrop zero-media (halo CSS, sin póster/video)
 │   ├── features/                # Módulos de lógica de negocio (FSD)
 │   │   ├── card-builder/        # Formularios reactivos, dashboard actions y temas
 │   │   ├── ai-smart-cv/         # Auditoría heurística ATS y motor vectorial jsPDF

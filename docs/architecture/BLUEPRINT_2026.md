@@ -1150,6 +1150,12 @@ export default async function PublicCardPage({ params }: PageProps) {
    - Nuevos casos de prueba en `tests/unit/brand-identity-system.test.ts` verificando la existencia y límites de peso de `indi-brand-reveal.webm` (< 150 KB) y `indi-brand-reveal-poster.webp` (< 20 KB).
    - 100% de la suite de pruebas unitarias aprobada (184 de 184 tests en 29 suites).
 
+### Fase: Hero Zero-Media & Erradicación del Splash de Logo (Octubre 2026)
+> Supersede el punto 1 de la fase anterior (regresión introducida en `a4767fd`).
+1. **Diagnóstico**: el póster `indi-brand-reveal-poster.webp` (logo "Soyindi" a pantalla completa) se renderizaba desenfocado detrás del lockup vertical. En móvil (donde el video nunca se monta) quedaba fijo y se percibía como pantalla de precarga con logo duplicado; en escritorio generaba un flash póster→video.
+2. **Solución (`BrandHeroBackdrop.tsx`)**: fondo 100% CSS (halo indigo + halo cyan + gradiente a `zinc-950`). Server Component sin `use client`, sin `<img>`, `<video>` ni `poster`: 0 bytes de red, 0 JS, 0 CLS, comportamiento idéntico móvil/escritorio. Política **Single Logo Protagonist**: el lockup vertical `stackedHero` es el único logotipo del hero.
+3. **Pruebas**: `tests/unit/hero-zero-media-backdrop.test.ts` bloquea la reintroducción de medios en el backdrop y verifica un único `<Image>` en el hero.
+
 ### Fase: Pulcritud Vectorial en PDF ATS, Sanitización de OCR y Referencias Verificables (Octubre 2026)
 1. **Sanitización de Artefactos de OCR Corruptos (`pdf-engine.ts`, `cv-text-parser.ts`)**:
    - Filtrado automático de artefactos de escaneo y OCR (`%Ï`, `%ï`, `‰`) en títulos de grados, diplomas y viñetas de experiencia laboral, garantizando tipografía limpia sin caracteres espurios.

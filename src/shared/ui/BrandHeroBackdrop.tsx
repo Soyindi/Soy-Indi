@@ -1,51 +1,24 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { BRAND_ASSETS } from '@/entities/brand/schemas';
-
-const VIDEO_QUERY = '(min-width: 768px) and (prefers-reduced-motion: no-preference)';
-
 /**
- * Fondo cinemático de la marca para el hero.
- * - Poster WebP estático siempre presente (Zero CLS, LCP instantáneo).
- * - El <video> solo se monta en escritorio y sin `prefers-reduced-motion`,
- *   evitando descargar el MP4/WebM en móvil.
- * - Desenfoque + capa oscura: el video es ambiente, no mensaje (WCAG AA en el texto).
+ * Fondo ambiental de marca para el hero (Zero-Media Backdrop).
+ *
+ * Política "Single Logo Protagonist":
+ * - El único logotipo visible en el hero es el lockup vertical (`stackedHero`).
+ * - Este fondo NO renderiza imágenes, pósters ni video: un póster WebP del logo
+ *   desenfocado detrás del hero se percibía como pantalla de precarga (splash)
+ *   en móvil y como "flash" póster→video en escritorio (regresión de a4767fd).
+ * - Halo 100% CSS: 0 bytes de red, 0 JavaScript (Server Component), 0 CLS,
+ *   idéntico en móvil y escritorio. Gradiente final garantiza contraste WCAG AA.
  */
 export function BrandHeroBackdrop() {
-  const asset = BRAND_ASSETS.brandRevealVideo;
-  const [showVideo, setShowVideo] = useState(false);
-
-  useEffect(() => {
-    const mql = window.matchMedia(VIDEO_QUERY);
-    const sync = () => setShowVideo(mql.matches);
-    sync();
-    mql.addEventListener('change', sync);
-    return () => mql.removeEventListener('change', sync);
-  }, []);
-
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={asset.fallbackUrl}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover scale-110 blur-md opacity-50"
-      />
-      {showVideo && (
-        <video
-          className="absolute inset-0 w-full h-full object-cover scale-110 blur-md opacity-50 will-change-transform"
-          poster={asset.fallbackUrl}
-          autoPlay
-          muted
-          loop
-          playsInline
-        >
-          {asset.webmUrl && <source src={asset.webmUrl} type="video/webm" />}
-          <source src={asset.url} type="video/mp4" />
-        </video>
-      )}
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/70 via-zinc-950/55 to-zinc-950" />
+    <div
+      className="absolute inset-0 overflow-hidden pointer-events-none"
+      aria-hidden="true"
+      data-testid="brand-hero-backdrop"
+    >
+      <div className="absolute top-[-16%] left-1/2 -translate-x-1/2 w-[480px] h-[480px] sm:w-[720px] sm:h-[720px] rounded-full bg-indigo-600/16 blur-[120px] sm:blur-[160px]" />
+      <div className="absolute bottom-[-24%] left-1/2 -translate-x-1/2 w-[320px] h-[320px] sm:w-[480px] sm:h-[480px] rounded-full bg-cyan-500/8 blur-[120px]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-zinc-950" />
     </div>
   );
 }
