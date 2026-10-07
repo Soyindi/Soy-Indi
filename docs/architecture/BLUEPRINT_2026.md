@@ -1105,7 +1105,7 @@ export default async function PublicCardPage({ params }: PageProps) {
      - Catálogo canónico inmutable `BRAND_ASSETS` expandido con activos de animación de logo (`logoAnimated`, `logoWideAnimated`).
    - **Componente Reutilizable Universal (`src/shared/ui/BrandLogo.tsx`)**:
      - Implementado con soporte nativo de **Logotipo Viviente por Video** (`useVideo={true}` por defecto).
-     - Reproducción dual WebM / MP4 en bucle continuo silenciado (`autoPlay`, `loop`, `muted`, `playsInline`, `preload="auto"`).
+     - Reproducción dual WebM / MP4 en bucle continuo silenciado (`autoPlay`, `loop`, `muted`, `playsInline` sin precarga forzada de red).
      - Respaldo visual instantáneo mediante `poster={asset.url}` y `<Image priority />` en Edge (Zero CLS).
      - Cumplimiento estricto WCAG 2.2 AA para usuarios con preferencia de movimiento reducido (`motion-reduce:hidden` en video y fallback estático automático).
    - **Unificación Transversal del Ecosistema**:

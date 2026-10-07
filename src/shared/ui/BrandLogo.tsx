@@ -88,7 +88,6 @@ export function BrandLogo({
                 loop
                 muted
                 playsInline
-                preload="auto"
                 poster={posterUrl}
                 className="w-full h-full object-cover filter drop-shadow-[0_2px_12px_rgba(34,211,238,0.35)] motion-reduce:hidden transition-transform duration-500 group-hover:scale-105"
                 aria-label="Logotipo oficial animado INDI"

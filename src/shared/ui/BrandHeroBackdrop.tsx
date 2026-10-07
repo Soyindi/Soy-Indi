@@ -40,7 +40,6 @@ export function BrandHeroBackdrop() {
           muted
           loop
           playsInline
-          preload="metadata"
         >
           {asset.webmUrl && <source src={asset.webmUrl} type="video/webm" />}
           <source src={asset.url} type="video/mp4" />
