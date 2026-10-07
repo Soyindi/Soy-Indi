@@ -22,6 +22,7 @@ import {
   Maximize2,
 } from 'lucide-react';
 import { trackResourceView } from '@/shared/lib/telemetryClient';
+import { WebShareModal } from '@/shared/ui/WebShareModal';
 
 interface PublicCvViewerProps {
   cv: CVFormValues;
@@ -33,6 +34,7 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [pageFormat] = useState<'a4' | 'letter'>('a4');
   const [zoomLevel, setZoomLevel] = useState<number>(1);
 
@@ -70,31 +72,8 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
     }
   };
 
-  const handleShare = async () => {
-    if (typeof window === 'undefined') return;
-    const url = window.location.href;
-    const shareData = {
-      title: `${content.fullName} • ${cv.targetRole}`,
-      text: `Revisa el currículum digital e interactivo de ${content.fullName} en INDI:`,
-      url,
-    };
-
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch (err) {
-        // Fallback a copiar portapapeles si el usuario cancela o falla
-      }
-    }
-
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
-    } catch (err) {
-      console.error('Error copiando link:', err);
-    }
+  const handleShare = () => {
+    setIsShareModalOpen(true);
   };
 
   return (
@@ -332,6 +311,17 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
           • Plataforma de Identidad y Productividad 2026
         </p>
       </footer>
+
+      {/* Modal Universal de Compartir (Safe Zone 1:1 & Hápticos) */}
+      <WebShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={content.fullName}
+        role={cv.targetRole}
+        about={content.summary || undefined}
+        slug={slug}
+        entityType="cv"
+      />
     </div>
   );
 }

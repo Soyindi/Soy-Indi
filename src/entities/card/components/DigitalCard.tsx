@@ -19,6 +19,7 @@ import { downloadVCard } from '@/shared/lib/vcard';
 import { getAccessibleTextColor } from '@/shared/lib/colorContrast';
 import { trackCardEventAction } from '@/features/card-builder/analytics-actions';
 import { trackResourceView } from '@/shared/lib/telemetryClient';
+import { WebShareModal } from '@/shared/ui/WebShareModal';
 
 // Importar QRCode dinámicamente para SSR seguro
 const QRCodeSVG = dynamic(
@@ -70,6 +71,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const [showQR, setShowQR] = useState(false);
   const [copied, setCopied] = useState(false);
   const [vcardSaved, setVcardSaved] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Telemetría pasiva desacoplada del render SSR
   useEffect(() => {
@@ -163,25 +165,9 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
   const buttonTextColor = getAccessibleTextColor(primaryColor);
 
-  const handleShare = async () => {
-    // Telemetría silently
+  const handleShare = () => {
     trackCardEventAction({ slug: card.slug, eventType: 'share' }).catch(() => {});
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${card.title} — ${card.profession}`,
-          text: card.about || `Conecta con ${card.title} en un solo clic`,
-          url: fullUrl,
-        });
-        return;
-      } catch {
-        // Fallback al portapapeles
-      }
-    }
-    await navigator.clipboard.writeText(fullUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setIsShareModalOpen(true);
   };
 
   const handleDownloadContact = () => {
@@ -585,6 +571,21 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           </a>
         </div>
       </motion.div>
+
+      {/* Modal Universal de Compartir (Safe Zone 1:1 & Hápticos) */}
+      <WebShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={card.title}
+        role={card.profession}
+        about={card.about || undefined}
+        slug={card.slug}
+        entityType="card"
+        photoUrl={card.photoUrl || undefined}
+        onShareTracked={() => {
+          trackCardEventAction({ slug: card.slug, eventType: 'share' }).catch(() => {});
+        }}
+      />
     </SmartParticles>
   );
 }

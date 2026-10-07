@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   // Si es slug demo, retornamos metadatos de presentación
   if (slug === 'demo') {
-    const ogImageUrl = `http://localhost:3000/api/og?title=${encodeURIComponent('Matías Riquelme')}&role=${encodeURIComponent('Ingeniero de Software & Arquitecto Cloud')}&about=${encodeURIComponent('Especialista en arquitecturas web distribuidas, Edge computing y sistemas de alta concurrencia.')}`;
+    const ogImageUrl = `https://soyindi.cl/api/og?type=card&title=${encodeURIComponent('Matías Riquelme')}&role=${encodeURIComponent('Ingeniero de Software & Arquitecto Cloud')}&about=${encodeURIComponent('Especialista en arquitecturas web distribuidas, Edge computing y sistemas de alta concurrencia.')}&verified=1`;
 
     return {
       title: 'Matías Riquelme — Ingeniero de Software & Arquitecto Cloud | INDI',
@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Tarjeta No Encontrada | INDI' };
   }
 
-  const ogImageUrl = `https://soyindi.cl/api/og?title=${encodeURIComponent(card.title)}&role=${encodeURIComponent(card.profession)}&about=${encodeURIComponent(card.about || '')}&photo=${encodeURIComponent(card.photoUrl || '')}`;
+  const ogImageUrl = `https://soyindi.cl/api/og?type=card&title=${encodeURIComponent(card.title)}&role=${encodeURIComponent(card.profession)}&about=${encodeURIComponent(card.about || '')}&photo=${encodeURIComponent(card.photoUrl || '')}&verified=1`;
 
   return {
     title: `${card.title} — ${card.profession} | INDI`,

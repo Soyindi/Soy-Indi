@@ -17,8 +17,10 @@ import {
   Vibrate,
   Copy,
   Check,
+  Share2,
 } from 'lucide-react';
 import { trackResourceView } from '@/shared/lib/telemetryClient';
+import { WebShareModal } from '@/shared/ui/WebShareModal';
 
 interface PublicPresentationViewerProps {
   title: string;
@@ -40,6 +42,7 @@ export function PublicPresentationViewer({
   const [showPresenterNotes, setShowPresenterNotes] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   // Telemetría pasiva desacoplada de la ruta SSR
@@ -242,23 +245,14 @@ export function PublicPresentationViewer({
             <span className="hidden sm:inline">Notas</span>
           </button>
 
-          {/* Botón Copiar Enlace Público */}
+          {/* Botón Compartir Presentación */}
           <button
-            onClick={handleCopyLink}
+            onClick={() => setIsShareModalOpen(true)}
             className="min-h-[44px] px-3.5 py-2 rounded-xl glass-pill text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 transition-all border border-white/10 flex items-center gap-1.5 active:scale-95 cursor-pointer"
-            title="Copiar enlace permanente"
+            title="Compartir presentación"
           >
-            {copiedLink ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-300 hidden sm:inline">¡Copiado!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="hidden sm:inline">Copiar Link</span>
-              </>
-            )}
+            <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Compartir</span>
           </button>
 
           <Link
@@ -333,6 +327,16 @@ export function PublicPresentationViewer({
           </button>
         </div>
       </footer>
+
+      {/* Modal Universal de Compartir (Safe Zone 1:1 & Hápticos) */}
+      <WebShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={title}
+        role="Presentación Orbital 16:9"
+        slug={slug}
+        entityType="presentation"
+      />
     </div>
   );
 }

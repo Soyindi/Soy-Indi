@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-288_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-294_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -49,8 +49,9 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Bloques Bento Modulares**: Vitrina interactiva para destacar proyectos, métricas cuantitativas (+150 clientes, +25% YoY), enlaces externos y testimonios.
 - **Botón de WhatsApp Pre-redactado**: Inicia conversaciones comerciales con un mensaje personalizado en 1 toque.
 - **Código QR Dinámico Integrado**: Listo para escanear en pantalla, imprimir en stickers o proyectar.
-- **Web Share API**: Comparte instantáneamente en el menú nativo de iOS y Android.
-- **Open Graph Dinámico en el Edge (`/api/og`)**: Previews visuales automáticos y de alta definición al enviar el enlace por WhatsApp, LinkedIn o Telegram.
+- **Web Share Modal Háptico & Canales Directos**: Diálogo accesible WCAG 2.2 AA con vibración háptica (`navigator.vibrate`), fallback seguro al portapapeles y canales de un toque para WhatsApp Web, LinkedIn y X (Twitter).
+- **Open Graph Dinámico con Safe Zone 1:1 (`/api/og`)**: Generador perimetral Edge ($1200\times630\text{ px}$) con zona central protegida ($630\times630\text{ px}$) para evitar recortes en feeds y chats de WhatsApp, Instagram y Telegram, complementado con auras volumétricas OKLCH y caché de alto rendimiento (`s-maxage=86400`).
+- **Copywriting Persuasivo Contextual (AIDA, Hook-Story-Offer, Curiosity Gap)**: Redacción inteligente con UTMs canónicos y atribución de afiliados integrada en un clic.
 - **Telemetría Atómica en Turso**: Registro granular de eventos (`view`, `contact_save`, `whatsapp_click`, `share`, `qr_scan`) y Tasa de Conversión en tiempo real.
 
 

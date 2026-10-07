@@ -34,6 +34,7 @@ export async function generateMetadata({ params }: PublicCvPageProps): Promise<M
     const content = cv.content as any;
     const name = content?.fullName || cv.title;
     const role = cv.targetRole;
+    const ogImageUrl = `https://soyindi.cl/api/og?type=cv&title=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}&about=${encodeURIComponent('Currículum profesional ATS verificado en el Edge.')}&verified=1`;
 
     return {
       title: `${name} • ${role} | Smart CV`,
@@ -43,10 +44,24 @@ export async function generateMetadata({ params }: PublicCvPageProps): Promise<M
       },
       openGraph: {
         title: `${name} • ${role} | Smart CV`,
-        description: `Revisa la trayectoria profesional de ${name} (${role}) en INDI.`,
+        description: `Revisa la trayectoria profesional de ${name} (${role}) en INDI. Descarga su CV vectorial ATS.`,
         url: `https://soyindi.cl/cv/${slug}`,
         siteName: 'INDI Smart CV',
         type: 'profile',
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${name} — Smart CV`,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${name} • ${role} | Smart CV`,
+        description: `Revisa la trayectoria profesional de ${name} (${role}) en INDI.`,
+        images: [ogImageUrl],
       },
     };
   } catch (err) {

@@ -3,14 +3,44 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
+/**
+ * Edge Open Graph Image Generator (INDI 2026)
+ * Cumple estrictamente con la Matriz de Zona Segura 1:1 (630x630 px dentro de 1200x630 px)
+ * Garantiza que WhatsApp, Telegram, iMessage, LinkedIn y X nunca recorten
+ * los datos vitales ni avatares en miniaturas móviles cuadradas.
+ */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const title = searchParams.get('title') || 'Tarjeta Profesional';
-    const role = searchParams.get('role') || 'Identidad Digital INDI';
-    const about = searchParams.get('about') || 'Conecta directamente en un solo clic';
-    const photo = searchParams.get('photo');
+    // Parámetros semánticos y alias compactos
+    const title = searchParams.get('title') || searchParams.get('n') || 'Identidad Profesional';
+    const role = searchParams.get('role') || searchParams.get('r') || 'Ecosistema Digital INDI';
+    const about = searchParams.get('about') || searchParams.get('d') || 'Conecta directamente en un solo clic.';
+    const photo = searchParams.get('photo') || searchParams.get('av');
+    const entityType = searchParams.get('type') || searchParams.get('t') || 'card'; // 'card' | 'cv' | 'presentation'
+    const isVerified = searchParams.get('verified') === '1' || searchParams.get('v') === '1';
+    const customBadge = searchParams.get('badge');
+
+    // Resolver badge visual contextual
+    let defaultBadge = 'VERIFICADO • PRO';
+    let badgeColor = '#4f46e5'; // Indigo
+    let badgeBg = 'rgba(79, 70, 229, 0.2)';
+    let badgeBorder = 'rgba(99, 102, 241, 0.4)';
+
+    if (entityType === 'cv') {
+      defaultBadge = 'SMART CV • ATS A4 READY';
+      badgeColor = '#06b6d4'; // Cyan
+      badgeBg = 'rgba(6, 182, 212, 0.2)';
+      badgeBorder = 'rgba(34, 211, 238, 0.4)';
+    } else if (entityType === 'presentation') {
+      defaultBadge = 'PRESENTACIÓN • 16:9 ORBITAL';
+      badgeColor = '#a855f7'; // Purple
+      badgeBg = 'rgba(168, 85, 247, 0.2)';
+      badgeBorder = 'rgba(192, 132, 252, 0.4)';
+    }
+
+    const badgeText = customBadge || defaultBadge;
 
     return new ImageResponse(
       (
@@ -19,116 +49,210 @@ export async function GET(req: NextRequest) {
             height: '100%',
             width: '100%',
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#090a10',
-            backgroundImage: 'radial-gradient(circle at 50% 10%, rgba(99, 102, 241, 0.25) 0%, transparent 60%)',
+            backgroundColor: '#07080d',
+            backgroundImage:
+              'radial-gradient(circle at 50% 20%, rgba(79, 70, 229, 0.3) 0%, transparent 70%), radial-gradient(circle at 10% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 50%)',
             fontFamily: 'sans-serif',
             color: 'white',
-            padding: '60px 40px',
             position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          {/* Tarjeta Mock Central */}
+          {/* AURA LATERAL IZQUIERDA (285px) */}
           <div
             style={{
+              width: '285px',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: 0.4,
+            }}
+          />
+
+          {/* MATRIZ DE ZONA SEGURA CENTRAL 1:1 (630x630 px) */}
+          <div
+            style={{
+              width: '630px',
+              height: '630px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: '32px',
+              justifyContent: 'space-between',
+              padding: '40px 32px',
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+              borderRadius: '44px',
               border: '2px solid rgba(255, 255, 255, 0.12)',
-              padding: '48px 64px',
-              maxWidth: '850px',
-              width: '100%',
-              boxShadow: '0 30px 60px rgba(0, 0, 0, 0.6)',
+              boxShadow: '0 32px 64px rgba(0, 0, 0, 0.8)',
             }}
           >
-            {/* Foto o Iniciales */}
+            {/* Header: Badge Contextual */}
             <div
               style={{
-                width: '110px',
-                height: '110px',
-                borderRadius: '55px',
-                backgroundColor: '#6366f1',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '24px',
-                border: '3px solid rgba(255, 255, 255, 0.4)',
-                boxShadow: '0 0 30px rgba(99, 102, 241, 0.5)',
-              }}
-            >
-              {photo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={photo}
-                  alt={title}
-                  style={{ width: '100%', height: '100%', borderRadius: '55px', objectFit: 'cover' }}
-                />
-              ) : (
-                <span style={{ fontSize: '42px', fontWeight: 'bold', color: 'white' }}>
-                  {title.slice(0, 2).toUpperCase()}
-                </span>
-              )}
-            </div>
-
-            <div style={{ fontSize: '44px', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '8px', textAlign: 'center' }}>
-              {title}
-            </div>
-
-            <div
-              style={{
-                fontSize: '20px',
+                gap: '8px',
+                padding: '6px 16px',
+                borderRadius: '999px',
+                backgroundColor: badgeBg,
+                border: `1px solid ${badgeBorder}`,
+                fontSize: '13px',
                 fontWeight: 700,
-                color: '#22d3ee',
-                textTransform: 'uppercase',
                 letterSpacing: '0.12em',
-                marginBottom: '20px',
+                color: badgeColor,
+                textTransform: 'uppercase',
               }}
             >
-              {role}
+              {isVerified && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill={badgeColor} style={{ marginRight: '6px' }}>
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+              )}
+              <span>{badgeText}</span>
             </div>
 
+            {/* Bloque Central: Avatar + Nombre + Rol */}
             <div
               style={{
-                fontSize: '22px',
-                color: '#cbd5e1',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
                 textAlign: 'center',
-                lineHeight: 1.4,
-                maxWidth: '650px',
+                width: '100%',
               }}
             >
-              {about}
+              {/* Foto de Perfil o Iniciales con Halo */}
+              <div
+                style={{
+                  width: '112px',
+                  height: '112px',
+                  borderRadius: '56px',
+                  backgroundColor: '#4f46e5',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '20px',
+                  border: '3px solid rgba(255, 255, 255, 0.35)',
+                  boxShadow: '0 0 32px rgba(99, 102, 241, 0.55)',
+                  overflow: 'hidden',
+                }}
+              >
+                {photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={photo}
+                    alt={title}
+                    style={{ width: '100%', height: '100%', borderRadius: '56px', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <span style={{ fontSize: '42px', fontWeight: 800, color: 'white' }}>
+                    {title.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+              </div>
+
+              {/* Nombre / Título */}
+              <div
+                style={{
+                  fontSize: title.length > 22 ? '34px' : '40px',
+                  fontWeight: 800,
+                  letterSpacing: '-0.03em',
+                  color: '#ffffff',
+                  marginBottom: '8px',
+                  lineHeight: 1.15,
+                  maxWidth: '540px',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {title}
+              </div>
+
+              {/* Especialidad / Rol */}
+              <div
+                style={{
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: badgeColor,
+                  letterSpacing: '0.04em',
+                  marginBottom: '14px',
+                  maxWidth: '520px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {role}
+              </div>
+
+              {/* Descripción breve / Elevator Pitch */}
+              <div
+                style={{
+                  fontSize: '16px',
+                  color: '#94a3b8',
+                  lineHeight: 1.4,
+                  maxWidth: '500px',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {about}
+              </div>
+            </div>
+
+            {/* Footer de Zona Segura: Branding Canónico */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '13px',
+                color: '#64748b',
+                letterSpacing: '0.12em',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+              }}
+            >
+              <span>SOYINDI.CL</span>
+              <span style={{ color: '#475569' }}>•</span>
+              <span>IDENTIDAD DIGITAL VIVA</span>
             </div>
           </div>
 
-          {/* Footer Branding */}
+          {/* AURA LATERAL DERECHA (285px) */}
           <div
             style={{
-              position: 'absolute',
-              bottom: '30px',
+              width: '285px',
+              height: '100%',
               display: 'flex',
               alignItems: 'center',
-              fontSize: '18px',
-              color: '#64748b',
-              letterSpacing: '0.1em',
-              fontWeight: 600,
+              justifyContent: 'center',
+              opacity: 0.4,
             }}
-          >
-            SOYINDI.CL • IDENTIDAD DIGITAL EN EL EDGE
-          </div>
+          />
         </div>
       ),
       {
         width: 1200,
         height: 630,
+        headers: {
+          'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
+        },
       }
     );
   } catch (e: any) {
-    return new Response(`Failed to generate image: ${e.message}`, {
+    return new Response(`Failed to generate Open Graph Image: ${e.message}`, {
       status: 500,
+      headers: {
+        'Cache-Control': 'no-store',
+      },
     });
   }
 }

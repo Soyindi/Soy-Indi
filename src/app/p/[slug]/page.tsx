@@ -23,6 +23,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 
   if (presentation) {
+    const ogImageUrl = `https://soyindi.cl/api/og?type=presentation&title=${encodeURIComponent(presentation.title)}&role=${encodeURIComponent('Presentación Orbital 16:9')}&about=${encodeURIComponent('Visualiza la propuesta comercial cinematográfica en INDI.')}&verified=1`;
+
     return {
       title: `${presentation.title} — Presentación Orbital | INDI`,
       description: `Visualiza la presentación interactiva 16:9 "${presentation.title}" en INDI Orbital Studio.`,
@@ -35,12 +37,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         url: `https://soyindi.cl/p/${presentation.slug}`,
         siteName: 'INDI Orbital Studio',
         type: 'article',
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: presentation.title,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: presentation.title,
+        description: `Presentación cinematográfica 16:9 en INDI Orbital Studio.`,
+        images: [ogImageUrl],
       },
     };
   }
 
   // 2. Mock demo interactivo
   if (slug === 'demo') {
+    const ogImageUrl = `https://soyindi.cl/api/og?type=presentation&title=${encodeURIComponent('Presentación Demo Orbital')}&role=${encodeURIComponent('Estudio Cinemático 16:9')}&about=${encodeURIComponent('Diapositivas 16:9 con iluminación volumétrica y diseño cinematográfico.')}&verified=1`;
+
     return {
       title: 'Presentación Demo Orbital • 16:9 | INDI',
       description: 'Estudio de presentaciones cinematográficas interactivas generadas con IA.',
@@ -53,6 +71,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         url: 'https://soyindi.cl/p/demo',
         siteName: 'INDI Orbital Studio',
         type: 'article',
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: 'Presentación Demo Orbital',
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Presentación Demo Orbital | INDI',
+        description: 'Diapositivas 16:9 con iluminación volumétrica y diseño cinemático.',
+        images: [ogImageUrl],
       },
     };
   }

@@ -73,12 +73,13 @@ src/
    - **Cero Marcas de Agua en Todos los Planes (`hasWatermark: false`)**: Para certificar la máxima calidad y profesionalismo desde el nivel inicial, se suprime cualquier marca de agua invasiva o visible en los recursos generados (Tarjetas Digitales, Smart CV y Presentaciones), entregando un producto pulcro y de estándar corporativo sin restricciones cosméticas degradadas.
 12. **Gobernanza de Rendimiento Perimetral (ISR 60s & Telemetría Desacoplada):**
    - Las rutas públicas dinámicas (`/c/[slug]`, `/p/[slug]`, `/cv/[slug]`) deben implementar regeneración estática incremental (`export const revalidate = 60;`) para servirse directamente desde el CDN perimetral, reduciendo en un 99% el consumo de funciones serverless en Vercel.
-   - Se prohíbe terminantemente ejecutar escrituras sincrónicas en base de datos (`UPDATE viewsCount`, `INSERT card_events`) dentro del renderizado de página. Toda telemetría de visualización se despacha de forma asíncrona mediante el Route Handler `/api/telemetry/view` consumido por `trackResourceView` (`navigator.sendBeacon` / `keepalive: true`) con deduplicación por sesión.
 13. **Conversión Viral & Redirección a Login en Vistas Públicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`):**
    - Cuando un tercero/visitante no autenticado interactúa con una tarjeta digital, Smart CV o presentación orbital pública, todos los enlaces de llamada a la acción ("Crea tu perfil gratis", "Crear mi CV", "Crear Presentación", badges de autoría "CREADO CON INDI") deben dirigir obligatoriamente a la pasarela de autenticación con modo registro y destino contextual (`/login?mode=signup&callbackUrl=...`).
    - Se prohíbe derivar a visitantes no autenticados directamente a rutas desprotegidas o genéricas sin pasar por el onboarding de autenticación. Si el usuario ya cuenta con sesión activa, el sistema le proveerá acceso inmediato a su panel (`/dashboard`).
-
-
+14. **Motor Perimetral Open Graph 1:1 Safe Zone & WebShareModal Háptico:**
+   - La generación dinámica de tarjetas Open Graph (`/api/og`) se ejecuta en el Edge perimetral (`runtime = 'edge'`) con cabeceras `Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800`.
+   - La retícula de composición $1200\times630\text{ px}$ reserva una **Zona Segura Central 1:1 ($630\times630\text{ px}$)** que concentra la tipografía, logotipo canónico y badges verificados, previniendo recortes visuales en feeds móviles e historias (WhatsApp, LinkedIn, Instagram, X).
+   - Los módulos de compartir en vistas públicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`) utilizan `<WebShareModal />` con retroalimentación háptica (`navigator.vibrate`), fallback seguro al portapapeles, enlaces directos a WhatsApp/LinkedIn/X y fórmulas persuasivas de copywriting (`AIDA`, `Hook-Story-Offer`, `Curiosity Gap`) parametrizadas con UTMs canónicos y atribución de afiliados.
 
 ---
 

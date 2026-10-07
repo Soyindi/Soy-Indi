@@ -1636,5 +1636,38 @@ Para guiar la evolución visual, técnica y comercial de la plataforma mediante 
 5. **Eje 5: Experiencia de Compartir Curricular & Presentaciones (Smart CV & Orbital Presentations)**:
    - Dicotomía ATS Vectorial A4 corporativo (texto seleccionable, sanitización de viñetas, guardrail anti-huérfanos) vs Visor Web Vivo interactivo (`/cv/[slug]`).
    - Modo 'Pitch Interactivo' en presentaciones 16:9 con control táctil, wake-lock y analíticas de lectura por diapositiva.
-   - Opciones de privacidad contextual (enlaces con PIN/contraseña, modo confidencial y enlaces con caducidad programada).
+---
 
+## 34. Arquitectura de Compartir Viral & Open Graph Safe Zone 1:1 (Fase 1: Motor Perimetral & WebShareModal)
+
+En cumplimiento de las directrices de `Investigación Técnica y Crecimiento INDI.md` y el plan de mejoras 2026, se ejecutó la **Fase 1: Optimización de Previews Sociales y Flujo de Compartir**:
+
+### 34.1 Motor Perimetral Open Graph con Zona Segura Central 1:1 (`src/app/api/og/route.tsx`)
+- **Resolución Canónica**: $1200 \times 630\text{ px}$ en Next.js Edge Runtime (`runtime = 'edge'`).
+- **Zona Segura Central 1:1**: Área central delimitada de $630 \times 630\text{ px}$ que encapsula:
+  - Marca e identidad institucional `<BrandLogo />` ("INDI").
+  - Título y cargo/rol principal con tipografía fluida y corte elíptico seguro.
+  - Badge de verificación visual ("Identidad Verificada").
+  - Indicador de slug canónico (`soyindi.cl/c/...`, `soyindi.cl/cv/...`, `soyindi.cl/p/...`).
+- **Auras Volumétricas OKLCH**: Dos zonas laterales de $285\text{ px}$ cada una con resplandor ambiental multicapa que enriquece la vista panorámica en plataformas de escritorio (LinkedIn, X, Facebook) sin comprometer la legibilidad del recorte cuadrado 1:1 en feeds y mensajería móvil (WhatsApp, Telegram, Instagram).
+- **Gobernanza de Caché Perimetral**:
+  - `Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800`.
+  - Asegura latencia sub-100ms servida desde el Edge CDN perimetral de Vercel.
+
+### 34.2 Generador de Copywriting Persuasivo y Enlaces Canónicos (`src/shared/lib/shareCopy.ts`)
+- **Fórmulas Psicológicas de Compartir**:
+  - **Tarjetas Digitales (AIDA)**: Atención al contacto profesional, Interés en el perfil verificado, Deseo de guardar en agenda, Acción mediante enlace directo.
+  - **Smart CV (Hook-Story-Offer)**: Gancho del perfil calificado para sistemas ATS, trayectoria verificada y llamado a la acción para reclutadores.
+  - **Presentaciones Orbitales (Curiosity Gap)**: Resumen temático 16:9 con intriga estratégica orientada a decisores y clientes potenciales.
+- **Construcción Canónica de Enlaces**: Incorpora parámetros UTM estandarizados (`utm_source=share`, `utm_medium=whatsapp|linkedin|x|native`) y persistencia del código de afiliado (`ref=...`).
+
+### 34.3 Componente Accesible `<WebShareModal />` (`src/shared/ui/WebShareModal.tsx`)
+- **Ergonomía y Háptica**:
+  - Activación de `navigator.vibrate([15, 30, 15])` al desplegar y copiar en navegadores compatibles.
+  - Integración nativa con Web Share API (`navigator.share`) si está disponible; modal accesible WCAG 2.2 AA (`role="dialog"`, `aria-modal="true"`) con cierre por tecla `Escape` y backdrop blur.
+  - Canales de difusión directos: WhatsApp Web/App, LinkedIn Share, X (Twitter), y Portapapeles con confirmación visual interactiva.
+  - Previsualización visual de la tarjeta con simulación de Safe Zone 1:1.
+  - Integrado de forma universal en:
+    - `src/entities/card/components/DigitalCard.tsx`
+    - `src/features/ai-smart-cv/components/PublicCvViewer.tsx`
+    - `src/features/orbital-presentations/components/PublicPresentationViewer.tsx`
