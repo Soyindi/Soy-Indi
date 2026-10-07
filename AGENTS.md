@@ -245,3 +245,15 @@ Ninguna tarea que involucre cambios de arquitectura, nuevas entidades, nuevos co
 2. **Atomicidad:**
    - Los cambios de código y sus respectivas actualizaciones documentales deben incluirse en el mismo ciclo de trabajo o commitearse bajo el prefijo `docs:` inmediatamente después.
 
+---
+
+## 🚀 8. Protocolo de Orquestación Agéntica "Prompt-to-Push" 2026
+
+Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entrega continua documentado en [docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md](file:///c:/Users/Matías%20Riquelme/Desktop/Indi/docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md):
+
+1. **Pre-flight & Diagnóstico Inicial**: Inspeccionar siempre el estado de Git (`git status`, `git branch --show-current`) antes de mutar código.
+2. **Quality Gate Bloqueante**: Ningún commit ni push puede ejecutarse si `npm run typecheck` o `npm test` contienen errores o advertencias de fallo.
+3. **Flujo de Publicación Automatizada**: El agente debe cerrar cada tarea ejecutando `git add`, `git commit` semántico y `git push origin <branch>` de manera autónoma, validando que el repositorio quede en estado limpio.
+4. **Reporte Ejecutivo de Entrega**: Toda interacción concluye con un desglose estructurado de cambios, estado de calidad y hash del commit publicado.
+
+

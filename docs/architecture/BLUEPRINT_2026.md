@@ -1558,7 +1558,16 @@ Para garantizar que los agentes de IA operen bajo el máximo estándar de produc
    - Red de Afiliados y Crecimiento Serverless: `docs/specifications/AFFILIATE_NETWORK_ENGINE_2026.md`
    - Motor de Presentaciones Orbitales IA: `docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md`
    - Motor ATS & Smart CV Unificado: `docs/specifications/SMART_CV_ENGINE.md`
+   - Protocolo Canónico Prompt-to-Push 2026: `docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md`
    - Prompt Maestro Gemini Deep Research: `docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_DIGITAL_CARDS_2026.md`
+
+### 31.2 Ciclo Continuo Prompt-to-Push
+El desarrollo asistido por IA implementa un pipeline de entrega continua cerrado:
+1. **Pre-flight**: Verificación determinista de la rama y árbol de Git.
+2. **Quality Gates Bloqueantes**: Ejecución mandatoria de `npm run typecheck` (0 errores) y `npm test` (100% aprobado) antes de autorizar cualquier commit.
+3. **Sincronización Doc-as-Code**: Alineación en cascada de `README.md`, `BLUEPRINT_2026.md` y `AGENTS.md`.
+4. **Publicación Automatizada**: Ejecución de `git commit` semántico y `git push origin <branch>` con reporte ejecutivo de cierre.
+
 
 
 

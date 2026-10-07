@@ -349,7 +349,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
-- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (278 pruebas en 44 suites al 100% PASS).
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (281 pruebas en 45 suites al 100% PASS).
 - `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
 - `npm run db:generate`: Genera archivos de migración SQL basados en el esquema de Drizzle.
 - `npm run db:migrate`: Aplica las migraciones declarativas sobre la base de datos Turso LibSQL (Local o Nube).
@@ -362,6 +362,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 
 - **Blueprint Maestro de Arquitectura**: [docs/architecture/BLUEPRINT_2026.md](docs/architecture/BLUEPRINT_2026.md)
 - **Protocolo de Orquestación Agéntica**: [AGENTS.md](AGENTS.md)
+- **Protocolo Canónico Prompt-to-Push 2026**: [docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md](docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md)
 - **Motor de Afiliados y Crecimiento Serverless**: [docs/specifications/AFFILIATE_NETWORK_ENGINE_2026.md](docs/specifications/AFFILIATE_NETWORK_ENGINE_2026.md)
 - **Motor de Presentaciones Orbitales IA**: [docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md](docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md)
 - **Motor ATS & Smart CV Unificado**: [docs/specifications/SMART_CV_ENGINE.md](docs/specifications/SMART_CV_ENGINE.md)
