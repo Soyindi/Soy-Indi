@@ -21,10 +21,24 @@ export interface VCardOptions {
 }
 
 /**
- * Escapa caracteres reservados para campos de texto en formato vCard.
+ * Constantes de seguridad para mitigación de Buffer Overflows en parsers móviles (CVE-2023-41064)
  */
-function escapeVCardText(text: string): string {
-  return text
+export const VCARD_SECURITY_LIMITS = {
+  MAX_TITLE_CHARS: 100,
+  MAX_PROFESSION_CHARS: 120,
+  MAX_ABOUT_CHARS: 500,
+  MAX_PHONE_CHARS: 30,
+  MAX_URL_CHARS: 250,
+  MAX_ADDRESS_CHARS: 200,
+  MAX_PHOTO_BASE64_BYTES: 150 * 1024, // 150 KB límite seguro antes de desbordamiento en ImageIO
+} as const;
+
+/**
+ * Escapa caracteres reservados para campos de texto en formato vCard y trunca la longitud máxima.
+ */
+function escapeVCardText(text: string, maxLen = 250): string {
+  const truncated = text.trim().slice(0, maxLen);
+  return truncated
     .replace(/\\/g, '\\\\')
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
@@ -32,58 +46,67 @@ function escapeVCardText(text: string): string {
 }
 
 /**
- * Construye la cadena vCard en estándar RFC 2426 / 6350.
+ * Construye la cadena vCard en estándar RFC 2426 / 6350 con protecciones activas de seguridad.
  */
 export function generateVCardString(card: VCardOptions): string {
+  const safeTitle = (card.title || '').trim().slice(0, VCARD_SECURITY_LIMITS.MAX_TITLE_CHARS);
   const lines: string[] = [
     'BEGIN:VCARD',
     'VERSION:3.0',
-    `FN;CHARSET=UTF-8:${escapeVCardText(card.title)}`,
+    `FN;CHARSET=UTF-8:${escapeVCardText(safeTitle, VCARD_SECURITY_LIMITS.MAX_TITLE_CHARS)}`,
   ];
 
-  // Separar nombre y apellido de forma heurística
-  const parts = card.title.trim().split(/\s+/);
+  // Separar nombre y apellido de forma heurística sobre el título sanitizado
+  const parts = safeTitle.split(/\s+/);
   if (parts.length > 1) {
     const lastName = parts.slice(1).join(' ');
     const firstName = parts[0];
-    lines.push(`N;CHARSET=UTF-8:${escapeVCardText(lastName)};${escapeVCardText(firstName)};;;`);
+    lines.push(`N;CHARSET=UTF-8:${escapeVCardText(lastName, VCARD_SECURITY_LIMITS.MAX_TITLE_CHARS)};${escapeVCardText(firstName, VCARD_SECURITY_LIMITS.MAX_TITLE_CHARS)};;;`);
   } else {
-    lines.push(`N;CHARSET=UTF-8:${escapeVCardText(card.title)};;;;`);
+    lines.push(`N;CHARSET=UTF-8:${escapeVCardText(safeTitle, VCARD_SECURITY_LIMITS.MAX_TITLE_CHARS)};;;;`);
   }
 
   if (card.profession) {
-    lines.push(`TITLE;CHARSET=UTF-8:${escapeVCardText(card.profession)}`);
-    lines.push(`ROLE;CHARSET=UTF-8:${escapeVCardText(card.profession)}`);
+    const safeProf = escapeVCardText(card.profession, VCARD_SECURITY_LIMITS.MAX_PROFESSION_CHARS);
+    lines.push(`TITLE;CHARSET=UTF-8:${safeProf}`);
+    lines.push(`ROLE;CHARSET=UTF-8:${safeProf}`);
   }
 
   if (card.phone) {
-    lines.push(`TEL;TYPE=CELL,VOICE:${card.phone.trim()}`);
+    const safePhone = card.phone.trim().slice(0, VCARD_SECURITY_LIMITS.MAX_PHONE_CHARS);
+    lines.push(`TEL;TYPE=CELL,VOICE:${safePhone}`);
   }
 
   if (card.whatsapp && card.whatsapp !== card.phone) {
-    lines.push(`TEL;TYPE=WORK,VOICE:${card.whatsapp.trim()}`);
+    const safeWhatsapp = card.whatsapp.trim().slice(0, VCARD_SECURITY_LIMITS.MAX_PHONE_CHARS);
+    lines.push(`TEL;TYPE=WORK,VOICE:${safeWhatsapp}`);
   }
 
   if (card.emailContact) {
-    lines.push(`EMAIL;TYPE=PREF,INTERNET:${card.emailContact.trim()}`);
+    const safeEmail = card.emailContact.trim().slice(0, VCARD_SECURITY_LIMITS.MAX_URL_CHARS);
+    lines.push(`EMAIL;TYPE=PREF,INTERNET:${safeEmail}`);
   }
 
   if (card.websiteUrl) {
-    lines.push(`URL;TYPE=WORK:${card.websiteUrl.trim()}`);
+    const safeWebsite = card.websiteUrl.trim().slice(0, VCARD_SECURITY_LIMITS.MAX_URL_CHARS);
+    lines.push(`URL;TYPE=WORK:${safeWebsite}`);
   }
 
   if (card.linkedinUrl) {
-    lines.push(`X-SOCIALPROFILE;TYPE=linkedin:${card.linkedinUrl.trim()}`);
+    const safeLinkedin = card.linkedinUrl.trim().slice(0, VCARD_SECURITY_LIMITS.MAX_URL_CHARS);
+    lines.push(`X-SOCIALPROFILE;TYPE=linkedin:${safeLinkedin}`);
   }
 
   if (card.instagramUrl) {
-    lines.push(`X-SOCIALPROFILE;TYPE=instagram:${card.instagramUrl.trim()}`);
+    const safeInstagram = card.instagramUrl.trim().slice(0, VCARD_SECURITY_LIMITS.MAX_URL_CHARS);
+    lines.push(`X-SOCIALPROFILE;TYPE=instagram:${safeInstagram}`);
   }
 
   if (card.address) {
     // ADR formato: post office box; extended address; street address; locality (city); region; postal code; country
-    lines.push(`ADR;TYPE=WORK;CHARSET=UTF-8:;;${escapeVCardText(card.address.trim())};;;;`);
-    lines.push(`LABEL;TYPE=WORK;CHARSET=UTF-8:${escapeVCardText(card.address.trim())}`);
+    const safeAddress = escapeVCardText(card.address, VCARD_SECURITY_LIMITS.MAX_ADDRESS_CHARS);
+    lines.push(`ADR;TYPE=WORK;CHARSET=UTF-8:;;${safeAddress};;;;`);
+    lines.push(`LABEL;TYPE=WORK;CHARSET=UTF-8:${safeAddress}`);
   }
 
   const profileUrl = typeof window !== 'undefined'
@@ -92,16 +115,18 @@ export function generateVCardString(card: VCardOptions): string {
   lines.push(`URL;TYPE=INDI_PROFILE:${profileUrl}`);
 
   if (card.about) {
-    lines.push(`NOTE;CHARSET=UTF-8:${escapeVCardText(`${card.about}\nPerfil digital: ${profileUrl}`)}`);
+    const safeAbout = escapeVCardText(card.about, VCARD_SECURITY_LIMITS.MAX_ABOUT_CHARS);
+    lines.push(`NOTE;CHARSET=UTF-8:${safeAbout}\\nPerfil digital: ${profileUrl}`);
   } else {
     lines.push(`NOTE;CHARSET=UTF-8:${escapeVCardText(`Perfil digital verificado: ${profileUrl}`)}`);
   }
 
-  // Incrustar foto de perfil en Base64 para que la agenda de iOS/Android muestre foto a pantalla completa
+  // Incrustar foto de perfil en Base64 mitigando Buffer Overflow (CVE-2023-41064)
   if (card.photoBase64) {
     // Limpiar posible prefijo data:image/...;base64,
     const cleanBase64 = card.photoBase64.replace(/^data:image\/[a-zA-Z]+;base64,/, '').trim();
-    if (cleanBase64) {
+    // Validar que el payload Base64 no exceda el umbral seguro (~150 KB)
+    if (cleanBase64 && cleanBase64.length <= VCARD_SECURITY_LIMITS.MAX_PHOTO_BASE64_BYTES * 1.37) {
       lines.push(`PHOTO;ENCODING=b;TYPE=JPEG:${cleanBase64}`);
     }
   }

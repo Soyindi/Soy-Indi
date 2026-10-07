@@ -85,6 +85,19 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
       const nextFrom20 = calculateNextPayoutDate(oct20);
       expect(nextFrom20).toContain('1');
     });
+
+    it('calcula la retención tributaria del SII al 15,25% (Ley N° 21.133 año 2026)', async () => {
+      const { calculateGrossFromNetHonorarios, SII_HONORARIOS_RETENTION_RATE_2026 } = await import('@/entities/affiliate/schemas');
+      expect(SII_HONORARIOS_RETENTION_RATE_2026).toBe(0.1525);
+
+      // Para recibir $10.000 líquidos con retención del 15,25%:
+      // Bruto = 10000 / (1 - 0.1525) = 11799 CLP
+      const calculation = calculateGrossFromNetHonorarios(10000);
+      expect(calculation.netAmountClp).toBe(10000);
+      expect(calculation.grossAmountClp).toBe(11799);
+      expect(calculation.retentionAmountClp).toBe(1799);
+      expect(calculation.retentionRatePercent).toBe(15.25);
+    });
   });
 
   describe('Personalización de Códigos de Referido & Contratos Zod', () => {

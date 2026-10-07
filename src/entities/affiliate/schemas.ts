@@ -33,6 +33,34 @@ export const ACCOUNT_TYPES = [
 export const AFFILIATE_COMMISSION_PERCENTAGE = 25;
 
 /**
+ * Tasa de Retención Legal de Boletas de Honorarios ante el SII (Ley N° 21.133)
+ * Año 2026: 15,25% (sube gradualmente hasta 17% en 2028)
+ */
+export const SII_HONORARIOS_RETENTION_RATE_2026 = 0.1525;
+
+/**
+ * Calcula el monto bruto que debe emitirse en la Boleta de Honorarios para
+ * obtener un monto líquido objetivo tras el 15,25% de retención legal del SII.
+ */
+export function calculateGrossFromNetHonorarios(netAmountClp: number): {
+  netAmountClp: number;
+  grossAmountClp: number;
+  retentionAmountClp: number;
+  retentionRatePercent: number;
+} {
+  const retentionRate = SII_HONORARIOS_RETENTION_RATE_2026;
+  const grossAmountClp = Math.round(netAmountClp / (1 - retentionRate));
+  const retentionAmountClp = grossAmountClp - netAmountClp;
+
+  return {
+    netAmountClp,
+    grossAmountClp,
+    retentionAmountClp,
+    retentionRatePercent: retentionRate * 100,
+  };
+}
+
+/**
  * Calcula la próxima fecha de corte quincenal (día 1 o día 15 del mes)
  */
 export function calculateNextPayoutDate(currentDate: Date = new Date()): string {
@@ -244,6 +272,8 @@ export interface AdminAffiliatePayoutItem {
   totalPayableClp: number;
   pendingCommissionsCount: number;
   bankAccount: AffiliateBankAccountInput | null;
+  grossHonorariosClp?: number;       // Monto bruto requerido en Boleta de Honorarios
+  retentionHonorariosClp?: number;   // Monto de retención 15,25% (SII Ley 21.133)
 }
 
 /**

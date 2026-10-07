@@ -421,6 +421,13 @@ export async function upsertSmartCvAction(
     };
   } catch (err: any) {
     console.error('Error guardando Smart CV:', err);
+    const errMsg = String(err?.message || '');
+    if (errMsg.includes('UNIQUE constraint failed') || errMsg.includes('SQLITE_CONSTRAINT') || err?.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return {
+        success: false,
+        error: 'El enlace personalizado (slug) de este CV ya está en uso por otro usuario. Por favor selecciona otro.',
+      };
+    }
     return { success: false, error: err.message || 'Error guardando currículum' };
   }
 }

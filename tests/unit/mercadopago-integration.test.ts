@@ -64,4 +64,46 @@ describe('Mercado Pago Integration & Schema Contracts', () => {
     const semiannualDays = Math.round((semiannualEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     expect(semiannualDays).toBe(180);
   });
+
+  it('rechaza webhooks con timestamp desactualizado como protección anti-replay attack', async () => {
+    const { verifyMercadoPagoWebhookSignature } = await import('@/shared/lib/mercadopago');
+    const oldTimestampSec = Math.floor(Date.now() / 1000) - 600; // 10 minutos en el pasado (excede 5 min)
+    const crypto = await import('crypto');
+    const secret = 'test-webhook-secret';
+    const dataId = '123456';
+    const requestId = 'req-abc-123';
+    const manifest = `id:${dataId};request-id:${requestId};ts:${oldTimestampSec};`;
+    const hash = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
+
+    const isValid = verifyMercadoPagoWebhookSignature({
+      xSignatureHeader: `ts=${oldTimestampSec},v1=${hash}`,
+      xRequestIdHeader: requestId,
+      dataId,
+      webhookSecret: secret,
+      maxToleranceSeconds: 300,
+    });
+
+    expect(isValid).toBe(false);
+  });
+
+  it('valida exitosamente webhooks frescos con firma HMAC válida dentro de la ventana de tolerancia', async () => {
+    const { verifyMercadoPagoWebhookSignature } = await import('@/shared/lib/mercadopago');
+    const currentTimestampSec = Math.floor(Date.now() / 1000);
+    const crypto = await import('crypto');
+    const secret = 'test-webhook-secret';
+    const dataId = '987654';
+    const requestId = 'req-xyz-789';
+    const manifest = `id:${dataId};request-id:${requestId};ts:${currentTimestampSec};`;
+    const hash = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
+
+    const isValid = verifyMercadoPagoWebhookSignature({
+      xSignatureHeader: `ts=${currentTimestampSec},v1=${hash}`,
+      xRequestIdHeader: requestId,
+      dataId,
+      webhookSecret: secret,
+      maxToleranceSeconds: 300,
+    });
+
+    expect(isValid).toBe(true);
+  });
 });

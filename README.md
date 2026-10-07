@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-304_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-327_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -126,9 +126,9 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Enlaces Duales de Afiliados (Hub vs Registro Directo)**: El creador puede copiar con 1 clic su enlace al Hub (`soyindi.cl/start?ref=CODIGO`) o directo al formulario de registro (`soyindi.cl/login?mode=signup&ref=CODIGO`).
 - **Analíticas de Conversión Pro en Vivo**: Desglose transparente en el panel de afiliados: usuarios en prueba (`TRIAL`), convertidos a Plan Pro (`ACTIVE`), tasa de conversión (%) y saldo acumulado por pagar.
 - **Experiencia de Bienvenida Contextual (`ReferralWelcomeBanner`)**: Detección del referente y despliegue de badge visual de confirmación de acceso VIP en el Onboarding Hub (`/start`) y formulario de registro (`/login`).
-- **Abono Quincenal a Cuentas Chilenas**: Módulo de datos bancarios para transferencia directa a Cuenta RUT, Cuenta Vista, Corriente o Ahorro en los principales bancos de Chile, con validador de RUT algoritmo Módulo 11.
-- **Seguridad Criptográfica & Anti-Gaming**: Verificación de firmas HMAC-SHA256 (`x-signature`) en webhooks de Mercado Pago, heurística anti-auto-referidos con normalización de correos (`+alias` y puntos en Gmail) y reversión atómica de comisiones ante reembolsos/contracargos.
-- **Panel de Administración (`/admin`)**: Vista dual con auditoría en tiempo real de usuarios referidos (`TRIAL` y `ACTIVE`), consolidado quincenal de liquidaciones pendientes (días 1 y 15), detalle bancario con copia en 1 clic y confirmación de pago transferido.
+- **Abono Quincenal a Cuentas Chilenas & Retención SII (Ley 21.133)**: Módulo de datos bancarios para transferencia directa a Cuenta RUT, Cuenta Vista, Corriente o Ahorro en los principales bancos de Chile, con validador de RUT algoritmo Módulo 11 y cálculo automático del monto bruto requerido en Boleta de Honorarios considerando la retención legal del 15,25% (2026) ante el SII.
+- **Seguridad Criptográfica, Anti-Replay & Anti-Gaming**: Verificación de firmas HMAC-SHA256 (`x-signature`) con ventana de tolerancia temporal (5 min) anti-replay attacks en webhooks de Mercado Pago, heurística anti-auto-referidos con normalización de correos (`+alias` y puntos en Gmail) y reversión atómica de comisiones ante reembolsos/contracargos.
+- **Panel de Administración (`/admin`)**: Vista dual con auditoría en tiempo real de usuarios referidos (`TRIAL` y `ACTIVE`), consolidado quincenal de liquidaciones pendientes (días 1 y 15) con desglose de retención tributaria, detalle bancario con copia en 1 clic y confirmación de pago transferido.
 
 ---
 

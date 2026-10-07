@@ -72,6 +72,30 @@ describe('vCard 3.0 / RFC 2426 Deterministic Generator', () => {
     const vcard = generateVCardString(cardWithPhoto);
     expect(vcard).toContain('PHOTO;ENCODING=b;TYPE=JPEG:/9j/4AAQSkZJRgABAQEASABIAAD...');
   });
+
+  it('debe truncar campos de texto que excedan los límites de seguridad contra Buffer Overflow', () => {
+    const oversizedCard: VCardOptions = {
+      ...sampleCard,
+      title: 'A'.repeat(200), // Excede MAX_TITLE_CHARS (100)
+      profession: 'B'.repeat(300), // Excede MAX_PROFESSION_CHARS (120)
+    };
+    const vcard = generateVCardString(oversizedCard);
+    expect(vcard).toContain(`FN;CHARSET=UTF-8:${'A'.repeat(100)}`);
+    expect(vcard).not.toContain('A'.repeat(101));
+    expect(vcard).toContain(`TITLE;CHARSET=UTF-8:${'B'.repeat(120)}`);
+    expect(vcard).not.toContain('B'.repeat(121));
+  });
+
+  it('debe descartar fotos Base64 masivas que excedan el límite seguro para mitigar CVE-2023-41064', () => {
+    // Foto sobredimensionada (> 250 KB)
+    const giantPhotoBase64 = 'data:image/jpeg;base64,' + 'A'.repeat(250 * 1024);
+    const vulnerableCard: VCardOptions = {
+      ...sampleCard,
+      photoBase64: giantPhotoBase64,
+    };
+    const vcard = generateVCardString(vulnerableCard);
+    expect(vcard).not.toContain('PHOTO;ENCODING=b;TYPE=JPEG:');
+  });
 });
 
 

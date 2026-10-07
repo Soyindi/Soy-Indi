@@ -14,6 +14,7 @@ import {
   MarkAffiliateCommissionsPaidSchema,
   AFFILIATE_COMMISSION_PERCENTAGE,
   calculateNextPayoutDate,
+  calculateGrossFromNetHonorarios,
   formatReferralCode,
   isReservedReferralCode,
   updateReferralCodeSchema
@@ -565,12 +566,15 @@ export async function getAdminAffiliatePayoutsAction(userId?: string): Promise<{
       const bankData = banksMap.get(affiliateId);
 
       if (affiliateData) {
+        const taxDetails = calculateGrossFromNetHonorarios(stats.totalPayableClp);
         results.push({
           affiliateId,
           affiliateName: affiliateData.name,
           affiliateEmail: affiliateData.email,
           totalPayableClp: stats.totalPayableClp,
           pendingCommissionsCount: stats.count,
+          grossHonorariosClp: taxDetails.grossAmountClp,
+          retentionHonorariosClp: taxDetails.retentionAmountClp,
           bankAccount: bankData ? {
             bankName: bankData.bankName as any,
             accountType: bankData.accountType as any,

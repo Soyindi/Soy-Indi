@@ -33,6 +33,7 @@ export function verifyMercadoPagoWebhookSignature(params: {
   xRequestIdHeader: string | null;
   dataId: string;
   webhookSecret?: string;
+  maxToleranceSeconds?: number;
 }): boolean {
   const secret = params.webhookSecret || process.env.MERCADOPAGO_WEBHOOK_SECRET || process.env.MP_WEBHOOK_SECRET;
 
@@ -60,6 +61,20 @@ export function verifyMercadoPagoWebhookSignature(params: {
     const hash = parts.v1;
 
     if (!ts || !hash) return false;
+
+    // Control Anti-Replay: Verificar frescura temporal si se especifica tolerancia o en producción
+    const maxToleranceSec = params.maxToleranceSeconds ?? (process.env.NODE_ENV === 'production' ? 300 : undefined);
+    if (typeof maxToleranceSec === 'number' && maxToleranceSec > 0) {
+      const requestTimestampSec = parseInt(ts, 10);
+      if (!isNaN(requestTimestampSec)) {
+        const currentTimestampSec = Math.floor(Date.now() / 1000);
+        const diffSec = Math.abs(currentTimestampSec - requestTimestampSec);
+        if (diffSec > maxToleranceSec) {
+          console.warn(`[Seguridad Webhook] Petición descartada por ataque de repetición (delta: ${diffSec}s > ${maxToleranceSec}s)`);
+          return false;
+        }
+      }
+    }
 
     // Construcción del template de manifiesto según documentación oficial de Mercado Pago:
     // id:[data.id_url];request-id:[x-request-id_header];ts:[ts_header];

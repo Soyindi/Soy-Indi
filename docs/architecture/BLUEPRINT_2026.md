@@ -1784,6 +1784,21 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
   3. **Edge Middleware con W3C `Clear-Site-Data: "cache"`**: Si un cliente se conecta con una versión desactualizada o invoca `?purge=1`, el middleware emite `Clear-Site-Data: "cache"`, limpiando la memoria de disco del navegador de inmediato sin afectar sesiones de Better-Auth.
   4. **Directivas RFC 9111 Estratificadas en `next.config.ts`**: Rutas dinámicas públicas (`/c/:path*`, `/cv/:path*`, `/p/:path*`) configuradas con `Cache-Control: public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=300`. Garantiza que el móvil verifique frescura con el servidor antes de reusar una copia local mientras el CDN de Vercel atiende peticiones en <15ms.
 
+---
 
+## 39. Fortificación Integral de Ciberseguridad, Cumplimiento Normativo Chileno & Mitigación Anti-Replay (Auditoría 2026)
 
+### 39.1 Prevención de Replay Attacks en Webhooks Mercado Pago SDK v2
+- **Verificación Criptográfica Dual (`src/shared/lib/mercadopago.ts`)**: Validación HMAC-SHA256 de cabecera `x-signature` combinada con una ventana de tolerancia temporal (`maxToleranceSeconds = 300` / 5 minutos).
+- **Mecanismo Anti-Spoofing & Replay**: Se compara el timestamp `ts` contra la hora del servidor en tiempo constante (`crypto.timingSafeEqual`), descartando payloads capturados con antigüedad superior a 300 segundos antes de invocar `paymentClient.get()`.
 
+### 39.2 Mitigación de Buffer Overflows en vCards RFC 2426/6350 (CVE-2023-41064)
+- **Sanitización Estricta de Longitudes (`VCARD_SECURITY_LIMITS`)**: Truncamiento de cadenas de texto en `src/shared/lib/vcard.ts` (100 caracteres en título, 120 en profesión, 500 en biografía, 200 en dirección).
+- **Límite de Inyección Fotográfica**: Verificación del tamaño del payload fotográfico en Base64; las imágenes que exceden los 150 KB son descartadas para prevenir exploits de desbordamiento de búfer en analizadores ImageIO de iOS y Android.
+
+### 39.3 Resiliencia Anti-Colisión de Slugs y Manejo de Excepciones UNIQUE en SQLite
+- **Captura Defensiva Server-Side**: En `upsertCardAction`, `upsertSmartCvAction` y `savePresentationAction`, se interceptan las violaciones de restricción `SQLITE_CONSTRAINT_UNIQUE` del motor Turso LibSQL, retornando respuestas informativas en lugar de errores HTTP 500 no controlados.
+
+### 39.4 Cumplimiento Legal y Tributario Chileno (Ley N° 21.133 & Retención SII 2026)
+- **Cálculo de Boletas de Honorarios al 15,25% (`calculateGrossFromNetHonorarios`)**: Módulo en `src/entities/affiliate/schemas.ts` que computa el monto bruto requerido para emitir la Boleta de Honorarios legal de afiliados, garantizando que el titular reciba su 25% líquido exacto mientras INDI cumple el rol de agente retenedor ante el SII.
+- **Transparencia en Panel de Administración (`/admin`)**: Desglose automático de `grossHonorariosClp` y `retentionHonorariosClp` para cada liquidación quincenal.

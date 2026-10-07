@@ -162,6 +162,13 @@ export async function upsertCardAction(
     }
   } catch (err: any) {
     console.error('Error en upsertCardAction:', err);
+    const errMsg = String(err?.message || '');
+    if (errMsg.includes('UNIQUE constraint failed') || errMsg.includes('SQLITE_CONSTRAINT') || err?.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return {
+        success: false,
+        error: 'El enlace personalizado (slug) acaba de ser registrado por otro usuario. Por favor elige una alternativa diferente.',
+      };
+    }
     return { success: false, error: err.message || 'Error al guardar la tarjeta' };
   }
 }
