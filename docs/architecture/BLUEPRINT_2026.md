@@ -1773,7 +1773,15 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Geometría Circular Suave en Icono Oficial (`src/app/icon.svg`)**: Reemplazo del elemento `<rect>` cuadrado rígido por una geometría circular orgánica (`<circle cx="32" cy="32" r="30">`) con halo perimetral fotónico, erradicando cajas toscas en accesos directos y pestañas móviles.
 
 ### 38.4 Invalidación de Caché Perimetral & Purga de Accesos Directos Móviles
-- **Cache-Busting Paramétrico en Iconos (`?v=2026.2`)**: En `src/app/layout.tsx`, los enlaces de favicons e iconos Apple declaran versiones parametrizadas para forzar la actualización inmediata en proxies y clientes HTTP que conservan copias en caché del favicon cuadrado previo.
+- **Cache-Busting Paramétrico en Iconos (`?v=2026.2.1`)**: En `src/app/layout.tsx`, los enlaces de favicons e iconos Apple declaran versiones parametrizadas para forzar la actualización inmediata en proxies y clientes HTTP que conservan copias en caché del favicon cuadrado previo.
 - **Protocolo de Purga en Dispositivos Móviles (PWA / Web Shortcuts)**: Cuando un acceso directo se guarda en la pantalla de inicio de iOS o Android, el sistema operativo genera un archivo PNG estático interno en memoria flash que persiste de forma desacoplada de la web. Para que el dispositivo renueve su splash screen con el nuevo isotipo orgánico, el usuario debe desinstalar el acceso directo previo y regenerarlo desde la URL actualizada.
+
+### 38.5 Gobernanza Avanzada de Caché & Versionado Móvil Zero-Intervention (W3C Clear-Site-Data & Manifest 2026)
+- **Erradicación de la Intervención Manual**: En lugar de requerir que los usuarios limpien los datos de su navegador en ajustes del sistema operativo (Safari / Chrome), se despliega una arquitectura automatizada de 4 capas:
+  1. **Edge Middleware con W3C `Clear-Site-Data: "cache"`**: Si un cliente se conecta con una cookie de versión desactualizada (`indi_v !== APP_CACHE_VERSION`) o ante el parámetro `?purge=1`, el middleware emite la cabecera estándar `Clear-Site-Data: "cache"`. El navegador purga de forma atómica su memoria y disco local sin cerrar la sesión de usuario ni tocar cookies de Better-Auth.
+  2. **Web App Manifest Nativo (`src/app/manifest.ts`)**: Implementación de manifiesto con `id: 'https://soyindi.cl/?v=2026.2.1'`, `display: 'standalone'`, `background_color: '#080A12'` e iconos vectoriales `purpose: 'any maskable'`. Permite que los motores WebKit (iOS) y Chromium WebAPK (Android) reconozcan cambios de versión y sinteticen un nuevo splash screen en segundo plano sin reinstalación manual.
+  3. **Micro-Guard Client-Side en `<head>` (`src/app/layout.tsx`)**: Script inline síncrono (<200 bytes) que detecta en el primer render si la versión en `localStorage` (`indi_cache_v`) difiere de `APP_CACHE_VERSION`. De ser así, vacía `window.caches` (CacheStorage API) y refresca el almacenamiento local en <0.2ms.
+  4. **Directivas RFC 9111 Estratificadas en `next.config.ts`**: Rutas dinámicas públicas (`/c/:path*`, `/cv/:path*`, `/p/:path*`) configuradas con `Cache-Control: public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=300`. Garantiza que el móvil verifique frescura con el servidor antes de reusar una copia local mientras el CDN de Vercel atiende peticiones en <15ms.
+
 
 

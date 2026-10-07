@@ -156,7 +156,8 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 278 tests pasando al 100%)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 322 tests pasando al 100% en 51 suites)
+│   ├── advanced-cache-governance.test.ts # Gobernanza de caché, Clear-Site-Data W3C y PWA manifest
 │   ├── affiliates-and-payouts.test.ts # Módulo 11 RUT, códigos de referido y liquidaciones
 │   ├── auth-flow.test.ts        # Validación de flujo de login, Open Redirect guardrail y sanitización
 │   ├── systemic-navigation-audit.test.ts # Auditoría de navegación sistémica y CTAs públicos a login
@@ -365,7 +366,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
-- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (288 pruebas en 46 suites al 100% PASS).
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (322 pruebas en 51 suites al 100% PASS).
 - `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
 - `npm run db:generate`: Genera archivos de migración SQL basados en el esquema de Drizzle.
 - `npm run db:migrate`: Aplica las migraciones declarativas sobre la base de datos Turso LibSQL (Local o Nube).

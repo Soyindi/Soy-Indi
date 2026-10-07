@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { APP_CACHE_VERSION, CACHE_STORAGE_VERSION_KEY } from '@/shared/lib/cacheGovernance';
 
 export const viewport: Viewport = {
   themeColor: '#080A12',
@@ -39,11 +40,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/brand/indi-isotipo-transparent.svg?v=2026.2', type: 'image/svg+xml' },
-      { url: '/brand/indi-alien-symbol-sm.webp?v=2026.2', sizes: '32x32', type: 'image/webp' },
+      { url: `/brand/indi-isotipo-transparent.svg?v=${APP_CACHE_VERSION}`, type: 'image/svg+xml' },
+      { url: `/brand/indi-alien-symbol-sm.webp?v=${APP_CACHE_VERSION}`, sizes: '32x32', type: 'image/webp' },
     ],
     apple: [
-      { url: '/brand/indi-isotipo-transparent.svg?v=2026.2', sizes: '180x180', type: 'image/svg+xml' },
+      { url: `/brand/indi-isotipo-transparent.svg?v=${APP_CACHE_VERSION}`, sizes: '180x180', type: 'image/svg+xml' },
     ],
   },
 };
@@ -55,6 +56,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className="dark">
+      <head>
+        {/* Micro-Guard de Gestión de Caché Móvil: Invalida CacheStorage y cachés de assets obsoletos sin tocar sesiones de usuario */}
+        <script
+          id="indi-cache-guard"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var v="${APP_CACHE_VERSION}";if(localStorage.getItem("${CACHE_STORAGE_VERSION_KEY}")!==v){if('caches' in window){caches.keys().then(function(k){k.forEach(function(n){caches.delete(n)})});}localStorage.setItem("${CACHE_STORAGE_VERSION_KEY}",v);}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
         {children}
       </body>
