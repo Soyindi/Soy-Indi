@@ -103,15 +103,6 @@ export function BrandLogo({
                   </>
                 )}
               </video>
-              {/* Fallback accesible para usuarios con preferencia de movimiento reducido */}
-              <Image
-                src={posterUrl}
-                alt={asset.alt}
-                width={isCinematic ? currentCinematic.width : currentSquare.imgSize}
-                height={isCinematic ? currentCinematic.height : currentSquare.imgSize}
-                priority={priority}
-                className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(34,211,238,0.25)] hidden motion-reduce:block"
-              />
             </>
           ) : (
             <Image
