@@ -70,8 +70,13 @@ Neutralizar accesos fragmentados o rutas abriendo bajo subdominios temporales (`
 2. **Variables de Entorno en Vercel Dashboard:**
    - `BETTER_AUTH_URL` = `https://soyindi.cl`
    - `NEXT_PUBLIC_APP_URL` = `https://soyindi.cl`
-3. **Google Cloud Console (OAuth Credentials):**
-   - Orígenes autorizados de JavaScript: `https://soyindi.cl`.
-   - URIs de redireccionamiento autorizados: `https://soyindi.cl/api/auth/callback/google`.
+3. **Google Cloud Console (OAuth Consent Screen & Credentials):**
+   - **OAuth Consent Screen (Pantalla de consentimiento)**:
+     * App Name: `INDI`
+     * Authorized domains: Añadir `soyindi.cl` (eliminar `vercel.app`).
+     * Application home page: `https://soyindi.cl`
+   - **Credentials (OAuth 2.0 Client IDs)**:
+     * Orígenes autorizados de JavaScript: `http://localhost:3000` y `https://soyindi.cl` (eliminar subdominios `*.vercel.app`).
+     * URIs de redireccionamiento autorizados: `http://localhost:3000/api/auth/callback/google` y `https://soyindi.cl/api/auth/callback/google`.
 4. **Mercado Pago Dashboard:**
    - Webhook IPN URL: `https://soyindi.cl/api/webhooks/mercadopago`.

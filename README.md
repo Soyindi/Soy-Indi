@@ -331,16 +331,24 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
    - `https://soyindi.cl/api/webhooks/mercadopago`
 3. Selecciona el evento **Pagos (`payment`)**.
 
-### 3. Configurar Google Cloud Console (OAuth 2.0)
-1. Ve a [Google Cloud Console](https://console.cloud.google.com/) > **APIs & Services > Credentials**.
-2. Crea unas nuevas credenciales de tipo **OAuth 2.0 Client ID** (Web Application).
-3. En **Authorized JavaScript origins**, añade:
+### 3. Configurar Google Cloud Console (OAuth 2.0 & Pantalla de Consentimiento)
+1. Ve a [Google Cloud Console](https://console.cloud.google.com/) > **APIs & Services > OAuth consent screen (Pantalla de consentimiento de OAuth)**.
+   - **App name**: INDI (o Soyindi).
+   - **User support email**: tu email de contacto corporativo.
+   - **Authorized domains**: agrega obligatoriamente `soyindi.cl` (elimina cualquier referencia a `vercel.app`).
+   - **Application home page**: `https://soyindi.cl`
+   - **Application privacy policy link**: `https://soyindi.cl` (o enlace a política).
+   - **Application terms of service link**: `https://soyindi.cl`
+2. Ve a **APIs & Services > Credentials**.
+3. Crea o edita las credenciales de tipo **OAuth 2.0 Client ID** (Web Application).
+4. En **Authorized JavaScript origins**, añade únicamente:
    - `http://localhost:3000` (desarrollo local)
    - `https://soyindi.cl` (dominio de producción oficial)
-4. En **Authorized redirect URIs**, añade la ruta oficial de callback de Better Auth:
+   *(Elimina subdominios `*.vercel.app` para que Google no muestre la URL de Vercel en el diálogo de inicio de sesión)*.
+5. En **Authorized redirect URIs**, añade:
    - `http://localhost:3000/api/auth/callback/google`
    - `https://soyindi.cl/api/auth/callback/google`
-5. Guarda y copia el **Client ID** y **Client Secret** en las variables de entorno de Vercel.
+6. Guarda y asegúrate de que en Vercel Dashboard las variables `BETTER_AUTH_URL` y `NEXT_PUBLIC_APP_URL` estén configuradas como `https://soyindi.cl`.
 
 
 ---

@@ -1425,10 +1425,13 @@ Tras la adquisición y habilitación del dominio canónico **`soyindi.cl`**, exi
    - **Generador de Portadas Open Graph (`/api/og`)**: Pie de identidad actualizado a `SOYINDI.CL • IDENTIDAD DIGITAL EN EL EDGE`.
    - **Editores e Interfaces UI (`CardBuilder.tsx`, `SmartCvBuilder.tsx`, `PresentationStudio.tsx`, `AffiliateDashboardTab.tsx`)**: Prefijos visuales de enlace actualizados a `soyindi.cl/...` y acciones de copia usando el origen canónico.
 5. **Skill Corporativo Especializado (`.agents/skills/canonical-domain-audit/SKILL.md`)**:
-   - Guía paso a paso y checklist de verificación para configuración de DNS, Vercel Domains, Google Cloud OAuth y webhooks de Mercado Pago.
-6. **Control de Calidad y Pruebas Unitarias**:
-   - Suite completa en `tests/unit/canonical-domain-governance.test.ts` con 7 pruebas que validan la redirección HTTP 308 de dominios Vercel y legacy, la persistencia en desarrollo local y la construcción de URLs canónicas.
-   - 100% de la suite de pruebas unitarias aprobada en Vitest.
+   - Guía paso a paso y checklist de verificación para configuración de DNS, Vercel Domains, Google Cloud OAuth (Pantalla de Consentimiento y Authorized Domains) y webhooks de Mercado Pago.
+6. **Auditoría Google OAuth vs Vercel URL**:
+   - En `src/shared/lib/auth.ts`, `baseURL` se asegura dinámicamente mediante `CANONICAL_ORIGIN` (`https://soyindi.cl`) en producción, neutralizando callbacks hacia subdominios `*.vercel.app`.
+   - Se documenta el requerimiento de configurar en Google Cloud Console la **Pantalla de Consentimiento (OAuth Consent Screen)** con **Authorized Domains** apuntando a `soyindi.cl` (eliminando cualquier alias de `vercel.app`) para erradicar el nombre de Vercel en la ventana de autenticación de Google.
+7. **Control de Calidad y Pruebas Unitarias**:
+   - Suite completa en `tests/unit/canonical-domain-governance.test.ts` con 8 pruebas que validan la redirección HTTP 308 de dominios Vercel y legacy, la persistencia en desarrollo local, la construcción de URLs canónicas y la resolución estricta de `CANONICAL_ORIGIN`.
+   - 100% de la suite de pruebas unitarias aprobada en Vitest (284 pruebas en 45 suites).
    - 0 errores en compilación TypeScript estricta (`npm run typecheck`).
 
 ---

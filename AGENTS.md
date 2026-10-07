@@ -49,7 +49,8 @@ src/
 5. **Autenticación Better-Auth & Google OAuth Multi-Cuenta:**
    - Toda resolución de sesión debe aprovechar `auth.api.getSession({ headers })` en `@/shared/lib/session` de forma transparente.
    - Todo nuevo usuario registrado con Google OAuth o credenciales locales debe recibir automáticamente 3 días de prueba gratuita (`trialEndsAt: Date.now() + 3 días`) y estado `'TRIAL'` mediante el hook `databaseHooks.user.create.before`. Tras dicho período, el acceso a tarjetas digitales, métricas, CV y presentaciones se gestiona mediante la suscripción mensual ($2.500 CLP) o semestral ($6.000 CLP) sin restricción por créditos de uso.
-   - Las variables de entorno de producción (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) deben configurarse en Vercel con URIs de redirección autorizadas en Google Cloud Console.
+   - Las variables de entorno de producción (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) deben configurarse en Vercel con URIs de redirección autorizadas en Google Cloud Console (`https://soyindi.cl/api/auth/callback/google`).
+   - Para que la ventana de inicio de sesión de Google no muestre el subdominio de Vercel (`*.vercel.app`), en Google Cloud Console se debe configurar la **Pantalla de Consentimiento (OAuth consent screen)** con **Authorized Domains** fijado a `soyindi.cl` y la URL de la aplicación a `https://soyindi.cl`, suprimiendo cualquier host de Vercel de la lista de orígenes autorizados.
 6. **Protección contra Open Redirect & Flujo de Autenticación Contextual:**
    - Todo endpoint o formulario de autenticación que acepte `callbackUrl` debe validar y sanitizar el valor obligatoriamente mediante `AuthRedirectParamsSchema` o `sanitizeCallbackUrl` ubicado en `@/entities/auth/schemas`.
    - Se prohíben estrictamente URLs absolutas o relativas al protocolo (`//`), permitiendo únicamente rutas relativas internas seguras (`/dashboard`, `/start`).

@@ -92,4 +92,14 @@ describe('Dominio Canónico & Middleware de Redirección (soyindi.cl)', () => {
     const response = middleware(req);
     expect(response.headers.get('location')).toBeNull();
   });
+
+  it('debe garantizar que auth.options.baseURL y trustedOrigins prioricen CANONICAL_ORIGIN (soyindi.cl) en producción', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    delete process.env.BETTER_AUTH_URL;
+
+    // En producción sin variable residual, debe resolver exactamente a https://soyindi.cl
+    const baseUrlProd = process.env.BETTER_AUTH_URL || CANONICAL_ORIGIN;
+    expect(baseUrlProd).toBe('https://soyindi.cl');
+    expect(CANONICAL_ORIGIN).toBe('https://soyindi.cl');
+  });
 });

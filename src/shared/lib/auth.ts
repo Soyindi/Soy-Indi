@@ -3,10 +3,12 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from '@/shared/api/db';
 import * as schema from '@/entities/schema';
 
+import { CANONICAL_ORIGIN } from '@/entities/brand/domain';
+
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL || 'https://soyindi.cl',
+  baseURL: process.env.BETTER_AUTH_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : CANONICAL_ORIGIN),
   trustedOrigins: [
-    'https://soyindi.cl',
+    CANONICAL_ORIGIN,
     'https://www.soyindi.cl',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
