@@ -20,6 +20,7 @@ import { getAccessibleTextColor } from '@/shared/lib/colorContrast';
 import { trackCardEventAction } from '@/features/card-builder/analytics-actions';
 import { trackResourceView } from '@/shared/lib/telemetryClient';
 import { WebShareModal } from '@/shared/ui/WebShareModal';
+import { getWhatsAppDigits, normalizeChileanPhone } from '@/shared/lib/phone';
 
 // Importar QRCode dinámicamente para SSR seguro
 const QRCodeSVG = dynamic(
@@ -223,7 +224,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
   // Construir link de WhatsApp con mensaje personalizado de alta estética tipográfica
   const whatsappUrl = card.whatsapp
-    ? `https://wa.me/${card.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
+    ? `https://wa.me/${getWhatsAppDigits(card.whatsapp)}?text=${encodeURIComponent(
         `👋 ¡Hola ${card.title.trim()}! Vi tu *Tarjeta Digital INDI* (${card.profession.trim()}) y me gustaría conectar contigo sobre oportunidades y proyectos.`
       )}`
     : null;
@@ -328,7 +329,9 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
                 <img
                   src={card.photoUrl}
                   alt={card.title}
-                  className="w-full h-full rounded-full object-cover bg-zinc-900"
+                  className="w-full h-full rounded-full object-cover bg-zinc-900 select-none pointer-events-auto"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
                 />
               ) : (
                 <div 

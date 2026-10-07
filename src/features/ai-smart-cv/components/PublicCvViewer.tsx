@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { trackResourceView } from '@/shared/lib/telemetryClient';
 import { WebShareModal } from '@/shared/ui/WebShareModal';
+import { normalizeChileanPhone } from '@/shared/lib/phone';
 
 interface PublicCvViewerProps {
   cv: CVFormValues;
@@ -235,7 +236,7 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
             )}
             {content.phone && (
               <a
-                href={`tel:${content.phone}`}
+                href={`tel:${normalizeChileanPhone(content.phone) || content.phone.trim()}`}
                 className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition flex items-center justify-center"
                 title={`Llamar a ${content.phone}`}
               >

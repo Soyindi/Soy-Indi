@@ -1,8 +1,4 @@
-/**
- * Utilidad determinista de generación de vCard 3.0 / 4.0 (RFC 6350 / RFC 2426)
- * Genera tarjetas de contacto universales compatibles con iOS Contacts,
- * Google Contacts y Microsoft Outlook, codificadas estrictamente en UTF-8.
- */
+import { normalizeChileanPhone } from './phone';
 
 export interface VCardOptions {
   title: string;
@@ -73,12 +69,14 @@ export function generateVCardString(card: VCardOptions): string {
   }
 
   if (card.phone) {
-    const safePhone = card.phone.trim().slice(0, VCARD_SECURITY_LIMITS.MAX_PHONE_CHARS);
+    const normalizedPhone = normalizeChileanPhone(card.phone) || card.phone.trim();
+    const safePhone = normalizedPhone.slice(0, VCARD_SECURITY_LIMITS.MAX_PHONE_CHARS);
     lines.push(`TEL;TYPE=CELL,VOICE:${safePhone}`);
   }
 
   if (card.whatsapp && card.whatsapp !== card.phone) {
-    const safeWhatsapp = card.whatsapp.trim().slice(0, VCARD_SECURITY_LIMITS.MAX_PHONE_CHARS);
+    const normalizedWhatsapp = normalizeChileanPhone(card.whatsapp) || card.whatsapp.trim();
+    const safeWhatsapp = normalizedWhatsapp.slice(0, VCARD_SECURITY_LIMITS.MAX_PHONE_CHARS);
     lines.push(`TEL;TYPE=WORK,VOICE:${safeWhatsapp}`);
   }
 

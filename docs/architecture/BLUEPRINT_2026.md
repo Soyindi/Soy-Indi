@@ -1802,3 +1802,20 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 ### 39.4 Cumplimiento Legal y Tributario Chileno (Ley N° 21.133 & Retención SII 2026)
 - **Cálculo de Boletas de Honorarios al 15,25% (`calculateGrossFromNetHonorarios`)**: Módulo en `src/entities/affiliate/schemas.ts` que computa el monto bruto requerido para emitir la Boleta de Honorarios legal de afiliados, garantizando que el titular reciba su 25% líquido exacto mientras INDI cumple el rol de agente retenedor ante el SII.
 - **Transparencia en Panel de Administración (`/admin`)**: Desglose automático de `grossHonorariosClp` y `retentionHonorariosClp` para cada liquidación quincenal.
+
+---
+
+## 40. Gobernanza de Privacidad Perimetral, Normalización E.164 & Protección de Identidad Visual (Auditoría 2026)
+
+### 40.1 Normalización Determinista de Telefonía E.164 (`src/shared/lib/phone.ts`)
+- **Adaptador E.164 para Telefonía Chilena**: La función `normalizeChileanPhone` procesa números de 9 dígitos anteponiendo el código de país `+56` y limpia caracteres no numéricos, garantizando compatibilidad universal con la libreta de direcciones de iOS y Android.
+- **Enlaces Directos de WhatsApp**: `getWhatsAppDigits` extrae los dígitos normalizados para construir URLs nativas hacia `wa.me/` sin guiones ni caracteres inválidos.
+
+### 40.2 Guardrail de Protección de Medios Anti-Arrastre & Anti-Clonación
+- **Defensa Pasiva en Cliente**: En `DigitalCard.tsx` y visores públicos, las fotos de perfil implementan `onContextMenu={(e) => e.preventDefault()}` y `onDragStart={(e) => e.preventDefault()}` con selección deshabilitada (`select-none`), impidiendo la descarga accidental o arrastre sin alterar la interfaz visual.
+
+### 40.3 Cabeceras HTTP de Seguridad Perimetral RFC 9111 (`next.config.ts`)
+- **Directivas Globales**: Inyección de `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy: camera=(), microphone=(), geolocation=()` para mitigar ataques de Clickjacking y vectorización no autorizada.
+
+### 40.4 Sentinel de Entorno en Arranque del Servidor (`src/shared/lib/envSentinel.ts`)
+- **Detección Fail-Fast**: Validación determinista de variables de entorno críticas (`BETTER_AUTH_SECRET`, `TURSO_DATABASE_URL`) durante el arranque del servidor, alertando configuraciones erróneas antes de atender peticiones de producción.

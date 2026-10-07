@@ -248,6 +248,12 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Datos Estructurados JSON-LD & Protocolo IndexNow**: Inyección tipada de `Schema.org` (`ProfilePage`, `Person`, `DigitalDocument`, `BreadcrumbList`) en páginas públicas y notificación perimetral en tiempo real mediante IndexNow para indexación instantánea en motores de búsqueda.
    - **Product-Led Growth (PLG) & Coeficiente Viral**: Todo recurso compartido debe incorporar micro-atribución de marca de alta conversión y cookies First-Party (`indi_ref_code`) para canalizar registros con K-factor > 1.2 sin marcas de agua invasivas.
 
+19. **Gobernanza de Seguridad Perimetral, Privacidad & Estándar E.164 (INDI 2026):**
+   - **Normalización Telefónica E.164 (+56 Chile)**: Todo número telefónico expuesto en tarjetas de contacto vCard 4.0, llamadas directas (`tel:`) o mensajes de WhatsApp (`wa.me/`) debe procesarse mediante `@/shared/lib/phone` (`normalizeChileanPhone`, `getWhatsAppDigits`). Esto garantiza interoperabilidad nativa con la libreta de direcciones de iOS/Android y mensajería instantánea sin fricción.
+   - **Protección de Medios Anti-Arrastre & Anti-Clonación**: Elementos visuales de identidad (retratos, avatares de tarjetas y miniaturas) implementan guardrails silenciosos del lado del cliente (`onContextMenu={(e) => e.preventDefault()}` y `onDragStart={(e) => e.preventDefault()}`) evitando la clonación o descarga accidental por terceros sin alterar la interfaz visual ni comprometer lectores de pantalla.
+   - **Cabeceras HTTP de Seguridad RFC 9111**: `next.config.ts` declara obligatoriamente para todas las rutas `X-Frame-Options: DENY` (anti-clickjacking), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
+   - **Fail-Fast Environment Sentinel**: El servidor valida al inicio la integridad de variables críticas (`BETTER_AUTH_SECRET`, `TURSO_DATABASE_URL`) mediante `@/shared/lib/envSentinel` para prevenir fallos silenciosos en producción.
+
 ---
 
 
