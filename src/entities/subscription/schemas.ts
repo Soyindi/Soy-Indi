@@ -30,10 +30,21 @@ export const timeRemainingSchema = z.object({
   totalMs: z.number().int().min(0),
 });
 
+export const tierLimitsSchema = z.object({
+  cards: z.union([z.number().int().min(0), z.literal('unlimited')]),
+  cvs: z.union([z.number().int().min(0), z.literal('unlimited')]),
+  presentations: z.union([z.number().int().min(0), z.literal('unlimited')]),
+  hasWatermark: z.boolean(),
+  analyticsLevel: z.enum(['basic', 'standard', 'advanced']),
+  aiTier: z.enum(['standard', 'fast_lane', 'top_nim']),
+});
+
 export const userEntitlementSchema = z.object({
   hasAccess: z.boolean(),
   isTrial: z.boolean(),
   status: z.enum(['TRIAL', 'ACTIVE', 'EXPIRED', 'CANCELLED']),
+  tier: z.enum(['starter', 'pro', 'max']),
+  limits: tierLimitsSchema,
   daysRemaining: z.number().int().min(0),
   expiresAt: z.number().nullable(),
   timeRemaining: timeRemainingSchema,

@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     const { status, metadata, transaction_amount, payment_method_id, external_reference } = payment;
     const targetUserId = metadata?.user_id;
     const planInterval = (metadata?.plan_interval as 'monthly' | 'semiannual') || 'monthly';
+    const planTier = (metadata?.plan_tier as 'starter' | 'pro' | 'max') || 'pro';
 
     if (!targetUserId) {
       return NextResponse.json({ received: true, warning: 'Sin user_id en metadatos' }, { status: 200 });
@@ -85,6 +86,7 @@ export async function POST(req: NextRequest) {
             id: String(paymentId),
             userId: targetUserId,
             planInterval,
+            planTier,
             amount: Math.round(transaction_amount || 0),
             currency: 'CLP',
             status: 'approved',

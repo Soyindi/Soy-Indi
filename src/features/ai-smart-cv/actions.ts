@@ -374,6 +374,13 @@ export async function upsertSmartCvAction(
       }
     } else {
       // Modo creación nueva independiente
+      // Verificar cuota disponible de CVs según el plan del usuario
+      const { assertQuotaAvailableAction } = await import('@/features/pricing/actions');
+      const quotaCheck = await assertQuotaAvailableAction(targetUserId, 'cvs');
+      if (!quotaCheck.allowed) {
+        return { success: false, error: quotaCheck.error || 'Has superado el límite de versiones de CV de tu plan.' };
+      }
+
       let uniqueSlug = desiredSlug;
       const slugCollision = await db.query.smartCvs.findFirst({
         where: eq(smartCvs.slug, uniqueSlug),

@@ -109,7 +109,7 @@ export const PRICING_TIERS: Record<PlanTier, TierPlanConfig> = {
       { text: 'Hasta 5 versiones de Smart CV con auditoría ATS' },
       { text: 'Hasta 10 presentaciones orbitales 16:9' },
       { text: 'Analíticas completas: Visitas, clics WhatsApp y vCard' },
-      { text: 'Dominio y Enlaces Profesionales Personalizados', highlight: true },
+      { text: 'Enlaces Profesionales Personalizados (/c/tu-nombre)', highlight: true },
       { text: 'IA Copiloto con prioridad en fila (Fast-lane)' },
       { text: 'Soporte prioritario y actualizaciones continuas' },
     ],
@@ -147,7 +147,7 @@ export const PRICING_TIERS: Record<PlanTier, TierPlanConfig> = {
       { text: 'Currículums ATS Ilimitados sin restricciones', highlight: true },
       { text: 'Presentaciones 16:9 Ilimitadas con diapositivas infinitas' },
       { text: 'Panel de métricas avanzado y embudo de conversión' },
-      { text: 'Marca Blanca Corporativa & Multi-Organización', highlight: true },
+      { text: 'Identidad Corporativa Limpia sin Enlaces Públicos Forzados', highlight: true },
       { text: 'Modelos de IA tope de línea (NVIDIA NIM Llama 3.3 / DeepSeek)' },
       { text: 'Soporte VIP directo y personalizaciones exclusivas' },
     ],
@@ -209,6 +209,8 @@ export interface UserEntitlement {
   hasAccess: boolean;
   isTrial: boolean;
   status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
+  tier: PlanTier;
+  limits: TierLimits;
   daysRemaining: number;
   expiresAt: number | null;
   timeRemaining: TimeRemainingBreakdown;

@@ -97,6 +97,9 @@ C:\Users\Matías Riquelme\Desktop\Indi\
 - **TypeScript 5.9+:** Tipado estricto, sin tolerar `any`, con validación estricta de esquemas de datos vía **Zod 3.24+**.
 - **Gestor de Paquetes:** `pnpm` o `npm` con directivas de motor precisas (`node >= 20.18.0`).
 
+### 4.1.1 Gobernanza de Cuotas Cuantitativas por Plan SaaS (2026)
+Para garantizar el cumplimiento de las normativas de protección al consumidor (SERNAC, Ley 19.496) y protección de datos (Ley 21.719), cada recurso cuantificable (Tarjetas: 3/10/∞, Smart CVs: 1/5/∞, Presentaciones 16:9: 2/10/∞) es evaluado de forma server-side mediante ssertQuotaAvailableAction(userId, resource). Si un usuario excede su cuota contratada, el sistema rechaza la inserción atómicamente.
+
 ### 4.2 Base de Datos y Persistencia
 - **Turso (LibSQL Serverless SQLite):**
   - Rendimiento perimetral distribuido con lecturas sub-milisegundo.

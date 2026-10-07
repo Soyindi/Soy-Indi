@@ -202,6 +202,7 @@ export const paymentsHistory = sqliteTable('payments_history', {
   id: text('id').primaryKey(), // Payment ID de Mercado Pago
   userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
   planInterval: text('plan_interval', { enum: ['monthly', 'semiannual'] }).notNull(),
+  planTier: text('plan_tier', { enum: ['starter', 'pro', 'max'] }).default('pro').notNull(),
   amount: integer('amount').notNull(),
   currency: text('currency').default('CLP').notNull(),
   status: text('status').notNull(), // approved, pending, rejected

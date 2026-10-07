@@ -114,12 +114,19 @@ export async function upsertCardAction(
       return { success: true, data: { slug: data.slug, id: cardId } };
     } else {
       // ================= MODO CREACIÓN NUEVA =================
-      // 4a. Verificar si el slug está reservado por el sistema
+      // 4a. Verificar cuota disponible de tarjetas según el plan del usuario
+      const { assertQuotaAvailableAction } = await import('@/features/pricing/actions');
+      const quotaCheck = await assertQuotaAvailableAction(targetUserId, 'cards');
+      if (!quotaCheck.allowed) {
+        return { success: false, error: quotaCheck.error || 'Has superado el límite de tarjetas de tu plan.' };
+      }
+
+      // 4b. Verificar si el slug está reservado por el sistema
       if (isReservedCardSlug(data.slug)) {
         return { success: false, error: 'Este identificador está reservado para rutas del sistema. Por favor elige otro.' };
       }
 
-      // 4b. Verificar si el slug ya existe globalmente
+      // 4c. Verificar si el slug ya existe globalmente
       const slugCollision = await db.query.cards.findFirst({
         where: eq(cards.slug, data.slug),
       });
@@ -130,7 +137,7 @@ export async function upsertCardAction(
 
       const newId = crypto.randomUUID();
 
-      // 4c. Insertar nueva tarjeta con UUID propio
+      // 4d. Insertar nueva tarjeta con UUID propio
       await db.insert(cards).values({
         id: newId,
         userId: targetUserId,

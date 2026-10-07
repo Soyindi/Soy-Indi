@@ -138,9 +138,9 @@ INDI implementa un modelo **Todo-en-Uno sin restricciones ocultas ni sistemas ar
 
 | Plan | Inversión (CLP / USD) | Cuotas y Beneficios Clave |
 | :--- | :--- | :--- |
-| **Prueba Gratuita** | **Gratis 3 Días** (Sin tarjeta requerida) | Acceso total a los 3 productos (Tarjetas, Métricas, CV, Presentaciones) para probar la suite completa. |
+| **Prueba Gratuita** | **Gratis 3 Días** (Sin tarjeta requerida) | Acceso total a los 3 productos (Tarjetas, Métricas, CV, Presentaciones) con cuota Pro durante la evaluación. |
 | **Plan Starter (🟢)** | **$2.500 CLP / mes** o **$6.000 semestral** (60% OFF) | Hasta 3 tarjetas, 1 Smart CV ATS, 2 presentaciones 16:9, copiloto IA y **sin marca de agua** (calidad profesional limpia). |
-| **Plan Pro (🔵 Recomendado)** | **$4.990 CLP / mes** o **$15.000 semestral** (50% OFF) | Hasta 10 tarjetas, 5 Smart CVs, 10 presentaciones, analíticas completas, dominio y enlaces personalizados e IA Fast-lane. |
+| **Plan Pro (🔵 Recomendado)** | **$4.990 CLP / mes** o **$15.000 semestral** (50% OFF) | Hasta 10 tarjetas, 5 Smart CVs, 10 presentaciones, analíticas completas, enlaces profesionales personalizados (`/c/tu-nombre`) e IA Fast-lane. |
 | **Plan Max (🟣)** | **$8.990 CLP / mes** o **$29.990 semestral** (44% OFF) | Tarjetas, CVs y presentaciones ilimitadas, métricas avanzadas, modelos NVIDIA NIM Llama 3.3/DeepSeek y soporte VIP. |
 
 ---
@@ -156,7 +156,8 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 335 tests pasando al 100% en 53 suites)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 336 tests pasando al 100% en 53 suites)
+│   ├── entitlements.test.ts     # Matriz de planes, cuotas de recursos (assertQuotaAvailableAction) y tiempo determinista
 │   ├── advanced-cache-governance.test.ts # Gobernanza de caché web pura, desregistro de Service Workers y anti-PWA
 │   ├── affiliates-and-payouts.test.ts # Módulo 11 RUT, códigos de referido y liquidaciones
 │   ├── phone-normalization.test.ts # Normalización de teléfonos chilenos a E.164 (+56) y WhatsApp

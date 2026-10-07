@@ -104,8 +104,29 @@ describe('Subscription & Entitlements Logic', () => {
     const allowedCheck = await assertUserEntitlementAction('usuario-inexistente-uuid');
     expect(allowedCheck.allowed).toBe(true);
     expect(allowedCheck.entitlement.hasAccess).toBe(true);
+    expect(allowedCheck.entitlement.tier).toBe('pro');
+    expect(allowedCheck.entitlement.limits.cards).toBe(10);
+    expect(allowedCheck.entitlement.limits.cvs).toBe(5);
+    expect(allowedCheck.entitlement.limits.presentations).toBe(10);
 
     // Verificación de contrato seguro
     expect(allowedCheck.error).toBeUndefined();
+  });
+
+  it('el guardrail assertQuotaAvailableAction valida límites cuantitativos por plan', async () => {
+    const { assertQuotaAvailableAction } = await import('@/features/pricing/actions');
+
+    // Para usuario en prueba o nuevo (tier Pro: 10 tarjetas, 5 cvs, 10 presentaciones)
+    const cardQuota = await assertQuotaAvailableAction('usuario-inexistente-uuid', 'cards');
+    expect(cardQuota.allowed).toBe(true);
+    expect(cardQuota.maxLimit).toBe(10);
+
+    const cvQuota = await assertQuotaAvailableAction('usuario-inexistente-uuid', 'cvs');
+    expect(cvQuota.allowed).toBe(true);
+    expect(cvQuota.maxLimit).toBe(5);
+
+    const presentationQuota = await assertQuotaAvailableAction('usuario-inexistente-uuid', 'presentations');
+    expect(presentationQuota.allowed).toBe(true);
+    expect(presentationQuota.maxLimit).toBe(10);
   });
 });

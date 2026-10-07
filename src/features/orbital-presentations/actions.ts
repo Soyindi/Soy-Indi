@@ -1023,6 +1023,13 @@ export async function upsertPresentationAction(
       return { success: true, id: presentationId, slug: desiredSlug };
     } else {
       // ================= MODO CREACIÓN NUEVA INDEPENDIENTE =================
+      // Verificar cuota disponible de presentaciones según el plan del usuario
+      const { assertQuotaAvailableAction } = await import('@/features/pricing/actions');
+      const quotaCheck = await assertQuotaAvailableAction(targetUserId, 'presentations');
+      if (!quotaCheck.allowed) {
+        return { success: false, error: quotaCheck.error || 'Has superado el límite de presentaciones de tu plan.' };
+      }
+
       let uniqueSlug = desiredSlug;
       const slugCollision = await db.query.presentations.findFirst({
         where: eq(presentations.slug, uniqueSlug),
