@@ -1,0 +1,20 @@
+import React from 'react';
+
+interface JsonLdProps {
+  data: Record<string, unknown> | Array<Record<string, unknown>>;
+}
+
+/**
+ * Componente universal de inyección segura de Datos Estructurados JSON-LD (Schema.org)
+ * Cumple con los estándares de Google Rich Snippets y elimina vulnerabilidades de inyección.
+ */
+export function JsonLd({ data }: JsonLdProps) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(data).replace(/</g, '\\u003c'),
+      }}
+    />
+  );
+}

@@ -81,8 +81,11 @@ src/
    - La retícula de composición $1200\times630\text{ px}$ reserva una **Zona Segura Central 1:1 ($630\times630\text{ px}$)** que concentra la tipografía, logotipo canónico y badges verificados, previniendo recortes visuales en feeds móviles e historias (WhatsApp, LinkedIn, Instagram, X).
    - Los módulos de compartir en vistas públicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`) utilizan `<WebShareModal />` con retroalimentación háptica (`navigator.vibrate`), fallback seguro al portapapeles, enlaces directos a WhatsApp/LinkedIn/X y fórmulas persuasivas de copywriting (`AIDA`, `Hook-Story-Offer`, `Curiosity Gap`) parametrizadas con UTMs canónicos y atribución de afiliados.
 15. **Favicon Vectorial Adaptativo (Dark/Light Mode) & Foto de Perfil en vCard 4.0:**
-   - La aplicación declara un favicon SVG oficial (`src/app/icon.svg`) con estilización interna mediante `@media (prefers-color-scheme: dark/light)` para contraste cristalino tanto en temas oscuros como claros del sistema operativo o navegador, acompañado de `apple-touch-icon` en `src/app/layout.tsx`.
+   - La aplicación declara un favicon SVG oficial (`src/app/icon.svg`) que vectoriza fielmente la cabeza alienígena oficial de `BRAND_ASSETS.alienSymbol`, con estilización interna mediante `@media (prefers-color-scheme: dark/light)` para contraste cristalino tanto en temas oscuros como claros del sistema operativo o navegador, acompañado de `apple-touch-icon` en `src/app/layout.tsx`.
    - El generador de vCard (`src/shared/lib/vcard.ts`) admite la resolución e incrustación de fotos de contacto (`PHOTO;ENCODING=b;TYPE=JPEG:`) mediante `downloadVCardWithPhoto`, garantizando que la imagen del usuario se guarde en la agenda telefónica (iOS / Android) con degradación silenciosa y sin bloquear la interacción.
+16. **Inteligencia de Posicionamiento SEO & Datos Estructurados JSON-LD (`Schema.org`):**
+   - Todas las rutas públicas principales (`/`, `/c/[slug]`, `/cv/[slug]`) deben inyectar esquemas tipados JSON-LD mediante el componente seguro `@/shared/ui/JsonLd` con sanitización de caracteres (`\u003c`) para prevenir inyecciones XSS.
+   - La raíz (`src/app/page.tsx`) declara entidades `Organization`, `WebSite` y `FAQPage` para activar Google Rich Snippets interactivos. Las rutas de perfiles (`/c/[slug]`) inyectan `ProfilePage` y `Person` asociando credenciales y enlaces oficiales (`sameAs`), y los currículums (`/cv/[slug]`) inyectan `DigitalDocument` optimizado para rastreadores de empleo y reclutadores.
 
 ---
 

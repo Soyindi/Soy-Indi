@@ -7,6 +7,7 @@ import { eq, sql } from 'drizzle-orm';
 import { CVFormValues } from '@/entities/cv/schemas';
 import { PublicCvViewer } from '@/features/ai-smart-cv/components/PublicCvViewer';
 import { Sparkles, ArrowLeft, FileText } from 'lucide-react';
+import { JsonLd } from '@/shared/ui/JsonLd';
 
 interface PublicCvPageProps {
   params: Promise<{
@@ -116,11 +117,33 @@ export default async function PublicCvPage({ params }: PublicCvPageProps) {
     content: cvRecord.content as any,
   };
 
+  const candidateName = (cvRecord.content as any)?.fullName || cvRecord.title;
+
+  const cvJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    mainEntity: {
+      '@type': 'Person',
+      name: candidateName,
+      jobTitle: cvRecord.targetRole,
+      url: `https://soyindi.cl/cv/${slug}`,
+    },
+    hasPart: {
+      '@type': 'DigitalDocument',
+      name: `Currículum Profesional de ${candidateName}`,
+      encodingFormat: 'application/pdf',
+      url: `https://soyindi.cl/cv/${slug}`,
+    },
+  };
+
   return (
-    <PublicCvViewer
-      cv={cvData}
-      slug={slug}
-      atsScore={cvRecord.atsScore}
-    />
+    <>
+      <JsonLd data={cvJsonLd} />
+      <PublicCvViewer
+        cv={cvData}
+        slug={slug}
+        atsScore={cvRecord.atsScore}
+      />
+    </>
   );
 }

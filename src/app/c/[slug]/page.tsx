@@ -5,6 +5,7 @@ import { cards } from '@/entities/schema';
 import { eq, sql } from 'drizzle-orm';
 import { DigitalCard } from '@/entities/card/components/DigitalCard';
 import { PublicContextualHeader } from '@/shared/ui/PublicContextualHeader';
+import { JsonLd } from '@/shared/ui/JsonLd';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -131,8 +132,32 @@ export default async function PublicCardPage({ params }: PageProps) {
 
   if (!card) notFound();
 
+  // Datos estructurados Schema.org para indexación profunda de perfiles profesionales en Google
+  const sameAsLinks = [
+    card.websiteUrl,
+    card.linkedinUrl,
+    card.instagramUrl,
+  ].filter((url): url is string => Boolean(url));
+
+  const cardJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    dateCreated: card.createdAt ? new Date(card.createdAt).toISOString() : undefined,
+    dateModified: card.updatedAt ? new Date(card.updatedAt).toISOString() : undefined,
+    mainEntity: {
+      '@type': 'Person',
+      name: card.title,
+      jobTitle: card.profession,
+      description: card.about || undefined,
+      image: card.photoUrl || undefined,
+      url: `https://soyindi.cl/c/${card.slug}`,
+      sameAs: sameAsLinks.length > 0 ? sameAsLinks : undefined,
+    },
+  };
+
   return (
     <div className="relative min-h-screen pb-16 flex flex-col justify-between overflow-hidden">
+      <JsonLd data={cardJsonLd} />
       {/* Cabecera contextual ergonómica */}
       <PublicContextualHeader ownerMode={false} />
 

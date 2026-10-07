@@ -10,7 +10,72 @@ import { GlobalNavbar } from '@/shared/ui/GlobalNavbar';
 import { BrandLogo } from '@/shared/ui/BrandLogo';
 import { BrandHeroBackdrop } from '@/shared/ui/BrandHeroBackdrop';
 import { BRAND_ASSETS } from '@/entities/brand/schemas';
+import { JsonLd } from '@/shared/ui/JsonLd';
 import Image from 'next/image';
+
+const HOME_STRUCTURED_DATA = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'INDI',
+    url: 'https://soyindi.cl',
+    logo: 'https://soyindi.cl/brand/indi-alien-symbol.webp',
+    description: 'Plataforma SaaS de Identidad Digital, Tarjetas Inteligentes, Smart CVs y Networking Profesional.',
+    sameAs: [
+      'https://www.linkedin.com/company/soyindi',
+      'https://instagram.com/soyindi.cl',
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'INDI — Identidad Digital y Networking',
+    url: 'https://soyindi.cl',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://soyindi.cl/c/{search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: '¿Cómo funcionan los 3 días de prueba gratis?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Al crear tu cuenta tienes 3 días completos para usar todo gratis, sin ningún compromiso y sin pedirte tarjeta de crédito. Puedes crear tu tarjeta, personalizarla con tus datos, revisar tus métricas de visitas y compartir tu link o tu código QR con tus clientes desde el primer minuto.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Cuánto cuesta el servicio después de los 3 días?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Puedes suscribirte por solo $2.500 CLP al mes para mantener tus tarjetas digitales, métricas, currículum profesional y presentaciones activas. O si prefieres ahorrar un 60%, puedes optar por el plan semestral de $6.000 CLP cada 6 meses (equivalente a $1.000 al mes).',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Mis clientes necesitan instalar alguna aplicación para ver mi tarjeta?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No, para nada. Tu cliente solo escanea tu código QR con la cámara de su celular o toca el enlace que le envíes por WhatsApp, y tu tarjeta se abre al instante en su navegador.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Qué medios de pago puedo usar en Chile?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay / Mercado Pago.',
+        },
+      },
+    ],
+  },
+];
 
 const PRODUCT_ICONS: Record<LandingProduct['id'], LucideIcon> = {
   card: QrCode,
@@ -57,6 +122,7 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen flex flex-col">
+      <JsonLd data={HOME_STRUCTURED_DATA} />
       <div id="inicio" className="absolute top-0 left-0 w-0 h-0" aria-hidden="true" />
 
       <GlobalNavbar />

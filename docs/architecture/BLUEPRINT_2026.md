@@ -1694,3 +1694,30 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Incrustación Base64**: La propiedad `PHOTO;ENCODING=b;TYPE=JPEG:` se inyecta en el archivo `.vcf` al presionar "Guardar Contacto" mediante `downloadVCardWithPhoto`.
 - **Resolución Asíncrona Resiliente**: Función de fetch de imagen con timeout de seguridad (2000ms) y degradación elegante a vCard sin foto ante fallos de red o conexiones lentas.
 - **Resultado en Clientes Móviles**: Al guardar el contacto en iOS Contacts o Google Contacts, la llamada entrante despliega el rostro y perfil del usuario a pantalla completa.
+
+---
+
+## 36. Identidad Canónica del Isotipo Alien & Datos Estructurados JSON-LD Schema.org (Fase 3: SEO de Clase Mundial)
+
+### 36.1 Vectorización Canónica de la Cabeza Alienígena (`src/app/icon.svg`)
+- **Alineación con BRAND_ASSETS**: Reemplazo de geometrías abstractas previas por la silueta anatómica oficial de `BRAND_ASSETS.alienSymbol`:
+  - Antena / Nodo cósmico esférico superior flotante (`cx="32" cy="11.5"`).
+  - Cabeza ovoide biomórfica con barbilla estilizada (`d="M32 17.5..."`).
+  - Ojos elípticos inclinados en ángulo simétrico ($26^\circ$) con contraste exacto frente al fondo de la pestaña.
+  - Gradiente prismático cian-índigo (`#818CF8` ➔ `#22D3EE` ➔ `#2DD4BF`).
+
+### 36.2 Metadatos Open Graph y Twitter Globales (`src/app/layout.tsx`)
+- Inclusión del lockup maestro `indi-tech-lockup.webp` ($1376 \times 768\text{ px}$) en la metadata raíz para garantizar previsualizaciones institucionales al compartir el dominio principal `https://soyindi.cl` en LinkedIn, Slack, WhatsApp y X.
+
+### 36.3 Inteligencia de Posicionamiento con Componente Seguro `<JsonLd />` (`src/shared/ui/JsonLd.tsx`)
+- Sanitización estricta de cadenas JSON (`\u003c`) para prevenir vulnerabilidades de inyección en tiempo de renderizado.
+- **Esquemas Implementados**:
+  - **Home (`src/app/page.tsx`)**:
+    - `Organization`: Nombre, logotipo en alta definición, redes sociales oficiales y descripción corporativa.
+    - `WebSite`: Declaración de búsqueda interna por slug (`SearchAction`).
+    - `FAQPage`: Desglose estructurado de preguntas y respuestas frecuentes (prueba gratis, precios, soporte para celulares y pagos) para activar Google Rich Snippets interactivos.
+  - **Tarjetas Públicas (`src/app/c/[slug]/page.tsx`)**:
+    - `ProfilePage` + `Person`: Vinculación de nombre, cargo, descripción, foto de perfil y enlaces externos (`sameAs`: LinkedIn, Instagram, web personal).
+  - **Smart CVs (`src/app/cv/[slug]/page.tsx`)**:
+    - `ProfilePage` + `DigitalDocument`: Estructuración técnica orientada a motores de búsqueda laboral y ATS de recursos humanos.
+

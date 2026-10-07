@@ -8,9 +8,31 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://soyindi.cl',
   },
+  openGraph: {
+    title: 'INDI — Plataforma SaaS de Identidad Digital y Networking',
+    description: 'Tarjetas digitales inteligentes, Smart CVs y presentaciones interactivas con rendimiento Edge ultra-rápido.',
+    url: 'https://soyindi.cl',
+    siteName: 'INDI',
+    images: [
+      {
+        url: 'https://soyindi.cl/brand/indi-tech-lockup.webp',
+        width: 1376,
+        height: 768,
+        alt: 'INDI — Identidad Digital & Networking Profesional',
+      },
+    ],
+    locale: 'es_CL',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'INDI — Plataforma SaaS de Identidad Digital y Networking',
+    description: 'Tarjetas digitales inteligentes, Smart CVs y presentaciones interactivas.',
+    images: ['https://soyindi.cl/brand/indi-tech-lockup.webp'],
+  },
   icons: {
     icon: [
-      { url: '/brand/indi-isotipo-transparent.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
       { url: '/brand/indi-alien-symbol-sm.webp', sizes: '32x32', type: 'image/webp' },
     ],
     apple: [
