@@ -1586,7 +1586,15 @@ Durante la auditoría técnica profunda del panel de administración (`/admin`) 
 4. **Sincronización en Tiempo Real en Panel de Control (`AdminPayoutsView.tsx`)**:
    - Integración de botón de refresco en vivo (`RefreshCw`) y Server Action unificada `getAdminDashboardDataAction`, permitiendo al equipo administrador auditar registros, comisiones y liquidaciones quincenales sin requerir recarga completa de página.
 
-
-
-
+### 32.2 Auditoría de Usabilidad, Contratos Zod & Modal Accesible en Panel Admin (`/admin`)
+1. **Contratos Fuertemente Tipados (`MarkAffiliateCommissionsPaidSchema`)**:
+   - Validación rigurosa de entradas en mutaciones administrativas con Zod (`safeParse`), previniendo ejecución de Server Actions con IDs nulos o vacíos.
+2. **Filtros Ergonómicos de Estado y Búsqueda Predictiva**:
+   - Píldoras de segmentación instantánea por estado (`Todos`, `Pro Activo`, `Trial`) en la pestaña de auditoría, junto con filtrado reactivo por nombre, correo y código de anfitrión.
+3. **Modal de Confirmación Accesible con Desglose Bancario Completo**:
+   - Sustitución de `window.confirm()` por un modal flotante con Glassmorphism 2.0 y contraste WCAG 2.2 AA que exhibe los datos bancarios (Titular, RUT, Banco, Cuenta y Monto CLP) antes de asentar el pago en base de datos.
+4. **Touch Targets Cumpliendo Retícula Base 8 ($\ge 44\text{px}$)**:
+   - Ampliación de touch targets en botones de copiado y acciones primarias, garantizando máxima ergonomía en dispositivos móviles y de escritorio.
+5. **Gobernanza de Metadatos y No-Index**:
+   - Declaración de metadatos de Next.js en `src/app/admin/page.tsx` con directiva `robots: { index: false, follow: false }` para proteger la privacidad administrativa ante motores de búsqueda.
 

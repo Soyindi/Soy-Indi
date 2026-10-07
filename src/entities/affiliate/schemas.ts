@@ -264,3 +264,12 @@ export interface AdminReferralAuditItem {
   totalCommissionsGeneratedClp: number;
 }
 
+/**
+ * Esquema de validación para marcar comisiones de un afiliado como pagadas
+ */
+export const MarkAffiliateCommissionsPaidSchema = z.object({
+  affiliateUserId: z.string().min(1, 'El ID del afiliado es obligatorio'),
+});
+
+export type MarkAffiliateCommissionsPaidInput = z.infer<typeof MarkAffiliateCommissionsPaidSchema>;
+

@@ -196,6 +196,23 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
       expect(Array.isArray(res.payouts)).toBe(true);
       expect(Array.isArray(res.referralsAudit)).toBe(true);
     }, 15000);
+
+    it('valida el contrato Zod MarkAffiliateCommissionsPaidSchema y rechaza payloads inválidos', async () => {
+      const { MarkAffiliateCommissionsPaidSchema } = await import('@/entities/affiliate/schemas');
+      const { markAffiliateCommissionsAsPaidAction } = await import('@/features/affiliates/actions');
+
+      // 1. Zod schema valida ID no vacío
+      const valid = MarkAffiliateCommissionsPaidSchema.safeParse({ affiliateUserId: 'usr_valid_123' });
+      expect(valid.success).toBe(true);
+
+      const invalid = MarkAffiliateCommissionsPaidSchema.safeParse({ affiliateUserId: '' });
+      expect(invalid.success).toBe(false);
+
+      // 2. Action rechaza llamadas con ID vacío
+      const res = await markAffiliateCommissionsAsPaidAction('');
+      expect(res.success).toBe(false);
+      expect(res.error).toContain('Parámetros inválidos');
+    });
   });
 
   describe('Heurísticas Anti-Gaming 2026: Normalización de Correos & Detección Sybil', () => {

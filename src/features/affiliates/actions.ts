@@ -11,6 +11,7 @@ import {
   AffiliateOverview,
   AdminAffiliatePayoutItem,
   AdminReferralAuditItem,
+  MarkAffiliateCommissionsPaidSchema,
   AFFILIATE_COMMISSION_PERCENTAGE,
   calculateNextPayoutDate,
   formatReferralCode,
@@ -593,6 +594,11 @@ export async function getAdminAffiliatePayoutsAction(userId?: string): Promise<{
  */
 export async function markAffiliateCommissionsAsPaidAction(affiliateUserId: string, userId?: string) {
   try {
+    const parseResult = MarkAffiliateCommissionsPaidSchema.safeParse({ affiliateUserId });
+    if (!parseResult.success) {
+      return { success: false, error: 'Parámetros inválidos: ID del afiliado es requerido.' };
+    }
+
     const sessionResult = await getSafeAuthenticatedUserId(userId);
     if (!sessionResult.userId) {
       return { success: false, error: 'Acceso no autorizado.' };

@@ -215,6 +215,12 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Destino Canónico de Marca**: En aplicaciones autenticadas o hubs internos (`/dashboard`, `/start`, `/login`), el logotipo oficial (`<BrandLogo />`) debe apuntar canónicamente a la raíz pública (`/`) para permitir al usuario explorar la portada o salir del contexto de trabajo, erradicando loops autorreferenciales (ej. enlazar a la misma URL donde se está posicionado).
    - **Erradicación de Acciones Redundantes en Cabeceras**: Se prohíbe duplicar botones de navegación externa (`"Ver Web"`, `"Planes y Membresía"`) cuando la misma funcionalidad ya se encuentra cubierta por el logotipo o banners contextuales prioritarios (`TrialBanner`). Toda barra de herramientas debe preservar máxima pureza visual y ratio de señal-ruido.
 
+17. **Gobernanza del Panel de Administración (`/admin`), Contratos Zod & Modal Accesible de Liquidaciones:**
+   - **Validación FSD & Zod Rigurosa**: Toda Server Action administrativa de mutación (`markAffiliateCommissionsAsPaidAction`) valida sus argumentos mediante esquemas Zod dedicados (`MarkAffiliateCommissionsPaidSchema.safeParse()`) antes de ejecutar operaciones sobre Turso SQLite.
+   - **Modal Accesible de Confirmación de Liquidación**: Se prohíbe el uso de alertas nativas o diálogos bloqueantes `window.confirm()`. La confirmación de pagos quincenales debe renderizarse en un modal flotante con Glassmorphism 2.0 que desglosa en tiempo real el titular, banco, tipo de cuenta, RUT y monto exacto en CLP.
+   - **Filtros Ergonómicos y Píldoras de Segmentación**: La pestaña de auditoría provee píldoras interactivas con conteos reactivos (`Todos`, `Pro Activo`, `Trial`) y touch targets $\ge 36\text{px}$ para segmentación instantánea sin recarga de página.
+   - **Protección No-Index de Rutas Administrativas**: Toda ruta de administración debe declarar metadatos `robots: { index: false, follow: false }` para preservar la confidencialidad operativa de la plataforma.
+
 ---
 
 

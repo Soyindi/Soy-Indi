@@ -10,8 +10,18 @@ import { AdminPayoutsView } from '@/features/affiliates/components/AdminPayoutsV
 import { BrandLogo } from '@/shared/ui/BrandLogo';
 import Link from 'next/link';
 import { LayoutDashboard, ShieldAlert, ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Panel de Administración | INDI',
+  description: 'Auditoría en tiempo real de registros referidos y liquidaciones quincenales.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminPage() {
   const headerList = await headers();
