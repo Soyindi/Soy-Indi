@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { AdminAffiliatePayoutItem, AdminReferralAuditItem } from '@/entities/affiliate/schemas';
 import { markAffiliateCommissionsAsPaidAction, getAdminDashboardDataAction } from '../actions';
