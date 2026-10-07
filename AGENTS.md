@@ -81,6 +81,23 @@ src/
 
 ---
 
+## 🛠️ 6. Catálogo de Recursos Agénticos y Servidores MCP (Tool Orchestration 2026)
+
+Para maximizar el aprovechamiento de los recursos de ingeniería y automatización del entorno, todo agente debe orquestar activamente las siguientes herramientas integradas:
+
+1. **Chrome DevTools MCP (`chrome-devtools-mcp`):**
+   - Utilizar para auditorías de rendimiento en tiempo real (Lighthouse Audit), validación de Core Web Vitals (LCP, INP, CLS) y pruebas visuales de contraste WCAG 2.2 AA en componentes interactivos.
+2. **Stitch Design System MCP (`StitchMCP`):**
+   - Utilizar para la creación, consulta y sincronización de sistemas de diseño, exportación de tokens de interfaz e iteración de componentes UI de alta fidelidad.
+3. **Supabase & Database Advisors (`supabase-mcp-server`):**
+   - Utilizar para inspección de esquemas relacionales, análisis de advisors de rendimiento, optimización de índices y telemetría de logs.
+4. **Skills Agénticas Especializadas:**
+   - `flow-and-persistence-audit`: Auditoría de consistencia entre contratos Zod y esquemas Drizzle SQLite.
+   - `canonical-domain-audit`: Verificación de redirecciones Edge 308 y gobernanza canónica (`soyindi.cl`).
+   - `ui-ux-pro-max` / `frontend-design`: Aplicación de principios de ergonomía visual, retícula Base 8 y jerarquía tipográfica.
+
+---
+
 ## 🧪 3. Suite de Pruebas y Control de Calidad (Testing)
 
 El proyecto utiliza **Vitest** como motor de pruebas unitarias.

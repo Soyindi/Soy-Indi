@@ -1545,5 +1545,21 @@ En el plan gratuito de Vercel Hobby, el límite no es el almacenamiento (Turso p
    - Actualmente, las fotos se comprimen en cliente con `compressImageClient` a WebP (<40 KB) y se persisten directamente como texto estructurado en Turso, soportando con holgura más de 150.000 usuarios activos.
    - Cloudflare R2 permanece parametrizado en `.env.example` como un puerto modular de expansión para cuando la base de usuarios supere dicho umbral.
 
+---
+
+## 31. Gobernanza de Orquestación Agéntica y Servidores MCP (Tool Orchestration 2026)
+
+### 31.1 Protocolo de Aprovechamiento de Recursos
+Para garantizar que los agentes de IA operen bajo el máximo estándar de productividad y rigor de ingeniería, la plataforma articula un protocolo de orquestación de herramientas compuesto por:
+1. **Chrome DevTools MCP (`chrome-devtools-mcp`)**: Inspección perimetral de layout, auditorías automatizadas de Lighthouse, verificación de Core Web Vitals (LCP, INP, CLS) y pruebas visuales de accesibilidad WCAG 2.2 AA.
+2. **Stitch Design System MCP (`StitchMCP`)**: Gestión y sincronización de sistemas de diseño corporativo, prototipado de variantes UI y exportación de tokens de interfaz OKLCH.
+3. **Supabase MCP (`supabase-mcp-server`)**: Inspección analítica de esquemas de datos, advisors de optimización SQL y auditorías de consultas concurrentes.
+4. **Índice Canónico de Especificaciones de Ingeniería**:
+   - Red de Afiliados y Crecimiento Serverless: `docs/specifications/AFFILIATE_NETWORK_ENGINE_2026.md`
+   - Motor de Presentaciones Orbitales IA: `docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md`
+   - Motor ATS & Smart CV Unificado: `docs/specifications/SMART_CV_ENGINE.md`
+   - Prompt Maestro Gemini Deep Research: `docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_DIGITAL_CARDS_2026.md`
+
+
 
 
