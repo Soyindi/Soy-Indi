@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "title": "Prompt Maestro de Deep Research (Gemini 2.5 / Advanced): Estilo Visual de Compartir, Favicon de Clase Mundial, Posicionamiento Orgánico en Google (SEO Técnico & Programático) & Estrategia CEO de Crecimiento Acelerado 2026",
+    "version": "1.0.0",
+    "canonical_specification": "docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.json",
+    "platform": "INDI (https://soyindi.cl)",
+    "target_model": "Gemini 2.5 Pro / Gemini 2.5 Flash / Gemini Advanced Deep Research / Google AI Studio",
+    "prompt_architecture": "Multi-Pillar Industrial Deep Research Specification",
+    "author": "Tech Lead & Staff Software Engineer (INDI Platform)",
+    "created_at": "2026-10-07",
+    "runtime_stack": {
+      "framework": "Next.js 16 App Router (React 19 Server Components, Actions, Partial Prerendering)",
+      "styling": "Tailwind CSS v4 en Espacio de Color OKLCH, Gamut P3 Wide Color, Glassmorphism 2.0",
+      "persistence": "Turso (LibSQL Serverless SQLite) con réplicas Edge distribuidas (<15ms)",
+      "orm": "Drizzle ORM con batching atómico y contratos tipados",
+      "auth": "Better-Auth nativo con Google OAuth y Email/Contraseña",
+      "media_cdn": "Cloudflare CDN / R2 Storage + Compresión Client-Side WebP (<40KB)",
+      "social_previews": "@vercel/og (Satori + Resvg) en Edge Runtime",
+      "payments": "Mercado Pago SDK v2 (Starter $2.500 CLP, Pro $4.990 CLP, Max $8.990 CLP)",
+      "affiliates": "Red de afiliados descentralizada con 25% de comisión recurrente y liquidaciones quincenales"
+    }
+  },
+  "execution_directives": {
+    "role": "Principal Design Technologist, Staff Frontend Architect, Head of SEO & Growth Engine, y Executive Product Strategist (Ex-Linear, Stripe, Apple, Vercel, Popl)",
+    "objective": "Realizar una investigación exhaustiva y de frontera (Deep Research de Grado Industrial) sobre las mejores prácticas, arquitecturas y tendencias globales para revolucionar: (1) El estilo visual y viralidad de las previsualizaciones al compartir tarjetas, Smart CVs y presentaciones en redes sociales y mensajería; (2) La creación e implementación de un Favicon y suite de assets de aplicación de clase mundial; (3) El posicionamiento orgánico en Google mediante SEO técnico, Schema.org JSON-LD e IndexNow; y (4) Un playbook estratégico para el CEO con Product-Led Growth (PLG), optimización de conversión de planes y expansión empresarial.",
+    "depth_level": "Máximo rigor técnico, estético y de negocio. Cero respuestas genéricas, condescendientes o teóricas de relleno. Cada sección debe incluir especificaciones detalladas, diagramas ASCII/Mermaid, código de producción TypeScript/CSS/Next.js 16, ejemplos de payloads, fórmulas matemáticas y matrices comparativas.",
+    "temperature": 0.25,
+    "top_p": 0.95,
+    "response_language": "Español técnico de alto nivel con terminología estándar de la industria (FSD, OKLCH, JSON-LD, APCA, WCAG 2.2 AA, PLG, LTV, CAC)",
+    "deliverable_structure": "Informe técnico y estratégico exhaustivo organizado estrictamente bajo los 5 ejes de investigación especificados."
+  },
+  "platform_context": {
+    "company_name": "INDI (Soyindi)",
+    "canonical_domain": "https://soyindi.cl",
+    "market": "Latinoamérica (iniciando en Chile) con proyección global",
+    "value_proposition": "Reemplazar tarjetas de papel tradicionales y currículums obsoletos por un ecosistema de presencia digital viva, interactiva, de ultra-alta velocidad y con cero marcas de agua invasivas.",
+    "core_products": [
+      {
+        "id": "digital_cards",
+        "route": "https://soyindi.cl/c/[slug]",
+        "description": "Tarjetas digitales profesionales vivas con Glassmorphism 2.0, botón de WhatsApp personalizado en 1 toque, descarga vCard 4.0 con dirección física, vitrina interactiva Bento Grid, mapas OpenStreetMap privacy-first y telemetría atómica."
+      },
+      {
+        "id": "smart_cv",
+        "route": "https://soyindi.cl/cv/[slug]",
+        "description": "Living Digital Resume con URL pública, auditoría algorítmica ATS (0-100), extracción multimodal STAR/XYZ con IA, exportación en PDF vectorial A4 internacional (DIN EN ISO 216), viñetas sanitizadas, guardrail anti-huérfanos y referencias laborales completas."
+      },
+      {
+        "id": "orbital_presentations",
+        "route": "https://soyindi.cl/p/[slug]",
+        "description": "Estudio cinematográfico de presentaciones interactivas en relación 16:9 con transiciones fluidas, auras volumétricas OKLCH aceleradas por GPU, deconstrucción inteligente de documentos con IA y modo proyección en pantalla completa."
+      }
+    ],
+    "business_model": {
+      "free_trial": "3 días de acceso completo a todas las herramientas sin tarjeta de crédito obligatoria",
+      "pricing_tiers": {
+        "starter": "$2.500 CLP/mes o $6.000 CLP/semestre ($1.000 CLP/mes, 60% OFF). Hasta 3 tarjetas, 1 CV, 2 presentaciones, analíticas básicas, cero marcas de agua.",
+        "pro": "$4.990 CLP/mes o $15.000 CLP/semestre ($2.500 CLP/mes, 50% OFF). Hasta 10 tarjetas, 5 CVs, 10 presentaciones, marca 100% blanca, analíticas completas, IA Fast-lane.",
+        "max": "$8.990 CLP/mes o $29.990 CLP/semestre (~$4.990 CLP/mes, 44% OFF). Volumen ilimitado, embudo avanzado y modelos NVIDIA NIM de frontera."
+      },
+      "affiliate_engine": "Comisión del 25% recurrente en CLP liquidada quincenalmente los días 1 y 15 mediante transferencias bancarias locales registradas en /admin."
+    }
+  },
+  "research_pillars": [
+    {
+      "pillar_id": "pillar_1_visual_sharing_previews",
+      "title": "EJE 1: Estilo Visual Hiper-Atractivo & Social Sharing Previews (WhatsApp, LinkedIn, iMessage, X, Telegram)",
+      "priority": "CRÍTICA",
+      "description": "Análisis profundo y diseño de la arquitectura visual de previsualizaciones compartibles (Social Graph / Open Graph) para maximizar el Click-Through Rate (CTR) y la percepción de marca de lujo tecnológico cuando los usuarios comparten sus perfiles.",
+      "research_questions_and_deliverables": [
+        "1.1. Anatomía Visual de Alto Impacto: ¿Cómo debe estructurarse la composición gráfica (1200x630 px con zona segura 1:1 de 630x630 px) para que el preview se vea espectacular tanto en feeds de LinkedIn/X (tarjeta rectangular grande) como en listas de chats móviles de WhatsApp y Telegram (donde se recorta a una miniatura cuadrada central)?",
+        "1.2. Edge Dynamic OG Generation con @vercel/og y Satori: Diseña el template canónico de React/HTML-to-Image para las 3 entidades (Tarjeta, Smart CV y Presentación). Debe incorporar avatares nítidos con bordes translúcidos, halos de luz OKLCH, micro-badges de especialidad ('Verified Pro', 'ATS Ready', '16:9 Keynote'), tipografía moderna y micro-datos visuales.",
+        "1.3. Headers HTTP y Gestión de Caché de Scrapers: Análisis exhaustivo del comportamiento de scrapers (Facebook/WhatsApp Scraper, LinkedInBot, Twitterbot, TelegramBot, Apple iMessage LPLinkMetadata). ¿Qué headers Cache-Control, s-maxage y stale-while-revalidate deben configurarse para garantizar que cuando un usuario actualice su foto o cargo, los previews se refresquen rápidamente sin saturar el Edge?",
+        "1.4. Micro-Interacciones de Usuario al Compartir (Web Share API & Táctil): Diseña el flujo ergonómico en cliente para compartir en 1 toque. Incluye Web Share API nativa con fallback a modal flotante con Glassmorphism 2.0, retroalimentación háptica con Vibration API (navigator.vibrate), copiado instantáneo al portapapeles y generación de UTM parameters automáticos (?utm_source=share&utm_medium=whatsapp).",
+        "1.5. Generador Inteligente de Textos Pre-Redactados: Propón matrices de copy persuasivo (fórmulas AIDA y Hook-Story-Offer) para los mensajes que acompañan el enlace al compartir por WhatsApp o LinkedIn, adaptados a si se comparte una Tarjeta de Contacto, una Postulación Laboral con Smart CV, o una Propuesta Comercial con Presentación Orbital."
+      ]
+    },
+    {
+      "pillar_id": "pillar_2_world_class_favicon",
+      "title": "EJE 2: Favicon de Clase Mundial & Assets de Aplicación (El Estándar 2026 de Iconografía Web y PWA)",
+      "priority": "ALTA",
+      "description": "Especificación exhaustiva de la suite completa de favicons, iconos de aplicación y assets de marca para que INDI destaque con nitidez absoluta y elegancia en cualquier navegador, sistema operativo y pantalla Retina/OLED.",
+      "research_questions_and_deliverables": [
+        "2.1. Estrategia Multi-Formato Vectorial & Ráster 2026: ¿Cuál es la matriz definitiva de archivos que debe servirse hoy? Detalla: (a) Favicon SVG vectorial con CSS embebido @media (prefers-color-scheme: dark/light) para que el isotipo sea visible e impactante tanto en navegadores con tema oscuro como claro; (b) favicon.ico multi-resolución (16x16, 32x32, 48x48) para compatibilidad universal con clientes legacy; (c) apple-touch-icon.png (180x180 px); (d) icon-192.png e icon-512.png para Android PWA; (e) Safari Pinned Tab (mask-icon) en SVG de un solo color.",
+        "2.2. Legibilidad Óptica a Micro-Escala ('Optical Sizing' 16x16 px vs 512x512 px): ¿Por qué los logotipos detallados fracasan en la pestaña del navegador? Define los principios de simplificación geométrica para el isotipo alienígena/tecnológico de INDI: engrosamiento de líneas, reducción de vértices internos, alineación a la cuadrícula de píxeles (pixel-grid snapping) y radio de curvatura óptimo.",
+        "2.3. Web App Manifest Moderno: Diseña la especificación completa del archivo site.webmanifest (o manifest.ts en Next.js 16 App Router) con soporte para purpose: 'maskable any', theme_color, background_color, display: 'standalone', y shortcuts de navegación rápida ('Crear Tarjeta', 'Mi CV', 'Nueva Presentación').",
+        "2.4. Favicons Dinámicos y Reactivos (Canvas API en Pestaña Activa): ¿Cómo implementar favicons interactivos que actualicen su estado en tiempo real? Proporciona el código de una utilidad que dibuje un badge numérico o punto de color sobre el favicon de la pestaña para indicar: (a) Nueva visita registrada en tiempo real; (b) Alerta de contacto guardado; (c) Cambio visual cuando el usuario cambia de pestaña (document.visibilityState === 'hidden') con mensaje de llamado a la acción sutil en el document.title."
+      ]
+    },
+    {
+      "pillar_id": "pillar_3_google_seo_programmatic",
+      "title": "EJE 3: Posicionamiento Orgánico en Google, SEO Técnico & Programático Avanzado",
+      "priority": "CRÍTICA",
+      "description": "Estrategia integral de posicionamiento orgánico en Google para la plataforma SaaS (soyindi.cl) y para los perfiles individuales de los usuarios (/c/[slug], /cv/[slug], /p/[slug]), garantizando indexación ultra-rápida, Rich Results y dominio del Knowledge Graph.",
+      "research_questions_and_deliverables": [
+        "3.1. Arquitectura de Datos Estructurados JSON-LD (Schema.org): Diseña los esquemas tipados TypeScript e inyectables en Next.js 16 para: (a) ProfilePage y Person para tarjetas públicas (/c/[slug]), asociando jobTitle, sameAs (LinkedIn, Instagram, GitHub), contactPoint y address; (b) DigitalDocument / Resume para Smart CV (/cv/[slug]); (c) PresentationDigitalDocument / CreativeWork para presentaciones orbitales (/p/[slug]); (d) WebSite y Organization para la landing principal, incluyendo SearchAction y BreadcrumbList.",
+        "3.2. Dominio de Búsquedas Personales ('Name SEO'): ¿Cómo garantizar que cuando alguien busque en Google el nombre de un profesional (ej. 'Matías Riquelme Ingeniero Software Punta Arenas') su tarjeta o Smart CV de INDI aparezca en la primera posición orgánica por encima de enlaces desactualizados o directorios genéricos? Técnicas de autoridad de dominio, enlazado interno y desambiguación de entidades.",
+        "3.3. Protocolo IndexNow e Indexación Instantánea: ¿Cómo implementar el protocolo IndexNow (respaldado por Bing, Yandex y pasarelas de búsqueda modernas) para notificar a los motores de búsqueda en menos de 100ms cada vez que un usuario crea o edita su tarjeta o CV en INDI? Diseña la Server Action o Edge Route Handler que despache el ping a la API de IndexNow.",
+        "3.4. Programmatic SEO (P-SEO) a Escala Nacional y Regional: Diseña una arquitectura de páginas de aterrizaje programáticas para captar búsquedas long-tail de alto valor (ej. /profesionales/[profesion]/[region] o /plantillas-cv/[carrera]). Define la estructura de URL, canónicos, generación de metadatos únicos con IA y prevención de contenido 'thin' o penalizaciones por doorway pages.",
+        "3.5. Rendimiento Core Web Vitals al Extremo: Estrategia de optimización para lograr métricas perfectas en Lighthouse (LCP < 0.8s, INP < 50ms, CLS = 0) en las rutas públicas, combinando ISR (revalidate = 60), streaming de HTML, precarga de recursos críticos (font-preload) y telemetría perimetral desacoplada."
+      ]
+    },
+    {
+      "pillar_id": "pillar_4_ceo_growth_strategy",
+      "title": "EJE 4: Estrategia CEO Avanzada & Motor de Crecimiento C-Level (Product-Led Growth, Monetización y Expansión)",
+      "priority": "CRÍTICA",
+      "description": "Playbook estratégico para el CEO y equipo ejecutivo de INDI para escalar la base de usuarios, maximizar el Lifetime Value (LTV), reducir el Costo de Adquisición (CAC) y construir un foso defensivo comercial inexpugnable.",
+      "research_questions_and_deliverables": [
+        "4.1. Product-Led Growth (PLG) & Coeficiente Viral (K-Factor): Modela matemáticamente el bucle viral de INDI donde cada tarjeta, CV o presentación compartida actúa como un anuncio de captación orgánica sin costo de pauta publicitaria. ¿Cómo optimizar la micro-atribución ('Identidad Verificada con INDI • Crea tu perfil en 30s') para lograr un K-factor > 1.2 sin resultar invasiva para el usuario que paga?",
+        "4.2. Optimización de Conversión de la Matriz 'El Semestre Irresistible': Diseña la secuencia psicológica y los gatillos de conversión durante los 3 días de Free Trial. ¿Cómo incentivar la contratación del Plan Semestral ($15.000 CLP Pro o $6.000 CLP Starter) demostrando un ahorro del 50-60% frente a la suscripción mensual?",
+        "4.3. Estrategia de Churn Mitigation & 'Sticky Identity': ¿Cómo lograr que un profesional nunca cancele su suscripción? Análisis del efecto de bloqueo positivo (lock-in de valor): cuando la tarjeta está impresa en códigos QR físicos, repartida en firmas de correo y enviada a cientos de clientes, el costo de desactivarla es prohibitivo.",
+        "4.4. Unidad de Negocio B2B ('INDI for Teams' / Corporativo): Diseña la propuesta de valor y arquitectura de producto para vender planes corporativos a empresas (agencias, firmas de abogados, startups, clínicas, inmobiliarias) con 10 a 500 colaboradores: gestión centralizada de identidades de marca, panel de administración para RRHH y facturación anual.",
+        "4.5. Cuadro de Mando Ejecutivo (North Star Metrics para el CEO): Define el dashboard financiero y operativo que el CEO debe monitorear semanalmente: CAC, LTV, Ratio LTV/CAC, Payback Period, Net Revenue Retention (NRR), Tasa de Conversión Trial-to-Paid, y Margen Bruto sobre infraestructura Serverless."
+      ]
+    },
+    {
+      "pillar_id": "pillar_5_smart_cv_and_presentations_experience",
+      "title": "EJE 5: Experiencia de Compartir Curricular & Presentaciones (Smart CV & Orbital Presentations)",
+      "priority": "ALTA",
+      "description": "Perfeccionamiento de la experiencia de compartir currículums profesionales y presentaciones comerciales, fusionando el rigor de los filtros ATS corporativos con la interactividad de la web moderna.",
+      "research_questions_and_deliverables": [
+        "5.1. Dicotomía ATS Corporativo vs Experiencia Humana de Reclutador: ¿Cómo resolver la tensión entre un documento que debe ser leído por algoritmos de escaneo (Workday, Greenhouse, Taleo) y una presencia digital que debe fascinar al Hiring Manager humano en 10 segundos? Propón el modelo dual: PDF vectorial ATS estricto (A4, sin tablas complejas ni gráficos ilegibles) + Visor Web Vivo (/cv/[slug]) con enlaces a proyectos, credenciales verificadas y contacto directo en 1 clic.",
+        "5.2. Modo 'Pitch Interactivo' en Presentaciones Orbitales 16:9 (/p/[slug]): Diseña la experiencia de usuario cuando un cliente potencial recibe una presentación por WhatsApp o correo: carga instantánea en pantalla completa, control por gestos táctiles (swipe), mini-reproductor interactivo embebible, y métricas para el emisor (saber exactamente en qué diapositiva se detuvo el cliente y cuánto tiempo leyó).",
+        "5.3. Privacidad Contextual y Enlaces Protegidos: ¿Cómo implementar opciones de privacidad de grado corporativo sin fricción? (a) Enlaces públicos con indexación opcional (noindex para CVs confidenciales); (b) Enlaces protegidos con PIN numérico de 4 dígitos o contraseña temporal para propuestas comerciales privadas; (c) Enlaces de caducidad programada (ej. expira en 7 días)."
+      ]
+    }
+  ],
+  "benchmarks_and_industry_references": [
+    {
+      "category": "Identidad Digital & Tarjetas Inteligentes",
+      "leaders": ["Popl", "Dot Cards", "HiHello", "Mobilo Card", "Linq", "V1CE", "Bento.me", "Linktree Pro"],
+      "aspects_to_analyze": "Diseño de perfiles móviles, micro-interacciones de guardado de contacto, integración NFC, velocidad de carga."
+    },
+    {
+      "category": "Sistemas de Diseño & Estética Hiper-Premium",
+      "leaders": ["Linear.app", "Apple.com", "Stripe.com", "Vercel.com", "Raycast.com", "Arc Browser"],
+      "aspects_to_analyze": "Glassmorphism refinado, espacio de color OKLCH, micro-animaciones, tipografía suiza, feedback háptico."
+    },
+    {
+      "category": "Plataformas de Currículum y Portafolio Digital",
+      "leaders": ["Read.cv", "Polywork", "Teal HQ", "FlowCV", "Novoresume"],
+      "aspects_to_analyze": "Compatibilidad ATS, diseño editorial A4, perfiles públicos compartibles, métricas de visualización."
+    },
+    {
+      "category": "Presentaciones Interactivas & Software de Pitch",
+      "leaders": ["Pitch.com", "Gamma.app", "Tome.app", "Beautiful.ai", "Canva Presentations"],
+      "aspects_to_analyze": "Relación 16:9 cinemática, visualización web táctil, analíticas de lectura por diapositiva, transiciones fluidas."
+    },
+    {
+      "category": "SEO Técnico & Motores de Búsqueda",
+      "leaders": ["Google Search Central (Documentation 2026)", "Schema.org", "IndexNow Protocol", "Vercel Analytics"],
+      "aspects_to_analyze": "Datos estructurados JSON-LD, Core Web Vitals, generación dinámica de Open Graph en Edge, sitemaps jerárquicos."
+    }
+  ],
+  "deliverable_specifications": {
+    "format": "Markdown Técnico Completo y Exhaustivo (Grado Whitepaper Corporativo)",
+    "required_sections": [
+      {
+        "section_id": "sec_executive_summary",
+        "title": "1. RESUMEN EJECUTIVO & DIAGNÓSTICO ESTRATÉGICO",
+        "content_requirements": "Diagnóstico del estado actual de INDI frente a los líderes mundiales, matriz SWOT/FODA técnica, y metas cuantitativas (CTR social +45%, LCP < 0.8s, K-factor > 1.2)."
+      },
+      {
+        "section_id": "sec_visual_social_sharing",
+        "title": "2. ARQUITECTURA VISUAL DE COMPARTIR & SOCIAL PREVIEWS DE ALTO IMPACTO",
+        "content_requirements": "Código TypeScript completo de Edge Route Handler (/api/og) con @vercel/og y Satori para Tarjeta, CV y Presentación; diagrama de zona segura 1200x630 vs 630x630; headers HTTP de caché; y componente WebShareModal táctil."
+      },
+      {
+        "section_id": "sec_world_class_favicon",
+        "title": "3. ESPECIFICACIÓN MAESTRA DE FAVICON & ASSETS DE APLICACIÓN 2026",
+        "content_requirements": "SVG maestro del Favicon adaptativo con CSS dark/light; lista completa de tamaños y metatags; código de site.webmanifest; y utilidad TypeScript (DynamicTabFavicon) para badges dinámicos con Canvas API."
+      },
+      {
+        "section_id": "sec_technical_and_programmatic_seo",
+        "title": "4. SISTEMA DE POSICIONAMIENTO ORGÁNICO EN GOOGLE (SEO TÉCNICO & P-SEO)",
+        "content_requirements": "Generador TypeScript de Schema.org JSON-LD para Person, ProfilePage, DigitalDocument y CreativeWork; Route Handler de integración con IndexNow API; estrategia de Name SEO; y arquitectura de sitemaps particionados."
+      },
+      {
+        "section_id": "sec_ceo_growth_playbook",
+        "title": "5. PLAYBOOK ESTRATÉGICO PARA EL CEO: CRECIMIENTO PRODUCT-LED & UNIT ECONOMICS",
+        "content_requirements": "Modelo matemático de bucle viral (K-factor); estrategia de conversión Free Trial a Planes Semestrales; hoja de ruta B2B 'INDI for Teams'; estrategia de Afiliados al 25%; y tablero de métricas North Star."
+      },
+      {
+        "section_id": "sec_smart_cv_and_presentation_sharing",
+        "title": "6. EXPERIENCIA INTEGRADA DE CV ATS & PRESENTACIONES ORBITALES",
+        "content_requirements": "Arquitectura de coexistencia ATS Vectorial A4 + Web interactivo; reproductor táctil de presentaciones 16:9; y protocolo de enlaces con contraseña o expiración."
+      },
+      {
+        "section_id": "sec_implementation_roadmap",
+        "title": "7. ROADMAP TÉCNICO DE IMPLEMENTACIÓN EN 4 FASES (SPRINTS DE INGENIERÍA)",
+        "content_requirements": "Matriz de impacto vs esfuerzo, dependencias de código FSD en INDI, contratos Zod propuestos y plan de ejecución inmediato."
+      }
+    ]
+  },
+  "quality_and_validation_criteria": [
+    "Todas las recomendaciones deben acatar estrictamente la arquitectura Feature-Sliced Design (FSD) y los estándares de AGENTS.md y BLUEPRINT_2026.md de INDI.",
+    "Cero uso de librerías obsoletas o pesadas que comprometan el Free-Tier Serverless de Vercel y Turso.",
+    "Código TypeScript estricto compatible con Next.js 16 App Router y React 19 (Server Components y Server Actions).",
+    "Estilos con Tailwind CSS v4, espacio de color OKLCH y cumplimiento de accesibilidad WCAG 2.2 Nivel AA/AAA con APCA.",
+    "Todo cálculo de márgenes, touch targets y espaciados debe regirse por la retícula matemática Base 8 (>= 44px de área táctil).",
+    "Política Zero-Binary Persistence en Turso SQLite garantizada (los assets visuales se generan dinámicamente o se sirven desde CDN/R2)."
+  ]
+}

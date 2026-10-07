@@ -1601,3 +1601,40 @@ Durante la auditoría técnica profunda del panel de administración (`/admin`) 
 5. **Gobernanza de Metadatos y No-Index**:
    - Declaración de metadatos de Next.js en `src/app/admin/page.tsx` con directiva `robots: { index: false, follow: false }` para proteger la privacidad administrativa ante motores de búsqueda.
 
+---
+
+## 33. Gobernanza de Investigación Profunda con Gemini (Deep Research JSON Spec 2026): Estilo Visual de Compartir, Favicon de Clase Mundial, SEO Programático & Estrategia CEO
+
+### 33.1 Especificación Canónica en Formato JSON
+Para guiar la evolución visual, técnica y comercial de la plataforma mediante modelos de razonamiento de frontera (**Gemini 2.5 Pro / Gemini Advanced Deep Research**), se consolidó la especificación formal en formato JSON:
+- **Ruta Canónica**: [`docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.json`](../specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.json)
+- **Guía de Acompañamiento en Markdown**: [`docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.md`](../specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.md)
+- **Suite de Pruebas Unitarias**: [`tests/unit/deep-research-prompt-json.test.ts`](../../tests/unit/deep-research-prompt-json.test.ts)
+
+### 33.2 Los 5 Ejes Estratégicos de Investigación
+1. **Eje 1: Estilo Visual & Previews Virales al Compartir (Social Graph)**:
+   - Generación perimetral dinámica de Open Graph en `<100ms` con `@vercel/og` (Satori + Resvg).
+   - Zona segura dual (composición 1200x630 px con área protegida 630x630 px para miniaturas cuadradas en chats móviles de WhatsApp y Telegram).
+   - Headers HTTP de caché (`s-maxage`, `stale-while-revalidate`) para forzar revalidación eficiente ante actualizaciones de perfil.
+   - Micro-interacciones ergonómicas de compartir (Web Share API nativa, Vibration API y pre-redacción contextual con fórmulas AIDA / Hook-Story-Offer).
+2. **Eje 2: Favicon de Clase Mundial & Assets de Aplicación (Iconografía Web 2026)**:
+   - Favicon SVG vectorial con `@media (prefers-color-scheme: dark/light)` embebido para visibilidad perfecta en pestañas oscuras y claras.
+   - Matriz completa de assets: `favicon.ico` multi-resolución (16x16, 32x32, 48x48), `apple-touch-icon.png` (180x180), y PWA icons (192x192, 512x512) con propósito `maskable any`.
+   - Principios de simplificación geométrica ("Optical Sizing") para evitar empastado de píxeles a 16x16 px.
+   - Favicons dinámicos y reactivos mediante HTML5 Canvas API para alertas de visitas en tiempo real y micro-notificaciones en la pestaña del navegador.
+3. **Eje 3: Posicionamiento Orgánico en Google, SEO Técnico & Programático Avanzado**:
+   - Inyección de datos estructurados tipados en JSON-LD (`Schema.org`): `ProfilePage`, `Person`, `DigitalDocument`, `CreativeWork`, `BreadcrumbList` y `WebSite`.
+   - Protocolo IndexNow perimetral para indexación instantánea (<100ms) de nuevas tarjetas, CVs y presentaciones.
+   - Programmatic SEO (P-SEO): arquitectura jerárquica de landing pages por profesión y región sin penalizaciones de contenido duplicado.
+   - Core Web Vitals al extremo (LCP < 0.8s, INP < 50ms, CLS = 0) combinando ISR 60s y telemetría desacoplada con `trackResourceView`.
+4. **Eje 4: Estrategia CEO Avanzada & Motor de Crecimiento C-Level (Product-Led Growth)**:
+   - Modelado matemático del bucle viral de producto (K-factor > 1.2) impulsado por cada recurso compartido con micro-atribución de marca ("Identidad Verificada con INDI").
+   - Optimización de conversión de planes semestrales ("El Semestre Irresistible") frente a la mensualidad tras los 3 días de Free Trial.
+   - Estrategia de retención y 'Sticky Identity' donde el costo de desactivar una tarjeta física impresa es prohibitivo.
+   - Expansión B2B ("INDI for Teams") para firmas legales, clínicas, inmobiliarias y startups.
+   - Tablero de métricas North Star ejecutivas: CAC, LTV, LTV/CAC > 3.5x, Payback < 2 meses, NRR.
+5. **Eje 5: Experiencia de Compartir Curricular & Presentaciones (Smart CV & Orbital Presentations)**:
+   - Dicotomía ATS Vectorial A4 corporativo (texto seleccionable, sanitización de viñetas, guardrail anti-huérfanos) vs Visor Web Vivo interactivo (`/cv/[slug]`).
+   - Modo 'Pitch Interactivo' en presentaciones 16:9 con control táctil, wake-lock y analíticas de lectura por diapositiva.
+   - Opciones de privacidad contextual (enlaces con PIN/contraseña, modo confidencial y enlaces con caducidad programada).
+

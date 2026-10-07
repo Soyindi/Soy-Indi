@@ -222,6 +222,13 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Filtros Ergonómicos y Píldoras de Segmentación**: La pestaña de auditoría provee píldoras interactivas con conteos reactivos (`Todos`, `Pro Activo`, `Trial`) y touch targets $\ge 36\text{px}$ para segmentación instantánea sin recarga de página.
    - **Protección No-Index de Rutas Administrativas**: Toda ruta de administración debe declarar metadatos `robots: { index: false, follow: false }` para preservar la confidencialidad operativa de la plataforma.
 
+18. **Gobernanza de Compartición Visual, Favicons de Clase Mundial, Schema.org SEO & Playbook CEO 2026:**
+   - **Especificación Canónica JSON para Deep Research**: Toda investigación estratégica sobre diseño visual, favicons, SEO y monetización se formaliza en [`docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.json`](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.json).
+   - **Previsualizaciones Open Graph Perimetrales (`/api/og`)**: Generación con `@vercel/og` y Satori respetando la zona segura 1:1 (630x630 px) para listas de chat de WhatsApp/Telegram y relación 1200x630 px para LinkedIn/X, con avatares nítidos, badges de especialidad y contraste WCAG 2.2 AA.
+   - **Favicon Multi-Formato & Optical Sizing**: El isotipo oficial debe servirse en SVG vectorial con `@media (prefers-color-scheme: dark/light)`, acompañado de `favicon.ico` multi-resolución, `apple-touch-icon.png` (180x180 px) y PWA manifest con propósito `maskable any`.
+   - **Datos Estructurados JSON-LD & Protocolo IndexNow**: Inyección tipada de `Schema.org` (`ProfilePage`, `Person`, `DigitalDocument`, `BreadcrumbList`) en páginas públicas y notificación perimetral en tiempo real mediante IndexNow para indexación instantánea en motores de búsqueda.
+   - **Product-Led Growth (PLG) & Coeficiente Viral**: Todo recurso compartido debe incorporar micro-atribución de marca de alta conversión y cookies First-Party (`indi_ref_code`) para canalizar registros con K-factor > 1.2 sin marcas de agua invasivas.
+
 ---
 
 

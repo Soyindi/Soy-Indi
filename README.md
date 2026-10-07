@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-282_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-288_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -358,7 +358,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
-- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (281 pruebas en 45 suites al 100% PASS).
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (288 pruebas en 46 suites al 100% PASS).
 - `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
 - `npm run db:generate`: Genera archivos de migración SQL basados en el esquema de Drizzle.
 - `npm run db:migrate`: Aplica las migraciones declarativas sobre la base de datos Turso LibSQL (Local o Nube).
@@ -372,6 +372,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 - **Blueprint Maestro de Arquitectura**: [docs/architecture/BLUEPRINT_2026.md](docs/architecture/BLUEPRINT_2026.md)
 - **Protocolo de Orquestación Agéntica**: [AGENTS.md](AGENTS.md)
 - **Protocolo Canónico Prompt-to-Push 2026**: [docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md](docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md)
+- **Prompt Maestro de Deep Research Visual, Favicon, SEO & CEO (JSON Spec)**: [docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.json](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.json) / [Guía Markdown](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.md)
 - **Motor de Afiliados y Crecimiento Serverless**: [docs/specifications/AFFILIATE_NETWORK_ENGINE_2026.md](docs/specifications/AFFILIATE_NETWORK_ENGINE_2026.md)
 - **Motor de Presentaciones Orbitales IA**: [docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md](docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md)
 - **Motor ATS & Smart CV Unificado**: [docs/specifications/SMART_CV_ENGINE.md](docs/specifications/SMART_CV_ENGINE.md)
