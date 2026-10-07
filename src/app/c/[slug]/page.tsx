@@ -89,7 +89,7 @@ export default async function PublicCardPage({ params }: PageProps) {
   // Mock interactivo para visualización instantánea demo
   if (slug === 'demo') {
     return (
-      <div className="relative min-h-screen pb-16 flex flex-col justify-between overflow-hidden">
+      <div className="relative min-h-dvh pb-16 flex flex-col justify-between overflow-x-hidden">
         {/* Cabecera contextual ergonómica */}
         <PublicContextualHeader ownerMode={false} />
 
@@ -156,7 +156,7 @@ export default async function PublicCardPage({ params }: PageProps) {
   };
 
   return (
-    <div className="relative min-h-screen pb-16 flex flex-col justify-between overflow-hidden">
+    <div className="relative min-h-dvh pb-16 flex flex-col justify-between overflow-x-hidden">
       <JsonLd data={cardJsonLd} />
       {/* Cabecera contextual ergonómica */}
       <PublicContextualHeader ownerMode={false} />

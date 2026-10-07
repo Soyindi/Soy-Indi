@@ -74,13 +74,13 @@ export function BrandLogo({
 
   const content = (
     <div className={`inline-flex items-center gap-3 group select-none ${className}`}>
-      {/* Contenedor del Logotipo Cinemático Imponente con Aura Cósmica */}
+      {/* Contenedor del Logotipo Cinemático Orgánico con Aura Cósmica */}
       <div
         className={`relative ${
           useVideo && isCinematic ? currentCinematic.box : currentSquare.box
-        } rounded-xl sm:rounded-2xl overflow-hidden bg-black/80 border border-cyan-500/30 p-0 shadow-lg shadow-cyan-500/20 group-hover:scale-105 group-hover:shadow-cyan-400/40 group-hover:border-cyan-400/60 transition-all duration-300 shrink-0`}
+        } ${variant === 'symbol' || variant === 'svg-symbol' ? 'rounded-full' : 'rounded-2xl'} overflow-hidden bg-black/40 backdrop-blur-md border border-white/10 p-0 shadow-lg shadow-cyan-500/10 group-hover:scale-105 group-hover:shadow-cyan-400/30 group-hover:border-cyan-400/50 transition-all duration-300 shrink-0`}
       >
-        <div className="w-full h-full rounded-[11px] sm:rounded-[15px] flex items-center justify-center relative overflow-hidden bg-black">
+        <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
           {useVideo ? (
             <>
               <video

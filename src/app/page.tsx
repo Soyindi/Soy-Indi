@@ -8,10 +8,9 @@ import { HeroCtaButtons } from '@/features/onboarding/components/HeroCtaButtons'
 import { BottomCtaButton } from '@/features/onboarding/components/BottomCtaButton';
 import { GlobalNavbar } from '@/shared/ui/GlobalNavbar';
 import { BrandLogo } from '@/shared/ui/BrandLogo';
+import { HeroBrandIdentity } from '@/shared/ui/HeroBrandIdentity';
 import { BrandHeroBackdrop } from '@/shared/ui/BrandHeroBackdrop';
-import { BRAND_ASSETS } from '@/entities/brand/schemas';
 import { JsonLd } from '@/shared/ui/JsonLd';
-import Image from 'next/image';
 
 const HOME_STRUCTURED_DATA = [
   {
@@ -118,7 +117,6 @@ const DEMO_CARD = {
 
 export default function HomePage() {
   const { hero, valueProps, products, closing } = LANDING_CONTENT;
-  const stacked = BRAND_ASSETS.stackedHero;
 
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -128,20 +126,11 @@ export default function HomePage() {
       <GlobalNavbar />
 
       <main className="relative z-10 flex-1">
-        {/* 1 · HERO: halo CSS (zero-media) + logo vertical como único protagonista */}
+        {/* 1 · HERO CINEMÁTICO: halo CSS ambiental + identidad fotónica viva sin recuadro */}
         <section className="relative isolate min-h-[calc(100svh-72px)] flex items-center justify-center px-6 py-16 overflow-hidden">
           <BrandHeroBackdrop />
           <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center text-center">
-            <div className="relative w-40 sm:w-48 aspect-[768/640] overflow-hidden mb-8">
-              <Image
-                src={stacked.url}
-                alt={stacked.alt}
-                fill
-                priority
-                sizes="(min-width: 640px) 192px, 160px"
-                className="object-cover mix-blend-screen drop-shadow-[0_0_32px_rgba(34,211,238,0.35)]"
-              />
-            </div>
+            <HeroBrandIdentity />
               <p className="text-xs font-mono font-semibold uppercase tracking-widest text-cyan-300 mb-4">
                 {hero.eyebrow}
               </p>

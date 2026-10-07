@@ -25,12 +25,12 @@ describe('Hero Zero-Media Backdrop (sin splash de logo en móvil ni escritorio)'
     expect(backdrop).toMatch(/pointer-events-none/);
   });
 
-  it('el hero de la home mantiene un único logotipo protagonista', () => {
+  it('el hero de la home mantiene la identidad protagonista viva HeroBrandIdentity sin cajas cuadradas toscas', () => {
     const heroStart = home.indexOf('<BrandHeroBackdrop />');
     const heroEnd = home.indexOf('</section>', heroStart);
     const hero = home.slice(heroStart, heroEnd);
-    expect(hero.match(/<Image\b/g)?.length ?? 0).toBe(1);
-    expect(hero).not.toMatch(/<video\b/);
-    expect(hero).not.toMatch(/<BrandLogo\b/);
+    expect(hero).toContain('<HeroBrandIdentity />');
+    expect(hero).not.toMatch(/aspect-\[768\/640\]/);
+    expect(hero).not.toMatch(/indi-stacked-hero\.webp/);
   });
 });

@@ -1746,3 +1746,29 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Transformación de Björn Ottosson (`oklchToRgb`)**: Mapeo matemático exacto de coordenadas OKLCH ($L, C, H$) a conos LMS y espacio sRGB con corrección gamma estándar.
 - **Verificación Automática de Accesibilidad (`meetsWcagAaContrast`)**: Garantía algorítmica de ratio de contraste $\ge 4.5:1$ en todos los estados interactivos, adaptando botones, badges, enlaces bento y barras de herramientas.
 
+---
+
+## 38. Arquitectura de Precarga Cinemática Inteligente, Erradicación de Recuadros Toscos y Ergonomía Móvil (Fase 5: Estándar Global 2026)
+
+### 38.1 Erradicación Definitiva del "Logo Tosco Cuadrado" & Zero-Box Masking
+- **Diagnóstico de Causa Raíz**: En versiones previas, la sección Hero montaba una imagen rasterizada derivada de un bitmap JPEG con fondo oscuro comprimido (`indi-stacked-hero.webp`) dentro de un contenedor rígido `aspect-[768/640]` con `mix-blend-screen`. Dicho modo de fusión no eliminaba los artefactos de compresión sobre el fondo con gradiente ambiental, proyectando un recuadro oscuro tosco con bordes duros.
+- **Técnica Fotónica Zero-Box Masking**: Sustitución de cajas rígidas por máscaras radiales continuas:
+  ```css
+  -webkit-mask-image: radial-gradient(circle at center, black 60%, transparent 95%);
+  mask-image: radial-gradient(circle at center, black 60%, transparent 95%);
+  ```
+- **Componente HeroBrandIdentity (`src/shared/ui/HeroBrandIdentity.tsx`)**: Presenta el video profesional del logo oficial de INDI (`indi-logo-animated.webm` <56 KB y `.mp4` <67 KB) con reproducción nativa inmediata (`muted`, `playsInline`, `autoPlay`), halo bioluminiscente difuso y fallback instantáneo accesible para `prefers-reduced-motion` mediante SVG vectorial puro sin fondo.
+
+### 38.2 Sistema de Precarga Cinemática Reactiva (`SmartPreloader.tsx` & `loading.tsx`)
+- **Streaming SSR con React Suspense**: Implementación de pantallas de carga dedicadas (`loading.tsx`) en `/c/[slug]`, `/cv/[slug]`, `/p/[slug]` y raíz `/loading.tsx`.
+- **Experiencia de Usuario de Clase Mundial**: En lugar de pantallas blancas, transiciones vacías o splashes del sistema operativo, el usuario visualiza una experiencia de bienvenida cinemática con:
+  - Video del logo animado centrado con máscara radial sin recuadros toscos.
+  - Micro-barra fotónica de progreso con shimmer prismático.
+  - Halos volumétricos ambientales índigo/cian en el lienzo `#080A12`.
+  - Conformidad estricta WCAG 2.2 AA (`role="status"`, `aria-live="polite"`).
+
+### 38.3 Ergonomía de Navegadores Móviles y Sincronización de Viewport
+- **Prevención del Colapso de la Barra del Navegador**: En `/c/[slug]/page.tsx`, se reemplaza `overflow-hidden min-h-screen` por `min-h-dvh overflow-x-hidden`. Esto permite que iOS Safari y Android Chrome gestionen dinámicamente la altura del viewport y el desplazamiento vertical sin ocultar ni trabar la barra de herramientas del navegador.
+- **Gobernanza de Viewport (`src/app/layout.tsx`)**: Declaración explícita de `viewport: Viewport` con `themeColor: '#080A12'` y `colorScheme: 'dark'`, unificando la barra de estado del sistema operativo con el fondo de la plataforma sin parpadeos de contraste.
+- **Geometría Circular Suave en Icono Oficial (`src/app/icon.svg`)**: Reemplazo del elemento `<rect>` cuadrado rígido por una geometría circular orgánica (`<circle cx="32" cy="32" r="30">`) con halo perimetral fotónico, erradicando cajas toscas en accesos directos y pestañas móviles.
+
