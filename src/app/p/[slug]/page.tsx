@@ -40,9 +40,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         images: [
           {
             url: ogImageUrl,
+            secureUrl: ogImageUrl,
             width: 1200,
             height: 630,
             alt: presentation.title,
+            type: 'image/png',
           },
         ],
       },
@@ -74,9 +76,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         images: [
           {
             url: ogImageUrl,
+            secureUrl: ogImageUrl,
             width: 1200,
             height: 630,
             alt: 'Presentación Demo Orbital',
+            type: 'image/png',
           },
         ],
       },

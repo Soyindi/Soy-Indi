@@ -52,9 +52,11 @@ export async function generateMetadata({ params }: PublicCvPageProps): Promise<M
         images: [
           {
             url: ogImageUrl,
+            secureUrl: ogImageUrl,
             width: 1200,
             height: 630,
             alt: `${name} — Smart CV`,
+            type: 'image/png',
           },
         ],
       },

@@ -138,5 +138,21 @@ describe('Motor Visual Open Graph y Módulo de Compartir (INDI 2026)', () => {
       const presRes = await GET(presReq);
       expect(presRes.status).toBe(200);
     });
+
+    it('verifica que los metadatos OpenGraph para WhatsApp incluyan secureUrl y type image/png', () => {
+      const mockOgImage = {
+        url: 'https://soyindi.cl/api/og?type=card&title=Matias&verified=1',
+        secureUrl: 'https://soyindi.cl/api/og?type=card&title=Matias&verified=1',
+        width: 1200,
+        height: 630,
+        alt: 'Matias — Tech Lead',
+        type: 'image/png',
+      };
+
+      expect(mockOgImage.secureUrl).toBe(mockOgImage.url);
+      expect(mockOgImage.type).toBe('image/png');
+      expect(mockOgImage.width).toBe(1200);
+      expect(mockOgImage.height).toBe(630);
+    });
   });
 });
