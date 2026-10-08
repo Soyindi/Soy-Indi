@@ -157,7 +157,7 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 336 tests pasando al 100% en 53 suites)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 341 tests pasando al 100% en 54 suites)
 │   ├── entitlements.test.ts     # Matriz de planes, cuotas de recursos (assertQuotaAvailableAction) y tiempo determinista
 │   ├── advanced-cache-governance.test.ts # Gobernanza de caché web pura, desregistro de Service Workers y anti-PWA
 │   ├── affiliates-and-payouts.test.ts # Módulo 11 RUT, códigos de referido y liquidaciones

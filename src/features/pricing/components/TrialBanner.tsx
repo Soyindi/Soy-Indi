@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { UserEntitlement } from '../actions';
 import { Sparkles, ArrowRight, ShieldCheck, AlertCircle, Clock } from 'lucide-react';
 import { TrialCountdownTimer } from './TrialCountdownTimer';
@@ -11,6 +12,7 @@ interface TrialBannerProps {
 }
 
 export function TrialBanner({ entitlement }: TrialBannerProps) {
+  const router = useRouter();
   // 1. Si tiene suscripción activa
   if (entitlement.status === 'ACTIVE') {
     return (
@@ -73,6 +75,9 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
               <TrialCountdownTimer
                 expiresAt={entitlement.expiresAt}
                 initialTimeRemaining={entitlement.timeRemaining}
+                onExpire={() => {
+                  router.refresh();
+                }}
               />
             </div>
 

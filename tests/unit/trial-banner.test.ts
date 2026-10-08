@@ -38,5 +38,7 @@ describe('TrialBanner Executive Component (WCAG 2.2 AA & Base 8 Grid Standards)'
   it('integra el componente TrialCountdownTimer para renderizar la cuenta regresiva en vivo', () => {
     expect(src).toContain('TrialCountdownTimer');
     expect(src).toContain('expiresAt={entitlement.expiresAt}');
+    expect(src).toContain('onExpire=');
+    expect(src).toContain('router.refresh()');
   });
 });

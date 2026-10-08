@@ -1839,3 +1839,26 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 
 ### 41.4 Gobernanza de Skills Agénticas Especializadas
 - cv-intelligence-orchestrator y presentation-intelligence-engine integrados con cobertura en tests/unit/spatial-document-extraction.test.ts.
+
+---
+
+## 42. Auditoría y Resiliencia del Período de Prueba, Pasarela de Pago & Bloqueo Reactivo (Fase 2026)
+
+### 42.1 Diagnóstico Integral del Motor Temporal de Prueba
+- **Determinismo Matemática vs Percepción Visual**: El tiempo de prueba (`trialEndsAt`) se fija en Turso SQLite con precisión de milisegundos (`INTEGER` Unix timestamp). En vistas estáticas (`/start`), `daysRemaining` aproxima en días enteros (`Math.ceil`), lo que mantiene el valor en 3 días durante las primeras 24 horas.
+- **Transición Reactiva Determinista a Cero (`onExpire` & `router.refresh()`)**:
+  - `TrialCountdownTimer.tsx` ejecuta un pulso cada 1.000 ms. Al detectar `remaining.isExpired` ($0\text{s}$ restantes o `diffMs <= 0`), cancela el intervalo de inmediato, renderiza el badge `"Tiempo agotado"` y dispara el callback `onExpire()`.
+  - `TrialBanner.tsx` suscribe el callback invocando `router.refresh()` del App Router de Next.js, sincronizando el estado de sesión sin requerir recarga manual del navegador.
+
+### 42.2 Cobertura Ubicua del Banner en Vistas de Edición
+- El componente `<TrialBanner />` se integra de forma uniforme en todas las herramientas del SaaS:
+  - Panel General: `src/app/dashboard/page.tsx`
+  - Creador de Tarjetas Digitales: `src/app/cards/new/page.tsx`
+  - Constructor Smart CV: `src/app/cv/page.tsx`
+  - Creador de Presentaciones Orbitales: `src/app/presentations/page.tsx`
+
+### 42.3 Guardrails Server-Side y Protección Anti-Bypass
+- **Bloqueo Innegociable (`assertUserEntitlementAction`)**: Toda Server Action de mutación (`upsertCardAction`, `upsertSmartCvAction`, `upsertPresentationAction`) bloquea atómicamente la escritura si `status === 'EXPIRED'`.
+- **Enforcement Cuantitativo (`assertQuotaAvailableAction`)**: Los usuarios en prueba disfrutan de la cuota Pro (10 tarjetas, 5 CVs, 10 presentaciones) y son bloqueados con mensaje de upgrade si alcanzan el límite.
+- **Auditoría de Pagos Mercado Pago**: Webhook verificado con HMAC-SHA256 (`x-signature`), consulta oficial a la API de Mercado Pago (`paymentClient.get`), y extensión atómica en `db.batch([update(user), insert(paymentsHistory)])`.
+

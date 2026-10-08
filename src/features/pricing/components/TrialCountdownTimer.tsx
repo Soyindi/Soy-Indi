@@ -29,6 +29,14 @@ export function TrialCountdownTimer({
     setHasMounted(true);
     if (!expiresAt) return;
 
+    // Sincronizar inmediatamente al montar o si cambia expiresAt
+    const currentRemaining = calculateTimeRemaining(expiresAt);
+    setTimeLeft(currentRemaining);
+    if (currentRemaining.isExpired && onExpire) {
+      onExpire();
+      return;
+    }
+
     const interval = setInterval(() => {
       const remaining = calculateTimeRemaining(expiresAt);
       setTimeLeft(remaining);
