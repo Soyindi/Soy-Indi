@@ -1776,7 +1776,7 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Geometría Circular Suave en Icono Oficial (`src/app/icon.svg`)**: Reemplazo del elemento `<rect>` cuadrado rígido por una geometría circular orgánica (`<circle cx="32" cy="32" r="30">`) con halo perimetral fotónico, erradicando cajas toscas en accesos directos y pestañas móviles.
 
 ### 38.4 Invalidación de Caché Perimetral & Purga de Accesos Directos Móviles
-- **Cache-Busting Paramétrico en Iconos (`?v=2026.2.1`)**: En `src/app/layout.tsx`, los enlaces de favicons e iconos Apple declaran versiones parametrizadas para forzar la actualización inmediata en proxies y clientes HTTP que conservan copias en caché del favicon cuadrado previo.
+- **Cache-Busting Paramétrico en Iconos (`?v=2026.2.2`)**: En `src/app/layout.tsx`, los enlaces de favicons declaran versiones parametrizadas vinculando `/icon.svg?v=2026.2.2` (Isotipo Alienígena Oficial con soporte bimodal dark/light) para forzar la actualización inmediata en proxies y clientes HTTP que conservan copias en caché del favicon cuadrado previo.
 - **Protocolo de Purga en Dispositivos Móviles (PWA / Web Shortcuts)**: Cuando un acceso directo se guarda en la pantalla de inicio de iOS o Android, el sistema operativo genera un archivo PNG estático interno en memoria flash que persiste de forma desacoplada de la web. Para que el dispositivo renueve su splash screen con el nuevo isotipo orgánico, el usuario debe desinstalar el acceso directo previo y regenerarlo desde la URL actualizada.
 
 ### 38.5 Gobernanza de Caché Web Pura & Erradicación de Splash Screens de SO (Anti-PWA / Pure Web Model 2026)

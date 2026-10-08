@@ -30,6 +30,7 @@ describe('Auditoría de Identidad Visual y SEO JSON-LD (INDI 2026)', () => {
       const content = fs.readFileSync(layoutPath, 'utf-8');
 
       expect(content).toContain('indi-tech-lockup.webp');
+      expect(content).toContain('/icon.svg');
       expect(content).toContain('indi-alien-symbol-sm.webp');
     });
   });

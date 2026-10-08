@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: `/brand/indi-isotipo-transparent.svg?v=${APP_CACHE_VERSION}`, type: 'image/svg+xml' },
+      { url: `/icon.svg?v=${APP_CACHE_VERSION}`, type: 'image/svg+xml' },
       { url: `/brand/indi-alien-symbol-sm.webp?v=${APP_CACHE_VERSION}`, sizes: '32x32', type: 'image/webp' },
     ],
   },

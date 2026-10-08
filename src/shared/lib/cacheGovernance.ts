@@ -5,7 +5,7 @@
  * y rutinas de invalidación client/edge sin requerir intervención manual en móviles.
  */
 
-export const APP_CACHE_VERSION = '2026.2.1';
+export const APP_CACHE_VERSION = '2026.2.2';
 
 export const CACHE_STORAGE_VERSION_KEY = 'indi_cache_v';
 export const CACHE_VERSION_COOKIE_NAME = 'indi_v';
