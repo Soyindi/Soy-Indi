@@ -72,6 +72,14 @@ const HOME_STRUCTURED_DATA = [
           text: 'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay / Mercado Pago.',
         },
       },
+      {
+        '@type': 'Question',
+        name: '¿Cómo funciona el programa de recomendación y afiliados?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Todos los miembros de INDI cuentan con un enlace y código QR de afiliado exclusivo. Ganas el 25% de comisión en pesos chilenos transferido a tu cuenta bancaria cada 15 días.',
+        },
+      },
     ],
   },
 ];
@@ -87,6 +95,7 @@ const FOOTER_LINKS = [
   { href: '/cv', label: 'Currículum' },
   { href: '/presentations', label: 'Presentaciones' },
   { href: '/pricing', label: 'Precios' },
+  { href: '/dashboard?tab=affiliates', label: 'Afiliados (25% CLP)' },
 ];
 
 /**

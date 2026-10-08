@@ -29,8 +29,10 @@ import {
   Edit3,
   Loader2,
   AlertCircle,
-  Share2
+  Share2,
+  QrCode
 } from 'lucide-react';
+import { ReferralQrModal } from './ReferralQrModal';
 
 interface AffiliateDashboardTabProps {
   overview: AffiliateOverview;
@@ -61,6 +63,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
   }>({ available: true, message: '', status: 'idle' });
   const [isSavingCode, setIsSavingCode] = useState(false);
   const [codeSuccessMessage, setCodeSuccessMessage] = useState<string | null>(null);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://soyindi.cl');
   const directSignupUrl = `${baseUrl}/login?mode=signup&ref=${currentCode}`;
@@ -215,6 +218,16 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               type="button"
+              onClick={() => setIsQrModalOpen(true)}
+              className="min-h-[44px] px-3.5 py-2.5 rounded-xl glass-pill text-emerald-300 hover:text-white hover:bg-emerald-500/20 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border border-emerald-500/30"
+              title="Generar y descargar código QR de afiliado"
+            >
+              <QrCode className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Código QR</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => {
                 setIsEditingCode(!isEditingCode);
                 setCodeCandidate(currentCode);
@@ -250,6 +263,14 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
             </button>
           </div>
         </div>
+
+        {/* Modal de Código QR de Afiliado */}
+        <ReferralQrModal
+          isOpen={isQrModalOpen}
+          onClose={() => setIsQrModalOpen(false)}
+          referralCode={currentCode}
+          directSignupUrl={directSignupUrl}
+        />
 
         {/* Panel Desplegable para Personalizar Código */}
         {isEditingCode && (

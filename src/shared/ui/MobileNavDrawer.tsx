@@ -88,6 +88,12 @@ export function MobileNavDrawer() {
       description: 'Diapositivas cinematográficas con asistencia de IA',
       icon: MonitorPlay,
     },
+    {
+      title: 'Programa de Afiliados',
+      href: '/dashboard?tab=affiliates',
+      description: 'Gana 25% de comisión en pesos chilenos y genera tu QR',
+      icon: Sparkles,
+    },
   ];
 
   const navItems = user ? userNavItems : visitorNavItems;

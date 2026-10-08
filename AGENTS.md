@@ -97,6 +97,15 @@ src/
      2. **Micro-Guard Client-Side en `<head>` (`src/app/layout.tsx`)**: Script inline ultra-ligero que desregistra activamente cualquier Service Worker previo (`navigator.serviceWorker.getRegistrations() -> unregister()`) e invalida `window.caches` (CacheStorage API) en el primer render si `localStorage` detecta una versión obsoleta.
      3. **Cabeceras HTTP RFC 9111 Estratificadas en `next.config.ts`**: Rutas dinámicas públicas con `Cache-Control: public, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=300`. Garantiza que el móvil valide frescura antes de reusar caché local mientras el CDN de Vercel sirve en <15ms.
 
+18. **Sistema de Referidos, Generación de Código QR de Afiliado & Omnipresencia:**
+   - Todo usuario dispone de acceso a su Código QR oficial de afiliado (`ReferralQrModal.tsx`) generado con `qrcode.react` (`QRCodeSVG`, `ssr: false`), exportable en PNG 1024x1024 con contraste óptico blanco universal para eventos y presentaciones.
+   - El enlace de registro directo (`/login?mode=signup&ref=CODIGO`) y Onboarding Hub (`/start?ref=CODIGO`) preservan la atribución sticky mediante la cookie `indi_ref_code` (30 días).
+   - El programa de recomendación (25% CLP) se visibiliza de forma omnipresente en:
+     - Navegación autenticada (`GlobalNavbar.tsx` y `MobileNavDrawer.tsx`).
+     - Pie de página oficial de la landing page (`src/app/page.tsx` FOOTER_LINKS).
+     - Preguntas frecuentes y Google Rich Snippets JSON-LD (`FaqAccordion.tsx` y `HOME_STRUCTURED_DATA`).
+     - Pestaña dedicada en el panel unificado (`/dashboard?tab=affiliates`).
+
 ---
 
 ## 🛠️ 6. Catálogo de Recursos Agénticos y Servidores MCP (Tool Orchestration 2026)

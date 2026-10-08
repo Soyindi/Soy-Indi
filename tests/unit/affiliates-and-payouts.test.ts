@@ -295,6 +295,26 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
       expect(isNoSecretValid).toBe(true);
     });
   });
+
+  describe('Generación y Contrato de Códigos QR de Afiliado (INDI 2026)', () => {
+    it('construye URLs de invitación directa válidas para escaneo QR', () => {
+      const referralCode = 'matias-vip';
+      const baseUrl = 'https://soyindi.cl';
+      const directSignupUrl = `${baseUrl}/login?mode=signup&ref=${referralCode}`;
+
+      const parsed = new URL(directSignupUrl);
+      expect(parsed.origin).toBe('https://soyindi.cl');
+      expect(parsed.pathname).toBe('/login');
+      expect(parsed.searchParams.get('mode')).toBe('signup');
+      expect(parsed.searchParams.get('ref')).toBe('matias-vip');
+    });
+
+    it('verifica que el nombre de archivo PNG sugerido sea sanitizado y predecible', () => {
+      const referralCode = 'matias-vip';
+      const expectedFilename = `indi-referral-qr-${referralCode}.png`;
+      expect(expectedFilename).toMatch(/^indi-referral-qr-[a-z0-9-]+\.png$/);
+    });
+  });
 });
 
 

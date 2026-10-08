@@ -1862,3 +1862,23 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Enforcement Cuantitativo (`assertQuotaAvailableAction`)**: Los usuarios en prueba disfrutan de la cuota Pro (10 tarjetas, 5 CVs, 10 presentaciones) y son bloqueados con mensaje de upgrade si alcanzan el límite.
 - **Auditoría de Pagos Mercado Pago**: Webhook verificado con HMAC-SHA256 (`x-signature`), consulta oficial a la API de Mercado Pago (`paymentClient.get`), y extensión atómica en `db.batch([update(user), insert(paymentsHistory)])`.
 
+---
+
+## 43. Sistema de Referidos, Generación de Código QR & Omnipresencia Estratégica (Fase 2026)
+
+### 43.1 Generación y Descarga de Códigos QR de Afiliado (`ReferralQrModal.tsx`)
+- **Generación Vectorial Client-Side Dinámica**: Utiliza `qrcode.react` (`QRCodeSVG`) con importación dinámica (`ssr: false`) para garantizar renderizado libre de hydration mismatch.
+- **Contraste Óptico Universal & Exportación 1024x1024**: Canvas HTML5 que renderiza el código QR sobre una placa blanca protegida con márgenes calculados y firma corporativa (`soyindi.cl • @codigo`), exportando en PNG de alta resolución para afiches, presentaciones y eventos presenciales.
+- **Touch Targets Ergonómicos**: Botones de acción principales con altura $\ge 48\text{px}$, retroalimentación háptica y copiado directo al portapapeles.
+
+### 43.2 Omnipresencia y Claridad Estratégica en la Landing Page & Plataforma
+- **Footer Canónico (`src/app/page.tsx`)**: Integración explícita del enlace a *Afiliados (25% CLP)* (`/dashboard?tab=affiliates`) en la barra de navegación del pie de página.
+- **Preguntas Frecuentes & JSON-LD**: Adición formal del funcionamiento de comisiones ($625/$1.500 CLP), cortes quincenales (días 1 y 15) y soporte para Cuenta RUT en `FaqAccordion.tsx` y en el esquema `FAQPage` de Google Rich Snippets en `HOME_STRUCTURED_DATA`.
+- **Navegación Desktop & Mobile (`GlobalNavbar.tsx`, `MobileNavDrawer.tsx`)**: Exposición directa del enlace a Afiliados para usuarios autenticados, eliminando la fricción de búsqueda dentro del dashboard.
+
+### 43.3 Gobernanza Criptográfica & Anti-Gaming
+- **Idempotencia y Atribución Sticky**: Cookie First-Party `indi_ref_code` (30 días) configurada en `src/middleware.ts` en la respuesta perimetral.
+- **Normalización de Correo Anti-Fraude**: Algoritmo `normalizeEmailForAntiGaming` que neutraliza variantes `+alias` y puntos en dominios Gmail/Googlemail.
+- **Retención Legal SII 15,25% (Ley N° 21.133)**: Cálculo algorítmico del monto bruto para Boletas de Honorarios sobre comisiones quincenales.
+
+

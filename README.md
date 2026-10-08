@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-340_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-343_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -125,6 +125,7 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Códigos Personalizables en Tiempo Real**: Todo usuario recibe un código automático al registrarse y puede personalizarlo en cualquier momento desde su panel por uno memorable (`indi.bio/start?ref=mi-marca`) con validación en vivo y protección de rutas del sistema.
 - **Atribución Automatizada & Sticky con Cookie First-Party**: Atribución transparente en el onboarding mediante parámetros `?ref=CODIGO` y persistencia de cookie de 30 días (`indi_ref_code`), protegiendo de pérdidas si el visitante navega antes de registrarse.
 - **Enlaces Duales de Afiliados (Hub vs Registro Directo)**: El creador puede copiar con 1 clic su enlace al Hub (`soyindi.cl/start?ref=CODIGO`) o directo al formulario de registro (`soyindi.cl/login?mode=signup&ref=CODIGO`).
+- **Generador y Descarga de Código QR de Afiliado (`ReferralQrModal`)**: Modal interactivo accesible que permite a los afiliados generar y descargar instantáneamente su código QR en formato PNG de alta resolución (1024x1024 px con contraste óptico blanco universal) para eventos presenciales, afiches y presentaciones, integrando el enlace directo de alta conversión.
 - **Analíticas de Conversión Pro en Vivo**: Desglose transparente en el panel de afiliados: usuarios en prueba (`TRIAL`), convertidos a Plan Pro (`ACTIVE`), tasa de conversión (%) y saldo acumulado por pagar.
 - **Experiencia de Bienvenida Contextual (`ReferralWelcomeBanner`)**: Detección del referente y despliegue de badge visual de confirmación de acceso VIP en el Onboarding Hub (`/start`) y formulario de registro (`/login`).
 - **Abono Quincenal a Cuentas Chilenas & Retención SII (Ley 21.133)**: Módulo de datos bancarios para transferencia directa a Cuenta RUT, Cuenta Vista, Corriente o Ahorro en los principales bancos de Chile, con validador de RUT algoritmo Módulo 11 y cálculo automático del monto bruto requerido en Boleta de Honorarios considerando la retención legal del 15,25% (2026) ante el SII.

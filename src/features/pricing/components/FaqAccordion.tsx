@@ -44,6 +44,11 @@ const FAQ_ITEMS: FaqItem[] = [
     answer:
       'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay (BancoEstado y todos los bancos chilenos). Para quienes están fuera de Chile, también aceptamos tarjetas internacionales.',
   },
+  {
+    question: '¿Cómo funciona el programa de recomendación y afiliados?',
+    answer:
+      'Todos los miembros de INDI tienen un enlace y código QR de afiliado exclusivo en su panel. Ganas el 25% de comisión en pesos chilenos ($625 o $1.500 CLP por cada suscriptor) abonado directamente a tu Cuenta RUT o banco cada 15 días (días 1 y 15 de cada mes). Además, puedes descargar tu código QR para compartirlo en charlas o eventos.',
+  },
 ];
 
 export function FaqAccordion() {
