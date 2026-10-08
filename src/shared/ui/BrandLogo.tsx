@@ -140,7 +140,13 @@ export function BrandLogo({
 
   if (linkToHome) {
     return (
-      <Link href="/#inicio" title="Ir al inicio de INDI" className="inline-block focus:outline-none">
+      <Link
+        href="/#inicio"
+        rel="powered-by"
+        title="INDI — Tecnología de Identidad Digital y Smart CV en Chile"
+        aria-label="INDI — Plataforma Oficial"
+        className="inline-block focus:outline-none"
+      >
         {content}
       </Link>
     );

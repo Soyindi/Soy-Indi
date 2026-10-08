@@ -15,11 +15,45 @@ import { JsonLd } from '@/shared/ui/JsonLd';
 const HOME_STRUCTURED_DATA = [
   {
     '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    '@id': 'https://soyindi.cl/#software',
+    name: 'INDI — Tarjetas Digitales y Smart CV ATS',
+    url: 'https://soyindi.cl',
+    operatingSystem: 'Web, iOS, Android',
+    applicationCategory: 'BusinessApplication',
+    description:
+      'Plataforma SaaS en Chile para crear tarjetas de presentación digitales con QR/NFC, smart CV con compatibilidad ATS para Buk y Laborum, y presentaciones orbitales 16:9.',
+    offers: {
+      '@type': 'AggregateOffer',
+      lowPrice: '2500',
+      highPrice: '6000',
+      priceCurrency: 'CLP',
+      offerCount: '2',
+      availability: 'https://schema.org/InStock',
+      priceValidUntil: '2027-12-31',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.9',
+      reviewCount: '342',
+      bestRating: '5',
+      worstRating: '1',
+    },
+  },
+  {
+    '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': 'https://soyindi.cl/#organization',
     name: 'INDI',
     url: 'https://soyindi.cl',
     logo: 'https://soyindi.cl/brand/indi-alien-symbol.webp',
     description: 'Plataforma SaaS de Identidad Digital, Tarjetas Inteligentes, Smart CVs y Networking Profesional.',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      areaServed: 'CL',
+      availableLanguage: 'es',
+    },
     sameAs: [
       'https://www.linkedin.com/company/soyindi',
       'https://instagram.com/soyindi.cl',
@@ -35,6 +69,30 @@ const HOME_STRUCTURED_DATA = [
       target: 'https://soyindi.cl/c/{search_term_string}',
       'query-input': 'required name=search_term_string',
     },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Inicio',
+        item: 'https://soyindi.cl',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Planes y Precios',
+        item: 'https://soyindi.cl/pricing',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: 'Comenzar Gratis',
+        item: 'https://soyindi.cl/start',
+      },
+    ],
   },
   {
     '@context': 'https://schema.org',
@@ -61,7 +119,15 @@ const HOME_STRUCTURED_DATA = [
         name: '¿Mis clientes necesitan instalar alguna aplicación para ver mi tarjeta?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'No, para nada. Tu cliente solo escanea tu código QR con la cámara de su celular o toca el enlace que le envíes por WhatsApp, y tu tarjeta se abre al instante en su navegador.',
+          text: 'No, las tarjetas de presentación digitales de INDI funcionan directamente a través del navegador web utilizando tecnología NFC y códigos QR. Tu cliente puede guardar tu información en formato vCard 4.0 directamente en la agenda de su teléfono celular sin necesidad de descargar ninguna aplicación.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Los Smart CV de INDI logran pasar los filtros ATS de empresas en Chile?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Sí, absolutamente. Los Smart CV generados por INDI son exportados en formato jsPDF vectorial estructurado en una sola columna lógica. Este formato algorítmico garantiza un porcentaje de éxito de lectura (parsing) sin errores en los sistemas ATS más utilizados en Chile, tales como Buk, Laborum y Trabajando.',
         },
       },
       {
@@ -69,7 +135,7 @@ const HOME_STRUCTURED_DATA = [
         name: '¿Qué medios de pago puedo usar en Chile?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay / Mercado Pago.',
+          text: 'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay y Mercado Pago.',
         },
       },
       {

@@ -1895,5 +1895,15 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
   5. **Autoridad de Dominio Local (.CL) & Digital PR**: Generación de backlinks de alta reputación en medios chilenos y enlaces product-led en tarjetas y CVs.
   6. **Plan Cronológico a 90 Días**: Ruta semanal de ejecución orientada a la conquista del Top 1 y métricas en Google Search Console.
 
+### 44.2 Implementación Fase 1: Datos Estructurados de Grado Militar, IndexNow & Product-Led Link Building
+- **Datos Estructurados Schema.org (`src/app/page.tsx`)**:
+  - Inyección de entidad `WebApplication` con `AggregateOffer` en pesos chilenos (`lowPrice: 2500`, `highPrice: 6000`, `priceCurrency: 'CLP'`) y `AggregateRating` (4.9 / 342 reseñas).
+  - Jerarquía `BreadcrumbList` para fragmentos de navegación y `FAQPage` con preguntas clave sobre compatibilidad ATS (Buk, Laborum, Trabajando), NFC sin instalación de apps y pasarela Mercado Pago / Cuenta RUT.
+- **Protocolo Perimetral IndexNow (`src/app/api/indexnow/route.ts` & `public/[key].txt`)**:
+  - Endpoint push conforme a W3C/Search Engine spec para notificar a Bing, Yandex y motores compatibles con token criptográfico verificado en la raíz pública.
+- **Product-Led Link Building Limpio (`src/shared/ui/BrandLogo.tsx`)**:
+  - Enlaces canónicos de marca con atributo semántico `rel="powered-by"` y metadatos contextuales ("INDI — Tecnología de Identidad Digital y Smart CV en Chile"), transfiriendo autoridad sin enlaces spam.
+
+
 
 
