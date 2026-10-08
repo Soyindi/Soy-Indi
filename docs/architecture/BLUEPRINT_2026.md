@@ -1881,4 +1881,19 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Normalización de Correo Anti-Fraude**: Algoritmo `normalizeEmailForAntiGaming` que neutraliza variantes `+alias` y puntos en dominios Gmail/Googlemail.
 - **Retención Legal SII 15,25% (Ley N° 21.133)**: Cálculo algorítmico del monto bruto para Boletas de Honorarios sobre comisiones quincenales.
 
+---
+
+## 44. Estrategia Deep Research & Gobernanza SEO Google Chile #1 (Fase 2026)
+
+### 44.1 Especificación Industrial del Prompt de Deep Research
+- Se formaliza la especificación técnica en JSON ([docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.json](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.json)) y su guía operativa en Markdown ([docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.md](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.md)) para su ejecución en **Gemini 2.5 Pro / Advanced (Deep Research)**.
+- Diseñado para responder a los 6 pilares estratégicos de posicionamiento en el mercado chileno:
+  1. **Arqueología de Intención & Matriz de Palabras Clave en Chile**: Clasificación de términos transaccionales e informacionales para Tarjetas Digitales, Smart CV y Presentaciones con foco regional y estacional.
+  2. **SEO Técnico Perimetral & Core Web Vitals**: Optimización en Next.js 16 App Router con latencia sub-milisegundo en nodo SCL, gobernanza HTTP RFC 9111 e integración con IndexNow.
+  3. **SEO Programático**: Creación de clústeres temáticos por profesiones, ciudades e industrias chilenas evitando 'Thin Content' mediante Information Gain.
+  4. **Datos Estructurados Schema.org & GEO/AEO**: Inyección de microdatos tipados con precios en CLP ($2.500/$6.000) y preparación para Google AI Overviews y motores de IA generativa.
+  5. **Autoridad de Dominio Local (.CL) & Digital PR**: Generación de backlinks de alta reputación en medios chilenos y enlaces product-led en tarjetas y CVs.
+  6. **Plan Cronológico a 90 Días**: Ruta semanal de ejecución orientada a la conquista del Top 1 y métricas en Google Search Console.
+
+
 

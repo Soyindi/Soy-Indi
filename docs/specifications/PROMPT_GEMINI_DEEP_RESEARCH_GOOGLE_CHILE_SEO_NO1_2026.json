@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "metadata": {
+    "title": "Prompt Maestro de Deep Research (Gemini 2.5 / Advanced): Estrategia Integral para Posicionar a INDI (#1 en Google Chile)",
+    "version": "1.0.0",
+    "canonical_specification": "docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.json",
+    "platform": "INDI (https://soyindi.cl)",
+    "target_model": "Gemini 2.5 Pro / Gemini 2.5 Flash Thinking / Gemini Advanced Deep Research / Google AI Studio",
+    "prompt_architecture": "6-Pillar Industrial SEO Deep Research Specification",
+    "author": "Tech Lead & Staff Software Engineer (INDI Platform)",
+    "created_at": "2026-10-08",
+    "runtime_stack": {
+      "framework": "Next.js 16 App Router + React 19 (Server Components, Partial Prerendering, Edge)",
+      "styling": "Tailwind CSS v4 en OKLCH + Base 8 Grid + WCAG 2.2 AA",
+      "persistence": "Turso (LibSQL Serverless SQLite) + Drizzle ORM",
+      "canonical_domain": "https://soyindi.cl",
+      "market_scope": "Chile (.cl) y Cono Sur Latinoamericano"
+    }
+  },
+  "execution_directives": {
+    "role": "Principal SEO Architect, Staff Search Engineer & VP of Organic Growth (Ex-Google Search Ranking Team, Vercel SEO & LatAm SaaS Growth Lead)",
+    "objective": "Realizar una investigación de máxima profundidad analítica y técnica (Deep Research Industrial) para diseñar la hoja de ruta definitiva que posicione a https://soyindi.cl como el resultado #1 indiscutible en Google Chile (google.cl) para todos sus pilares de servicio: (1) Tarjetas de presentación digitales inteligentes con QR y NFC, (2) Smart CVs optimizados para ATS y reclutadores en Chile, (3) Presentaciones ejecutivas orbitales interactivas 16:9, y (4) Plataforma de identidad profesional y networking corporativo.",
+    "depth_level": "Máximo rigor técnico, algorítmico y de mercado chileno. Cero consejos genéricos de agencia básica. Exigencia de estrategias comprobadas contra los últimos algoritmos de Google (Core Updates 2025-2026, Helpful Content System, Information Gain, EEAT, SGE/Google AI Overviews y RankBrain local en Chile).",
+    "temperature": 0.25,
+    "top_p": 0.95,
+    "response_language": "Español técnico de alto nivel con terminología estándar de la industria SEO y desarrollo web moderno"
+  },
+  "research_pillars": [
+    {
+      "pillar_id": "pillar_1_chile_market_intent_and_keyword_matrix",
+      "title": "EJE 1: Arqueología de Intención de Búsqueda y Matriz de Palabras Clave en Google Chile (google.cl)",
+      "scope": [
+        "Mapeo exhaustivo de volúmenes, estacionalidad y dificultad en Chile para clusters transaccionales, informacionales e investigativos:",
+        "Cluster 1: Tarjetas digitales ('tarjetas de presentacion digitales chile', 'tarjeta digital con qr', 'tarjeta nfc santiago', 'tarjeta de visita digital emprendedores', 'tarjetas virtuales profesionales').",
+        "Cluster 2: Smart CV ('crear curriculum vitae chile', 'formato cv chile 2026', 'plantillas cv ats chile', 'curriculum vitae formato chileno word/pdf', 'cv profesional minvu/empresas').",
+        "Cluster 3: Presentaciones interactivas ('crear presentaciones ejecutivas chile', 'software presentaciones pitch deck', 'alternativas a powerpoint para startups').",
+        "Análisis de SERP Features dominantes en Google Chile: Local Packs, People Also Ask (PAA), Google AI Overviews y fragmentos enriquecidos.",
+        "Desglose de competidores locales actuales en Chile y competidores internacionales rankeando en .cl, identificando sus brechas de contenido y debilidades técnicas."
+      ]
+    },
+    {
+      "pillar_id": "pillar_2_nextjs_technical_seo_and_core_web_vitals",
+      "title": "EJE 2: SEO Técnico Perimetral, Edge Rendering y Core Web Vitals (Next.js 16 + React 19)",
+      "scope": [
+        "Estrategia de renderizado: ISR con revalidate=60 vs Static Prerendering (SSG) para páginas de aterrizaje y perfiles públicos (/c/[slug], /cv/[slug], /p/[slug]).",
+        "Optimización milimétrica de Core Web Vitals (LCP < 0.8s, INP < 50ms, CLS = 0) bajo CDN perimetral cercano a Santiago de Chile (SCL Edge).",
+        "Protocolos de rastreo eficiente: Arquitectura de sitemap dinámico paginado (/sitemap.xml), robots.txt perimetral e integración con IndexNow API para indexación en segundos tras cada actualización.",
+        "Gobernanza de cabeceras HTTP RFC 9111, W3C Spec, canonical tags infalibles ante query params y redirecciones Edge 308 permanentes desde dominios legacy."
+      ]
+    },
+    {
+      "pillar_id": "pillar_3_programmatic_seo_and_landing_architecture",
+      "title": "EJE 3: SEO Programático Escalable & Arquitectura de Páginas de Aterrizaje Verticales",
+      "scope": [
+        "Diseño de arquitectura de URLs para SEO programático en Chile por Profesiones (/tarjetas-digitales/[profesion]), por Ciudades/Regiones (/tarjetas-digitales/[ciudad]) y por Industrias (/tarjetas-digitales/[industria]).",
+        "Estrategia anti-contenido duplicado ('thin content' prevention) mediante inyección semántica de atributos dinámicos, casos de uso locales, preguntas frecuentes específicas y testimonios del rubro.",
+        "Generador de hubs de contenido temático (Topic Clusters & Pillar Pages) conectando la home (soyindi.cl) con subpáginas de alto impacto.",
+        "Estructura de enlazado interno (Internal Linking Graph) con PageRank algorítmico distribuido hacia páginas de alta conversión comercial."
+      ]
+    },
+    {
+      "pillar_id": "pillar_4_structured_data_and_ai_overviews",
+      "title": "EJE 4: Datos Estructurados JSON-LD de Grado Militar & Optimización para Motores de IA (AEO / GEO)",
+      "scope": [
+        "Esquemas Schema.org avanzados: SoftwareApplication, WebSite, Organization, Product, Offer con moneda CLP ($2.500 / $6.000), AggregateRating, FAQPage y BreadcrumbList.",
+        "Modelado de entidades para Knowledge Graph de Google: marcaje de fundadores, entidades chilenas reconocibles, relación sameAs con perfiles oficiales y registro de marca.",
+        "Generative Engine Optimization (GEO): Cómo estructurar el contenido de INDI para ser la fuente primaria citada por Google AI Overviews, Gemini, ChatGPT Search y Perplexity cuando usuarios chilenos pregunten 'cuál es la mejor tarjeta digital en Chile'."
+      ]
+    },
+    {
+      "pillar_id": "pillar_5_chilean_backlink_authority_and_digital_pr",
+      "title": "EJE 5: Estrategia de Autoridad de Dominio Local (.CL) y Relaciones Públicas Digitales",
+      "scope": [
+        "Ecosistema de enlaces chilenos (.cl): Estrategia de link building en medios de comunicación nacionales (Emol, La Tercera, DF, Chócale, El Mostrador, BioBioChile), prensa de innovación y portales de emprendimiento (Corfo, Sercotec, Start-Up Chile, Endeavor).",
+        "Estrategia de backlinks orgánicos impulsados por el producto (Product-Led Link Generation): badges y enlaces 'do-follow' contextuales en tarjetas públicas, enlaces ATS en CVs exportados y presentaciones compartidas.",
+        "Alianzas con colegios profesionales de Chile (Colegio Médico, Colegio de Abogados, Colegio de Ingenieros) y universidades locales (UCH, PUC, USACH, UDD, UAI) para adopción masiva.",
+        "Estrategia de Google Business Profile y citaciones locales consistentes (NAP: Name, Address, Phone) en directorios comerciales y tecnológicos chilenos."
+      ]
+    },
+    {
+      "pillar_id": "pillar_6_execution_roadmap_and_kpi_dashboard",
+      "title": "EJE 6: Plan Táctico de Ejecución Cronológica a 90 Días y Tablero de Métricas (Roadmap #1)",
+      "scope": [
+        "Fase 1 (Días 1-15): Cimientos técnicos, corrección de brechas SERP, IndexNow y despliegue de Schema.org JSON-LD unificado.",
+        "Fase 2 (Días 16-45): Despliegue de los primeros 50 clusters de SEO programático y páginas pilares de servicio en Chile.",
+        "Fase 3 (Días 46-75): Campaña de Digital PR nacional, distribución de insignias de networking y activación de autoridad .cl.",
+        "Fase 4 (Días 76-90): Auditoría de posiciones, optimización de CTR en Google Search Console y conquista de las primeras 3 posiciones en keywords de alto volumen.",
+        "KPIs de éxito: Clics orgánicos mensuales, impresiones en Google Chile, Share of Voice en búsquedas con intención comercial y conversiones a cuentas activas."
+      ]
+    }
+  ],
+  "expected_deliverables": {
+    "deliverable_1": "Auditoría comparativa y benchmarking de competidores en Google Chile.",
+    "deliverable_2": "Diccionario jerarquizado de más de 60 palabras clave estratégicas para Chile con intención e impacto comercial.",
+    "deliverable_3": "Especificación técnica de rutas Next.js 16 para páginas pilares y SEO programático.",
+    "deliverable_4": "Bloques de código completos de esquemas JSON-LD listos para producción con soporte para moneda CLP.",
+    "deliverable_5": "Playbook de Link Building local en Chile con tácticas éticas (White Hat) de alta conversión.",
+    "deliverable_6": "Cronograma de ejecución sprint por sprint con responsables y métricas de control."
+  }
+}

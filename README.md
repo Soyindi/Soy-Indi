@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-344_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-348_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -158,7 +158,8 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 341 tests pasando al 100% en 54 suites)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 348 tests pasando al 100% en 55 suites)
+│   ├── google-chile-seo-research-prompt.test.ts # Especificación y contratos del prompt Deep Research para Google Chile #1
 │   ├── entitlements.test.ts     # Matriz de planes, cuotas de recursos (assertQuotaAvailableAction) y tiempo determinista
 │   ├── advanced-cache-governance.test.ts # Gobernanza de caché web pura, desregistro de Service Workers y anti-PWA
 │   ├── affiliates-and-payouts.test.ts # Módulo 11 RUT, códigos de referido y liquidaciones
@@ -386,6 +387,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 - **Protocolo de Orquestación Agéntica**: [AGENTS.md](AGENTS.md)
 - **Protocolo Canónico Prompt-to-Push 2026**: [docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md](docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md)
 - **Prompt Maestro de Deep Research Visual, Favicon, SEO & CEO (JSON Spec)**: [docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.json](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.json) / [Guía Markdown](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_VISUAL_SEO_CEO_2026.md)
+- **Prompt Maestro de Deep Research Google Chile #1 SEO (JSON Spec)**: [docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.json](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.json) / [Guía Markdown](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.md)
 - **Motor de Afiliados y Crecimiento Serverless**: [docs/specifications/AFFILIATE_NETWORK_ENGINE_2026.md](docs/specifications/AFFILIATE_NETWORK_ENGINE_2026.md)
 - **Motor de Presentaciones Orbitales IA**: [docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md](docs/specifications/ORBITAL_PRESENTATIONS_ENGINE_2026.md)
 - **Motor ATS & Smart CV Unificado**: [docs/specifications/SMART_CV_ENGINE.md](docs/specifications/SMART_CV_ENGINE.md)

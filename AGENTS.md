@@ -271,6 +271,11 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Topic Density Clustering en Presentaciones**: Sustituir divisiones matemáticas fijas (`paragraphs.length / 5`) por agrupación temática guiada por encabezados y densidad argumental, garantizando que los puntos clave y métricas nunca se corten a la mitad.
    - **Skills Agénticas Especializadas**: El comportamiento de estas suites está gobernado por `.agents/skills/cv-intelligence-orchestrator` y `.agents/skills/presentation-intelligence-engine`. Blindado por `tests/unit/spatial-document-extraction.test.ts`.
 
+21. **Gobernanza de Posicionamiento #1 en Google Chile (google.cl) & Deep Research:**
+   - **Especificación de Deep Research**: Las pautas de investigación y diseño de prompts para posicionamiento en Chile residen en [`docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.json`](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.json) y su guía [`PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.md`](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_GOOGLE_CHILE_SEO_NO1_2026.md).
+   - **Enfoque Multi-Pilar E-E-A-T en Chile**: Toda página de producto y cluster programático debe demostrar experiencia, autoridad y confianza adaptada al mercado chileno (precios en CLP, medios de pago locales, compatibilidad ATS en empresas chilenas, integración vCard 4.0 con prefijo +56).
+   - **Monitoreo de Calidad**: La integridad del prompt y sus contratos está respaldada por la suite unitaria `tests/unit/google-chile-seo-research-prompt.test.ts`.
+
 ---
 
 
