@@ -181,6 +181,26 @@ export function detectDocumentArchetype(text: string, fileName?: string): {
 }
 
 /**
+ * Divide texto en oraciones respetando abreviaciones comunes y números decimales
+ * para no romper proposiciones a la mitad (evitando generar cláusulas huérfanas).
+ */
+export function splitSentencesSafely(text: string): string[] {
+  if (!text) return [];
+
+  // Reemplazar temporalmente puntos de abreviaturas frecuentes para protegerlos del split
+  const protectedText = text
+    .replace(/\b(ejp|ej|pág|pags|dr|dra|sr|sra|prof|art|inc|vs|etc|no|núm)\./gi, '$1§DOT§')
+    .replace(/(\d+)\.(\d+)/g, '$1§DOT§$2');
+
+  // Separar únicamente por signos de puntuación seguidos de espacio o salto de línea
+  const rawParts = protectedText.split(/[.!?](?:\s+|\n+|$)/);
+
+  return rawParts
+    .map((part) => part.replace(/§DOT§/g, '.').trim())
+    .filter((s) => s.length > 5);
+}
+
+/**
  * Sanitiza oraciones asegurando que no inicien con conjunciones o fragmentos subordinados
  * huérfanos (ej. "era mío, sino...", "pero...", "y que..."). Reconstituye una proposición
  * ejecutiva limpia con mayúscula inicial y puntuación consistente.
@@ -196,13 +216,22 @@ export function sanitizeSentenceClause(raw: string): string {
   str = str.replace(/^[,;:\-–—\s]+/, '');
 
   // Detectar inicios anómalos o cláusulas subordinadas/adversativas huérfanas
-  // Ejemplos: "sino que...", "pero...", "aunque...", "era mío, sino...", "fue que..."
+  // Ejemplos: "era mío, sino...", "sino que...", "pero...", "aunque...", "fue que..."
   const orphanPrefixRegex = /^(?:(?:no\s+)?era\s+[^\n,:;]+,\s*sino\s+(?:que\s+)?|sino\s+(?:que\s+)?|pero\s+|aunque\s+|porque\s+|por\s+lo\s+tanto\s*,?\s*|ya\s+que\s+|debido\s+a\s+que\s+|y\s+(?:que\s+)?|o\s+(?:bien\s+)?)/i;
   
   if (orphanPrefixRegex.test(str)) {
     str = str.replace(orphanPrefixRegex, '').trim();
-    // Limpiar comas remanentes al inicio tras remover el prefijo
     str = str.replace(/^[,;:\-–—\s]+/, '');
+  }
+
+  // Si tras remover el prefijo o si originalmente arranca con "del sistema..." o "de la..."
+  // reincorporar un sujeto ejecutivo completo para contextualizar la proposición
+  if (/^del\s+sistema\b/i.test(str)) {
+    str = str.replace(/^del\s+sistema\s*[:,-]?\s*/i, 'El sistema presentó: ');
+  } else if (/^de\s+la\s+organización\b/i.test(str)) {
+    str = str.replace(/^de\s+la\s+organización\s*[:,-]?\s*/i, 'La organización evidenció: ');
+  } else if (/^era\s+(?:un|una|el|la)\b/i.test(str)) {
+    str = str.replace(/^era\s+/i, 'Se identificó que era ');
   }
 
   if (!str) return '';
@@ -211,6 +240,19 @@ export function sanitizeSentenceClause(raw: string): string {
   str = str.charAt(0).toUpperCase() + str.slice(1);
 
   return str;
+}
+
+/**
+ * Trunca texto por límite de palabras completas para no cortar palabras a la mitad.
+ */
+export function truncateByWordBoundary(str: string, maxLength: number = 220): string {
+  if (!str || str.length <= maxLength) return str;
+  const truncated = str.slice(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(' ');
+  if (lastSpace > 40) {
+    return `${truncated.slice(0, lastSpace)}...`;
+  }
+  return `${truncated}...`;
 }
 
 /**
@@ -232,10 +274,9 @@ export function analyzeDocumentContent(
     ? rawParagraphs
     : cleanContent.split(/\n\s*\n/).map((p) => p.trim()).filter((p) => p.length > 20);
 
-  const sentences = cleanContent
-    .split(/[.!?]\s+/)
+  const sentences = splitSentencesSafely(cleanContent)
     .map((s) => s.trim())
-    .filter((s) => s.length > 15 && s.length < 250);
+    .filter((s) => s.length > 15);
 
   // 2. Detección de Métricas Cuantitativas reales en el texto (Monedas, Ratios, Deltas, UF, Clientes)
   const detectedMetrics: Array<{
@@ -388,14 +429,13 @@ export function analyzeDocumentContent(
     const cluster = clustersToProcess[idx];
     const combinedBlock = cluster.paras.join(' ');
 
-    const blockSentences = combinedBlock
-      .split(/[.!?]\s+/)
+    const blockSentences = splitSentencesSafely(combinedBlock)
       .map((s) => sanitizeSentenceClause(s))
-      .filter((s) => s.length > 15 && s.length < 250);
+      .filter((s) => s.length > 15);
 
     const rawFirst = blockSentences[0] || 'Análisis temático del documento';
     const firstSentence = sanitizeSentenceClause(rawFirst);
-    const actionSummary = firstSentence.length > 140 ? `${firstSentence.slice(0, 137)}...` : firstSentence;
+    const actionSummary = truncateByWordBoundary(firstSentence, 200);
 
     const points = blockSentences.slice(1, 4).map((pt) => {
       return sanitizeSentenceClause(pt);

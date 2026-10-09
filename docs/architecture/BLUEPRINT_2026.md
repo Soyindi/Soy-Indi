@@ -1937,13 +1937,16 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Humanización y Cercanía al Cliente**:
   - `SlideAiAssistant.tsx`: Botón de titular optimizado de terminología fría ("Action Title McKinsey") a lenguaje de valor directo ("Titular Estratégico") con bajada pedagógica ("Conclusión clara y directa (<14 palabras)").
   - `InlineAiWriter.tsx`: Opción renombrada de "Google XYZ" a "Logro con Impacto" para facilitar el entendimiento inmediato del usuario no técnico.
-### 45.3 Gobernanza de Presentaciones Cinemáticas: Reconstitución Sintáctica & OSD Flotante Fullscreen
+### 45.3 Gobernanza de Presentaciones Cinemáticas: Reconstitución Sintáctica, Cero Truncamiento & OSD Flotante Fullscreen
 - **Reconstitución Sintáctica de Proposiciones Ejecutivas (`sanitizeSentenceClause`)**:
   - Purgado determinista de fragmentos incompletos o cláusulas subordinadas/adversativas huérfanas (`"era mío, sino..."`, `"sino que..."`, `"pero..."`, `"por lo tanto..."`) en `src/features/orbital-presentations/lib/document-parser.ts` y fallbacks de `actions.ts`.
   - Asegura que tanto titulares como viñetas extraídas comiencen con una oración afirmativa completa con mayúscula inicial y tipografía fluida con clases `break-words`.
+- **Segmentación Oracional Protegida & Cero Cortes Rígidos (`splitSentencesSafely`, `truncateByWordBoundary`)**:
+  - `splitSentencesSafely` protege abreviaturas frecuentes (`ejp.`, `ej.`, `pág.`, `sr.`, `sra.`, `dr.`) y números con decimales (`4.5%`) antes de dividir oraciones, evitando fragmentaciones erróneas que aíslan cláusulas dependientes.
+  - Erradicación de `slice(0, 147)...` arbitrarios en `actions.ts` y `document-parser.ts`. La función `truncateByWordBoundary` asegura que si se requiere limitar longitud, el recorte se realiza en la frontera del último espacio en blanco completo sin mutilar palabras.
 - **Barra OSD Ergonómica en Pantalla Completa & Navegación por Teclado**:
   - `SlideViewer.tsx` despliega un menú flotante inferior de cristal esmerilado en modo fullscreen nativo con botones accesibles (touch targets $\ge 44\text{px}$) para navegación anterior/siguiente, contador `Slide X / Y` y botón de restaurar/salir (`Esc`).
   - Navegación por teclado global (`ArrowRight`, `ArrowLeft`, `Space`) implementada en `SlideViewer.tsx` y `PresentationStudio.tsx` con guardrail que ignora eventos si el foco activo está en un elemento `input`, `textarea` o editable.
 - **Suite de Pruebas**:
-  - `tests/unit/presentation-sentence-sanitizer.test.ts` valida al 100% la reconstitución sintáctica sin mutaciones destructivas de contenido verídico.
+  - `tests/unit/presentation-sentence-sanitizer.test.ts` valida al 100% la reconstitución sintáctica, división de oraciones con abreviaturas y preservación de palabras completas sin mutaciones destructivas.
 

@@ -26,7 +26,12 @@ import {
 } from '@/entities/presentation/heuristics';
 import { PRESENTATION_TEMPLATES, PRESENTATION_THEMES } from '@/entities/presentation/templates';
 import { callNvidiaNimChat } from '@/shared/api/nvidia-nim';
-import { extractTextFromDocument, analyzeDocumentContent, sanitizeSentenceClause } from '@/features/orbital-presentations/lib/document-parser';
+import {
+  extractTextFromDocument,
+  analyzeDocumentContent,
+  sanitizeSentenceClause,
+  truncateByWordBoundary,
+} from '@/features/orbital-presentations/lib/document-parser';
 import {
   validateFileSignature,
   sanitizeExtractedText,
@@ -302,7 +307,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
           };
 
           const rawAction = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-            ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+            ? truncateByWordBoundary(sectionData.actionSummary, 200)
             : (takeaways[0] || docAnalysis.titleSuggestion);
           const firstActionTitle = sanitizeSentenceClause(rawAction);
 
@@ -340,7 +345,11 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             ? sectionData.points.slice(0, 2)
             : [takeaways[1] || takeaways[0] || 'Datos cuantitativos extraídos del documento.'];
 
-          const metricAction = sanitizeSentenceClause(sectionData?.actionSummary || 'Validar el impacto con métricas extraídas directamente del documento');
+          const metricAction = sanitizeSentenceClause(
+            sectionData?.actionSummary
+              ? truncateByWordBoundary(sectionData.actionSummary, 200)
+              : 'Validar el impacto con métricas extraídas directamente del documento'
+          );
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
@@ -374,7 +383,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
           const compAction = sanitizeSentenceClause(
             (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+              ? truncateByWordBoundary(sectionData.actionSummary, 200)
               : (takeaways[1] || 'Contraste entre los puntos analizados')
           );
 
@@ -427,7 +436,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
           const lastAction = sanitizeSentenceClause(
             (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+              ? truncateByWordBoundary(sectionData.actionSummary, 200)
               : (takeaways[takeaways.length - 1] || 'Conclusiones determinantes del documento')
           );
 
@@ -455,7 +464,11 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             })),
           };
 
-          const conceptAction = sanitizeSentenceClause(sectionData?.actionSummary || 'Estructura modular de los conceptos fundamentales');
+          const conceptAction = sanitizeSentenceClause(
+            sectionData?.actionSummary
+              ? truncateByWordBoundary(sectionData.actionSummary, 200)
+              : 'Estructura modular de los conceptos fundamentales'
+          );
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
@@ -478,7 +491,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
           };
 
           const rawSlideAction = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-            ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+            ? truncateByWordBoundary(sectionData.actionSummary, 200)
             : `Profundizar en la dimensión analítica y temática de la sección ${i + 1}`;
           const slideAction = sanitizeSentenceClause(rawSlideAction);
 
@@ -737,9 +750,10 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
       };
 
       const title = section?.heading || (isFirst ? `Visión: ${cleanTopic}` : `Eje Clave 0${i + 1}`);
-      const actionTitle = (section?.actionSummary && section.actionSummary.length > 15)
-        ? (section.actionSummary.length > 150 ? `${section.actionSummary.slice(0, 147)}...` : section.actionSummary)
+      const rawTopicAction = (section?.actionSummary && section.actionSummary.length > 15)
+        ? truncateByWordBoundary(section.actionSummary, 200)
         : (takeaways[i] || `Conclusión estratégica sobre ${cleanTopic}`);
+      const actionTitle = sanitizeSentenceClause(rawTopicAction);
 
       const points = section?.points && section.points.length > 0
         ? section.points
