@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Precios & Membresía | INDI — Plataforma SaaS 2026',
-  description: '3 días de prueba gratis. Luego solo $2.500 CLP al mes o $6.000 cada 6 meses para desbloquear Tarjetas Digitales, Métricas, Smart CV y Presentaciones.',
+  description: '3 días de prueba gratis. Planes desde $2.500 CLP al mes (Starter, Pro y Max) para desbloquear Tarjetas Digitales, Métricas, Smart CV y Presentaciones.',
 };
 
 import { checkUserEntitlementAction } from '@/features/pricing/actions';

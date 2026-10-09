@@ -52,7 +52,7 @@ export function MobileNavDrawer() {
     {
       title: 'Precios',
       href: '#precios',
-      description: '3 días gratis · $2.500/mes o $6.000 por 6 meses',
+      description: '3 días gratis · Planes desde $2.500/mes (Starter, Pro, Max)',
       icon: Tag,
     },
     {

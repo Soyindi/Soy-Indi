@@ -17,7 +17,7 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: '¿Cuánto cuesta el servicio después de los 3 días?',
     answer:
-      'Puedes suscribirte por solo $2.500 CLP al mes para mantener tus tarjetas digitales, métricas, currículum profesional y presentaciones activas. O si prefieres ahorrar un 60%, puedes optar por el plan semestral de $6.000 CLP cada 6 meses (equivalente a $1.000 al mes).',
+      'Dispones de 3 planes adaptados a tu etapa: Starter por $2.500 CLP/mes ($6.000 semestral), Pro (Recomendado) por $4.990 CLP/mes ($15.000 semestral) con analíticas completas y sin límites de visualización, o Max por $8.990 CLP/mes ($29.990 semestral) para volumen ilimitado. En todos los planes semestrales ahorras hasta un 60%.',
   },
   {
     question: '¿Mis clientes necesitan instalar alguna aplicación para ver mi tarjeta?',
@@ -27,7 +27,7 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: '¿Qué pasa cuando se terminen mis 3 días de prueba?',
     answer:
-      'Tu información, tu tarjeta y tus diseños quedan guardados de forma segura en tu cuenta. Para que tu tarjeta siga visible en internet para tus clientes y continúes registrando visitas y clics, solo debes activar tu suscripción mensual de $2.500 CLP o semestral de $6.000 CLP.',
+      'Tu información, tarjetas y currículum quedan resguardados de forma segura en tu cuenta. Para mantener tus enlaces públicos activos y continuar registrando visitas y clics de clientes, puedes activar tu plan Starter desde $2.500 CLP/mes, Pro por $4.990 CLP/mes o Max según tus requerimientos.',
   },
   {
     question: '¿Cómo sé cuántas personas están viendo mi tarjeta o escribiéndome?',
@@ -42,12 +42,12 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: '¿Qué medios de pago puedo usar en Chile?',
     answer:
-      'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay (BancoEstado y todos los bancos chilenos). Para quienes están fuera de Chile, también aceptamos tarjetas internacionales.',
+      'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o crédito mediante Webpay (Flow.cl), transferencia instantánea Cuenta-a-Cuenta con Fintoc, o Mercado Pago. Para pagos fuera de Chile también se aceptan tarjetas internacionales.',
   },
   {
     question: '¿Cómo funciona el programa de recomendación y afiliados?',
     answer:
-      'Todos los miembros de INDI tienen un enlace y código QR de afiliado exclusivo en su panel. Ganas el 25% de comisión en pesos chilenos ($625 o $1.500 CLP por cada suscriptor) abonado directamente a tu Cuenta RUT o banco cada 15 días (días 1 y 15 de cada mes). Además, puedes descargar tu código QR para compartirlo en charlas o eventos.',
+      'Todos los miembros de INDI tienen un enlace y código QR de afiliado exclusivo en su panel. Ganas el 25% de comisión en pesos chilenos sobre cada suscripción cobrada (desde $625 hasta $7.497 CLP según el plan), abonado directamente a tu Cuenta RUT o banco chileno cada 15 días (días 1 y 15 de cada mes).',
   },
 ];
 

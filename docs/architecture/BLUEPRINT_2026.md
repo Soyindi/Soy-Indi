@@ -1401,9 +1401,9 @@ export default async function PublicCardPage({ params }: PageProps) {
 2. **Atribución Automatizada & Disparo en Webhook**:
    - Todo nuevo usuario registrado recibe un código de referido único (`user.create.before` en Better-Auth).
    - Atribución en onboarding vía parámetro `?ref=CODIGO` en `/start` y almacenamiento del vínculo de referido.
-   - En el webhook de Mercado Pago (`/api/webhooks/mercadopago`), al confirmarse un pago como `approved`, se invoca `processAffiliateCommissionOnPayment`, calculando automáticamente el 25% ($625 CLP para mensual y $1.500 CLP para semestral) e insertando la comisión en estado `payable`.
+   - En los procesadores de pago (Flow, Fintoc y Mercado Pago), al confirmarse un pago como `approved` o `success`, se invoca `processAffiliateCommissionOnPayment`, calculando automáticamente el 25% sobre el valor real cobrado (desde $625 CLP mensual / $1.500 semestral hasta $7.498 CLP según el plan) e insertando la comisión en estado `payable`.
 3. **Experiencia del Afiliado en Dashboard (`/dashboard?tab=affiliates`)**:
-   - Pestaña dedicada con copia en 1 clic del enlace oficial de referido (`indi.bio/start?ref=CODIGO`).
+   - Pestaña dedicada con copia en 1 clic del enlace oficial de referido (`soyindi.cl/start?ref=CODIGO`).
    - **Personalización de Código en Tiempo Real:** El usuario puede modificar su código por defecto a uno personalizado y memorable (ej. `mi-marca`, `dev-pro`) mediante `updateReferralCodeAction` y verificación de colisiones en tiempo real (`checkReferralCodeAvailabilityAction`) con debounce y protección de palabras reservadas del sistema (`RESERVED_REFERRAL_CODES`).
    - Métricas en tiempo real: *Referidos Activos*, *Por Cobrar (Próximo Corte Quincenal)*, *Total Pagado* y *Próxima Fecha de Pago* (días 1 y 15).
    - Formulario de datos bancarios para transferencia (bancos chilenos, Cuenta RUT, Cuenta Vista, Corriente) con formateo y validación de RUT.

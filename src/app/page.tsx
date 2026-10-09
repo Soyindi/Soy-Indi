@@ -111,7 +111,7 @@ const HOME_STRUCTURED_DATA = [
         name: '¿Cuánto cuesta el servicio después de los 3 días?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Puedes suscribirte por solo $2.500 CLP al mes para mantener tus tarjetas digitales, métricas, currículum profesional y presentaciones activas. O si prefieres ahorrar un 60%, puedes optar por el plan semestral de $6.000 CLP cada 6 meses (equivalente a $1.000 al mes).',
+          text: 'Dispones de 3 planes: Starter por $2.500 CLP al mes ($6.000 semestral), Pro por $4.990 CLP al mes ($15.000 semestral) y Max por $8.990 CLP al mes ($29.990 semestral). En planes semestrales ahorras hasta un 60%.',
         },
       },
       {
@@ -135,7 +135,7 @@ const HOME_STRUCTURED_DATA = [
         name: '¿Qué medios de pago puedo usar en Chile?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay y Mercado Pago.',
+          text: 'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay (Flow.cl), Fintoc A2A y Mercado Pago.',
         },
       },
       {

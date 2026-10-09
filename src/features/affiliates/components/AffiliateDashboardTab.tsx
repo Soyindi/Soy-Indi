@@ -181,8 +181,8 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
             Programa de Afiliados y Recompensas INDI
           </h2>
           <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-            Comparte tu enlace de recomendación. Cada vez que alguien se suscriba a INDI Pro ($2.500 o $6.000 CLP), 
-            ganas el <strong>25% de comisión en pesos chilenos</strong>. Los pagos se transfieren automáticamente a tu cuenta cada 15 días.
+            Comparte tu enlace de recomendación. Cada vez que alguien se suscriba a cualquier plan de INDI (Starter, Pro o Max), 
+            ganas el <strong>25% de comisión en pesos chilenos</strong> (desde $625 hasta $7.497 CLP por suscripción). Los pagos se transfieren automáticamente a tu cuenta bancaria cada 15 días.
           </p>
         </div>
       </div>

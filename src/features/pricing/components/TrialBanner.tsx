@@ -174,7 +174,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
               className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-bold text-xs sm:text-sm transition-all shadow-md shadow-amber-500/15 hover:shadow-amber-500/25 cursor-pointer w-full md:w-auto active:scale-[0.98]"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Suscríbete por $2.500 / mes</span>
+              <span>Suscríbete desde $2.500 / mes</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -196,14 +196,14 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
             <span>Prueba Concluida</span>
           </span>
           <p className="text-xs sm:text-sm text-zinc-200">
-            <strong className="text-white">Tu período de prueba de 3 días ha finalizado.</strong> Activa tu membresía mensual por $2.500 para mantener tus enlaces públicos y métricas activas.
+            <strong className="text-white">Tu período de prueba de 3 días ha finalizado.</strong> Activa tu membresía desde $2.500/mes para mantener tus enlaces públicos y métricas activas.
           </p>
         </div>
         <Link
           href="/pricing"
           className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm transition-all shadow-md shadow-rose-600/20 cursor-pointer w-full sm:w-auto active:scale-[0.98]"
         >
-          <span>Activar membresía por $2.500 / mes</span>
+          <span>Activar membresía desde $2.500 / mes</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
