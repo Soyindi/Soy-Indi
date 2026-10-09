@@ -115,6 +115,11 @@ src/
    - **Psicología de Aversión a la Pérdida en Cuenta Regresiva (Non-Intrusive Countdown UX)**: El banner de membresía no muestra temporizadores estresantes si el usuario tiene más de 3 días restantes (despliega un badge calmo de confirmación). El temporizador en vivo se activa únicamente en la ventana crítica final ($\le 3$ días o período de prueba de 3 días) o durante el período de gracia.
    - **Invalidación Forzada de Caché de Sesión**: La confirmación de pago (`/checkout/success`) fuerza un refresco de sesión con `authClient.getSession()` e invoca `router.refresh()` para garantizar que la transición a `ACTIVE` sea instantánea tanto en cliente como servidor.
 
+20. **Gobernanza de Presentaciones Cinemáticas: Reconstitución Sintáctica & OSD Flotante Fullscreen:**
+   - **Sanitización de Proposiciones Ejecutivas (`sanitizeSentenceClause`)**: Queda estrictamente prohibido emitir Action Titles o viñetas que arranquen con conjunciones o fragmentos subordinados huérfanos (`"era mío, sino..."`, `"pero..."`, `"sino que..."`, `"por lo tanto..."`). Toda Server Action o extractor heurístico debe filtrar cláusulas rotas y garantizar oraciones afirmativas completas con mayúscula inicial y tipografía fluida con soporte para `break-words`.
+   - **Barra OSD Ergonómica en Pantalla Completa**: Cuando una diapositiva ingresa a fullscreen nativo (`requestFullscreen()`), debe desplegar una barra OSD flotante de cristal esmerilado con botones táctiles accesibles (touch targets $\ge 44\text{px}$) para navegación anterior/siguiente, contador `Slide X / Y` y botón de restaurar/salir (`Esc`).
+   - **Navegación Unificada por Teclado con Guardrail de Input**: La interacción por teclas (`ArrowLeft`, `ArrowRight`, `Space`) debe estar activa en todo momento (estudio y pantalla completa), implementando un guardrail imperativo que verifique que el elemento con foco no sea un `INPUT`, `TEXTAREA` ni elemento con rol `textbox` editable.
+
 ---
 
 ## 🛠️ 6. Catálogo de Recursos Agénticos y Servidores MCP (Tool Orchestration 2026)
