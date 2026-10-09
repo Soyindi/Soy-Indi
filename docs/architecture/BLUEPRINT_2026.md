@@ -1928,3 +1928,15 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
   3. **Smart CV de Alto Impacto (Google XYZ & ATS 2026)**: Estructuracion rigurosa *Logre [X], medido por [Y], haciendo [Z]* con vocabulario adaptado a directivos y validacion algoritmica para parsers globales (Workday, Greenhouse, Lever).
   4. **Metodologia McKinsey SCQA en Presentaciones 16:9**: Transicion narrativa organica (Situacion -> Complicacion -> Pregunta -> Respuesta) con distribucion Bento Grid y notas de orador ejecutivas (~60s) que aportan contexto en lugar de leer las laminas.
   5. **Gobernanza Zod & Fallbacks Heuristicos Locales**: Inferencia fuertemente tipada con degradacion transparente a los motores deterministas locales (cv-text-parser.ts, document-parser.ts).
+
+### 45.2 Plan de Mejoras Avanzado de Inferencia B2B & Coherencia Teoría-Práctica
+- **Sincronización de Prompts en Producción**:
+  - `src/features/ai-smart-cv/lib/multimodal-parser.ts`: `MULTIMODAL_CV_PROMPT` actualizado con identidad de Staff NLP & Executive Recruiter, protocolo estricto zero-hallucinations, patrón Extract or Flag y prohibición de etiquetas obvias.
+  - `src/features/orbital-presentations/actions.ts`: `nimPrompt` y `prompt` en `refineSlideWithAiAction` equipados con la Pirámide de Minto (Action Titles asertivos de 10-14 palabras con verificación "So what?"), notas de orador conversacionales (~45-60s) y prohibición total de meta-etiquetas como "Introducción:", "Conclusión:" o "Análisis:".
+  - `src/features/ai-smart-cv/actions.ts`: `rewriteCvSectionAction` refactorizado para erradicar la inyección de porcentajes falsos fijos (como 35% o 90%) en el modo Google XYZ cuando el input carece de números fácticos, adoptando placeholders de impacto transparentes.
+- **Humanización y Cercanía al Cliente**:
+  - `SlideAiAssistant.tsx`: Botón de titular optimizado de terminología fría ("Action Title McKinsey") a lenguaje de valor directo ("Titular Estratégico") con bajada pedagógica ("Conclusión clara y directa (<14 palabras)").
+  - `InlineAiWriter.tsx`: Opción renombrada de "Google XYZ" a "Logro con Impacto" para facilitar el entendimiento inmediato del usuario no técnico.
+- **Pruebas Automatizadas de Blindaje**:
+  - `tests/unit/ai-grounding-and-executive-subtraction.test.ts` valida al 100% que las sugerencias de la IA no agreguen métricas ficticias y que los Action Titles no porten etiquetas redundantes.
+

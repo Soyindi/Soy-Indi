@@ -83,8 +83,9 @@ export function InlineAiWriter({
                     ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
                     : 'text-zinc-400 hover:text-white'
                 }`}
+                title="Fórmula: Logré [X], medido por [Y], haciendo [Z]"
               >
-                Google XYZ
+                Logro con Impacto
               </button>
             )}
             <button

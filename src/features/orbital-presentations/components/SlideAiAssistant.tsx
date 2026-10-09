@@ -126,7 +126,7 @@ export function SlideAiAssistant({
       {isExpanded && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            {/* 1. Generar Action Title */}
+            {/* 1. Generar Titular Estratégico */}
             <button
               type="button"
               disabled={isPending}
@@ -139,8 +139,8 @@ export function SlideAiAssistant({
             >
               <Lightbulb className="w-3.5 h-3.5 text-cyan-400 mt-0.5 shrink-0" />
               <div>
-                <span className="text-[11px] font-semibold block">Action Title McKinsey</span>
-                <span className="text-[9px] text-zinc-400 block">Titular asertivo &lt;14 palabras</span>
+                <span className="text-[11px] font-semibold block">Titular Estratégico</span>
+                <span className="text-[9px] text-zinc-400 block">Conclusión clara y directa (&lt;14 palabras)</span>
               </div>
             </button>
 

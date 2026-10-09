@@ -598,29 +598,37 @@ export async function generateAiSlidesAction(
 
     // 2. Si hay conexión a NVIDIA NIM, invocar inferencia de frontera para investigación y enriquecimiento profesional del tema escueto
     const nimPrompt = `
-Eres un Principal Executive Presentation Designer y consultor de estrategia empresarial senior.
-El usuario ha proporcionado un tema conciso o escueto: "${cleanTopic}".
+[SYSTEM DIRECTIVE: CORE IDENTITY]
+Operas como Principal Executive Presentation Designer y consultor de estrategia empresarial senior (Ex-McKinsey/Bain).
+El usuario ha proporcionado un tema conciso: "${cleanTopic}".
 
 TU MISIÓN:
-Investiga internamente en tu base de conocimientos profesional sobre este tema y complementa con información rigurosa, hechos contrastables, terminología técnica y marcos conceptuales reconocidos (estándares de la industria, normativas relevantes, métricas plausibles y metodologías de gestión).
+Investiga internamente en tu base de conocimientos profesional sobre este tema y complementa con información rigurosa, hechos contrastables, terminología técnica y marcos conceptuales reconocidos (estándares de la industria, normativas relevantes y metodologías de gestión).
 
-REGLAS DE DISEÑO MCKINSEY (SCQA):
-1. Estructura una presentación ejecutiva de EXACTAMENTE ${slidesCount} diapositivas:
+[REGLAS DE DISEÑO MCKINSEY (SCQA & PIRÁMIDE DE MINTO)]
+1. SUBSTRACCIÓN EJECUTIVA & PROHIBICIÓN TOTAL DE META-ETIQUETAS:
+   - TIENES ESTRICTAMENTE PROHIBIDO usar prefijos o etiquetas como "Introducción:", "Resumen:", "Antecedentes:", "Análisis:", "Conclusión:" o "Próximos pasos:".
+   - La función y jerarquía de cada lámina se comunica a través de su arquetipo visual y su contenido.
+2. PIRÁMIDE DE MINTO & ACTION TITLES (¿Y QUÉ? / SO WHAT?):
+   - El "actionTitle" NUNCA es un rótulo temático pasivo ("Introducción a la plataforma").
+   - DEBE ser una tesis estratégica asertiva de 10 a 15 palabras (oración completa con verbo activo) que sintetice la conclusión clave.
+   - Ejemplo: "La modernización de la plataforma digital reduce la latencia en un 70%, acelerando la conversión comercial".
+3. ESTRUCTURA NARRATIVA ORGÁNICA DE EXACTAMENTE ${slidesCount} DIAPOSITIVAS:
    - Slide 1: Visión Estratégica & Diagnóstico del tema (Situación y Complicación).
-   - Slides intermedias: Pilares clave, requerimientos técnicos/normativos o métricas de impacto de la industria.
-   - Slide final: Hoja de ruta estratégica o próximos pasos concretos.
-2. Cada diapositiva DEBE tener:
-   - "title": Título temático limpio y representativo del tema específico.
-   - "actionTitle": Titular asertivo tipo consultoría (máximo 15 palabras) que sintetice la conclusión o tesis clave.
-   - "subtitle": Bajada explicativa que contextualice el punto.
+   - Slides intermedias: Pilares clave de solución (MECE) o requerimientos técnicos de la industria.
+   - Slide final: Hoja de ruta estratégica o próximos hitos de implementación.
+4. CADA DIAPOSITIVA DEBE TENER:
+   - "title": Título temático limpio y representativo (máximo 4 palabras).
+   - "actionTitle": Titular asertivo tipo consultoría (10 a 15 palabras).
+   - "subtitle": Bajada explicativa contextual.
    - "visualType": uno entre ["concept", "metrics", "comparison", "timeline", "architecture"].
-   - "keyPoints": 2 a 4 puntos argumentales sustanciosos, elocuentes y enriquecidos profesionalmente.
-   - "speakerNotes": Guía de exposición para el orador (~60s).
-   - Opcionalmente "metricsData" (si aplica para ilustrar datos de la industria) o "timelineData" (para el cierre o roadmap).
+   - "keyPoints": 2 a 4 puntos argumentales sustanciosos, elocuentes y enriquecidos profesionalmente, iniciando con conceptos en negrita.
+   - "speakerNotes": Guion conversacional para el orador (~45-60s) con contexto de fondo y directrices escénicas, SIN repetir el texto de la lámina.
+   - Opcionalmente "metricsData" (si aplica para ilustrar datos) o "timelineData" (para hitos).
 
 RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 {
-  "presentationTitle": string (Título completo y profesional derivado del tema),
+  "presentationTitle": string,
   "slides": [
     {
       "id": string,
@@ -789,8 +797,9 @@ export async function refineSlideWithAiAction(
 
     // 1. Construir prompt contextual para el modelo de IA
     const prompt = `
-Eres un Principal Executive Presentation Designer y consultor McKinsey senior.
-Tu tarea es optimizar con rigor y elocuencia profesional la siguiente diapositiva de una presentación ejecutiva.
+[SYSTEM DIRECTIVE: CORE IDENTITY]
+Eres un Principal Executive Presentation Designer y consultor senior (Ex-McKinsey/Bain).
+Tu tarea es optimizar con rigor, elocuencia profesional y sofisticación estratégica la siguiente diapositiva.
 
 CONTEXTO GENERAL:
 - Presentación: "${deckTitle}"
@@ -808,11 +817,19 @@ ${currentPoints.map((p, i) => `  ${i + 1}. ${p}`).join('\n') || '  (Sin puntos)'
 
 ACCIÓN SOLICITADA: "${action}"
 
-REGLAS DE DISEÑO MCKINSEY:
-1. "actionTitle": Titular asertivo tipo consultoría (máximo 14 palabras) que sintetice la conclusión o tesis clave ("So what?"). Ejemplo: "La arquitectura distribuida reduce la latencia en un 70% asegurando disponibilidad continua".
-2. "keyPoints": De 2 a 4 viñetas directas, de alto impacto, que inicien con verbos de acción o conceptos clave en negrita, sin relleno innecesario.
-3. "speakerNotes": Guion conversacional en primera persona de 2-3 oraciones (~45-60s) que le indique al orador exactamente qué enfatizar frente a la audiencia.
-4. "suggestedVisualType": uno entre ["concept", "metrics", "comparison", "timeline", "quote", "architecture"].
+[REGLAS DE DISEÑO MCKINSEY & SUBSTRACCIÓN EJECUTIVA]:
+1. PROHIBICIÓN TOTAL DE ETIQUETAS OBVIAS:
+   - Prohibido terminantemente usar "Introducción:", "Resumen:", "Antecedentes:", "Análisis:", "Conclusión:".
+2. "actionTitle":
+   - NUNCA un rótulo temático pasivo ("Sobre el producto").
+   - Titular asertivo tipo consultoría (10 a 14 palabras) que declare una tesis o conclusión clave pasando el test "So what?".
+   - Ejemplo: "La arquitectura distribuida reduce la latencia en un 70%, asegurando disponibilidad continua".
+3. "keyPoints":
+   - De 2 a 4 viñetas directas de alto impacto, iniciando con conceptos clave en negrita, sin relleno innecesario.
+4. "speakerNotes":
+   - Guion conversacional en primera persona (~45-60s) con directrices escénicas, anticipación de objeciones y anécdotas estratégicas. NO repetir el texto proyectado en la pantalla.
+5. "suggestedVisualType":
+   - Uno entre ["concept", "metrics", "comparison", "timeline", "quote", "architecture"].
 
 RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 {

@@ -586,11 +586,23 @@ export async function rewriteCvSectionAction(params: {
     // Si es una viñeta y pide Google XYZ
     if (type === 'BULLET' && mode === 'XYZ_IMPACT') {
       const clean = text.replace(/^[•\-\*]\s*/, '').trim();
+      const hasMetric = /\b(?:\d+[%kKmM]?|\$\d+|\d+\s?(?:personas|usuarios|pacientes|clientes|meses|días|proyectos))\b/i.test(clean);
+
+      if (hasMetric) {
+        return {
+          success: true,
+          suggestions: [
+            `Orquesté ${clean}, consolidando un impacto medible en los objetivos clave de la organización.`,
+            `Lideré la optimización de ${clean}, asegurando alta disponibilidad y calidad técnica para el rol de ${targetRole}.`,
+          ],
+        };
+      }
+
       return {
         success: true,
         suggestions: [
-          `Optimicé ${clean}, logrando un incremento medible del 35% en eficiencia operativa y reduciendo los tiempos de entrega mediante mejores prácticas de arquitectura.`,
-          `Lideré la implementación de ${clean}, alcanzando una adopción del 90% en el equipo e impactando directamente en los KPIs del proyecto ${targetRole}.`,
+          `Orquesté ${clean}, optimizando los flujos operativos e impulsando las mejores prácticas de la disciplina [añadir impacto o % de mejora si aplica].`,
+          `Lideré la implementación de ${clean}, consolidando la estabilidad del proyecto y alineando entregables con las metas de ${targetRole} [especificar volumen alcanzado].`,
         ],
       };
     }
