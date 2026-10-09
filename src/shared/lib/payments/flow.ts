@@ -90,7 +90,9 @@ export class FlowAdapter implements PaymentProviderAdapter {
         subject: `Suscripción INDI: ${planName}`,
         currency: 'CLP',
         amount: planPrice,
-        email: params.customerEmail || `user_${params.userId.slice(0, 8)}@soyindi.cl`,
+        email: params.customerEmail && params.customerEmail.includes('@') && !params.customerEmail.endsWith('@soyindi.cl')
+          ? params.customerEmail
+          : (params.customerEmail || 'contacto@soyindi.cl'),
         urlConfirmation,
         urlReturn,
         optional: optionalMetadata,

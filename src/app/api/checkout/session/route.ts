@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/shared/api/db';
+import { user } from '@/entities/schema';
+import { eq } from 'drizzle-orm';
 import { createCheckoutPreferenceSchema } from '@/entities/subscription/schemas';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { paymentRegistry } from '@/shared/lib/payments/registry';
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,6 +32,11 @@ export async function POST(req: NextRequest) {
     const { tier, planInterval, provider, affiliateCode } = parsed.data;
     const origin = req.nextUrl.origin || 'http://localhost:3000';
 
+    // Obtener información del usuario autenticado (email y nombre) para Flow y pasarelas
+    const dbUser = await db.query.user.findFirst({
+      where: eq(user.id, userId),
+    });
+
     // 3. Resolver adaptador a través del Registry unificado
     const adapter = paymentRegistry.getAdapter(provider);
     const result = await adapter.createCheckoutSession({
@@ -36,6 +45,8 @@ export async function POST(req: NextRequest) {
       planInterval,
       origin,
       affiliateCode,
+      customerEmail: dbUser?.email,
+      customerName: dbUser?.name,
     });
 
     return NextResponse.json({
