@@ -245,9 +245,14 @@ export function SlideViewer({
                   }`}>
                     {slide.actionTitle}
                   </h2>
-                  <p className="text-xs sm:text-sm text-zinc-400 font-mono mb-2 break-words">
-                    {slide.title}
-                  </p>
+                  {slide.title &&
+                   slide.title.toLowerCase().trim() !== slide.actionTitle.toLowerCase().trim() &&
+                   !slide.actionTitle.toLowerCase().trim().startsWith(slide.title.toLowerCase().trim()) &&
+                   !/^diapositiva\s*\d+$/i.test(slide.title.trim()) && (
+                    <p className="text-xs sm:text-sm text-zinc-400 font-mono mb-2 break-words">
+                      {slide.title}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <h2 className={`font-extrabold tracking-tight text-white mb-2 leading-tight break-words ${

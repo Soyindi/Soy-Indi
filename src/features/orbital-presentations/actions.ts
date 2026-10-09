@@ -31,6 +31,9 @@ import {
   analyzeDocumentContent,
   sanitizeSentenceClause,
   truncateByWordBoundary,
+  synthesizeConciseActionTitle,
+  stripAdministrativePrefix,
+  cleanAdministrativePreamble,
 } from '@/features/orbital-presentations/lib/document-parser';
 import {
   validateFileSignature,
@@ -192,15 +195,16 @@ REGLAS DE ADAPTACIÓN SEMÁNTICA ESTRICTAS:
    - Diapositivas intermedias: Argumentos clave con evidencia cuantificable (MECE).
    - Diapositiva final: Plan de acción y próximos hitos concretos basados en las conclusiones reales.
 3. Cada diapositiva DEBE tener:
-   - "title": Título temático limpio y representativo del tema específico.
-   - "actionTitle": Titular activo asertivo de máximo 15 palabras que sintetiza la conclusión clave de ese punto.
-   - "subtitle": Bajada explicativa basada en el texto.
+   - "title": Título temático limpio y representativo del tema específico (máximo 6 palabras). NUNCA copies rótulos como "Texto 1:", "Programa:", o "Candidato:".
+   - "actionTitle": Titular activo asertivo de MÁXIMO 15 PALABRAS que sintetiza la conclusión estratégica. PROHIBIDO verter párrafos largos, textos de 30+ palabras o rótulos administrativos.
+   - PROHIBICIÓN DE DUPLICACIÓN: "title" y "actionTitle" DEBEN ser diferentes. "actionTitle" es una conclusión asertiva; "title" es el eje temático.
+   - "subtitle": Bajada explicativa basada en el texto (máx 10 palabras).
    - "visualType": uno entre ["concept", "metrics", "comparison", "timeline", "quote", "architecture"].
    - "keyPoints": arreglo de 2 a 4 puntos concisos directamente relacionados con el texto.
    - "speakerNotes": notas privadas para el orador guiando la exposición (~${pacingSecondsPerSlide}s).
    - Solo incluir "metricsData" si hay métricas numéricas verificables en el texto original.
    - Solo incluir "comparisonData" con puntos contrastantes extraídos del texto.
-   - Solo incluir "timelineData" con fases y pasos descritos en el texto.
+   - Solo incluir "timelineData" con fases y pasos descritos en el texto; los "title" de cada hito deben ser frases cortas de 3 a 5 palabras, nunca párrafos.
 
 RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 {
@@ -306,14 +310,19 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             ],
           };
 
-          const rawAction = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-            ? truncateByWordBoundary(sectionData.actionSummary, 200)
-            : (takeaways[0] || docAnalysis.titleSuggestion);
-          const firstActionTitle = sanitizeSentenceClause(rawAction);
+          const firstActionTitle = synthesizeConciseActionTitle(
+            sectionData?.actionSummary || takeaways[0] || docAnalysis.titleSuggestion,
+            'Visión central y fundamentos estratégicos'
+          );
+
+          let firstTitle = stripAdministrativePrefix(sectionData?.heading || docAnalysis.titleSuggestion);
+          if (firstTitle.toLowerCase() === firstActionTitle.toLowerCase() || firstActionTitle.toLowerCase().startsWith(firstTitle.toLowerCase())) {
+            firstTitle = 'Visión & Fundamentos del Documento';
+          }
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: sectionData?.heading || docAnalysis.titleSuggestion,
+            title: firstTitle,
             actionTitle: firstActionTitle,
             subtitle: fileName ? `Fuente: ${fileName}` : `Síntesis ejecutiva del documento`,
             semanticIntent: 'executive_scqa',
@@ -345,10 +354,9 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             ? sectionData.points.slice(0, 2)
             : [takeaways[1] || takeaways[0] || 'Datos cuantitativos extraídos del documento.'];
 
-          const metricAction = sanitizeSentenceClause(
-            sectionData?.actionSummary
-              ? truncateByWordBoundary(sectionData.actionSummary, 200)
-              : 'Validar el impacto con métricas extraídas directamente del documento'
+          const metricAction = synthesizeConciseActionTitle(
+            sectionData?.actionSummary || 'Validar el impacto con métricas extraídas directamente del documento',
+            'Evidencia cuantitativa y validación empírica'
           );
 
           fallbackSlides.push({
@@ -381,15 +389,19 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
           const beforeItems = contrast.length > 0 ? contrast.map((c) => c.problemAspect) : [sectionData?.points[0] || 'Punto de partida del documento'];
           const afterItems = contrast.length > 0 ? contrast.map((c) => c.solutionAspect) : [sectionData?.points[1] || takeaways[1] || 'Propuesta y conclusiones'];
 
-          const compAction = sanitizeSentenceClause(
-            (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-              ? truncateByWordBoundary(sectionData.actionSummary, 200)
-              : (takeaways[1] || 'Contraste entre los puntos analizados')
+          const compAction = synthesizeConciseActionTitle(
+            sectionData?.actionSummary || takeaways[1] || 'Contraste entre los puntos analizados en el documento',
+            'Diferenciación estratégica y resolución de desafíos'
           );
+
+          let compTitle = stripAdministrativePrefix(sectionData?.heading || 'Contraste y Diferenciación');
+          if (compTitle.toLowerCase() === compAction.toLowerCase() || compAction.toLowerCase().startsWith(compTitle.toLowerCase())) {
+            compTitle = 'Contraste Documental y Diferenciación';
+          }
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: sectionData?.heading || 'Contraste y Diferenciación',
+            title: compTitle,
             actionTitle: compAction,
             subtitle: 'Comparativa basada en el texto subido',
             semanticIntent: 'comparison_delta',
@@ -421,28 +433,36 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             : (sectionData?.points && sectionData.points.length > 0 ? sectionData.points : [takeaways[0] || 'Conclusiones finales del documento.']);
 
           const timelineData = sequences.length >= 2
-            ? sequences.map((s) => ({ step: `Paso 0${s.stepIndex}`, title: s.title, description: s.detail }))
+            ? sequences.map((s) => ({
+                step: `Paso 0${s.stepIndex}`,
+                title: synthesizeConciseActionTitle(s.title),
+                description: s.detail,
+              }))
             : (sectionData?.points && sectionData.points.length >= 2
                 ? sectionData.points.slice(0, 3).map((pt, pIdx) => ({
-                    step: `Punto 0${pIdx + 1}`,
-                    title: truncateByWordBoundary(pt, 50),
+                    step: `Hito 0${pIdx + 1}`,
+                    title: synthesizeConciseActionTitle(pt),
                     description: pt,
                   }))
                 : takeaways.slice(0, 3).map((tk, tIdx) => ({
                     step: `Hito 0${tIdx + 1}`,
-                    title: truncateByWordBoundary(tk, 50),
+                    title: synthesizeConciseActionTitle(tk),
                     description: tk,
                   })));
 
-          const lastAction = sanitizeSentenceClause(
-            (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-              ? truncateByWordBoundary(sectionData.actionSummary, 200)
-              : (takeaways[takeaways.length - 1] || 'Conclusiones determinantes del documento')
+          const lastAction = synthesizeConciseActionTitle(
+            sectionData?.actionSummary || takeaways[takeaways.length - 1] || 'Conclusiones determinantes del documento',
+            'Plan de acción y conclusiones estratégicas'
           );
+
+          let lastTitle = stripAdministrativePrefix(sectionData?.heading || 'Conclusiones y Próximos Pasos');
+          if (lastTitle.toLowerCase() === lastAction.toLowerCase() || lastAction.toLowerCase().startsWith(lastTitle.toLowerCase())) {
+            lastTitle = 'Conclusiones y Próximos Pasos';
+          }
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: sectionData?.heading || 'Conclusiones y Próximos Pasos',
+            title: lastTitle,
             actionTitle: lastAction,
             subtitle: `Cierre del análisis (${durationMinutes} min totales)`,
             semanticIntent: 'timeline_roadmap',
@@ -464,10 +484,9 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             })),
           };
 
-          const conceptAction = sanitizeSentenceClause(
-            sectionData?.actionSummary
-              ? truncateByWordBoundary(sectionData.actionSummary, 200)
-              : 'Estructura modular de los conceptos fundamentales'
+          const conceptAction = synthesizeConciseActionTitle(
+            sectionData?.actionSummary || 'Estructura modular de los conceptos fundamentales',
+            'Arquitectura conceptual y pilares técnicos'
           );
 
           fallbackSlides.push({
@@ -490,10 +509,15 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             supportNodes: [{ nodeType: 'qualitative_prose', visualWeightDominance: 4 }],
           };
 
-          const rawSlideAction = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-            ? truncateByWordBoundary(sectionData.actionSummary, 200)
-            : `Profundizar en la dimensión analítica y temática de la sección ${i + 1}`;
-          const slideAction = sanitizeSentenceClause(rawSlideAction);
+          const slideAction = synthesizeConciseActionTitle(
+            sectionData?.actionSummary || `Dimensión analítica y estratégica del módulo ${i + 1}`,
+            `Enfoque analítico del módulo ${i + 1}`
+          );
+
+          let slideTitle = stripAdministrativePrefix(sectionData?.heading || `Eje Temático 0${i + 1}`);
+          if (slideTitle.toLowerCase() === slideAction.toLowerCase() || slideAction.toLowerCase().startsWith(slideTitle.toLowerCase())) {
+            slideTitle = `Eje Temático 0${i + 1}`;
+          }
 
           const slidePoints = sectionData?.points && sectionData.points.length > 0
             ? sectionData.points
@@ -504,7 +528,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
-            title: sectionData?.heading || `Eje Temático 0${i + 1}`,
+            title: slideTitle,
             actionTitle: slideAction,
             subtitle: `Desglose analítico del documento base`,
             semanticIntent: 'executive_scqa',
@@ -548,10 +572,28 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
       const optimalLayout = inferOptimalLayoutStrategy(abstract);
 
+      // Sanitizar títulos y Action Titles procedentes del LLM
+      const actionTitle = s.actionTitle ? synthesizeConciseActionTitle(s.actionTitle) : undefined;
+      let title = stripAdministrativePrefix(s.title || `Diapositiva ${idx + 1}`);
+
+      // Prevenir duplicación idéntica entre title y actionTitle
+      if (actionTitle && (title.toLowerCase() === actionTitle.toLowerCase() || actionTitle.toLowerCase().startsWith(title.toLowerCase()))) {
+        title = `Eje Temático 0${idx + 1}`;
+      }
+
+      // Sanitizar timelineData si existe
+      const timelineData = Array.isArray(s.timelineData) && s.timelineData.length > 0
+        ? s.timelineData.map((step: any, sIdx: number) => ({
+            step: step.step || `Hito 0${sIdx + 1}`,
+            title: synthesizeConciseActionTitle(step.title || `Paso 0${sIdx + 1}`),
+            description: step.description || '',
+          }))
+        : undefined;
+
       return {
         id: s.id || crypto.randomUUID(),
-        title: s.title || `Diapositiva ${idx + 1}`,
-        actionTitle: s.actionTitle,
+        title,
+        actionTitle,
         subtitle: s.subtitle,
         semanticIntent: s.semanticIntent || 'executive_scqa',
         visualType: s.visualType || 'concept',
@@ -564,7 +606,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         estimatedDurationSeconds: pacingSecondsPerSlide,
         metricsData: Array.isArray(s.metricsData) && s.metricsData.length > 0 ? s.metricsData : undefined,
         comparisonData: s.comparisonData && typeof s.comparisonData === 'object' ? s.comparisonData : undefined,
-        timelineData: Array.isArray(s.timelineData) && s.timelineData.length > 0 ? s.timelineData : undefined,
+        timelineData,
       };
     });
 

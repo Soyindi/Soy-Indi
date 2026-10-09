@@ -3,6 +3,9 @@ import {
   sanitizeSentenceClause,
   splitSentencesSafely,
   truncateByWordBoundary,
+  cleanAdministrativePreamble,
+  stripAdministrativePrefix,
+  synthesizeConciseActionTitle,
 } from '@/features/orbital-presentations/lib/document-parser';
 
 describe('Presentation Text Sanitizer & Clause Reconstitution', () => {
@@ -52,8 +55,39 @@ describe('Presentation Text Sanitizer & Clause Reconstitution', () => {
     expect(truncated).not.toContain('distrib...');
   });
 
+  it('purga rótulos de formulario y preámbulos administrativos con cleanAdministrativePreamble', () => {
+    const rawAdmin = 'Texto 1: Expectativas académicas Programa: PPGSP Candidato: Matías Ricardo Riquelme Cárdenas • Nivel: Maestría Lo que más me marcó del trabajo penitenciario fue la falta de oportunidades.';
+    const cleaned = cleanAdministrativePreamble(rawAdmin);
+    expect(cleaned).not.toContain('Texto 1:');
+    expect(cleaned).not.toContain('Candidato:');
+    expect(cleaned).not.toContain('Programa:');
+    expect(cleaned).toContain('Lo que más me marcó del trabajo penitenciario');
+  });
+
+  it('remueve prefijos administrativos simples con stripAdministrativePrefix', () => {
+    const pref = 'Texto 1: Expectativas académicas e intereses';
+    expect(stripAdministrativePrefix(pref)).toBe('Expectativas académicas e intereses');
+
+    const cand = 'Candidato: Juan Pérez • Proyecto de Tesis';
+    expect(stripAdministrativePrefix(cand)).toBe('Proyecto de Tesis');
+  });
+
+  it('sintetiza Action Titles concisos (<15 palabras) con synthesizeConciseActionTitle', () => {
+    const longParagraph = 'Texto 1: Expectativas académicas, intereses y perspectivas de retorno Programa: PPGSP Candidato: Matías Ricardo Riquelme Cárdenas • Nivel: Maestría Lo que más me marcó del trabajo penitenciario, en Concepción, fue ver otra realidad y los prejuicios que muchas veces cargan las personas.';
+    const actionTitle = synthesizeConciseActionTitle(longParagraph);
+    const wordCount = actionTitle.split(/\s+/).length;
+
+    expect(wordCount).toBeLessThanOrEqual(15);
+    expect(actionTitle).not.toContain('Texto 1:');
+    expect(actionTitle).not.toContain('Candidato:');
+    expect(actionTitle.length).toBeGreaterThan(10);
+  });
+
   it('maneja strings vacíos o nulos sin lanzar errores', () => {
     expect(sanitizeSentenceClause('')).toBe('');
     expect(sanitizeSentenceClause('   ')).toBe('');
+    expect(cleanAdministrativePreamble('')).toBe('');
+    expect(stripAdministrativePrefix('')).toBe('');
+    expect(synthesizeConciseActionTitle('')).toBe('Conclusión y síntesis estratégica');
   });
 });

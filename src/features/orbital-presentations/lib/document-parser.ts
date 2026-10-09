@@ -201,13 +201,111 @@ export function splitSentencesSafely(text: string): string[] {
 }
 
 /**
+ * Limpia y purga encabezados administrativos, rótulos de formulario, y preámbulos
+ * comunes en documentos académicos, ensayos, CVs y reportes institucionales
+ * (ej. "Texto 1: Expectativas...", "Programa: Maestría...", "Candidato: Juan Pérez • Nivel:...").
+ */
+export function cleanAdministrativePreamble(raw: string): string {
+  if (!raw) return '';
+  let str = raw.trim();
+
+  // 1. Remover rótulos numéricos de textos o secciones tipo "Texto 1:", "Texto 01:", "Texto A:"
+  str = str.replace(/^(?:texto|doc|documento|archivo|ensayo|secci[óo]n)\s*[0-9a-zA-Z]*\s*[:.\-–—]\s*/i, '');
+
+  // 2. Si el texto contiene metadatos administrativos como Candidato, Programa, Nivel, etc.
+  // Remover secuencialmente cada uno de los campos de metadatos tipo "Clave: Valor"
+  const adminLabels = [
+    'programa', 'candidato', 'postulante', 'autor', 'nombre',
+    'estudiante', 'alumno', 'investigador', 'nivel', 'grado',
+    'carrera', 'facultad', 'instituci[óo]n', 'universidad',
+  ].join('|');
+
+  // Buscar cada par clave: valor acotado a un valor corto (máx 60 caracteres) que termine en
+  // punto, coma, bullet, salto de línea, o la siguiente clave administrativa
+  const adminFieldRegex = new RegExp(
+    `(?:${adminLabels})\\s*:\\s*[^•\\n,;\\-–—\\.]{1,80}?(?=(?:\\s*(?:${adminLabels})\\s*:)|(?:\\s*[•\\-–—]\\s*)|(?:\\s*[,;\\.]\\s*)|(?:\\n+)|(?:\\s+[A-ZÁÉÍÓÚ][a-z0-9áéíóú]+\\s+[a-z0-9áéíóú]+)|$)`,
+    'gi'
+  );
+  str = str.replace(adminFieldRegex, ' ').trim();
+
+  // Limpiar separadores sobrantes tipo bullets o comas
+  str = str.replace(/^(?:[•\-–—,;\s]+)/, '').trim();
+
+  // 3. Remover fragmentos iniciales tipo rótulos temáticos del formulario
+  str = str.replace(
+    /^(?:expectativas\s+acad[ée]micas[^\n•,;\-–—]*|intereses\s+y\s+perspectivas[^\n•,;\-–—]*)(?:\s*[•\-–—]\s*|\s*,\s*|\s*;\s*|\n+|\s+)/i,
+    ''
+  ).trim();
+
+  // Limpiar posibles fragmentos residuales de puntuación al inicio
+  str = str.replace(/^[:;,.•\-–—\s]+/, '').trim();
+
+  return str;
+}
+
+/**
+ * Remueve prefijos administrativos simples de una sola frase o título.
+ */
+export function stripAdministrativePrefix(str: string): string {
+  if (!str) return '';
+  let cleaned = str
+    .replace(/^(?:texto|documento|secci[óo]n)\s*[0-9a-zA-Z]*\s*[:.\-–—]\s*/i, '')
+    .replace(/^(?:candidato|postulante|autor|nombre)\s*:\s*[^•\n,\-–—]+(?:[•\-–—]|\s*,\s*)\s*/i, '')
+    .replace(/^(?:programa|carrera|nivel|grado)\s*:\s*[^•\n,\-–—]+(?:[•\-–—]|\s*,\s*)\s*/i, '')
+    .trim();
+  cleaned = cleaned.replace(/^[:;,.•\-–—\s]+/, '').trim();
+  return cleaned || str;
+}
+
+/**
+ * Sintetiza un Action Title asertivo de estándar McKinsey (< 15 palabras).
+ * Si el texto de entrada es una oración larga o un bloque, extrae la proposición
+ * ejecutiva medular sin truncar palabras a la mitad ni verter párrafos enteros.
+ */
+export function synthesizeConciseActionTitle(raw: string, fallbackTheme?: string): string {
+  if (!raw) return fallbackTheme || 'Conclusión y síntesis estratégica';
+
+  // 1. Limpiar preámbulos y rótulos administrativos
+  let cleaned = cleanAdministrativePreamble(raw);
+  cleaned = sanitizeSentenceClause(cleaned);
+
+  if (!cleaned || cleaned.length < 5) {
+    return fallbackTheme || 'Conclusión y síntesis estratégica';
+  }
+
+  // 2. Si contiene dos puntos (ej. "Enfoque metodológico: aplicación en terreno"),
+  // analizar si la parte derecha o izquierda es un mejor Action Title
+  if (cleaned.includes(':')) {
+    const parts = cleaned.split(':');
+    const afterColon = parts.slice(1).join(':').trim();
+    if (afterColon.length > 15 && afterColon.length < 120) {
+      cleaned = sanitizeSentenceClause(afterColon);
+    }
+  }
+
+  // 3. Regla McKinsey: Máximo 14-15 palabras completas
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  if (words.length <= 14) {
+    // Si la oración ya es concisa y no excede 14 palabras, preservarla pulcra sin puntos suspensivos
+    return cleaned.replace(/[.!?]+$/, '');
+  }
+
+  // Si excede 14 palabras, tomar las primeras 12-14 palabras con sentido completo
+  const conciseClause = words.slice(0, 13).join(' ');
+  // Remover comas o signos finales huérfanos
+  return conciseClause.replace(/[,;:\-–—\s]+$/, '');
+}
+
+/**
  * Sanitiza oraciones asegurando que no inicien con conjunciones o fragmentos subordinados
  * huérfanos (ej. "era mío, sino...", "pero...", "y que..."). Reconstituye una proposición
  * ejecutiva limpia con mayúscula inicial y puntuación consistente.
  */
 export function sanitizeSentenceClause(raw: string): string {
   if (!raw) return '';
-  let str = raw
+  let str = cleanAdministrativePreamble(raw);
+
+  str = str
     .replace(/^#+\s*/, '')
     .replace(/^[-•*–—]\s*/, '')
     .trim();
@@ -321,12 +419,15 @@ export function analyzeDocumentContent(
 
   let titleSuggestion = '';
   if (firstHeadingMatch && firstHeadingMatch[1].trim().length >= 4) {
-    titleSuggestion = firstHeadingMatch[1].trim();
+    titleSuggestion = stripAdministrativePrefix(firstHeadingMatch[1].trim());
   } else if (firstLine && !firstLine.startsWith('-') && !firstLine.startsWith('*')) {
-    titleSuggestion = firstLine.replace(/^#+\s*/, '').trim();
+    titleSuggestion = stripAdministrativePrefix(firstLine.replace(/^#+\s*/, '').trim());
   } else if (fileName) {
     titleSuggestion = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
   }
+
+  // Si titleSuggestion sigue teniendo prefijos o contiene rótulos de formulario, limpiarlo
+  titleSuggestion = cleanAdministrativePreamble(titleSuggestion);
 
   if (!titleSuggestion || titleSuggestion.length < 4) {
     titleSuggestion = detectedArchetype === 'technical_architecture'
@@ -436,7 +537,7 @@ export function analyzeDocumentContent(
 
     const rawFirst = blockSentences[0] || 'Análisis temático del documento';
     const firstSentence = sanitizeSentenceClause(rawFirst);
-    const actionSummary = truncateByWordBoundary(firstSentence, 200);
+    const actionSummary = synthesizeConciseActionTitle(firstSentence);
 
     const points = blockSentences.slice(1, 4).map((pt) => {
       return sanitizeSentenceClause(pt);
@@ -446,16 +547,21 @@ export function analyzeDocumentContent(
       points.push(firstSentence);
     }
 
-    let heading = cluster.heading || '';
+    let heading = cluster.heading ? stripAdministrativePrefix(cluster.heading) : '';
     if (!heading) {
       const headingMatch = combinedBlock.match(/^(?:#+\s*|(?:\d+\.|\w\))\s*|\*\*)([^\n.:]{4,55})/m);
       if (headingMatch && headingMatch[1].trim().length >= 4) {
-        heading = headingMatch[1].replace(/[*_#]/g, '').trim();
+        heading = stripAdministrativePrefix(headingMatch[1].replace(/[*_#]/g, '').trim());
       } else {
         const cleanFirst = firstSentence.replace(/^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+/, '');
-        const words = cleanFirst.split(/\s+/).slice(0, 6).join(' ');
-        heading = words.length > 5 ? words : `Sección 0${idx + 1}`;
+        const words = cleanFirst.split(/\s+/).slice(0, 5).join(' ');
+        heading = words.length > 5 ? words : `Eje Temático 0${idx + 1}`;
       }
+    }
+
+    // Si heading y actionSummary son casi idénticos, diferenciar heading
+    if (heading.toLowerCase() === actionSummary.toLowerCase() || actionSummary.toLowerCase().startsWith(heading.toLowerCase())) {
+      heading = `Eje Temático 0${idx + 1}`;
     }
 
     semanticSections.push({
