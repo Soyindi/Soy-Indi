@@ -39,7 +39,7 @@ import {
   calculateStorageTelemetry,
 } from '@/shared/lib/fileSecurity';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
-import { eq, desc, and, ne } from 'drizzle-orm';
+import { eq, desc, and, ne, or } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -1178,6 +1178,48 @@ export async function deletePresentationAction(presentationId: string, userId?: 
   } catch (err: any) {
     console.error('Error eliminando presentación:', err);
     return { success: false, error: err.message || 'Error eliminando presentación' };
+  }
+}
+
+/**
+ * Obtener una Presentación por su ID o Slug con verificación de propiedad (Multi-Tenant Anti-IDOR)
+ */
+export async function getPresentationByIdAction(presentationIdOrSlug: string, userId?: string) {
+  try {
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
+    }
+    const targetUserId = sessionResult.userId;
+
+    const found = await db.query.presentations.findFirst({
+      where: and(
+        eq(presentations.userId, targetUserId),
+        or(eq(presentations.id, presentationIdOrSlug), eq(presentations.slug, presentationIdOrSlug))
+      ),
+    });
+
+    if (!found) {
+      return { success: false, error: 'Presentación no encontrada o no tienes permisos para acceder.' };
+    }
+
+    const data: PresentationFormValues = {
+      title: found.title,
+      slug: found.slug || '',
+      isPublic: found.isPublic,
+      slidesData: found.slidesData as any,
+      themeSettings: found.themeSettings as any,
+    };
+
+    return {
+      success: true,
+      data,
+      id: found.id,
+      slug: found.slug,
+    };
+  } catch (err: any) {
+    console.error('Error cargando presentación por ID:', err);
+    return { success: false, error: err.message || 'Error cargando presentación' };
   }
 }
 

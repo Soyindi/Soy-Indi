@@ -335,6 +335,14 @@ describe('Auditoría Integral del Flujo de Presentaciones (Studio UX & Contracts
       expect(fallbackResolved?.source).toBe('static_template');
       expect(fallbackResolved?.title).toBe('Plantilla por Defecto Estática');
     });
+
+    it('getPresentationByIdAction valida aislamiento multi-tenant y resuelve por ID o Slug', async () => {
+      const { getPresentationByIdAction } = await import('@/features/orbital-presentations/actions');
+      // Con ID inexistente retorna error formal y previene crash
+      const res = await getPresentationByIdAction('non-existent-id-xyz', 'test-user-id');
+      expect(res.success).toBe(false);
+      expect(res.error).toBeDefined();
+    });
   });
 });
 

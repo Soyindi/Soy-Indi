@@ -1,9 +1,7 @@
 import { PresentationStudio } from '@/features/orbital-presentations/components/PresentationStudio';
+import { getPresentationByIdAction } from '@/features/orbital-presentations/actions';
 import { checkUserEntitlementAction } from '@/features/pricing/actions';
 import { TrialBanner } from '@/features/pricing/components/TrialBanner';
-import { db } from '@/shared/api/db';
-import { presentations } from '@/entities/schema';
-import { eq } from 'drizzle-orm';
 import { PresentationFormValues } from '@/entities/presentation/schemas';
 
 export const dynamic = 'force-dynamic';
@@ -24,23 +22,13 @@ export default async function PresentationsPage({ searchParams }: PresentationsP
   let initialPresentation: PresentationFormValues | undefined;
   let initialPresentationId: string | undefined;
 
-  if (params.slug || params.id) {
+  const targetLookup = params.id || params.slug;
+  if (targetLookup) {
     try {
-      const found = await db.query.presentations.findFirst({
-        where: params.id
-          ? eq(presentations.id, params.id)
-          : eq(presentations.slug, params.slug!),
-      });
-
-      if (found) {
-        initialPresentation = {
-          title: found.title,
-          slug: found.slug || '',
-          isPublic: found.isPublic,
-          slidesData: found.slidesData as any,
-          themeSettings: found.themeSettings as any,
-        };
-        initialPresentationId = found.id;
+      const presResult = await getPresentationByIdAction(targetLookup);
+      if (presResult.success && presResult.data) {
+        initialPresentation = presResult.data;
+        initialPresentationId = presResult.id;
       }
     } catch (err) {
       console.error('Error cargando presentación inicial para el estudio:', err);

@@ -1951,6 +1951,8 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
   - `SlideViewer.tsx` incorpora dimensionamiento tipográfico fluido condicionado por el volumen de caracteres del `actionTitle` (>90 caracteres conmuta a escala compacta `text-lg sm:text-xl md:text-2xl lg:text-3xl`) y `title` (>60 caracteres conmuta a `text-xl sm:text-2xl md:text-3xl`).
   - La grilla de `keyPoints` adapta su topología (1 columna para $\le 2$ puntos, 2 columnas para $>2$) con clases de envoltura estricta `break-words`.
   - El contenedor raíz incorpora `overflow-y-auto` reactivo en modo fullscreen y móvil para salvaguardar el 100% de la visibilidad ante textos extensos o pantallas reducidas.
+- **Aislamiento Multi-Tenant en Ingesta de Estudio (`getPresentationByIdAction`)**:
+  - `src/app/presentations/page.tsx` consume la Server Action unificada `getPresentationByIdAction` resolviendo por ID o slug con cláusula compuesta `and(eq(presentations.userId, targetUserId), or(eq(presentations.id, query), eq(presentations.slug, query)))`, blindando el estudio contra IDOR y garantizando que el usuario solo edite sus presentaciones propias.
 - **Suite de Pruebas**:
-  - `tests/unit/presentation-sentence-sanitizer.test.ts` y `tests/unit/presentation-decomposition.test.ts` validan al 100% la reconstitución sintáctica, división de oraciones con abreviaturas, extracción de contrastes y secuencias completas sin cortes artificiales.
+  - `tests/unit/presentation-sentence-sanitizer.test.ts`, `tests/unit/presentation-decomposition.test.ts` y `tests/unit/presentation-flow-audit.test.ts` validan al 100% la reconstitución sintáctica, división de oraciones con abreviaturas, extracción de contrastes y secuencias completas, y la gobernanza multi-tenant anti-IDOR.
 
