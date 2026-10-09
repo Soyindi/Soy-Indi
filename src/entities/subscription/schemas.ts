@@ -116,7 +116,8 @@ export const tierLimitsSchema = z.object({
 export const userEntitlementSchema = z.object({
   hasAccess: z.boolean(),
   isTrial: z.boolean(),
-  status: z.enum(['TRIAL', 'ACTIVE', 'EXPIRED', 'CANCELLED']),
+  isGracePeriod: z.boolean().default(false),
+  status: z.enum(['TRIAL', 'ACTIVE', 'GRACE_PERIOD', 'EXPIRED', 'CANCELLED']),
   tier: z.enum(['starter', 'pro', 'max']),
   limits: tierLimitsSchema,
   daysRemaining: z.number().int().min(0),

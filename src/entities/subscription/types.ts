@@ -209,7 +209,8 @@ export interface TimeRemainingBreakdown {
 export interface UserEntitlement {
   hasAccess: boolean;
   isTrial: boolean;
-  status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
+  isGracePeriod: boolean;
+  status: 'TRIAL' | 'ACTIVE' | 'GRACE_PERIOD' | 'EXPIRED' | 'CANCELLED';
   tier: PlanTier;
   limits: TierLimits;
   daysRemaining: number;

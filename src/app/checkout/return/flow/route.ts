@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/shared/api/db';
 import { user, paymentsHistory } from '@/entities/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { flowAdapter } from '@/shared/lib/payments/flow';
 
 /**
@@ -47,9 +47,48 @@ export async function POST(req: NextRequest) {
       const amount = Number(paymentStatus.amount) || 2500;
 
       if (targetUserId) {
-        const subscriptionDurationDays = planInterval === 'semiannual' ? 180 : 30;
+        // Consultar usuario actual para cálculo de prorrata de crédito de tiempo
+        const existingUser = await db.query.user.findFirst({
+          where: eq(user.id, targetUserId),
+          columns: {
+            status: true,
+            subscriptionEndsAt: true,
+          },
+        });
+
+        // Consultar último plan para conocer tier previo
+        let currentTier: any = null;
+        let currentInterval: any = null;
+        if (existingUser?.status === 'ACTIVE') {
+          const lastPayment = await db.query.paymentsHistory.findFirst({
+            where: and(eq(paymentsHistory.userId, targetUserId), eq(paymentsHistory.status, 'approved')),
+            orderBy: [desc(paymentsHistory.createdAt)],
+          });
+          if (lastPayment) {
+            currentTier = lastPayment.planTier;
+            currentInterval = lastPayment.planInterval;
+          }
+        }
+
         const now = Date.now();
-        const newSubscriptionEndsAt = new Date(now + subscriptionDurationDays * 24 * 60 * 60 * 1000);
+        let remainingDays = 0;
+        if (existingUser?.subscriptionEndsAt) {
+          const remainingMs = new Date(existingUser.subscriptionEndsAt).getTime() - now;
+          if (remainingMs > 0) {
+            remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
+          }
+        }
+
+        const { calculateUpgradeTimeCredit } = await import('@/entities/subscription/proration');
+        const proration = calculateUpgradeTimeCredit(
+          currentTier,
+          currentInterval,
+          remainingDays,
+          planTier,
+          planInterval
+        );
+
+        const newSubscriptionEndsAt = new Date(now + proration.totalDays * 24 * 60 * 60 * 1000);
         const paymentId = `flow_${paymentStatus.flowOrder || token}`;
 
         // Sincronización atómica inmediata

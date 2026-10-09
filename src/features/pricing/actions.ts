@@ -46,6 +46,7 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
       return {
         hasAccess: true,
         isTrial: true,
+        isGracePeriod: false,
         status: 'TRIAL',
         tier: trialTier,
         limits: PRICING_TIERS[trialTier].limits,
@@ -87,11 +88,32 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
         return {
           hasAccess: true,
           isTrial: false,
+          isGracePeriod: false,
           status: 'ACTIVE',
           tier: resolvedTier,
           limits: PRICING_TIERS[resolvedTier].limits,
           daysRemaining: days,
           expiresAt,
+          timeRemaining,
+        };
+      }
+
+      // Período de gracia (Grace Period: 5 días post-vencimiento para no romper tarjetas públicas)
+      const GRACE_PERIOD_MS = 5 * 24 * 60 * 60 * 1000;
+      if (subscriptionEndsAt && now.getTime() <= subscriptionEndsAt.getTime() + GRACE_PERIOD_MS) {
+        const graceExpiresAt = subscriptionEndsAt.getTime() + GRACE_PERIOD_MS;
+        const timeRemaining = calculateTimeRemaining(graceExpiresAt, now);
+        const graceDaysLeft = Math.max(1, Math.ceil((graceExpiresAt - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+        return {
+          hasAccess: true,
+          isTrial: false,
+          isGracePeriod: true,
+          status: 'GRACE_PERIOD',
+          tier: resolvedTier,
+          limits: PRICING_TIERS[resolvedTier].limits,
+          daysRemaining: graceDaysLeft,
+          expiresAt: graceExpiresAt,
           timeRemaining,
         };
       }
@@ -107,6 +129,7 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
       return {
         hasAccess: true,
         isTrial: true,
+        isGracePeriod: false,
         status: 'TRIAL',
         tier: trialTier,
         limits: PRICING_TIERS[trialTier].limits,
@@ -124,6 +147,7 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
       return {
         hasAccess: true,
         isTrial: true,
+        isGracePeriod: false,
         status: 'TRIAL',
         tier: trialTier,
         limits: PRICING_TIERS[trialTier].limits,
@@ -138,6 +162,7 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
     return {
       hasAccess: false,
       isTrial: false,
+      isGracePeriod: false,
       status: 'EXPIRED',
       tier: resolvedTier,
       limits: PRICING_TIERS[resolvedTier].limits,
@@ -161,6 +186,7 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
     return {
       hasAccess: true,
       isTrial: true,
+      isGracePeriod: false,
       status: 'TRIAL',
       tier: fallbackTier,
       limits: PRICING_TIERS[fallbackTier].limits,

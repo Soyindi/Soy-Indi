@@ -21,9 +21,18 @@ function CheckoutSuccessContent() {
   const tier = PRICING_TIERS[tierKey] || PRICING_TIERS.starter;
   const priceDetail = tier[isSemiannual ? 'semiannual' : 'monthly'];
 
-  // Sincronizar sesión y refrescar router al montar para garantizar que el nuevo status 'ACTIVE' se refleje en caché del cliente
+  // Sincronizar sesión y refrescar router al montar para garantizar que el nuevo status 'ACTIVE' se refleje en Better-Auth y el router de Next.js
   useEffect(() => {
-    router.refresh();
+    async function syncActiveSession() {
+      try {
+        const { authClient } = await import('@/shared/lib/auth-client');
+        await authClient.getSession();
+      } catch {
+        // Silencioso
+      }
+      router.refresh();
+    }
+    syncActiveSession();
   }, [router]);
 
   // Si Flow retornó un estado que no es 2 (aprobado)

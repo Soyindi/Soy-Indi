@@ -107,6 +107,14 @@ src/
      - Preguntas frecuentes y Google Rich Snippets JSON-LD (`FaqAccordion.tsx` y `HOME_STRUCTURED_DATA`).
      - Pestaña dedicada en el panel unificado (`/dashboard?tab=affiliates`).
 
+19. **Motor de Crédito Temporal (Proration Engine), Grace Period & UX de Cuenta Regresiva No Invasiva:**
+   - **Compensación de Tiempo sin Reembolsos (Time Credit Engine)**: Cuando un usuario realiza un upgrade o downgrade con días vigentes en su plan actual, el valor residual no consumido se convierte en días adicionales del nuevo plan mediante la fórmula matemática determinista:
+     $$D_{bonus} = \lfloor D_{rem} \times (P_{old} / P_{new}) \rfloor, \quad D_{total} = D_{nominal\_new} + D_{bonus}$$
+     implementada en `@/entities/subscription/proration` e integrada en los handlers de Flow.cl (`/checkout/return/flow` y `/api/webhooks/flow`).
+   - **State Machine con Período de Gracia (Grace Period: 5 Días)**: Si la suscripción expira (`now > subscriptionEndsAt`), el sistema entra en estado transitorio `'GRACE_PERIOD'` durante 5 días. Los recursos públicos (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`) permanecen 100% operativos para proteger la reputación del usuario con sus clientes, mientras el dashboard alerta la necesidad de renovación sin bloquear la lectura. Pasados los 5 días, entra en `'EXPIRED'` con bloqueo atómico de Server Actions mutativas (`assertUserEntitlementAction`).
+   - **Psicología de Aversión a la Pérdida en Cuenta Regresiva (Non-Intrusive Countdown UX)**: El banner de membresía no muestra temporizadores estresantes si el usuario tiene más de 3 días restantes (despliega un badge calmo de confirmación). El temporizador en vivo se activa únicamente en la ventana crítica final ($\le 3$ días o período de prueba de 3 días) o durante el período de gracia.
+   - **Invalidación Forzada de Caché de Sesión**: La confirmación de pago (`/checkout/success`) fuerza un refresco de sesión con `authClient.getSession()` e invoca `router.refresh()` para garantizar que la transición a `ACTIVE` sea instantánea tanto en cliente como servidor.
+
 ---
 
 ## 🛠️ 6. Catálogo de Recursos Agénticos y Servidores MCP (Tool Orchestration 2026)

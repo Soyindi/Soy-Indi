@@ -15,12 +15,31 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
   const router = useRouter();
   // 1. Si tiene suscripción activa
   if (entitlement.status === 'ACTIVE') {
+    const isUrgentRenewal = entitlement.daysRemaining <= 3;
+
     return (
-      <aside aria-label="Estado de membresía" className="w-full bg-zinc-950/80 backdrop-blur-md border-b border-emerald-500/20 px-4 sm:px-6 py-3 transition-colors">
+      <aside
+        aria-label="Estado de membresía"
+        className={`w-full backdrop-blur-md border-b px-4 sm:px-6 py-3 transition-colors ${
+          isUrgentRenewal
+            ? 'bg-amber-950/30 border-amber-500/30 text-amber-100'
+            : 'bg-zinc-950/80 border-emerald-500/20 text-zinc-300'
+        }`}
+      >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                isUrgentRenewal
+                  ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isUrgentRenewal ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 animate-pulse'
+                }`}
+              />
               <span>
                 {entitlement.tier === 'starter'
                   ? 'INDI Plan Starter Activo'
@@ -29,15 +48,31 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
                   : 'INDI Pro Activo'}
               </span>
             </span>
-            <p className="text-xs text-zinc-300 font-normal">
-              Acceso completo a herramientas profesionales • <span className="text-zinc-400">{entitlement.daysRemaining} días restantes del ciclo</span>
-            </p>
+
+            {isUrgentRenewal ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-amber-200 font-medium">Próxima renovación en:</span>
+                <TrialCountdownTimer
+                  expiresAt={entitlement.expiresAt}
+                  initialTimeRemaining={entitlement.timeRemaining}
+                  onExpire={() => router.refresh()}
+                />
+              </div>
+            ) : (
+              <p className="text-xs text-zinc-300 font-normal">
+                Acceso completo a herramientas profesionales • <span className="text-zinc-400">{entitlement.daysRemaining} días restantes del ciclo</span>
+              </p>
+            )}
           </div>
           <Link
             href="/pricing"
-            className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-all cursor-pointer w-full sm:w-auto"
+            className={`min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium border transition-all cursor-pointer w-full sm:w-auto ${
+              isUrgentRenewal
+                ? 'text-amber-200 hover:text-white bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40'
+                : 'text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30'
+            }`}
           >
-            <span>Gestionar suscripción</span>
+            <span>{isUrgentRenewal ? 'Renovar o ampliar plan' : 'Gestionar suscripción'}</span>
             <ArrowRight className="w-3.5 h-3.5 opacity-70" />
           </Link>
         </div>
@@ -45,7 +80,41 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
     );
   }
 
-  // 2. Si está en período de prueba (3 días)
+  // 2. Si está en período de gracia (Grace Period: 5 días post-vencimiento)
+  if (entitlement.status === 'GRACE_PERIOD') {
+    return (
+      <aside
+        aria-label="Período de gracia por vencimiento"
+        className="w-full bg-amber-950/60 backdrop-blur-md border-b border-amber-500/40 px-4 sm:px-6 py-3 transition-colors text-amber-100"
+      >
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+              <span>Período de Gracia (Tus enlaces siguen activos)</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-amber-200 font-medium">Tiempo para congelación:</span>
+              <TrialCountdownTimer
+                expiresAt={entitlement.expiresAt}
+                initialTimeRemaining={entitlement.timeRemaining}
+                onExpire={() => router.refresh()}
+              />
+            </div>
+          </div>
+          <Link
+            href="/pricing"
+            className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-zinc-950 bg-amber-400 hover:bg-amber-300 border border-amber-500/50 shadow-md shadow-amber-500/20 transition-all cursor-pointer w-full sm:w-auto"
+          >
+            <span>Renovar suscripción</span>
+            <ArrowRight className="w-3.5 h-3.5 opacity-80" />
+          </Link>
+        </div>
+      </aside>
+    );
+  }
+
+  // 3. Si está en período de prueba (3 días)
   if (entitlement.status === 'TRIAL') {
     const isUrgent = entitlement.daysRemaining <= 1;
 

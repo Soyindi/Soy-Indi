@@ -99,13 +99,18 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-emerald-500/30 text-xs font-semibold text-emerald-300 mb-4 shadow-lg shadow-emerald-500/10">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>
-              Membresía INDI {entitlement?.tier === 'starter' ? 'Plan Starter' : entitlement?.tier === 'max' ? 'Plan Max' : 'Pro'} Activa ({daysRemaining} Días Restantes)
+              Membresía INDI {entitlement?.tier === 'starter' ? 'Plan Starter' : entitlement?.tier === 'max' ? 'Plan Max' : 'Plan Pro'} Activa ({daysRemaining} Días Restantes)
             </span>
+          </div>
+        ) : entitlement?.status === 'GRACE_PERIOD' ? (
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-amber-500/40 text-xs font-semibold text-amber-300 mb-4 shadow-lg shadow-amber-500/10 bg-amber-950/40">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            <span>Período de Gracia: {daysRemaining} Días para renovar tu suscripción</span>
           </div>
         ) : (
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-indigo-500/30 text-xs font-semibold text-indigo-300 mb-4 shadow-lg shadow-indigo-500/10">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin-slow" />
-            <span>Prueba Gratuita Activada: {daysRemaining} Días de Acceso Total Ilimitado</span>
+            <span>Prueba Gratuita Activada: {daysRemaining} Días de Acceso Total</span>
           </div>
         )}
 
