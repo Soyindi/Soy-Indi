@@ -1,0 +1,134 @@
+{
+  "metadata": {
+    "title": "Deep Research Prompt: Payment Gateway Migration & Card Acceptance Architecture 2026",
+    "version": "1.0.0",
+    "platform": "INDI (https://soyindi.cl)",
+    "target_model": "Gemini 2.5 / Gemini Deep Research / Advanced",
+    "date": "2026-10-09",
+    "runtime_stack": {
+      "framework": "Next.js 16 (App Router) + React 19",
+      "styling": "Tailwind CSS v4 + OKLCH Color Space",
+      "persistence": "Turso (LibSQL Serverless SQLite) + Drizzle ORM",
+      "auth": "Better-Auth + Google OAuth + HttpOnly Sessions",
+      "architecture": "Feature-Sliced Design (FSD: app -> features -> entities -> shared)",
+      "current_gateway": "Mercado Pago SDK v2 (Checkout Pro + IPN Webhooks)"
+    },
+    "business_model": {
+      "matrix_name": "El Semestre Irresistible",
+      "currency": "CLP (Pesos Chilenos)",
+      "pricing_tiers": {
+        "starter": { "monthly_clp": 2500, "semiannual_clp": 6000 },
+        "pro": { "monthly_clp": 4990, "semiannual_clp": 15000 },
+        "max": { "monthly_clp": 8990, "semiannual_clp": 29990 }
+      },
+      "affiliate_commission_rate": 0.25,
+      "payout_schedule": "Biweekly (1st and 15th of each month)"
+    }
+  },
+  "execution_directives": {
+    "role": "Principal Fintech Architect, Head of Payments Engineering & Staff Software Engineer",
+    "target_jurisdiction": "Chile & Latin America",
+    "temperature": 0.2,
+    "rigor_level": "Industrial-Grade Deep Research (Zero hand-waving, empirical metrics, concrete code contracts)",
+    "mandatory_deliverables": [
+      "Forense técnico de rechazo de tarjetas en Mercado Pago Chile (Bin routing, 3DS, anti-fraud scoring).",
+      "Benchmark exhaustivo de 6 pasarelas: Fintoc, Webpay Plus (Transbank), Flow.cl, Stripe Chile, Kushki, Mercado Pago.",
+      "Matriz de decisión ponderada por tasa de éxito (CLP), costos y soporte para suscripciones SaaS.",
+      "Contratos de arquitectura tipados en TypeScript con Zod 3.24+ y esquema Drizzle ORM.",
+      "Hoja de ruta de migración en 5 fases sin disrupción de servicio (Zero Downtime)."
+    ]
+  },
+  "research_pillars": [
+    {
+      "pillar_id": "pillar_1_mercadopago_rejection_forensics",
+      "title": "Diagnóstico Forense de Rechazos en Mercado Pago Chile",
+      "key_questions": [
+        "¿Cuáles son las causas exactas por las cuales Mercado Pago rechaza tarjetas prepago (Mach, Tenpo, Dale Coopeuch, Mercado Pago Card) y CuentaRUT Débito en Chile?",
+        "¿Qué impacto tiene el motor antifraude de Mercado Pago en rechazos falsos positivos con tickets de bajo valor ($2.500 a $6.000 CLP)?",
+        "¿Por qué Checkout Pro fuerza o sugiere el inicio de sesión con cuenta de Mercado Libre, provocando fricción y abandono del embudo de compra?",
+        "¿Cuáles son las restricciones de Mercado Pago para procesar débitos automáticos recurrentes (suscripciones) con tarjetas locales en Chile?"
+      ]
+    },
+    {
+      "pillar_id": "pillar_2_chile_fintech_trends_2026",
+      "title": "Tendencias FinTech & Métodos de Pago en Chile 2026",
+      "key_questions": [
+        "¿Cuál es el volumen relativo y preferencia entre Webpay Plus (Transbank), pagos cuenta a cuenta A2A (Fintoc), billeteras (Apple Pay/Google Pay) y tarjetas de crédito tradicionales?",
+        "¿Qué método de pago alcanza la tasa de autorización más alta (>95%) para micro-pagos y suscripciones de profesionales independientes?",
+        "¿Cómo ha impactado la Ley FinTech y Open Finance en la iniciación de transferencias bancarias automatizadas para SaaS en Chile?"
+      ]
+    },
+    {
+      "pillar_id": "pillar_3_gateway_benchmark_matrix",
+      "title": "Benchmark Técnico y Económico de Pasarelas de Pago",
+      "gateways_evaluated": [
+        {
+          "name": "Fintoc",
+          "focus": "Iniciación de pagos A2A & Débito directo en cuenta bancaria",
+          "aspects": ["Comisiones fijas vs porcentuales", "Tasa de éxito en BancoEstado, Santander, Banco de Chile, Bci", "Capacidad de débito recurrente"]
+        },
+        {
+          "name": "Webpay Plus / Transbank",
+          "focus": "Adquirencia estándar chilena (Débito/Crédito Redcompra y Prepago)",
+          "aspects": ["Tasas de intercambio reguladas", "Webpay Oneclick y PatPass", "Fricción de integración y tiempos de depósito"]
+        },
+        {
+          "name": "Flow.cl",
+          "focus": "Agregador multicanal (Webpay, Mach, Servipag, Fintoc)",
+          "aspects": ["Facilidad de integración", "Webhooks y confiabilidad", "Comisiones efectivas en tickets pequeños"]
+        },
+        {
+          "name": "Stripe Chile",
+          "focus": "Infraestructura global para SaaS recurrente",
+          "aspects": ["Disponibilidad de cuentas bancarias en CLP", "Cobros cross-border vs locales", "Stripe Billing y Customer Portal"]
+        },
+        {
+          "name": "Kushki / dLocal Go",
+          "focus": "Pasarelas regionales de alto volumen",
+          "aspects": ["Costos fijos, comisiones mínimas y barreras de entrada para startups"]
+        }
+      ]
+    },
+    {
+      "pillar_id": "pillar_4_decision_matrix_and_recommendation",
+      "title": "Matriz de Decisión Ponderada y Recomendación Definitiva",
+      "criteria_weights": {
+        "chile_authorization_rate": 0.30,
+        "ux_friction_and_modernity": 0.20,
+        "cost_and_fixed_fee_efficiency": 0.20,
+        "subscription_support_recurring": 0.15,
+        "fsd_nextjs_integration_ease": 0.15
+      },
+      "deliverable": "Scorecard comparativo 1-10 por criterio y selección de la solución primaria recomendada (o arquitectura híbrida)."
+    },
+    {
+      "pillar_id": "pillar_5_technical_architecture_and_contracts",
+      "title": "Diseño de Arquitectura de Integración & Contratos TypeScript",
+      "requirements": [
+        "Contratos Zod 3.24+ para inicialización de pago y payload de webhook verificado criptográficamente.",
+        "Cliente HTTP/SDK con timeouts configurados y verificación HMAC-SHA256 con protección anti-replay (delta <= 300s).",
+        "Route Handler /api/checkout/<provider> con guardrail getSafeAuthenticatedUserId().",
+        "Route Handler /api/webhooks/<provider> con persistencia atómica en Turso SQLite (db.batch)."
+      ]
+    },
+    {
+      "pillar_id": "pillar_6_affiliates_and_reconciliation",
+      "title": "Gobernanza del Programa de Afiliados (25% CLP) & Reembolsos",
+      "requirements": [
+        "Cálculo estricto de comisión del 25% sobre el valor neto de la suscripción.",
+        "Manejo automatizado de reembolsos y contracargos con reversión de estatus y comisiones asociadas."
+      ]
+    },
+    {
+      "pillar_id": "pillar_7_migration_roadmap_zero_downtime",
+      "title": "Hoja de Ruta de Migración Paso a Paso (Zero Downtime)",
+      "phases": [
+        "Fase 1: Capa de Abstracción PaymentProviderAdapter",
+        "Fase 2: Despliegue en Paralelo con Canario / A/B Test",
+        "Fase 3: Transición de Suscripciones Activas de Mercado Pago",
+        "Fase 4: Deprecación Progresiva del SDK Legacy",
+        "Fase 5: Monitoreo de KPIs de Conversión y Aprobación Post-Migración"
+      ]
+    }
+  ]
+}

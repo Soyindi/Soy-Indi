@@ -1251,6 +1251,10 @@ export default async function PublicCardPage({ params }: PageProps) {
 3. **Página de Éxito & Experiencia de Usuario**:
    - Nueva ruta `/checkout/success` con confirmación visual de membresía desbloqueada y accesos directos al Dashboard y Creador de Tarjetas.
    - Botón CTA de suscripción directa en `PricingSection` con estados de carga (`Loader2`), manejo de errores y touch targets $\ge 44\text{px}$.
+4. **Estrategia de Mitigación de Rechazo de Tarjetas & Migración de Pasarela (Investigación 2026)**:
+   - Estandarización de especificaciones de Deep Research (docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_PAYMENT_GATEWAY_MIGRATION_2026.md y .json) para diagnosticar el rechazo de tarjetas prepago (Mach, Tenpo, Dale Coopeuch) y CuentaRUT Débito en Mercado Pago Chile.
+   - Benchmark exhaustivo de 6 alternativas fintech (Fintoc A2A, Webpay Plus / Transbank, Flow.cl, Stripe Chile, Kushki, Mercado Pago).
+   - Especificación de la interfaz agnóstica de pagos (PaymentProviderAdapter) para desacoplar entities/subscription y permitir un rollout progresivo de alta tasa de aprobación (>95%) con cero tiempo de inactividad.
 4. **Control de Calidad y Pruebas Unitarias (214 Tests Passing)**:
    - Nueva suite en `tests/unit/mercadopago-integration.test.ts` verificando schemas Zod, duración de suscripciones y validación de webhooks.
    - 100% de la suite de pruebas unitarias aprobada (214 de 214 tests en 33 suites).

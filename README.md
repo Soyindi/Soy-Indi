@@ -134,6 +134,13 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 
 ---
 
+### 9. 💳 Infraestructura de Pagos, Aceptación de Tarjetas & Protocolo de Migración 2026
+- **Ecosistema Multi-Tier ("El Semestre Irresistible")**: Integración nativa para planes Starter ($2.500 CLP), Pro ($4.990 CLP) y Max ($8.990 CLP) con facturación mensual o semestral con descuento.
+- **Deep Research & Auditoría Forense de Rechazo de Tarjetas**: Estandarización de especificaciones de investigación para Gemini (`docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_PAYMENT_GATEWAY_MIGRATION_2026.md` y `.json`), analizando causas de rechazo con tarjetas de débito/prepago (Mach, Tenpo, Dale Coopeuch, CuentaRUT) bajo Mercado Pago Checkout Pro.
+- **Hoja de Ruta de Migración a Pasarelas de Alta Tasa de Aprobación (>95%)**: Evaluación y diseño de adaptador agnóstico (`PaymentProviderAdapter`) para migración sin interrupción de servicio hacia alternativas líderes en Chile (Fintoc A2A, Webpay Plus / Transbank, Flow.cl, Stripe Chile).
+
+---
+
 ## 💎 Modelo Comercial Inteligente & Minimalista
 
 INDI implementa un modelo **Todo-en-Uno sin restricciones ocultas ni sistemas artificiales de créditos**:
