@@ -18,6 +18,8 @@ import {
   Zap,
   Maximize2,
   Minimize2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 interface SlideViewerProps {
@@ -27,6 +29,8 @@ interface SlideViewerProps {
   totalSlides: number;
   showNotes?: boolean;
   allowSlideFullscreen?: boolean;
+  onNext?: () => void;
+  onPrev?: () => void;
 }
 
 export function SlideViewer({
@@ -36,6 +40,8 @@ export function SlideViewer({
   totalSlides,
   showNotes = false,
   allowSlideFullscreen = true,
+  onNext,
+  onPrev,
 }: SlideViewerProps) {
   const slideRef = React.useRef<HTMLDivElement>(null);
   const [isSlideFullscreen, setIsSlideFullscreen] = React.useState(false);
@@ -50,6 +56,24 @@ export function SlideViewer({
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
+
+  // Navegación con teclado en modo pantalla completa
+  React.useEffect(() => {
+    if (!isSlideFullscreen) return;
+
+    const handleFullscreenKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space') {
+        e.preventDefault();
+        onNext?.();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        onPrev?.();
+      }
+    };
+
+    window.addEventListener('keydown', handleFullscreenKeyDown);
+    return () => window.removeEventListener('keydown', handleFullscreenKeyDown);
+  }, [isSlideFullscreen, onNext, onPrev]);
 
   const toggleSlideFullscreen = async (e?: React.MouseEvent) => {
     if (e) {
@@ -214,10 +238,10 @@ export function SlideViewer({
                   <div className="inline-flex items-center gap-2 mb-2 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-mono text-cyan-300 font-semibold tracking-wider uppercase">
                     <span>Action Title • Principio de Pirámide</span>
                   </div>
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white mb-1.5 leading-snug">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-white mb-2 leading-snug break-words">
                     {slide.actionTitle}
                   </h2>
-                  <p className="text-xs sm:text-sm text-zinc-400 font-mono mb-2">
+                  <p className="text-xs sm:text-sm text-zinc-400 font-mono mb-2 break-words">
                     {slide.title}
                   </p>
                 </div>
@@ -397,6 +421,56 @@ export function SlideViewer({
           <span className="text-[10px] font-semibold tracking-wider">EN VIVO</span>
         </div>
       </div>
+
+      {/* 4. Barra OSD Flotante Ergonómica en Pantalla Completa */}
+      {isSlideFullscreen && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/15 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPrev?.();
+            }}
+            disabled={slideNumber <= 1}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white transition-all cursor-pointer border border-white/10"
+            title="Diapositiva anterior (Flecha Izquierda)"
+            aria-label="Diapositiva anterior"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          <div className="px-3 py-1 flex flex-col items-center select-none font-mono">
+            <span className="text-xs font-bold text-cyan-300">
+              {slideNumber} / {totalSlides}
+            </span>
+            <span className="text-[9px] text-zinc-400">Teclado ◄ ►</span>
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onNext?.();
+            }}
+            disabled={slideNumber >= totalSlides}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white transition-all cursor-pointer border border-white/10"
+            title="Diapositiva siguiente (Flecha Derecha / Espacio)"
+            aria-label="Diapositiva siguiente"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+
+          <div className="h-6 w-px bg-white/20 mx-1" />
+
+          <button
+            onClick={(e) => toggleSlideFullscreen(e)}
+            className="min-h-[44px] px-3 flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-mono font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer border border-white/10"
+            title="Restaurar pantalla (Esc)"
+            aria-label="Restaurar pantalla"
+          >
+            <Minimize2 className="w-4 h-4 text-cyan-400" />
+            <span className="hidden sm:inline">Salir (Esc)</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -181,6 +181,39 @@ export function detectDocumentArchetype(text: string, fileName?: string): {
 }
 
 /**
+ * Sanitiza oraciones asegurando que no inicien con conjunciones o fragmentos subordinados
+ * huérfanos (ej. "era mío, sino...", "pero...", "y que..."). Reconstituye una proposición
+ * ejecutiva limpia con mayúscula inicial y puntuación consistente.
+ */
+export function sanitizeSentenceClause(raw: string): string {
+  if (!raw) return '';
+  let str = raw
+    .replace(/^#+\s*/, '')
+    .replace(/^[-•*–—]\s*/, '')
+    .trim();
+
+  // Si arranca con comas, dos puntos, punto y coma o guiones
+  str = str.replace(/^[,;:\-–—\s]+/, '');
+
+  // Detectar inicios anómalos o cláusulas subordinadas/adversativas huérfanas
+  // Ejemplos: "sino que...", "pero...", "aunque...", "era mío, sino...", "fue que..."
+  const orphanPrefixRegex = /^(?:(?:no\s+)?era\s+[^\n,:;]+,\s*sino\s+(?:que\s+)?|sino\s+(?:que\s+)?|pero\s+|aunque\s+|porque\s+|por\s+lo\s+tanto\s*,?\s*|ya\s+que\s+|debido\s+a\s+que\s+|y\s+(?:que\s+)?|o\s+(?:bien\s+)?)/i;
+  
+  if (orphanPrefixRegex.test(str)) {
+    str = str.replace(orphanPrefixRegex, '').trim();
+    // Limpiar comas remanentes al inicio tras remover el prefijo
+    str = str.replace(/^[,;:\-–—\s]+/, '');
+  }
+
+  if (!str) return '';
+
+  // Asegurar mayúscula inicial
+  str = str.charAt(0).toUpperCase() + str.slice(1);
+
+  return str;
+}
+
+/**
  * Analizador semántico y heurístico integral (SAP Engine)
  */
 export function analyzeDocumentContent(
@@ -357,16 +390,16 @@ export function analyzeDocumentContent(
 
     const blockSentences = combinedBlock
       .split(/[.!?]\s+/)
-      .map((s) => s.replace(/^#+\s*/, '').trim())
+      .map((s) => sanitizeSentenceClause(s))
       .filter((s) => s.length > 15 && s.length < 250);
 
     const rawFirst = blockSentences[0] || 'Análisis temático del documento';
-    const firstSentence = rawFirst.replace(/^#+\s*/, '').trim();
+    const firstSentence = sanitizeSentenceClause(rawFirst);
     const actionSummary = firstSentence.length > 140 ? `${firstSentence.slice(0, 137)}...` : firstSentence;
 
     const points = blockSentences.slice(1, 4).map((pt) => {
-      return pt.replace(/^[-•*#]\s*/, '').trim();
-    });
+      return sanitizeSentenceClause(pt);
+    }).filter(Boolean);
 
     if (points.length === 0 && blockSentences.length > 0) {
       points.push(firstSentence);

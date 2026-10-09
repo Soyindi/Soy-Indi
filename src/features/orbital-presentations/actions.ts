@@ -26,7 +26,7 @@ import {
 } from '@/entities/presentation/heuristics';
 import { PRESENTATION_TEMPLATES, PRESENTATION_THEMES } from '@/entities/presentation/templates';
 import { callNvidiaNimChat } from '@/shared/api/nvidia-nim';
-import { extractTextFromDocument, analyzeDocumentContent } from '@/features/orbital-presentations/lib/document-parser';
+import { extractTextFromDocument, analyzeDocumentContent, sanitizeSentenceClause } from '@/features/orbital-presentations/lib/document-parser';
 import {
   validateFileSignature,
   sanitizeExtractedText,
@@ -301,9 +301,10 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             ],
           };
 
-          const firstActionTitle = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
+          const rawAction = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
             ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
             : (takeaways[0] || docAnalysis.titleSuggestion);
+          const firstActionTitle = sanitizeSentenceClause(rawAction);
 
           fallbackSlides.push({
             id: crypto.randomUUID(),
@@ -339,10 +340,12 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             ? sectionData.points.slice(0, 2)
             : [takeaways[1] || takeaways[0] || 'Datos cuantitativos extraídos del documento.'];
 
+          const metricAction = sanitizeSentenceClause(sectionData?.actionSummary || 'Validar el impacto con métricas extraídas directamente del documento');
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
             title: sectionData?.heading || 'Evidencia Cuantitativa & Métricas',
-            actionTitle: sectionData?.actionSummary || 'Validar el impacto con métricas extraídas directamente del documento',
+            actionTitle: metricAction,
             subtitle: 'Evidencia cuantitativa descompuesta del contenido base',
             semanticIntent: 'bento_dashboard',
             visualType: 'metrics',
@@ -369,12 +372,16 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
           const beforeItems = contrast.length > 0 ? contrast.map((c) => c.problemAspect) : [sectionData?.points[0] || 'Punto de partida del documento'];
           const afterItems = contrast.length > 0 ? contrast.map((c) => c.solutionAspect) : [sectionData?.points[1] || takeaways[1] || 'Propuesta y conclusiones'];
 
+          const compAction = sanitizeSentenceClause(
+            (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
+              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+              : (takeaways[1] || 'Contraste entre los puntos analizados')
+          );
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
             title: sectionData?.heading || 'Contraste y Diferenciación',
-            actionTitle: (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
-              : (takeaways[1] || 'Contraste entre los puntos analizados'),
+            actionTitle: compAction,
             subtitle: 'Comparativa basada en el texto subido',
             semanticIntent: 'comparison_delta',
             visualType: 'comparison',
@@ -418,12 +425,16 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
                     description: tk,
                   })));
 
+          const lastAction = sanitizeSentenceClause(
+            (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
+              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
+              : (takeaways[takeaways.length - 1] || 'Conclusiones determinantes del documento')
+          );
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
             title: sectionData?.heading || 'Conclusiones y Próximos Pasos',
-            actionTitle: (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
-              ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
-              : (takeaways[takeaways.length - 1] || 'Conclusiones determinantes del documento'),
+            actionTitle: lastAction,
             subtitle: `Cierre del análisis (${durationMinutes} min totales)`,
             semanticIntent: 'timeline_roadmap',
             visualType: 'timeline',
@@ -444,10 +455,12 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             })),
           };
 
+          const conceptAction = sanitizeSentenceClause(sectionData?.actionSummary || 'Estructura modular de los conceptos fundamentales');
+
           fallbackSlides.push({
             id: crypto.randomUUID(),
             title: resolvedArchetype === 'technical_architecture' ? 'Arquitectura y Componentes Clave' : 'Conceptos y Fundamentos',
-            actionTitle: sectionData?.actionSummary || 'Estructura modular de los conceptos fundamentales',
+            actionTitle: conceptAction,
             subtitle: 'Definiciones y pilares extraídos del documento',
             semanticIntent: 'executive_scqa',
             visualType: resolvedArchetype === 'technical_architecture' ? 'architecture' : 'concept',
@@ -464,9 +477,10 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             supportNodes: [{ nodeType: 'qualitative_prose', visualWeightDominance: 4 }],
           };
 
-          const slideAction = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
+          const rawSlideAction = (sectionData?.actionSummary && sectionData.actionSummary.length > 15)
             ? (sectionData.actionSummary.length > 150 ? `${sectionData.actionSummary.slice(0, 147)}...` : sectionData.actionSummary)
             : `Profundizar en la dimensión analítica y temática de la sección ${i + 1}`;
+          const slideAction = sanitizeSentenceClause(rawSlideAction);
 
           const slidePoints = sectionData?.points && sectionData.points.length > 0
             ? sectionData.points

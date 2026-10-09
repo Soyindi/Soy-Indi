@@ -291,6 +291,38 @@ export function PresentationStudio({
     }
   };
 
+  // Navegación por teclado en el estudio (Flechas / Espacio) con guardrail anti-interferencia al escribir
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Si el foco está en un campo de texto editable o contenteditable, no interceptar
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable ||
+          target.getAttribute('role') === 'textbox')
+      ) {
+        return;
+      }
+
+      if (e.key === 'ArrowRight' || (e.key === ' ' && !e.shiftKey)) {
+        if (currentSlideIndex < presentation.slidesData.length - 1) {
+          e.preventDefault();
+          setCurrentSlideIndex((prev) => prev + 1);
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (currentSlideIndex > 0) {
+          e.preventDefault();
+          setCurrentSlideIndex((prev) => prev - 1);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentSlideIndex, presentation.slidesData.length]);
+
   // Añadir nueva diapositiva
   const handleAddSlide = () => {
     const newSlide: PresentationSlide = {
@@ -551,6 +583,8 @@ export function PresentationStudio({
             slideNumber={currentSlideIndex + 1}
             totalSlides={presentation.slidesData.length}
             showNotes={showSpeakerNotes}
+            onNext={nextSlide}
+            onPrev={prevSlide}
           />
 
           {/* Barra de Controles y Miniaturas de Diapositiva */}
