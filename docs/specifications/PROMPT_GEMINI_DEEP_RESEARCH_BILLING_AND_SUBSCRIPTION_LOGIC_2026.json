@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MasterPromptGeminiDeepResearchBillingLogic2026",
+  "description": "Especificación JSON para Deep Research en Gemini sobre Arquitectura de Billing Multi-Plan, Prorrateo, Ciclo de Vida y Verificación Anti-Fraude (INDI SaaS 2026)",
+  "version": "2026.1.0",
+  "targetPlatform": {
+    "name": "INDI",
+    "domain": "https://soyindi.cl",
+    "stack": {
+      "framework": "Next.js 16 App Router",
+      "frontend": "React 19, Tailwind CSS v4 OKLCH",
+      "database": "Turso LibSQL Serverless SQLite",
+      "orm": "Drizzle ORM",
+      "auth": "Better-Auth",
+      "gateways": ["Flow.cl", "Fintoc", "Webpay Plus", "Mercado Pago"]
+    }
+  },
+  "researchAxes": [
+    {
+      "id": "eje_1_multi_plan_coexistence_and_transitions",
+      "title": "Coexistencia y Transición de Planes (Upgrade, Downgrade & Proration)",
+      "coreQuestions": [
+        "¿Puede un usuario con un plan activo contratar o activar otro simultáneamente?",
+        "¿Cómo se implementa el prorrateo financiero o time-credit conversion en pagos one-off?",
+        "¿Qué ocurre con los recursos creados si el usuario realiza un downgrade a un plan con menor cuota?"
+      ]
+    },
+    {
+      "id": "eje_2_countdown_lifecycle_and_grace_periods",
+      "title": "Ciclo de Vida del Temporizador y Períodos de Gracia",
+      "coreQuestions": [
+        "¿Tiene un plan activo cuenta regresiva continua o solo banners contextuales en vencimiento?",
+        "¿Qué sucede exactamente cuando el tiempo llega a cero (t = 0)?",
+        "¿Cómo funciona el período de gracia (Grace Period) antes del bloqueo definitivo?"
+      ]
+    },
+    {
+      "id": "eje_3_payment_security_and_anti_spoofing",
+      "title": "Protocolo de Compra y Verificación Criptográfica Anti-Fraude",
+      "coreQuestions": [
+        "¿Cómo funciona el flujo técnico completo desde la intención de compra hasta la activación?",
+        "¿Cómo se asegura el sistema de que realmente se pagó antes de activar la membresía?",
+        "¿Cómo se previene el spoofing del navegador y la duplicación de acreditaciones (idempotencia)?"
+      ]
+    },
+    {
+      "id": "eje_4_subscription_state_machine",
+      "title": "Máquina de Estados de Suscripción (Domain State Machine)",
+      "states": ["ANONYMOUS", "TRIAL", "ACTIVE", "GRACE_PERIOD", "EXPIRED", "CANCELLED"],
+      "coreQuestions": [
+        "¿Cuáles son los eventos de transición y qué columnas de base de datos se alteran atómicamente?"
+      ]
+    },
+    {
+      "id": "eje_5_session_cache_and_real_time_freshness",
+      "title": "Gobernanza de Caché de Sesión y Actualización en Tiempo Real",
+      "coreQuestions": [
+        "¿Cómo evitar el problema de stale session donde la base de datos está ACTIVE pero el cliente ve TRIAL?",
+        "¿Qué estrategias de invalidación perimetral garantizan sincronización inmediata?"
+      ]
+    },
+    {
+      "id": "eje_6_implementation_blueprints",
+      "title": "Modelado de Base de Datos y Checklist del Tech Lead",
+      "deliverables": [
+        "Esquema Drizzle SQLite de suscripciones y transacciones",
+        "10 mandamientos de ingeniería para billing SaaS de alta disponibilidad"
+      ]
+    }
+  ]
+}

@@ -18,13 +18,16 @@ import {
 
 import { ReferralWelcomeBanner } from '@/features/affiliates/components/ReferralWelcomeBanner';
 import type { ReferralPartnerInfo } from '@/features/affiliates/actions';
+import { UserEntitlement } from '@/entities/subscription/types';
 
 interface OnboardingChoiceGridProps {
   daysRemaining: number;
   referralPartner?: ReferralPartnerInfo | null;
+  entitlement?: UserEntitlement;
 }
 
-export function OnboardingChoiceGrid({ daysRemaining, referralPartner }: OnboardingChoiceGridProps) {
+export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitlement }: OnboardingChoiceGridProps) {
+  const isSubscribed = entitlement?.status === 'ACTIVE';
   const options = [
     {
       id: 'card',
@@ -92,10 +95,19 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner }: Onboard
 
       {/* Banner de Estado VIP de Bienvenida */}
       <div className="mb-8 sm:mb-12 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-indigo-500/30 text-xs font-semibold text-indigo-300 mb-4 shadow-lg shadow-indigo-500/10">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin-slow" />
-          <span>Prueba Gratuita Activada: {daysRemaining} Días de Acceso Total Ilimitado</span>
-        </div>
+        {isSubscribed ? (
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-emerald-500/30 text-xs font-semibold text-emerald-300 mb-4 shadow-lg shadow-emerald-500/10">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>
+              Membresía INDI {entitlement?.tier === 'starter' ? 'Plan Starter' : entitlement?.tier === 'max' ? 'Plan Max' : 'Pro'} Activa ({daysRemaining} Días Restantes)
+            </span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-indigo-500/30 text-xs font-semibold text-indigo-300 mb-4 shadow-lg shadow-indigo-500/10">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin-slow" />
+            <span>Prueba Gratuita Activada: {daysRemaining} Días de Acceso Total Ilimitado</span>
+          </div>
+        )}
 
         <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-3 sm:mb-4">
           ¿Por dónde te gustaría comenzar hoy?

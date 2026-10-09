@@ -24,18 +24,23 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
   const rawCookieRef = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
   const activeRefCode = sanitizeReferralCode(rawParamRef) || sanitizeReferralCode(rawCookieRef);
 
-  const entitlement = await checkUserEntitlementAction();
+  // 2. Resolver sesión y derecho de acceso del usuario
+  let session = null;
+  try {
+    const { auth } = await import('@/shared/lib/auth');
+    const headerList = await headers();
+    session = await auth.api.getSession({ headers: headerList });
+  } catch {
+    // Silencioso
+  }
+
+  const entitlement = await checkUserEntitlementAction(session?.user?.id);
 
   // 3. Si hay sesión activa y código válido, atribuir idempotentemente
-  if (activeRefCode) {
+  if (activeRefCode && session?.user?.id) {
     try {
-      const { auth } = await import('@/shared/lib/auth');
-      const headerList = await headers();
-      const session = await auth.api.getSession({ headers: headerList });
-      if (session?.user?.id) {
-        const { attributeReferralAction } = await import('@/features/affiliates/actions');
-        await attributeReferralAction(session.user.id, activeRefCode);
-      }
+      const { attributeReferralAction } = await import('@/features/affiliates/actions');
+      await attributeReferralAction(session.user.id, activeRefCode);
     } catch (err) {
       // Atribución silenciosa
     }
@@ -82,6 +87,7 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
         <OnboardingChoiceGrid
           daysRemaining={entitlement.daysRemaining}
           referralPartner={referralPartner}
+          entitlement={entitlement}
         />
       </main>
 
