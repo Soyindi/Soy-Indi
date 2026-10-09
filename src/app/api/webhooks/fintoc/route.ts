@@ -36,9 +36,20 @@ export async function POST(req: NextRequest) {
 
     const { type, data } = parsed.data;
 
-    // Solo procesamos pagos exitosos de facturas o intenciones de pago
-    if (type !== 'invoice.payment_succeeded' && type !== 'payment_intent.succeeded') {
-      return NextResponse.json({ success: true, message: `Evento ${type} recibido` });
+    // Manejo de eventos de fallo o expiración con retorno 200 para evitar reintentos innecesarios
+    if (type === 'payment_intent.failed' || type === 'invoice.payment_failed' || type === 'checkout_session.expired') {
+      console.warn(`[Fintoc Webhook] Evento no exitoso recibido (${type}):`, data.id);
+      return NextResponse.json({ success: true, message: `Evento de fallo ${type} registrado` });
+    }
+
+    // Procesamos eventos de pago exitoso (facturas, payment intents o checkout sessions completadas)
+    const isSuccessfulPayment =
+      type === 'invoice.payment_succeeded' ||
+      type === 'payment_intent.succeeded' ||
+      type === 'checkout_session.finished';
+
+    if (!isSuccessfulPayment) {
+      return NextResponse.json({ success: true, message: `Evento ${type} omitido` });
     }
 
     const targetUserId = typeof data.metadata?.user_id === 'string' ? data.metadata.user_id : String(data.metadata?.user_id || '');

@@ -34,6 +34,8 @@ export const fintocWebhookPayloadSchema = z.object({
     'subscription.created',
     'payment_intent.succeeded',
     'payment_intent.failed',
+    'checkout_session.finished',
+    'checkout_session.expired',
   ]),
   created_at: z.string().optional(),
   data: z.object({
