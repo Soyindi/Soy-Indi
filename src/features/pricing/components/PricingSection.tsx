@@ -28,7 +28,7 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
   const router = useRouter();
   const [interval, setInterval] = useState<PlanInterval>('monthly');
   const [selectedTier, setSelectedTier] = useState<PlanTier | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState<'fintoc' | 'webpay' | 'mercadopago'>('fintoc');
+  const [selectedProvider, setSelectedProvider] = useState<'flow' | 'fintoc' | 'webpay' | 'mercadopago'>('flow');
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const { data: sessionData } = useSession();
@@ -127,37 +127,37 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
         </div>
       </div>
 
-      {/* Selector Ergonómico de Método de Pago (Fintoc A2A ⚡ Recomendado vs Tarjeta Oneclick 💳) */}
+      {/* Selector Ergonómico de Método de Pago (Flow 🇨🇱 Recomendado: Webpay Plus / Tarjetas / Transferencias) */}
       <div className="flex flex-col items-center justify-center gap-3 mb-8">
         <span className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">
-          Método de Pago Seguro
+          Método de Pago Seguro en Chile
         </span>
         <div className="inline-flex p-1.5 rounded-2xl glass-panel border border-white/10 bg-zinc-950/70 shadow-lg">
           <button
             type="button"
-            onClick={() => setSelectedProvider('fintoc')}
+            onClick={() => setSelectedProvider('flow')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
-              selectedProvider === 'fintoc'
+              selectedProvider === 'flow'
                 ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-zinc-950 shadow-md shadow-emerald-500/20'
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
-            <span>⚡ Transferencia Directa (Fintoc)</span>
+            <span>🇨🇱 Webpay / Tarjetas y Bancos</span>
             <span className="px-1.5 py-0.5 rounded-full bg-emerald-950/60 text-emerald-300 font-black text-[10px] hidden sm:inline">
-              98% Éxito
+              RECOMENDADO
             </span>
           </button>
 
           <button
             type="button"
-            onClick={() => setSelectedProvider('webpay')}
+            onClick={() => setSelectedProvider('fintoc')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
-              selectedProvider === 'webpay'
+              selectedProvider === 'fintoc'
                 ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-zinc-950 shadow-md shadow-blue-500/20'
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
-            <span>💳 Tarjeta Débito / Crédito</span>
+            <span>⚡ Fintoc A2A</span>
           </button>
 
           <button

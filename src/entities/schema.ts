@@ -199,9 +199,9 @@ export const presentations = sqliteTable('presentations', {
 // 5. HISTORIAL DE PAGOS Y SUSCRIPCIONES (MERCADO PAGO)
 // ============================================================================
 export const paymentsHistory = sqliteTable('payments_history', {
-  id: text('id').primaryKey(), // Payment ID del proveedor (Fintoc / Webpay / Mercado Pago)
+  id: text('id').primaryKey(), // Payment ID del proveedor (Flow / Fintoc / Webpay / Mercado Pago)
   userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
-  provider: text('provider', { enum: ['fintoc', 'webpay', 'mercadopago'] }).default('mercadopago').notNull(),
+  provider: text('provider', { enum: ['flow', 'fintoc', 'webpay', 'mercadopago'] }).default('flow').notNull(),
   providerPaymentId: text('provider_payment_id'),
   providerSubscriptionId: text('provider_subscription_id'),
   planInterval: text('plan_interval', { enum: ['monthly', 'semiannual'] }).notNull(),
