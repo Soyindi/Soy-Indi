@@ -810,6 +810,8 @@ export function PresentationStudio({
                 presentationTitle={presentation.title}
                 targetAudience={presentation.targetAudience || 'investors'}
                 tone={presentation.presentationTone || 'orbital_cyber'}
+                slideIndex={currentSlideIndex}
+                totalSlides={presentation.slidesData.length}
                 onApplyEnhancements={(updates) => {
                   const updated = [...presentation.slidesData];
                   updated[currentSlideIndex] = {
@@ -822,6 +824,7 @@ export function PresentationStudio({
                   }));
                 }}
               />
+
 
               {/* Selector de Tipo Visual / Layout */}
               <div>

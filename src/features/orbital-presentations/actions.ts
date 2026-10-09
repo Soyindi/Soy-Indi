@@ -14,7 +14,10 @@ import {
   slugifyPresentationTitle,
   isReservedPresentationSlug,
   generatePresentationSlugAlternatives,
+  refineSlideWithAiSchema,
+  RefineSlideWithAiInput,
 } from '@/entities/presentation/schemas';
+
 import {
   inferOptimalLayoutStrategy,
   calculateSlidePacingAndCount,
@@ -763,17 +766,10 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 /**
  * Server Action: Asistente Granular de IA por Diapositiva (Slide-Level AI Copilot)
  * Permite optimizar selectivamente el Action Title tipo McKinsey, viñetas de impacto o notas de orador.
+ * Protegido por Zod, Multi-Tenancy y Entitlements con modelo de frontera 70B (NVIDIA NIM / Gemini)
  */
 export async function refineSlideWithAiAction(
-  request: {
-    slide: PresentationSlide;
-    action: 'action_title' | 'punchy_bullets' | 'speaker_notes' | 'all_enhancements';
-    presentationContext?: {
-      presentationTitle?: string;
-      targetAudience?: TargetAudience;
-      tone?: PresentationTone;
-    };
-  }
+  request: RefineSlideWithAiInput
 ): Promise<{
   success: boolean;
   data?: {
@@ -787,24 +783,61 @@ export async function refineSlideWithAiAction(
   error?: string;
 }> {
   try {
-    const { slide, action, presentationContext } = request;
+    // 1. Validación estricta con contrato Zod
+    const validated = refineSlideWithAiSchema.safeParse(request);
+    if (!validated.success) {
+      return {
+        success: false,
+        error: validated.error.issues.map((i) => i.message).join(', ') || 'Parámetros inválidos.',
+      };
+    }
+
+    const { slide, action, presentationContext, userId } = validated.data;
+
+    // 2. Guardrails de Sesión y Entitlements
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const targetUserId = sessionResult.userId;
+
+    if (!targetUserId && process.env.NODE_ENV === 'production') {
+      return {
+        success: false,
+        error: sessionResult.error || 'Sesión no autorizada para usar el copiloto de diapositivas.',
+      };
+    }
+
+    if (targetUserId) {
+      const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
+      const entitlement = await assertUserEntitlementAction(targetUserId);
+      if (!entitlement.allowed) {
+        return {
+          success: false,
+          error: entitlement.error || 'Período de prueba o suscripción expirada.',
+        };
+      }
+    }
+
     const cleanTitle = slide.title || 'Diapositiva';
     const cleanSubtitle = slide.subtitle || '';
     const currentPoints = Array.isArray(slide.keyPoints) ? slide.keyPoints.filter(Boolean) : [];
     const audience = presentationContext?.targetAudience || 'investors';
     const tone = presentationContext?.tone || 'orbital_cyber';
     const deckTitle = presentationContext?.presentationTitle || 'Presentación Ejecutiva';
+    const slidePos =
+      presentationContext?.slideIndex != null && presentationContext?.totalSlides != null
+        ? `Diapositiva ${presentationContext.slideIndex + 1} de ${presentationContext.totalSlides}`
+        : 'Diapositiva del deck';
 
-    // 1. Construir prompt contextual para el modelo de IA
+    // 3. Construir prompt contextual para el modelo de IA de alta gerencia
     const prompt = `
 [SYSTEM DIRECTIVE: CORE IDENTITY]
-Eres un Principal Executive Presentation Designer y consultor senior (Ex-McKinsey/Bain).
+Eres un Principal Executive Presentation Designer y consultor senior de estrategia (Ex-McKinsey/Bain).
 Tu tarea es optimizar con rigor, elocuencia profesional y sofisticación estratégica la siguiente diapositiva.
 
-CONTEXTO GENERAL:
-- Presentación: "${deckTitle}"
+CONTEXTO GENERAL DEL DECK:
+- Título del Deck: "${deckTitle}"
 - Audiencia Objetivo: ${audience}
 - Tono Visual: ${tone}
+- Ubicación Narrativa: ${slidePos}
 
 DIAPOSITIVA ACTUAL:
 - Título: "${cleanTitle}"
@@ -841,7 +874,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 }
 `;
 
-    // 2. Invocar cliente resiliente con soporte dual NVIDIA NIM / Google Gemini / OpenRouter
+    // 4. Invocar cliente resiliente con modelo de frontera 70B (NVIDIA NIM / Google Gemini Failover)
     const aiResult = await callNvidiaNimChat(
       [
         {
@@ -851,8 +884,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         { role: 'user', content: prompt },
       ],
       {
-        model: 'meta/llama-3.2-11b-vision-instruct',
-        temperature: 0.3,
+        model: 'meta/llama-3.3-70b-instruct',
+        temperature: 0.2,
         responseFormat: { type: 'json_object' },
       }
     );
@@ -880,7 +913,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
       }
     }
 
-    // 3. Fallback Heurístico Determinista de Alta Calidad (Garantía Offline y Cero Latencia)
+    // 5. Fallback Heurístico Determinista de Alta Calidad (Garantía Offline y Cero Latencia)
     let fallbackActionTitle = slide.actionTitle;
     let fallbackKeyPoints = currentPoints.length > 0 ? [...currentPoints] : ['Fundamento clave del proyecto.'];
     let fallbackSpeakerNotes = slide.speakerNotes;
@@ -937,6 +970,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
     return { success: false, error: err.message || 'Error refinando la diapositiva con IA' };
   }
 }
+
 
 /**
  * Guardar o Actualizar Presentación en Turso con Guardrails Multi-Tenant

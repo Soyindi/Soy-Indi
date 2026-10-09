@@ -249,3 +249,19 @@ export const multimodalCvExtractionSchema = z.object({
 });
 
 export type MultimodalCvExtraction = z.infer<typeof multimodalCvExtractionSchema>;
+
+/**
+ * Esquema de validación Zod para el copiloto editorial de CV (Inline AI Assistant)
+ */
+export const rewriteCvSectionSchema = z.object({
+  text: z.string().min(1, 'El texto a mejorar es requerido').max(3000, 'Texto demasiado largo'),
+  type: z.enum(['SUMMARY', 'BULLET']),
+  mode: z.enum(['XYZ_IMPACT', 'EXECUTIVE', 'ATS_KEYWORDS']),
+  targetRole: z.string().optional(),
+  company: z.string().optional(),
+  role: z.string().optional(),
+  skills: z.array(z.string()).optional(),
+  userId: z.string().optional(),
+});
+
+export type RewriteCvSectionInput = z.infer<typeof rewriteCvSectionSchema>;

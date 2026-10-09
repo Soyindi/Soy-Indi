@@ -12,6 +12,8 @@ import {
   slugifyCvTitle,
   isReservedCvSlug,
   generateCvSlugAlternatives,
+  rewriteCvSectionSchema,
+  RewriteCvSectionInput,
 } from '@/entities/cv/schemas';
 import { parseCvDocumentMultimodal, parseCredentialDocumentMultimodal } from '@/features/ai-smart-cv/lib/multimodal-parser';
 import {
@@ -19,6 +21,7 @@ import {
   assertZeroBinaryPersistence,
 } from '@/shared/lib/fileSecurity';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
+import { callNvidiaNimChat } from '@/shared/api/nvidia-nim';
 import { eq, desc, and, ne, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -564,83 +567,171 @@ export async function deleteSmartCvAction(cvId: string, userId?: string) {
 
 /**
  * Server Action: Copiloto de Redacción Inteligente (Inline AI Assistant)
- * Asiste en la reformulación con Google XYZ, tono ejecutivo o inyección de keywords ATS.
+ * Asiste en la reformulación contextualizada con Google XYZ, tono ejecutivo o inyección de keywords ATS.
+ * Protegido por Zod, Multi-tenancy y Entitlements con soporte de LLM (NVIDIA NIM / Gemini)
  */
-export async function rewriteCvSectionAction(params: {
-  text: string;
-  type: 'SUMMARY' | 'BULLET';
-  mode: 'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS';
-  targetRole?: string;
-}): Promise<{
+export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Promise<{
   success: boolean;
   suggestions: string[];
   error?: string;
 }> {
   try {
-    const { text, type, mode, targetRole = 'Profesional' } = params;
-
-    if (!text || text.trim().length === 0) {
-      return { success: false, suggestions: [], error: 'El texto no puede estar vacío.' };
+    // 1. Validación estricta de contrato Zod
+    const parsed = rewriteCvSectionSchema.safeParse(params);
+    if (!parsed.success) {
+      return {
+        success: false,
+        suggestions: [],
+        error: parsed.error.issues[0]?.message || 'Parámetros inválidos.',
+      };
     }
 
-    // Si es una viñeta y pide Google XYZ
-    if (type === 'BULLET' && mode === 'XYZ_IMPACT') {
-      const clean = text.replace(/^[•\-\*]\s*/, '').trim();
-      const hasMetric = /\b(?:\d+[%kKmM]?|\$\d+|\d+\s?(?:personas|usuarios|pacientes|clientes|meses|días|proyectos))\b/i.test(clean);
+    const { text, type, mode, targetRole, company, role, skills, userId } = parsed.data;
 
-      if (hasMetric) {
+    // 2. Guardrails de Sesión y Entitlements
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const targetUserId = sessionResult.userId;
+
+    if (!targetUserId && process.env.NODE_ENV === 'production') {
+      return {
+        success: false,
+        suggestions: [],
+        error: sessionResult.error || 'Sesión no autorizada para usar el asistente de IA.',
+      };
+    }
+
+    if (targetUserId) {
+      const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
+      const entitlement = await assertUserEntitlementAction(targetUserId);
+      if (!entitlement.allowed) {
         return {
-          success: true,
-          suggestions: [
-            `Orquesté ${clean}, consolidando un impacto medible en los objetivos clave de la organización.`,
-            `Lideré la optimización de ${clean}, asegurando alta disponibilidad y calidad técnica para el rol de ${targetRole}.`,
-          ],
+          success: false,
+          suggestions: [],
+          error: entitlement.error || 'Período de prueba o suscripción expirada.',
         };
       }
+    }
 
+
+
+    // 3. Preparación del Prompt Contextualizado
+    const cleanInput = text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim();
+    const roleContext = role ? `Cargo actual: ${role}` : '';
+    const companyContext = company ? `Empresa: ${company}` : '';
+    const targetRoleContext = targetRole ? `Rol Objetivo del CV: ${targetRole}` : '';
+    const skillsContext = skills && skills.length > 0 ? `Habilidades del perfil: ${skills.join(', ')}` : '';
+
+    const contextSummary = [roleContext, companyContext, targetRoleContext, skillsContext]
+      .filter(Boolean)
+      .join(' | ');
+
+    const systemPrompt = `Eres un Redactor Ejecutivo y Estratega de Empleabilidad de nivel mundial especializado en currículums para el estándar corporativo 2026.
+REGLAS OBLIGATORIAS:
+1. No inventes métricas específicas (como porcentajes exactos o millones) que el usuario NO haya proporcionado; si falta la cifra, incluye un marcador elegante como "[añadir métrica]" o enfócate en el impacto metodológico real.
+2. Si es una viñeta laboral, aplica la fórmula de Google XYZ: "Logré [X], medido por [Y], mediante [Z]" usando verbos de acción fuertes en primera persona singular o pasado ("Lideré", "Diseñé", "Orquesté", "Optimicé").
+3. Mantén estricta coherencia con el contexto provisto (${contextSummary || 'Perfil Profesional'}).
+4. Devuelve ÚNICAMENTE un objeto JSON válido con la clave "suggestions", conteniendo un array de exactamente 3 variantes distintas y profesionales sin texto introductorio ni formato markdown extra.`;
+
+    const userPrompt = `TEXTO ORIGINAL A MEJORAR:
+"${cleanInput}"
+
+TIPO DE SECCIÓN: ${type === 'SUMMARY' ? 'Resumen Profesional / Perfil' : 'Viñeta de Logro Laboral'}
+ENFOQUE SOLICITADO: ${
+      mode === 'XYZ_IMPACT'
+        ? 'Impacto Cuantitativo (Google XYZ)'
+        : mode === 'EXECUTIVE'
+        ? 'Tono Ejecutivo y Estratégico de Liderazgo'
+        : 'Optimización de Palabras Clave ATS y Técnicas'
+    }
+${contextSummary ? `CONTEXTO ADICIONAL:\n${contextSummary}` : ''}
+
+Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
+
+    // 4. Invocación al Motor LLM (NVIDIA NIM / Gemini Flash Failover)
+    const aiResult = await callNvidiaNimChat(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      {
+        model: 'meta/llama-3.3-70b-instruct',
+        temperature: 0.3,
+        responseFormat: { type: 'json_object' },
+      }
+    );
+
+    if (aiResult.success && aiResult.content) {
+      try {
+        const cleanedJson = aiResult.content
+          .replace(/```json/gi, '')
+          .replace(/```/g, '')
+          .trim();
+        const parsedJson = JSON.parse(cleanedJson);
+        if (Array.isArray(parsedJson.suggestions) && parsedJson.suggestions.length > 0) {
+          return {
+            success: true,
+            suggestions: parsedJson.suggestions.slice(0, 3).map((s: any) => String(s).trim()),
+          };
+        }
+      } catch (jsonErr) {
+        console.warn('[rewriteCvSectionAction] JSON parse warning, aplicando fallback a líneas:', jsonErr);
+        const lines = aiResult.content
+          .split('\n')
+          .map((l) => l.replace(/^[\d\.\-\*\•\s"]+|["]+$/g, '').trim())
+          .filter((l) => l.length > 15);
+        if (lines.length >= 2) {
+          return {
+            success: true,
+            suggestions: lines.slice(0, 3),
+          };
+        }
+      }
+    }
+
+    // 5. Fallback Heurístico Contextualizado Inteligente (en caso de falta de conectividad AI)
+    const effectiveTarget = targetRole || role || 'Profesional';
+    const cleanLower = cleanInput.charAt(0).toLowerCase() + cleanInput.slice(1);
+
+    if (type === 'SUMMARY') {
       return {
         success: true,
         suggestions: [
-          `Orquesté ${clean}, optimizando los flujos operativos e impulsando las mejores prácticas de la disciplina [añadir impacto o % de mejora si aplica].`,
-          `Lideré la implementación de ${clean}, consolidando la estabilidad del proyecto y alineando entregables con las metas de ${targetRole} [especificar volumen alcanzado].`,
+          `${effectiveTarget} con sólida trayectoria impulsando iniciativas de alto impacto. Especialista en optimización de procesos, buenas prácticas y alineación de requerimientos con objetivos de negocio.`,
+          `Profesional enfocado en ${effectiveTarget}, con probada capacidad para resolver desafíos complejos, coordinar soluciones estratégicas y elevar la eficiencia operativa.`,
+          `Líder en ${effectiveTarget} con enfoque en innovación, calidad técnica y entrega de valor continuo para equipos y proyectos corporativos.`,
         ],
       };
     }
 
-    // Si pide tono ejecutivo
-    if (mode === 'EXECUTIVE') {
-      if (type === 'SUMMARY') {
-        return {
-          success: true,
-          suggestions: [
-            `${targetRole} con sólida trayectoria liderando proyectos de alto impacto tecnológico. Especialista en orquestación de arquitecturas escalables, gobierno de datos y dirección de equipos multidisciplinarios orientados a resultados de negocio cuantificables.`,
-            `Líder en ${targetRole} enfocado en transformación digital, optimización de rendimiento y diseño de soluciones estratégicas de alta disponibilidad para entornos corporativos y startups de rápido crecimiento.`,
-          ],
-        };
-      } else {
-        return {
-          success: true,
-          suggestions: [
-            `Dirigí estratégicamente la ejecución de ${text.toLowerCase()}, alineando recursos técnicos con las metas prioritarias de la organización.`,
-            `Supervisé y aseguré los estándares de calidad de ${text.toLowerCase()}, minimizando riesgos y asegurando la escalabilidad del sistema.`,
-          ],
-        };
-      }
+    // Viñetas laborales
+    const hasMetric = /\b(?:\d+[%kKmM]?|\$\d+|\d+\s?(?:personas|usuarios|pacientes|clientes|meses|días|proyectos))\b/i.test(cleanInput);
+
+    if (hasMetric) {
+      return {
+        success: true,
+        suggestions: [
+          `Lideré ${cleanLower}, consolidando un impacto medible en los objetivos clave de ${company || 'la organización'}.`,
+          `Orquesté ${cleanLower}, optimizando la entrega técnica y garantizando la calidad requerida para el rol de ${effectiveTarget}.`,
+          `Dirigí la implementación de ${cleanLower}, asegurando escalabilidad operativa y alineación con los estándares del equipo.`,
+        ],
+      };
     }
 
-    // Modo ATS Keywords
     return {
       success: true,
       suggestions: [
-        `Gestioné la integración técnica de ${text.toLowerCase()}, asegurando compatibilidad con arquitecturas modernas, CI/CD y requerimientos para el rol de ${targetRole}.`,
-        `Diseñé e implementé soluciones avanzadas en ${text.toLowerCase()}, maximizando el rendimiento y cumplimiento de SLAs críticos.`,
+        `Lideré ${cleanLower}, optimizando los flujos de trabajo e impulsando mejores prácticas de la disciplina en ${company || 'la organización'} [añadir métrica o resultado clave].`,
+        `Orquesté la ejecución de ${cleanLower}, mejorando los tiempos de respuesta y la confiabilidad del servicio [especificar volumen o porcentaje alcanzado].`,
+        `Diseñé e implementé mejoras en ${cleanLower}, alineando las entregas con las prioridades estratégicas de ${effectiveTarget} [especificar impacto o métrica alcanzada].`,
       ],
     };
+
   } catch (err: any) {
     console.error('Error en rewriteCvSectionAction:', err);
     return { success: false, suggestions: [], error: err.message };
   }
 }
+
 
 export type CvSlugAvailabilityResult = {
   available: boolean;

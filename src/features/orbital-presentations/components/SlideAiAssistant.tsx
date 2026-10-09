@@ -26,6 +26,8 @@ interface SlideAiAssistantProps {
   presentationTitle?: string;
   targetAudience?: TargetAudience;
   tone?: PresentationTone;
+  slideIndex?: number;
+  totalSlides?: number;
   onApplyEnhancements: (updates: Partial<PresentationSlide>) => void;
 }
 
@@ -34,6 +36,8 @@ export function SlideAiAssistant({
   presentationTitle,
   targetAudience = 'investors',
   tone = 'orbital_cyber',
+  slideIndex,
+  totalSlides,
   onApplyEnhancements,
 }: SlideAiAssistantProps) {
   const [isPending, startTransition] = useTransition();
@@ -41,6 +45,7 @@ export function SlideAiAssistant({
     'action_title' | 'punchy_bullets' | 'speaker_notes' | 'all_enhancements' | null
   >(null);
   const [lastRationale, setLastRationale] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [appliedAction, setAppliedAction] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
@@ -49,6 +54,7 @@ export function SlideAiAssistant({
   ) => {
     setActiveAction(action);
     setLastRationale(null);
+    setErrorMessage(null);
 
     startTransition(async () => {
       const res = await refineSlideWithAiAction({
@@ -58,6 +64,8 @@ export function SlideAiAssistant({
           presentationTitle,
           targetAudience,
           tone,
+          slideIndex,
+          totalSlides,
         },
       });
 
@@ -86,6 +94,8 @@ export function SlideAiAssistant({
         setLastRationale(res.data.rationale || 'Mejora aplicada con éxito.');
         setAppliedAction(action);
         setTimeout(() => setAppliedAction(null), 3000);
+      } else if (!res.success) {
+        setErrorMessage(res.error || 'No fue posible optimizar la diapositiva.');
       }
       setActiveAction(null);
     });
@@ -212,8 +222,15 @@ export function SlideAiAssistant({
               💡 {lastRationale}
             </div>
           )}
+
+          {errorMessage && !isPending && (
+            <div className="p-2 rounded-xl bg-rose-950/40 border border-rose-500/30 text-[10px] text-rose-300 font-mono">
+              ⚠️ {errorMessage}
+            </div>
+          )}
         </>
       )}
     </div>
   );
 }
+

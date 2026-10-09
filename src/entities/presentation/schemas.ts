@@ -269,3 +269,23 @@ export function generatePresentationSlugAlternatives(baseSlug: string): string[]
   ).slice(0, 3);
 }
 
+/**
+ * Esquema de validación Zod para el Asistente Granular de IA por Diapositiva (Slide-Level AI Copilot)
+ */
+export const refineSlideWithAiSchema = z.object({
+  slide: presentationSlideSchema,
+  action: z.enum(['action_title', 'punchy_bullets', 'speaker_notes', 'all_enhancements']),
+  presentationContext: z
+    .object({
+      presentationTitle: z.string().optional(),
+      targetAudience: targetAudienceSchema.optional(),
+      tone: presentationToneSchema.optional(),
+      slideIndex: z.number().optional(),
+      totalSlides: z.number().optional(),
+    })
+    .optional(),
+  userId: z.string().optional(),
+});
+
+export type RefineSlideWithAiInput = z.infer<typeof refineSlideWithAiSchema>;
+

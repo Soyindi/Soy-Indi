@@ -991,8 +991,10 @@ export function SmartCvBuilder({
                     currentText={formData.content.summary}
                     type="SUMMARY"
                     targetRole={formData.targetRole}
+                    skills={formData.content.skills}
                     onApply={(newText) => handleContentChange('summary', newText)}
                   />
+
                 </div>
                 <textarea
                   rows={3}
@@ -1096,20 +1098,29 @@ export function SmartCvBuilder({
                       />
                     </div>
 
-                    {/* Viñetas con Asistente de Redacción Individual */}
+                    {/* Viñetas con Asistente de Redacción Individual Contextualizado */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <label className="text-[11px] font-mono text-zinc-400">Logros Cuantificables</label>
                         <InlineAiWriter
-                          currentText={exp.bullets[0] || ''}
+                          currentText={exp.bullets.join('\n') || ''}
                           type="BULLET"
+                          role={exp.role}
+                          company={exp.company}
                           targetRole={formData.targetRole}
+                          skills={formData.content.skills}
                           onApply={(newText) => {
                             const updated = [...formData.content.experience];
-                            if (updated[idx].bullets.length === 0) {
-                              updated[idx].bullets = [newText];
+                            // Si el texto generado contiene varias líneas o viñetas, dividirlas
+                            const newLines = newText
+                              .split('\n')
+                              .map((b) => b.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim())
+                              .filter(Boolean);
+
+                            if (newLines.length > 0) {
+                              updated[idx].bullets = newLines;
                             } else {
-                              updated[idx].bullets[0] = newText;
+                              updated[idx].bullets = [newText.trim()];
                             }
                             handleContentChange('experience', updated);
                           }}
@@ -1133,6 +1144,7 @@ export function SmartCvBuilder({
                       />
                     </div>
                   </div>
+
                 ))}
               </div>
             </div>

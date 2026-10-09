@@ -8,6 +8,9 @@ interface InlineAiWriterProps {
   currentText: string;
   type: 'SUMMARY' | 'BULLET';
   targetRole?: string;
+  company?: string;
+  role?: string;
+  skills?: string[];
   onApply: (newText: string) => void;
 }
 
@@ -15,6 +18,9 @@ export function InlineAiWriter({
   currentText,
   type,
   targetRole,
+  company,
+  role,
+  skills,
   onApply,
 }: InlineAiWriterProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,6 +36,9 @@ export function InlineAiWriter({
         type,
         mode,
         targetRole,
+        company,
+        role,
+        skills,
       });
 
       if (res.success && res.suggestions.length > 0) {
