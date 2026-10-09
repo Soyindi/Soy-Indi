@@ -28,12 +28,13 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
   const router = useRouter();
   const [interval, setInterval] = useState<PlanInterval>('monthly');
   const [selectedTier, setSelectedTier] = useState<PlanTier | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<'fintoc' | 'webpay' | 'mercadopago'>('fintoc');
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const { data: sessionData } = useSession();
   const isAuthenticated = !!sessionData?.user;
 
-  const handleStartMercadoPagoCheckout = async (tier: PlanTier) => {
+  const handleStartCheckout = async (tier: PlanTier) => {
     if (!isAuthenticated) {
       router.push(`/login?mode=signup&callbackUrl=/pricing`);
       return;
@@ -44,22 +45,26 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
       setIsLoadingCheckout(true);
       setCheckoutError(null);
 
-      const res = await fetch('/api/checkout/mercadopago', {
+      const res = await fetch('/api/checkout/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier, planInterval: interval }),
+        body: JSON.stringify({
+          tier,
+          planInterval: interval,
+          provider: selectedProvider,
+        }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Error al iniciar checkout con Mercado Pago');
+        throw new Error(data.error || 'Error al iniciar la sesión de pago.');
       }
 
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       }
     } catch (err: any) {
-      console.error('Error checkout Mercado Pago:', err);
+      console.error('Error checkout:', err);
       setCheckoutError(err.message || 'Error al procesar el pago.');
       setIsLoadingCheckout(false);
       setSelectedTier(null);
@@ -118,6 +123,53 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
             <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-zinc-950 font-black text-[10px] tracking-tight">
               HASTA 60% OFF 🔥
             </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Selector Ergonómico de Método de Pago (Fintoc A2A ⚡ Recomendado vs Tarjeta Oneclick 💳) */}
+      <div className="flex flex-col items-center justify-center gap-3 mb-8">
+        <span className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">
+          Método de Pago Seguro
+        </span>
+        <div className="inline-flex p-1.5 rounded-2xl glass-panel border border-white/10 bg-zinc-950/70 shadow-lg">
+          <button
+            type="button"
+            onClick={() => setSelectedProvider('fintoc')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
+              selectedProvider === 'fintoc'
+                ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-zinc-950 shadow-md shadow-emerald-500/20'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <span>⚡ Transferencia Directa (Fintoc)</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-950/60 text-emerald-300 font-black text-[10px] hidden sm:inline">
+              98% Éxito
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedProvider('webpay')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
+              selectedProvider === 'webpay'
+                ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-zinc-950 shadow-md shadow-blue-500/20'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <span>💳 Tarjeta Débito / Crédito</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedProvider('mercadopago')}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer min-h-[44px] ${
+              selectedProvider === 'mercadopago'
+                ? 'bg-sky-400 text-zinc-950 shadow-md'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            <span>Mercado Pago</span>
           </button>
         </div>
       </div>
@@ -250,7 +302,7 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
               <div>
                 <button
                   type="button"
-                  onClick={() => handleStartMercadoPagoCheckout(tierKey)}
+                  onClick={() => handleStartCheckout(tierKey)}
                   disabled={isLoadingCheckout}
                   className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer disabled:opacity-50 active:scale-[0.98] ${
                     isPro

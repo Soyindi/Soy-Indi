@@ -1,8 +1,12 @@
 import { z } from 'zod';
 
+export const paymentProviderSchema = z.enum(['fintoc', 'webpay', 'mercadopago']);
+
 export const createCheckoutPreferenceSchema = z.object({
   tier: z.enum(['starter', 'pro', 'max']).default('pro'),
   planInterval: z.enum(['monthly', 'semiannual']).default('semiannual'),
+  provider: paymentProviderSchema.default('fintoc'),
+  affiliateCode: z.string().optional(),
 });
 
 export type CreateCheckoutPreferenceInput = z.infer<typeof createCheckoutPreferenceSchema>;
@@ -20,6 +24,47 @@ export const mercadopagoWebhookPayloadSchema = z.object({
 });
 
 export type MercadopagoWebhookPayload = z.infer<typeof mercadopagoWebhookPayloadSchema>;
+
+// Contrato estricto para recepción de Webhooks de Fintoc A2A / PAC Digital
+export const fintocWebhookPayloadSchema = z.object({
+  id: z.string(),
+  type: z.enum([
+    'invoice.payment_succeeded',
+    'invoice.payment_failed',
+    'subscription.created',
+    'payment_intent.succeeded',
+    'payment_intent.failed',
+  ]),
+  created_at: z.string().optional(),
+  data: z.object({
+    id: z.string(),
+    object: z.string().optional(),
+    amount: z.number().int().positive(),
+    currency: z.string().default('CLP'),
+    status: z.string(),
+    customer_id: z.string().optional(),
+    subscription_id: z.string().optional(),
+    metadata: z.record(z.string(), z.any()).optional(),
+  }),
+});
+
+export type FintocWebhookPayload = z.infer<typeof fintocWebhookPayloadSchema>;
+
+// Contrato para transacciones Webpay Oneclick / Transbank
+export const webpayTransactionPayloadSchema = z.object({
+  buyOrder: z.string(),
+  sessionId: z.string().optional(),
+  amount: z.number().int().positive(),
+  tbkUser: z.string().optional(),
+  authorizationCode: z.string().optional(),
+  responseCode: z.number().int().optional(),
+  paymentTypeCode: z.string().optional(),
+  sharesNumber: z.number().int().optional(),
+  status: z.enum(['AUTHORIZED', 'FAILED', 'REVERSED', 'NULLIFIED']).default('AUTHORIZED'),
+});
+
+export type WebpayTransactionPayload = z.infer<typeof webpayTransactionPayloadSchema>;
+
 
 export const timeRemainingSchema = z.object({
   days: z.number().int().min(0),

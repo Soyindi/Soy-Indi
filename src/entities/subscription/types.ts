@@ -1,5 +1,6 @@
 export type PlanTier = 'starter' | 'pro' | 'max';
 export type PlanInterval = 'monthly' | 'semiannual';
+export type PaymentProvider = 'fintoc' | 'webpay' | 'mercadopago';
 
 export interface PlanFeature {
   text: string;
