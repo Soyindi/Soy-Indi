@@ -43,6 +43,10 @@ INDI nace como la evolución definitiva de la plataforma de identidad digital, s
 C:\Users\Matías Riquelme\Desktop\Indi\
 ├── .github/
 │   └── workflows/ci.yml             # Linting estricto, chequeo de tipos y pruebas automáticas
+### Actualización de Arquitectura Q4 2026: Flow.cl & Sincronizador de Retorno Inmediato
+- Endpoint /checkout/return/flow: Sincronizador HTTP POST síncrono con verificación /payment/getStatus en Flow y batch atómico en Turso SQLite.
+- Adaptador FlowAdapter y Registry unificado paymentRegistry.
+
 ├── src/
 │   ├── app/                         # App Router de Next.js (Rutas, Layouts, Providers, Edge Handlers)
 │   │   ├── api/                     # Handlers específicos (Auth, Webhooks, Edge Endpoints)

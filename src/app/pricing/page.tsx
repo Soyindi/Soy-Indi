@@ -9,7 +9,12 @@ export const metadata: Metadata = {
   description: '3 días de prueba gratis. Luego solo $2.500 CLP al mes o $6.000 cada 6 meses para desbloquear Tarjetas Digitales, Métricas, Smart CV y Presentaciones.',
 };
 
-export default function PricingPage() {
+import { checkUserEntitlementAction } from '@/features/pricing/actions';
+
+export default async function PricingPage() {
+  const entitlement = await checkUserEntitlementAction().catch(() => null);
+  const activeTier = entitlement?.status === 'ACTIVE' ? entitlement.tier : null;
+
   return (
     <div className="min-h-screen py-16 relative overflow-hidden">
       {/* Luces volumétricas de fondo */}
@@ -28,7 +33,7 @@ export default function PricingPage() {
       </div>
 
       {/* Sección Principal de Precios */}
-      <PricingSection showTitle={true} />
+      <PricingSection showTitle={true} activeTier={activeTier} />
 
       {/* Sección FAQ */}
       <div className="mt-24 max-w-4xl mx-auto px-6">

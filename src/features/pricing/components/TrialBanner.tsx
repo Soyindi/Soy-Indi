@@ -21,10 +21,16 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>INDI Pro Activo</span>
+              <span>
+                {entitlement.tier === 'starter'
+                  ? 'INDI Plan Starter Activo'
+                  : entitlement.tier === 'max'
+                  ? 'INDI Plan Max Activo'
+                  : 'INDI Pro Activo'}
+              </span>
             </span>
             <p className="text-xs text-zinc-300 font-normal">
-              Acceso ilimitado a todas las herramientas profesionales • <span className="text-zinc-400">{entitlement.daysRemaining} días restantes del ciclo</span>
+              Acceso completo a herramientas profesionales • <span className="text-zinc-400">{entitlement.daysRemaining} días restantes del ciclo</span>
             </p>
           </div>
           <Link

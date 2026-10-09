@@ -134,10 +134,13 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 
 ---
 
-### 9. 💳 Infraestructura de Pagos, Aceptación de Tarjetas & Protocolo de Migración 2026
+### 9. 💳 Infraestructura de Pagos, Aceptación de Tarjetas & Protocolo Flow.cl 2026
+- **Integración Nativa con Flow.cl (Pasarela Principal en Chile)**: Soporte completo para Webpay Plus (Débito Redcompra, Crédito Visa/Mastercard/Amex, Prepago Mach/Tenpo/CuentaRUT), transferencias bancarias y Servipag para personas naturales y empresas sin barreras burocráticas del SII.
+- **Sincronizador Inmediato Post-Pago (`/checkout/return/flow`)**: Receptor directo vía HTTP POST de Flow con verificación criptográfica anti-spoofing (`/payment/getStatus`). Actualiza atómicamente a `ACTIVE` la cuenta del usuario en Turso SQLite con `db.batch()`, erradicando desfases de webhook o demoras de propagación.
+- **Página de Éxito Contextual & Auto-Refresco (`/checkout/success`)**: Detecta automáticamente el medio de pago (Flow, Fintoc, Mercado Pago), muestra el tier contratado (Starter, Pro, Max) y sincroniza la sesión en cliente vía `router.refresh()` sin necesidad de recargar manualmente.
 - **Ecosistema Multi-Tier ("El Semestre Irresistible")**: Integración nativa para planes Starter ($2.500 CLP), Pro ($4.990 CLP) y Max ($8.990 CLP) con facturación mensual o semestral con descuento.
 - **Deep Research & Auditoría Forense de Rechazo de Tarjetas**: Estandarización de especificaciones de investigación para Gemini (`docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_PAYMENT_GATEWAY_MIGRATION_2026.md` y `.json`), analizando causas de rechazo con tarjetas de débito/prepago (Mach, Tenpo, Dale Coopeuch, CuentaRUT) bajo Mercado Pago Checkout Pro.
-- **Hoja de Ruta de Migración a Pasarelas de Alta Tasa de Aprobación (>95%)**: Evaluación y diseño de adaptador agnóstico (`PaymentProviderAdapter`) para migración sin interrupción de servicio hacia alternativas líderes en Chile (Fintoc A2A, Webpay Plus / Transbank, Flow.cl, Stripe Chile).
+- **Hoja de Ruta de Adaptadores Agnósticos (`PaymentProviderAdapter`)**: Arquitectura multi-pasarela unificada (`paymentRegistry`) que permite alternar o añadir proveedores (Flow.cl, Fintoc A2A, Webpay Plus / Transbank, Mercado Pago) manteniendo un único contrato de suscripción.
 
 ---
 

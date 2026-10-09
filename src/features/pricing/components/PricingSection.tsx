@@ -22,11 +22,17 @@ import {
 
 interface PricingSectionProps {
   showTitle?: boolean;
+  activeTier?: PlanTier | null;
+  activePlanInterval?: PlanInterval | null;
 }
 
-export function PricingSection({ showTitle = true }: PricingSectionProps) {
+export function PricingSection({ 
+  showTitle = true,
+  activeTier = null,
+  activePlanInterval = null,
+}: PricingSectionProps) {
   const router = useRouter();
-  const [interval, setInterval] = useState<PlanInterval>('monthly');
+  const [interval, setInterval] = useState<PlanInterval>(activePlanInterval || 'monthly');
   const [selectedTier, setSelectedTier] = useState<PlanTier | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<'flow' | 'fintoc' | 'webpay' | 'mercadopago'>('flow');
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
@@ -300,31 +306,38 @@ export function PricingSection({ showTitle = true }: PricingSectionProps) {
 
               {/* Botón de Checkout Ergonómico touch target >= 44px */}
               <div>
-                <button
-                  type="button"
-                  onClick={() => handleStartCheckout(tierKey)}
-                  disabled={isLoadingCheckout}
-                  className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer disabled:opacity-50 active:scale-[0.98] ${
-                    isPro
-                      ? 'bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 shadow-amber-500/20'
-                      : isMax
-                      ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white shadow-purple-500/20'
-                      : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
-                  }`}
-                >
-                  {isBusy ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Conectando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-4 h-4" />
-                      <span>Elegir {tier.name}</span>
-                      <ArrowRight className="w-3.5 h-3.5 opacity-80" />
-                    </>
-                  )}
-                </button>
+                {activeTier === tierKey ? (
+                  <div className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 shadow-lg">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>Tu Plan Actual (Activo)</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleStartCheckout(tierKey)}
+                    disabled={isLoadingCheckout}
+                    className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer disabled:opacity-50 active:scale-[0.98] ${
+                      isPro
+                        ? 'bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 shadow-amber-500/20'
+                        : isMax
+                        ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white shadow-purple-500/20'
+                        : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
+                    }`}
+                  >
+                    {isBusy ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Conectando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4" />
+                        <span>{activeTier ? `Cambiar a ${tier.name}` : `Elegir ${tier.name}`}</span>
+                        <ArrowRight className="w-3.5 h-3.5 opacity-80" />
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           );

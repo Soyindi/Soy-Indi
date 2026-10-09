@@ -75,7 +75,7 @@ export class FlowAdapter implements PaymentProviderAdapter {
     try {
       const commerceOrder = `indi_${params.userId.slice(0, 8)}_${Date.now()}`;
       const urlConfirmation = `${params.origin}/api/webhooks/flow`;
-      const urlReturn = `${params.origin}/checkout/success?tier=${params.tier}&plan=${params.planInterval}&provider=flow`;
+      const urlReturn = `${params.origin}/checkout/return/flow`;
 
       const optionalMetadata = JSON.stringify({
         userId: params.userId,
