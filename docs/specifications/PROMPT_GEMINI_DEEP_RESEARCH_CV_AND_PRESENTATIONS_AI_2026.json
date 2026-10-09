@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "title": "Deep Research Maestro: Arquitectura de Inferencia, Anti-Alucinación Estricta y Estructuración Ejecutiva para Smart CV y Presentaciones Cinemáticas",
+    "version": "2026.1.0",
+    "platform": "INDI (https://soyindi.cl)",
+    "date": "2026-10-09",
+    "author": "Tech Lead & Principal AI Architect",
+    "runtime_stack": {
+      "framework": "Next.js 16 (App Router) + React 19",
+      "language": "TypeScript 6.0 Strict",
+      "ai_inference_pipeline": "Google Gemini 2.0 / 2.5 Flash & Pro + OpenRouter / NVIDIA NIM Fallback",
+      "cv_engine": "Smart CV Engine (ATS 2026, EU AI Act, Google XYZ / STAR Framework, jsPDF Client)",
+      "presentations_engine": "Orbital Presentations 16:9 (SCQA McKinsey, Bento Grids, Dynamic Pacing, Glassmorphism 2.0)",
+      "styling": "Tailwind CSS v4 + OKLCH Gamut P3",
+      "persistence": "Turso (LibSQL Serverless SQLite) + Drizzle ORM (Zero-Binary)"
+    }
+  },
+  "execution_directives": {
+    "target_model": "Gemini 2.5 Pro / Ultra / Flash Thinking (Deep Research Mode)",
+    "role": "Principal AI Architect, Staff NLP Engineer & Executive Communications Director (McKinsey / BCG Style Lead)",
+    "tone": "Ultra-riguroso, técnico de nivel industrial, libre de obviedades y orientado a clientes corporativos de alta exigencia",
+    "temperature": 0.2,
+    "top_p": 0.95,
+    "strict_grounding": true,
+    "zero_hallucination_guarantee": true
+  },
+  "research_pillars": [
+    {
+      "pillar_id": "pillar_1_grounding_and_hallucination_elimination",
+      "title": "Arquitectura de Grounding Estricto y Eliminación Absoluta de Alucinaciones",
+      "objective": "Garantizar que el modelo opere como un transductor semántico fiel sin inventar credenciales, números, empleos ni métricas no suministradas por el usuario.",
+      "key_inquiries": [
+        "Mecanismos de anclaje (Faithful Grounding): Diseño de prompts y contratos de validación para forzar dependencia causal estricta del input.",
+        "Patrón 'Extract or Flag': En lugar de adivinar porcentajes o métricas en viñetas de CV, marcar needs_metric: true o emitir tokens de requerimiento de dato para el usuario.",
+        "Detección de inferencias no autorizadas: Técnicas de Chain-of-Verification (CoVe) y Self-Consistency específicas para currículums y propuestas comerciales.",
+        "Sanitización regulatoria (EU AI Act): Exclusión innegociable de datos sensibles (edad, religión, estado civil, foto) sin pérdida de coherencia profesional."
+      ]
+    },
+    {
+      "pillar_id": "pillar_2_executive_subtraction_and_structural_purity",
+      "title": "Substracción Ejecutiva y Erradicación de Meta-Etiquetas Obvias",
+      "objective": "Eliminar etiquetas redundantes ('Introducción:', 'Conclusión:', 'Objetivo:') y reemplazarlas por titulares asertivos de síntesis tipo consultoría de estrategia.",
+      "key_inquiries": [
+        "Principio 'Show, Don't Label': Cómo estructurar diapositivas y bloques de CV donde la posición y el peso tipográfico transmitan la función sin prefijos pueriles.",
+        "Titulares asertivos (Action Titles): Transformar títulos genéricos ('Introducción al Mercado') en tesis concluyentes de máximo 15 palabras ('La fragmentación del mercado abre una oportunidad de $12M en automatización').",
+        "Reglas de economía verbal para audiencias C-Level: Eliminación de muletillas de IA ('En el mundo actual...', 'Es crucial destacar...', 'A continuación se presenta...').",
+        "Arquitectura de subtítulos y bajadas: Complementariedad sinérgica entre titular, bajada explicativa y viñetas de alto impacto."
+      ]
+    },
+    {
+      "pillar_id": "pillar_3_smart_cv_industrial_refinement",
+      "title": "Ingeniería de Inferencia para Smart CV (Estándar ATS 2026 & Google XYZ)",
+      "objective": "Maximizar la conversión de postulaciones laborales mediante síntesis basada en logros cuantificables y compatibilidad algorítmica con parsers globales.",
+      "key_inquiries": [
+        "Implementación pura de Google XYZ: 'Logré [X], medido por [Y], haciendo [Z]' sin generar métricas artificiales.",
+        "Compatibilidad con ATS líderes (Workday, Taleo, Greenhouse, Lever): Jerarquías semánticas y legibilidad de tokens en exportaciones jsPDF.",
+        "Normalización de cargos y habilidades: Mapeo hacia taxonomías O*NET y ESCO sin distorsionar la trayectoria real del candidato.",
+        "Manejo de vacíos temporales y transiciones de carrera: Estrategias de redacción orientadas a competencias transferibles sin camuflajes falsos."
+      ]
+    },
+    {
+      "pillar_id": "pillar_4_orbital_presentations_mckinsey_scqa",
+      "title": "Estructuración Cinematográfica 16:9 y Narrativa SCQA para Presentaciones",
+      "objective": "Crear barajas de diapositivas con ritmo narrativo impecable, distribución Bento Grid y notas de orador de alto calibre.",
+      "key_inquiries": [
+        "Metodología SCQA (Situación, Complicación, Pregunta, Respuesta): Despliegue narrativo natural a lo largo de 3 a 10 diapositivas.",
+        "Pacing y asignación de arquetipos visuales: Reglas para determinar cuándo una diapositiva debe ser 'Metrics Bento', 'Comparison Delta', 'Architecture Concept' o 'Timeline Roadmap'.",
+        "Notas del orador ejecutivas: Guiones en primera persona de 45-60 segundos centrados en insights no visibles en la pantalla, no en leer las viñetas.",
+        "Composición 16:9 sin saturación: Límite cognitivo de 3-4 viñetas o bloques bento para retención óptima en audiencias de directores e inversionistas."
+      ]
+    },
+    {
+      "pillar_id": "pillar_5_few_shot_contracts_and_json_governance",
+      "title": "Gobernanza de Esquemas Zod, Few-Shot Prompts y Recuperación Heurística",
+      "objective": "Garantizar 100% de cumplimiento sintáctico y semántico mediante Structured Outputs tipados y degradación elegante sin romper la experiencia de usuario.",
+      "key_inquiries": [
+        "Contratos Zod en Server Actions: Integración de responseSchema con Gemini y manejo de errores de truncamiento de tokens.",
+        "Diseño de Few-Shot Prompts de Grado Industrial: Pares input-output contrastados que ilustren claramente la diferencia entre redacción mediocre y excelencia ejecutiva.",
+        "Estrategia de Fallback Heurístico Local: Algoritmos deterministas de respaldo (SAP Engine / cv-text-parser) ante caídas de API o latencia extrema.",
+        "Optimización de costos y latencia: Balance entre modelos Flash (para extracción e iteración rápida) y modelos Pro (para refinamiento ejecutivo global)."
+      ]
+    }
+  ],
+  "expected_deliverables": [
+    "Matriz exhaustiva de directivas de sistema (System Prompts) listas para producción.",
+    "Catálogo de Few-Shot Examples comparativos (Bad vs Good vs World-Class).",
+    "Reglas de heurística de validación pre y post inferencia.",
+    "Hoja de ruta de integración para INDI (src/features/ai-smart-cv y src/features/orbital-presentations)."
+  ]
+}

@@ -1915,3 +1915,16 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 
 
 
+
+---
+
+## 45. Inferencia de IA de Clase Mundial: Anti-Alucinaciones, Faithful Grounding & Estructuracion Ejecutiva (Fase 2026)
+
+### 45.1 Especificacion de Deep Research para Gemini 2.5
+- Se formaliza la especificacion tecnica en JSON ([docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_CV_AND_PRESENTATIONS_AI_2026.json](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_CV_AND_PRESENTATIONS_AI_2026.json)) y Markdown ([docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_CV_AND_PRESENTATIONS_AI_2026.md](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_CV_AND_PRESENTATIONS_AI_2026.md)) para guiar la optimizacion de los copilotos de IA en Smart CV y Presentaciones Cinematicas.
+- Aborda los 5 pilares criticos de calidad de inferencia:
+  1. **Faithful Grounding & Anti-Alucinacion**: El modelo no puede inventar empleos, metricas ni credenciales ausentes; si falta una metrica en el CV, marca needs_metric: true en lugar de inventar porcentajes.
+  2. **Substraccion Ejecutiva (Show, Don't Label)**: Prohibicion tajante de prefijos y meta-etiquetas obvias (*Introduccion:*, *Conclusion:*, *Objetivo:*); adopcion de titulares asertivos de sintesis (*Action Titles*) de maximo 15 palabras.
+  3. **Smart CV de Alto Impacto (Google XYZ & ATS 2026)**: Estructuracion rigurosa *Logre [X], medido por [Y], haciendo [Z]* con vocabulario adaptado a directivos y validacion algoritmica para parsers globales (Workday, Greenhouse, Lever).
+  4. **Metodologia McKinsey SCQA en Presentaciones 16:9**: Transicion narrativa organica (Situacion -> Complicacion -> Pregunta -> Respuesta) con distribucion Bento Grid y notas de orador ejecutivas (~60s) que aportan contexto en lugar de leer las laminas.
+  5. **Gobernanza Zod & Fallbacks Heuristicos Locales**: Inferencia fuertemente tipada con degradacion transparente a los motores deterministas locales (cv-text-parser.ts, document-parser.ts).

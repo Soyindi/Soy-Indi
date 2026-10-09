@@ -285,6 +285,12 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - **Enfoque Multi-Pilar E-E-A-T en Chile**: Toda página de producto y cluster programático debe demostrar experiencia, autoridad y confianza adaptada al mercado chileno (precios en CLP, medios de pago locales, compatibilidad ATS en empresas chilenas, integración vCard 4.0 con prefijo +56).
    - **Monitoreo de Calidad**: La integridad del prompt y sus contratos está respaldada por la suite unitaria `tests/unit/google-chile-seo-research-prompt.test.ts`.
 
+22. **Gobernanza de Inferencia de IA de Grado Industrial: Anti-Alucinaciones & Estructuracion Ejecutiva (CV & Presentaciones 2026):**
+   - **Especificacion de Deep Research para Gemini 2.5**: La arquitectura de prompting, eliminacion de alucinaciones y estructura ejecutiva esta formalizada en [docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_CV_AND_PRESENTATIONS_AI_2026.json](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_CV_AND_PRESENTATIONS_AI_2026.json) y [docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_CV_AND_PRESENTATIONS_AI_2026.md](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_CV_AND_PRESENTATIONS_AI_2026.md).
+   - **Faithful Grounding Innegociable**: La IA opera como un transductor semantico fiel. Queda estrictamente prohibido que la IA invente porcentajes, ventas, puestos o credenciales no presentes en el input del usuario. Si un logro en el CV carece de numero real, se marca needs_metric: true en lugar de fabular datos ficticios.
+   - **Substraccion Ejecutiva (Show, Don't Label)**: Se prohibe tajantemente incluir encabezados o prefijos redundantes de IA como Introduccion:, Conclusion:, Objetivo:, o muletillas como En el entorno actual... Toda diapositiva debe titularse con un Action Title asertivo de sintesis tipo consultoria de estrategia (maximo 15 palabras) y las notas de orador deben estructurarse como guiones directivos para hablar 45-60 segundos frente a clientes exigentes.
+   - **Blindaje y Pruebas**: Esta gobernanza esta validada al 100% por la suite unitaria 	ests/unit/ai-cv-presentations-research-prompt.test.ts.
+
 ---
 
 
