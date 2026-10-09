@@ -1947,6 +1947,10 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Barra OSD Ergonómica en Pantalla Completa & Navegación por Teclado**:
   - `SlideViewer.tsx` despliega un menú flotante inferior de cristal esmerilado en modo fullscreen nativo con botones accesibles (touch targets $\ge 44\text{px}$) para navegación anterior/siguiente, contador `Slide X / Y` y botón de restaurar/salir (`Esc`).
   - Navegación por teclado global (`ArrowRight`, `ArrowLeft`, `Space`) implementada en `SlideViewer.tsx` y `PresentationStudio.tsx` con guardrail que ignora eventos si el foco activo está en un elemento `input`, `textarea` o editable.
+- **Tipografía Adaptativa & Cero Desbordamiento (Zero Text Cutoff)**:
+  - `SlideViewer.tsx` incorpora dimensionamiento tipográfico fluido condicionado por el volumen de caracteres del `actionTitle` (>90 caracteres conmuta a escala compacta `text-lg sm:text-xl md:text-2xl lg:text-3xl`) y `title` (>60 caracteres conmuta a `text-xl sm:text-2xl md:text-3xl`).
+  - La grilla de `keyPoints` adapta su topología (1 columna para $\le 2$ puntos, 2 columnas para $>2$) con clases de envoltura estricta `break-words`.
+  - El contenedor raíz incorpora `overflow-y-auto` reactivo en modo fullscreen y móvil para salvaguardar el 100% de la visibilidad ante textos extensos o pantallas reducidas.
 - **Suite de Pruebas**:
-  - `tests/unit/presentation-sentence-sanitizer.test.ts` valida al 100% la reconstitución sintáctica, división de oraciones con abreviaturas y preservación de palabras completas sin mutaciones destructivas.
+  - `tests/unit/presentation-sentence-sanitizer.test.ts` y `tests/unit/presentation-decomposition.test.ts` validan al 100% la reconstitución sintáctica, división de oraciones con abreviaturas, extracción de contrastes y secuencias completas sin cortes artificiales.
 

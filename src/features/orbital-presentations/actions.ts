@@ -425,12 +425,12 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             : (sectionData?.points && sectionData.points.length >= 2
                 ? sectionData.points.slice(0, 3).map((pt, pIdx) => ({
                     step: `Punto 0${pIdx + 1}`,
-                    title: pt.slice(0, 30),
+                    title: truncateByWordBoundary(pt, 50),
                     description: pt,
                   }))
                 : takeaways.slice(0, 3).map((tk, tIdx) => ({
                     step: `Hito 0${tIdx + 1}`,
-                    title: tk.slice(0, 30),
+                    title: truncateByWordBoundary(tk, 50),
                     description: tk,
                   })));
 
@@ -773,7 +773,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         timelineData: isLast
           ? points.slice(0, 3).map((pt, pIdx) => ({
               step: `Hito 0${pIdx + 1}`,
-              title: pt.slice(0, 30),
+              title: truncateByWordBoundary(pt, 50),
               description: pt,
             }))
           : undefined,

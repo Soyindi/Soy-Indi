@@ -167,6 +167,29 @@ Consolidaremos la integración con Turso LibSQL y modelos de visión de NVIDIA N
       // Verificar que las secciones semánticas no están vacías
       expect(analysis.semanticSections.length).toBeGreaterThan(0);
       expect(analysis.semanticSections[0].actionSummary.length).toBeGreaterThan(10);
+      // Las secciones no deben contener oraciones partidas por slice rígido
+      analysis.semanticSections.forEach((sec) => {
+        sec.points.forEach((pt) => {
+          expect(pt.length).toBeGreaterThan(5);
+        });
+      });
+    });
+
+    it('extrae secuencias y contrastes preservando oraciones completas', async () => {
+      const { analyzeDocumentContent } = await import('@/features/orbital-presentations/lib/document-parser');
+      const doc = `
+# Plan de Acción
+El problema anterior era complejo, lento y costoso para la operación.
+Nuestra solución implementa una mejora integral con un sistema automatizado y escalable.
+Fase 1: Configurar la infraestructura en la nube y preparar los microservicios.
+Fase 2: Ejecutar la migración de base de datos relacional hacia Turso LibSQL.
+`;
+      const res = analyzeDocumentContent(doc);
+      expect(res.contrastBlocks.length).toBeGreaterThan(0);
+      expect(res.contrastBlocks[0].problemAspect).toContain('complejo, lento y costoso');
+      expect(res.contrastBlocks[0].solutionAspect).toContain('mejora integral con un sistema');
+      expect(res.sequenceSteps.length).toBe(2);
+      expect(res.sequenceSteps[0].detail).toBe('Configurar la infraestructura en la nube y preparar los microservicios');
     });
 
     it('decodifica texto plano desde base64 con extractTextFromDocument', async () => {

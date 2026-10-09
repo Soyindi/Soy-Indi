@@ -349,8 +349,8 @@ export function analyzeDocumentContent(
     const pairsCount = Math.min(3, Math.min(problemSentences.length, solutionSentences.length));
     for (let i = 0; i < pairsCount; i++) {
       contrastBlocks.push({
-        problemAspect: problemSentences[i].slice(0, 100),
-        solutionAspect: solutionSentences[i].slice(0, 100),
+        problemAspect: sanitizeSentenceClause(problemSentences[i]),
+        solutionAspect: sanitizeSentenceClause(solutionSentences[i]),
       });
     }
   }
@@ -363,10 +363,11 @@ export function analyzeDocumentContent(
   for (const sm of stepMatches) {
     const stepLabel = sm[1] ? sm[1] : String(stepIdx);
     if (sm[2] && sm[2].trim().length > 4) {
+      const fullDetail = sm[2].trim();
       sequenceSteps.push({
         stepIndex: stepIdx++,
-        title: `Fase ${stepLabel}: ${sm[2].trim().slice(0, 35)}`,
-        detail: sm[2].trim(),
+        title: `Fase ${stepLabel}: ${truncateByWordBoundary(fullDetail, 60)}`,
+        detail: fullDetail,
       });
       if (sequenceSteps.length >= 5) break;
     }

@@ -116,8 +116,8 @@ export function SlideViewer({
   return (
     <div
       ref={slideRef}
-      className={`relative w-full aspect-[16/9] min-h-[440px] sm:min-h-[500px] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between p-6 sm:p-10 border border-white/10 select-none transition-all duration-500 ${
-        isSlideFullscreen ? '!rounded-none !min-h-screen !aspect-auto !p-8 sm:!p-14' : ''
+      className={`relative w-full aspect-[16/9] min-h-[440px] sm:min-h-[500px] rounded-3xl shadow-2xl flex flex-col justify-between p-6 sm:p-10 border border-white/10 select-none transition-all duration-500 overflow-y-auto sm:overflow-hidden ${
+        isSlideFullscreen ? '!rounded-none !min-h-screen !aspect-auto !p-8 sm:!p-14 !overflow-y-auto' : ''
       }`}
       style={{
         background: theme.backgroundGradient,
@@ -232,13 +232,17 @@ export function SlideViewer({
             }`}
           >
             {/* Título, Action Title (McKinsey Pyramid Principle) y Subtítulo */}
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               {slide.actionTitle ? (
                 <div>
                   <div className="inline-flex items-center gap-2 mb-2 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-mono text-cyan-300 font-semibold tracking-wider uppercase">
                     <span>Action Title • Principio de Pirámide</span>
                   </div>
-                  <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-white mb-2 leading-snug break-words">
+                  <h2 className={`font-extrabold tracking-tight text-white mb-2 leading-snug break-words ${
+                    (slide.actionTitle?.length || 0) > 90
+                      ? 'text-lg sm:text-xl md:text-2xl lg:text-3xl'
+                      : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl'
+                  }`}>
                     {slide.actionTitle}
                   </h2>
                   <p className="text-xs sm:text-sm text-zinc-400 font-mono mb-2 break-words">
@@ -246,12 +250,16 @@ export function SlideViewer({
                   </p>
                 </div>
               ) : (
-                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-2 leading-tight">
+                <h2 className={`font-extrabold tracking-tight text-white mb-2 leading-tight break-words ${
+                  (slide.title?.length || 0) > 60
+                    ? 'text-xl sm:text-2xl md:text-3xl'
+                    : 'text-2xl sm:text-4xl lg:text-5xl'
+                }`}>
                   {slide.title}
                 </h2>
               )}
               {slide.subtitle && (
-                <p className="text-sm sm:text-base lg:text-lg text-cyan-200/90 font-medium">
+                <p className="text-xs sm:text-sm md:text-base text-cyan-200/90 font-medium break-words">
                   {slide.subtitle}
                 </p>
               )}
@@ -383,16 +391,20 @@ export function SlideViewer({
               slide.visualType === 'architecture' ||
               slide.visualType === 'code' ||
               (!slide.metricsData && !slide.comparisonData && !slide.timelineData && !slide.quoteData)) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className={`grid gap-3 sm:gap-4 ${
+                slide.keyPoints.length <= 2
+                  ? 'grid-cols-1'
+                  : 'grid-cols-1 sm:grid-cols-2'
+              }`}>
                 {slide.keyPoints.map((pt, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-3 p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md hover:border-white/20 transition-all"
+                    className="flex items-start gap-3 p-3.5 sm:p-4.5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md hover:border-white/20 transition-all"
                   >
                     <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
                     </div>
-                    <span className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-normal">
+                    <span className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-normal break-words">
                       {pt}
                     </span>
                   </div>
