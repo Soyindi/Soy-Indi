@@ -28,7 +28,7 @@ export async function callNvidiaNimChat(
   const nvidiaApiKey = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY;
   const geminiApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
-  const defaultModel = options.model || 'meta/llama-3.2-11b-vision-instruct';
+  const defaultModel = options.model || 'meta/llama-3.3-70b-instruct';
 
   // 1. Intentar NVIDIA NIM si existe la API Key
   if (nvidiaApiKey) {
@@ -67,7 +67,7 @@ export async function callNvidiaNimChat(
     }
   }
 
-  // 2. Failover a Google Gemini (Directo / Vercel AI SDK compatible)
+  // 2. Failover a Google Gemini 2.0 Flash (Latencia <800ms, Context Caching & JSON Mode)
   if (geminiApiKey) {
     try {
       const systemMsg = messages.find((m) => m.role === 'system')?.content || '';
@@ -77,7 +77,7 @@ export async function callNvidiaNimChat(
         : userMsgs.map((m) => m.content).join('\n\n');
 
       const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -99,7 +99,7 @@ export async function callNvidiaNimChat(
           return {
             success: true,
             content: geminiText,
-            modelUsed: 'gemini-1.5-flash',
+            modelUsed: 'gemini-2.0-flash',
           };
         }
       }
