@@ -654,6 +654,7 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
       {
         model: 'meta/llama-3.2-90b-vision-instruct',
         temperature: 0.3,
+        maxTokens: 800,
         responseFormat: { type: 'json_object' },
       }
     );

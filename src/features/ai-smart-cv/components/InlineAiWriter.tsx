@@ -27,7 +27,9 @@ export function InlineAiWriter({
   const [isPending, startTransition] = useTransition();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [activeMode, setActiveMode] = useState<'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS'>('XYZ_IMPACT');
+  const [activeMode, setActiveMode] = useState<'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS'>(
+    type === 'BULLET' ? 'XYZ_IMPACT' : 'EXECUTIVE'
+  );
 
   const handleGenerate = (mode: 'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS') => {
     setActiveMode(mode);
