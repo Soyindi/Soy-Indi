@@ -144,6 +144,22 @@ describe('Orbital Presentations - Slide AI Copilot & Schema Audit', () => {
 
     expect(valid.success).toBe(true);
   });
+
+  it('generateAiSlidesAction estructura una propuesta completa desde un tema o tesis de usuario', async () => {
+    const { generateAiSlidesAction } = await import('@/features/orbital-presentations/actions');
+    const result = await generateAiSlidesAction('Plataforma SaaS de Identidad Digital 2026', 'pitch-deck', 4);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+    expect(result.data?.length).toBeGreaterThanOrEqual(2);
+    expect(result.presentationTitle).toBeDefined();
+
+    // Las diapositivas deben tener titulares estratégicos sin prefijos obvios
+    const firstSlide = result.data?.[0];
+    expect(firstSlide?.title).toBeDefined();
+    expect(firstSlide?.actionTitle).toBeDefined();
+    expect(firstSlide?.keyPoints?.length).toBeGreaterThan(0);
+  });
 });
 
 

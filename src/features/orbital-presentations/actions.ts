@@ -814,7 +814,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         { role: 'user', content: nimPrompt },
       ],
       {
-        model: 'meta/llama-3.2-11b-vision-instruct',
+        model: 'meta/llama-3.3-70b-instruct',
         temperature: 0.25,
       }
     );
