@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { cvFormSchema, cvBulletSchema, cvEducationSchema } from '@/entities/cv/schemas';
 
 describe('CVFormSchema & EU AI Act Guardrails', () => {
@@ -91,5 +91,53 @@ describe('CVFormSchema & EU AI Act Guardrails', () => {
     };
     const result = cvEducationSchema.safeParse(validDegree);
     expect(result.success).toBe(true);
+  });
+
+  it('callNvidiaNimChat orquesta failover hacia Groq LPU si los modelos primarios no responden', async () => {
+    const originalFetch = global.fetch;
+    const originalGroqKey = process.env.GROQ_API_KEY;
+    process.env.GROQ_API_KEY = 'gsk_mock_test_key_groq';
+
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('api.groq.com')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            choices: [{ message: { content: 'OK Groq LPU Resiliente' } }],
+            usage: { total_tokens: 12 },
+          }),
+        };
+      }
+      // Simula fallo EOL 410 en NVIDIA NIM
+      return {
+        ok: false,
+        status: 410,
+        text: async () => 'Model has reached end of life',
+      };
+    });
+
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    try {
+      const { callNvidiaNimChat } = await import('@/shared/api/nvidia-nim');
+      const result = await callNvidiaNimChat([
+        { role: 'user', content: 'Di OK' }
+      ], {
+        model: 'meta/llama-3.2-90b-vision-instruct',
+        maxTokens: 10,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.content).toBe('OK Groq LPU Resiliente');
+      expect(result.modelUsed).toBe('groq/qwen3.8-27b');
+    } finally {
+      global.fetch = originalFetch;
+      if (originalGroqKey !== undefined) {
+        process.env.GROQ_API_KEY = originalGroqKey;
+      } else {
+        delete process.env.GROQ_API_KEY;
+      }
+    }
   });
 });

@@ -28,12 +28,12 @@ export async function callNvidiaNimChat(
   const nvidiaApiKey = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY;
   const geminiApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+  const groqApiKey = process.env.GROQ_API_KEY;
   // Modelos activos verificados en endpoint público de NVIDIA NIM
   const candidateModels = [
     options.model,
     'meta/llama-3.2-11b-vision-instruct',
     'meta/llama-3.2-90b-vision-instruct',
-    'mistralai/mistral-large-2-instruct',
   ].filter(Boolean) as string[];
 
   // 1. Intentar NVIDIA NIM si existe la API Key probando modelos candidatos activos
@@ -79,7 +79,44 @@ export async function callNvidiaNimChat(
     }
   }
 
-  // 2. Failover a Google Gemini 2.0 Flash (Latencia <800ms, Context Caching & JSON Mode)
+  // 2. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 200ms con Qwen 3.8 27B / GPT-OSS 120B)
+  if (groqApiKey) {
+    try {
+      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${groqApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'qwen/qwen3.8-27b',
+          messages,
+          temperature: options.temperature ?? 0.2,
+          max_tokens: options.maxTokens ?? 3000,
+          response_format: options.responseFormat,
+        }),
+      });
+
+      if (groqRes.ok) {
+        const groqData = await groqRes.json();
+        const groqContent = groqData.choices?.[0]?.message?.content;
+        if (groqContent) {
+          return {
+            success: true,
+            content: groqContent,
+            modelUsed: 'groq/qwen3.8-27b',
+          };
+        }
+      } else {
+        const groqErr = await groqRes.text();
+        console.warn(`[Groq Failover Warning] Status ${groqRes.status}:`, groqErr);
+      }
+    } catch (groqErr: any) {
+      console.warn('[Groq Failover Warning]:', groqErr?.message);
+    }
+  }
+
+  // 3. Failover a Google Gemini 2.0 Flash (Latencia <800ms, Context Caching & JSON Mode)
   if (geminiApiKey) {
     try {
       const systemMsg = messages.find((m) => m.role === 'system')?.content || '';
@@ -120,7 +157,7 @@ export async function callNvidiaNimChat(
     }
   }
 
-  // 3. Failover a OpenRouter
+  // 4. Failover a OpenRouter
   if (openRouterApiKey) {
     try {
       const openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {

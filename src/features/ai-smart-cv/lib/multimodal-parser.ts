@@ -155,7 +155,7 @@ export async function parseCvDocumentMultimodal(
         { role: 'user', content: userPrompt },
       ],
       {
-        model: 'meta/llama-3.3-70b-instruct',
+        model: 'meta/llama-3.2-90b-vision-instruct',
         temperature: 0.1,
         responseFormat: { type: 'json_object' },
       }
@@ -219,7 +219,7 @@ Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIE
         { role: 'user', content: userPrompt },
       ],
       {
-        model: 'meta/llama-3.3-70b-instruct',
+        model: 'meta/llama-3.2-90b-vision-instruct',
         temperature: 0.1,
         responseFormat: { type: 'json_object' },
       }

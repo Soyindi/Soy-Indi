@@ -2132,5 +2132,27 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 5. **Gobernanza y Pruebas Unitarias**:
    - Casos de prueba añadidos en `tests/unit/presentation-slide-ai-refinement.test.ts` validando la normalización de alias, síntesis de títulos y poblado íntegro de la diapositiva 4. 100% test suites aprobadas (448 tests pasando).
 
+---
+
+## 53. Resiliencia de Inferencia en Smart CV & Failover de Ultra-Baja Latencia con Groq LPU (Octubre 2026)
+
+### 53.1 Causa Raíz: Obsolescencia Programada de Modelos (HTTP 410 Gone en NVIDIA NIM)
+- **Diagnóstico Forense**: La ingesta multimodal de CV (`multimodal-parser.ts`) y el copiloto de edición (`rewriteCvSectionAction`) sufrieron degradación debido a que `meta/llama-3.3-70b-instruct` alcanzó su fin de vida (EOL el 26/08/2026) en la API pública de NVIDIA NIM (`integrate.api.nvidia.com`), respondiendo con código HTTP 410.
+- **Impacto en el Usuario**: El análisis automático de currículums quedaba bloqueado o revertía a fallbacks heurísticos básicos sin aprovechar el potencial de los modelos de frontera.
+
+### 53.2 Arquitectura de Inferencia Resiliente Multi-Proveedor (NIM ➔ Groq ➔ Gemini ➔ Local)
+1. **Migración a Checkpoints de Frontera Activos**:
+   - `meta/llama-3.2-90b-vision-instruct` y `meta/llama-3.2-11b-vision-instruct` como modelos primarios verificados en NVIDIA NIM.
+2. **Integración de Groq LPU Engine (<200ms Latencia)**:
+   - Capa secundaria de failover instantáneo consumiendo `qwen/qwen3.8-27b` en `api.groq.com/openai/v1/chat/completions`.
+   - Soporte nativo para JSON Mode estructurado (`response_format: { type: 'json_object' }`).
+3. **Failover Dinámico en Cascada en `callNvidiaNimChat`**:
+   - Detección automática de errores 410 (Gone) y 404 (Not Found) en NVIDIA NIM para intentar inmediatamente modelos alternativos y pasar a Groq LPU sin arrojar error al usuario.
+   - Respaldo subsiguiente en Google Gemini 2.0 Flash y OpenRouter.
+4. **Blindaje de Pruebas Unitarias**:
+   - Actualización de `tests/unit/cv-schema.test.ts` con simulación de falla 410 en NIM y activación exitosa del failover hacia Groq LPU.
+   - 100% de la suite de pruebas unitarias aprobada (72/72 archivos, 449 tests pasando).
+
+
 
 

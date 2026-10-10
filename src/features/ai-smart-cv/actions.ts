@@ -645,14 +645,14 @@ ${contextSummary ? `CONTEXTO ADICIONAL:\n${contextSummary}` : ''}
 
 Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
 
-    // 4. Invocación al Motor LLM (NVIDIA NIM / Gemini Flash Failover)
+    // 4. Invocación al Motor LLM (NVIDIA NIM / Groq LPU / Gemini Flash Failover)
     const aiResult = await callNvidiaNimChat(
       [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       {
-        model: 'meta/llama-3.3-70b-instruct',
+        model: 'meta/llama-3.2-90b-vision-instruct',
         temperature: 0.3,
         responseFormat: { type: 'json_object' },
       }

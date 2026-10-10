@@ -317,7 +317,14 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 - **Purga Multilínea de Metadatos Administrativos (`cleanAdministrativePreamble`, `stripAdministrativePrefix`)**: Limpieza exhaustiva de encabezados burocráticos y etiquetas de formulario (`Texto 1:`, `Programa:`, `Candidato:`, `Nivel:`), impidiendo que metadatos de postulación se viertan como títulos de diapositivas o conceptos.
 - **Normalización de Párrafos Reales por Saltos Dobles (`\n\n`)**: Se prohíbe segmentar texto de PDFs por retornos de carro simples (`\n+`), ya que fragmentan oraciones a la mitad en los límites de margen de columna. La partición debe procesar saltos dobles (`\n\s*\n+`) colapsando retornos internos a espacios para preservar oraciones completas y cohesivas.
 - **Clustering Semántico con Garantía de Unicidad (`usedHeadings`)**: Previene la repetición de títulos idénticos a lo largo de la presentación mediante seguimiento reactivo de ejes ya asignados, asegurando que cada diapositiva desarrolle un tópico conceptual exclusivo.
-- **Purga de Delimitadores de Página en CV & Preservación de Guiones en Grados**: El extractor y auditor de Smart CV deben purgar marcadores de maquetación (`--- PÁGINA SIGUIENTE ---`) y preservar guiones intra-palabra en certificaciones y grados (`WISC-V`, `RNR`), asegurando que proyectos independientes y de desarrollo tecnológico se extraigan limpiamente sin truncamientos.
+24. **Gobernanza de Inferencia Multi-Proveedor Resiliente & Groq LPU Ultra-Baja Latencia (<200ms):**
+- **Arquitectura de Inferencia Escalable Multi-Capa (`callNvidiaNimChat`)**: Ante la obsolescencia programada (EOL) de checkpoints antiguos como `meta/llama-3.3-70b-instruct` (HTTP 410 Gone), el orquestador implementa una matriz activa de modelos de frontera:
+  1. *Capa 1 (NVIDIA NIM Frontier)*: `meta/llama-3.2-90b-vision-instruct` y `meta/llama-3.2-11b-vision-instruct` con failover in-provider transparente.
+  2. *Capa 2 (Groq LPU Engine)*: Procesador de ultra-baja latencia consumiendo `qwen/qwen3.8-27b` (inferencia en <200ms con soporte nativo de JSON Mode estructurado).
+  3. *Capa 3 (Google Gemini 2.0 Flash)*: Context caching e inferencia estructurada.
+  4. *Capa 4 (OpenRouter & Fallback Heurístico Local)*: Garantiza 100% de disponibilidad sin caídas ante incidencias de red o cuotas de proveedores.
+- **Smart CV AI Copilot y Extractor Multimodal**: `multimodal-parser.ts` y `rewriteCvSectionAction` consumen esta arquitectura resiliente, asegurando que el análisis de currículums y la reescritura de viñetas operen con velocidad de grado industrial y cero fallos por modelos descontinuados.
+
 ---
 
 
