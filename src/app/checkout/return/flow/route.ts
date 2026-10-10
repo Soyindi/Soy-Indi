@@ -47,83 +47,27 @@ export async function POST(req: NextRequest) {
       const amount = Number(paymentStatus.amount) || 2500;
 
       if (targetUserId) {
-        // Consultar usuario actual para cálculo de prorrata de crédito de tiempo
-        const existingUser = await db.query.user.findFirst({
-          where: eq(user.id, targetUserId),
-          columns: {
-            status: true,
-            subscriptionEndsAt: true,
-          },
-        });
-
-        // Consultar último plan para conocer tier previo
-        let currentTier: any = null;
-        let currentInterval: any = null;
-        if (existingUser?.status === 'ACTIVE') {
-          const lastPayment = await db.query.paymentsHistory.findFirst({
-            where: and(eq(paymentsHistory.userId, targetUserId), eq(paymentsHistory.status, 'approved')),
-            orderBy: [desc(paymentsHistory.createdAt)],
-          });
-          if (lastPayment) {
-            currentTier = lastPayment.planTier;
-            currentInterval = lastPayment.planInterval;
-          }
-        }
-
-        const now = Date.now();
-        let remainingDays = 0;
-        if (existingUser?.subscriptionEndsAt) {
-          const remainingMs = new Date(existingUser.subscriptionEndsAt).getTime() - now;
-          if (remainingMs > 0) {
-            remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
-          }
-        }
-
-        const { calculateUpgradeTimeCredit } = await import('@/entities/subscription/proration');
-        const proration = calculateUpgradeTimeCredit(
-          currentTier,
-          currentInterval,
-          remainingDays,
-          planTier,
-          planInterval
-        );
-
-        const newSubscriptionEndsAt = new Date(now + proration.totalDays * 24 * 60 * 60 * 1000);
         const paymentId = `flow_${paymentStatus.flowOrder || token}`;
-
-        // Sincronización atómica inmediata
         try {
-          await db.batch([
-            db.insert(paymentsHistory).values({
-              id: paymentId,
-              userId: targetUserId,
-              provider: 'flow',
-              providerPaymentId: String(paymentStatus.flowOrder || token),
-              providerSubscriptionId: null,
-              planInterval,
-              planTier,
-              amount,
-              currency: 'CLP',
-              status: 'approved',
-              paymentMethodId: paymentStatus.paymentData?.media || 'Webpay Mall',
-              externalReference: paymentStatus.commerceOrder || token,
-            }).onConflictDoUpdate({
-              target: paymentsHistory.id,
-              set: { status: 'approved' },
-            }),
+          const { activateSubscriptionFromVerifiedPayment } = await import('@/features/pricing/subscription-activation');
+          const activationResult = await activateSubscriptionFromVerifiedPayment({
+            paymentId,
+            userId: targetUserId,
+            provider: 'flow',
+            providerPaymentId: String(paymentStatus.flowOrder || token),
+            providerSubscriptionId: null,
+            planInterval,
+            planTier,
+            amount,
+            currency: 'CLP',
+            paymentMethodId: paymentStatus.paymentData?.media || 'Webpay Mall',
+            externalReference: paymentStatus.commerceOrder || token,
+          });
 
-            db.update(user)
-              .set({
-                status: 'ACTIVE',
-                subscriptionEndsAt: newSubscriptionEndsAt,
-                updatedAt: new Date(),
-              })
-              .where(eq(user.id, targetUserId)),
-          ]);
-
-          // Procesar comisión si aplica
-          const { processAffiliateCommissionOnPayment } = await import('@/features/affiliates/actions');
-          await processAffiliateCommissionOnPayment(paymentId, targetUserId, amount).catch(() => {});
+          if (activationResult.outcome === 'activated') {
+            const { processAffiliateCommissionOnPayment } = await import('@/features/affiliates/commission-engine');
+            await processAffiliateCommissionOnPayment(paymentId, targetUserId, amount).catch(() => {});
+          }
         } catch (dbErr) {
           console.error('[Flow Return Handler] Error sincronizando pago en DB:', dbErr);
         }

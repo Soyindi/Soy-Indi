@@ -55,6 +55,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
                 <TrialCountdownTimer
                   expiresAt={entitlement.expiresAt}
                   initialTimeRemaining={entitlement.timeRemaining}
+                  serverNow={entitlement.serverNow}
                   onExpire={() => router.refresh()}
                 />
               </div>
@@ -98,6 +99,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
               <TrialCountdownTimer
                 expiresAt={entitlement.expiresAt}
                 initialTimeRemaining={entitlement.timeRemaining}
+                serverNow={entitlement.serverNow}
                 onExpire={() => router.refresh()}
               />
             </div>
@@ -150,6 +152,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
               <TrialCountdownTimer
                 expiresAt={entitlement.expiresAt}
                 initialTimeRemaining={entitlement.timeRemaining}
+                serverNow={entitlement.serverNow}
                 onExpire={() => {
                   router.refresh();
                 }}

@@ -13,11 +13,22 @@ import { and, desc } from 'drizzle-orm';
 
 export type { UserEntitlement };
 
+import {
+  resolveEntitlementState,
+  buildPreviewEntitlement,
+  resolveLegacyTrialAnchor,
+} from '@/entities/subscription/entitlement-engine';
+
 /**
  * Consulta de derecho de acceso (Entitlement) del usuario con cómputo temporal exacto
  * y resolución estricta del tier contratado ('starter' | 'pro' | 'max').
+ *
+ * Invariante: Un usuario en TRIAL con trialEndsAt = null es saneado atómicamente y persistido
+ * una única vez con un trial real de 3 días desde el momento del saneamiento,
+ * eliminando el bug del 'sliding trial' donde el cronómetro volvía a 3d en cada render.
  */
 export async function checkUserEntitlementAction(userId?: string): Promise<UserEntitlement> {
+  const nowMs = Date.now();
   try {
     let targetUser = null;
     let targetUserId = userId;
@@ -36,30 +47,29 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
       }
     }
 
-    const now = new Date();
-
     if (!targetUser || !targetUserId) {
-      // Estado seguro por defecto: 3 días desde ahora para demos y nuevos visitantes (con cuota Pro durante trial)
-      const defaultExpiresAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).getTime();
-      const timeRemaining = calculateTimeRemaining(defaultExpiresAt, now);
-      const trialTier: PlanTier = 'pro';
-      return {
-        hasAccess: true,
-        isTrial: true,
-        isGracePeriod: false,
-        status: 'TRIAL',
-        tier: trialTier,
-        limits: PRICING_TIERS[trialTier].limits,
-        daysRemaining: 3,
-        expiresAt: defaultExpiresAt,
-        timeRemaining,
-      };
+      return buildPreviewEntitlement(nowMs, 'anonymous');
     }
 
-    const trialEndsAt = targetUser.trialEndsAt ? new Date(targetUser.trialEndsAt) : null;
-    const subscriptionEndsAt = targetUser.subscriptionEndsAt ? new Date(targetUser.subscriptionEndsAt) : null;
+    // Auto-healing atómico y persistido para cuentas TRIAL legacy sin trialEndsAt definido
+    let effectiveTrialEndsAt = targetUser.trialEndsAt;
+    if (targetUser.status === 'TRIAL' && !targetUser.trialEndsAt) {
+      const anchoredTrialEndsAt = new Date(resolveLegacyTrialAnchor(nowMs));
+      effectiveTrialEndsAt = anchoredTrialEndsAt;
+      try {
+        await db
+          .update(user)
+          .set({
+            trialEndsAt: anchoredTrialEndsAt,
+            updatedAt: new Date(nowMs),
+          })
+          .where(and(eq(user.id, targetUserId), eq(user.status, 'TRIAL')));
+      } catch (patchErr) {
+        console.error('[Entitlement Auto-Healing] Falló la persistencia de trialEndsAt para usuario:', targetUserId, patchErr);
+      }
+    }
 
-    // Resolver tier activo si existe pago previo aprobado
+    // Resolver tier contratado mediante el historial de pagos
     let resolvedTier: PlanTier = 'pro';
     try {
       const latestPayment = await db.query.paymentsHistory.findFirst({
@@ -70,130 +80,23 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
         resolvedTier = latestPayment.planTier as PlanTier;
       }
     } catch {
-      // Fallback a Pro si no hay tabla o consulta falla
       resolvedTier = 'pro';
     }
 
-    // 1. Si tiene suscripción activa vigente
-    if (targetUser.status === 'ACTIVE') {
-      const expiresAt = subscriptionEndsAt ? subscriptionEndsAt.getTime() : null;
-      const isStillValid = !subscriptionEndsAt || now <= subscriptionEndsAt;
-
-      if (isStillValid) {
-        const timeRemaining = calculateTimeRemaining(expiresAt, now);
-        const days = subscriptionEndsAt
-          ? Math.max(1, Math.ceil((subscriptionEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
-          : 30;
-
-        return {
-          hasAccess: true,
-          isTrial: false,
-          isGracePeriod: false,
-          status: 'ACTIVE',
-          tier: resolvedTier,
-          limits: PRICING_TIERS[resolvedTier].limits,
-          daysRemaining: days,
-          expiresAt,
-          timeRemaining,
-        };
-      }
-
-      // Período de gracia (Grace Period: 5 días post-vencimiento para no romper tarjetas públicas)
-      const GRACE_PERIOD_MS = 5 * 24 * 60 * 60 * 1000;
-      if (subscriptionEndsAt && now.getTime() <= subscriptionEndsAt.getTime() + GRACE_PERIOD_MS) {
-        const graceExpiresAt = subscriptionEndsAt.getTime() + GRACE_PERIOD_MS;
-        const timeRemaining = calculateTimeRemaining(graceExpiresAt, now);
-        const graceDaysLeft = Math.max(1, Math.ceil((graceExpiresAt - now.getTime()) / (1000 * 60 * 60 * 24)));
-
-        return {
-          hasAccess: true,
-          isTrial: false,
-          isGracePeriod: true,
-          status: 'GRACE_PERIOD',
-          tier: resolvedTier,
-          limits: PRICING_TIERS[resolvedTier].limits,
-          daysRemaining: graceDaysLeft,
-          expiresAt: graceExpiresAt,
-          timeRemaining,
-        };
-      }
-    }
-
-    // 2. Si está en período de prueba (3 días) y no ha expirado
-    if (targetUser.status === 'TRIAL' && trialEndsAt && now <= trialEndsAt) {
-      const expiresAt = trialEndsAt.getTime();
-      const timeRemaining = calculateTimeRemaining(expiresAt, now);
-      const days = Math.max(1, Math.ceil((expiresAt - now.getTime()) / (1000 * 60 * 60 * 24)));
-      const trialTier: PlanTier = 'pro';
-
-      return {
-        hasAccess: true,
-        isTrial: true,
-        isGracePeriod: false,
-        status: 'TRIAL',
-        tier: trialTier,
-        limits: PRICING_TIERS[trialTier].limits,
-        daysRemaining: days,
-        expiresAt,
-        timeRemaining,
-      };
-    }
-
-    // 3. Si no tiene fecha definida de trial pero tiene status TRIAL
-    if (targetUser.status === 'TRIAL' && !trialEndsAt) {
-      const defaultExpiresAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).getTime();
-      const timeRemaining = calculateTimeRemaining(defaultExpiresAt, now);
-      const trialTier: PlanTier = 'pro';
-      return {
-        hasAccess: true,
-        isTrial: true,
-        isGracePeriod: false,
-        status: 'TRIAL',
-        tier: trialTier,
-        limits: PRICING_TIERS[trialTier].limits,
-        daysRemaining: 3,
-        expiresAt: defaultExpiresAt,
-        timeRemaining,
-      };
-    }
-
-    // 4. Acceso expirado
-    const expiredAt = trialEndsAt?.getTime() || subscriptionEndsAt?.getTime() || null;
-    return {
-      hasAccess: false,
-      isTrial: false,
-      isGracePeriod: false,
-      status: 'EXPIRED',
-      tier: resolvedTier,
-      limits: PRICING_TIERS[resolvedTier].limits,
-      daysRemaining: 0,
-      expiresAt: expiredAt,
-      timeRemaining: {
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
-        isExpired: true,
-        totalMs: 0,
+    return resolveEntitlementState(
+      {
+        status: targetUser.status,
+        trialEndsAt: effectiveTrialEndsAt,
+        subscriptionEndsAt: targetUser.subscriptionEndsAt,
+        resolvedTier,
       },
-    };
+      nowMs
+    );
   } catch (err: any) {
     if (process.env.NODE_ENV !== 'test' && !err?.message?.includes('no such table')) {
       console.error('Error verificando entitlement:', err);
     }
-    const defaultExpiresAt = Date.now() + 3 * 24 * 60 * 60 * 1000;
-    const fallbackTier: PlanTier = 'pro';
-    return {
-      hasAccess: true,
-      isTrial: true,
-      isGracePeriod: false,
-      status: 'TRIAL',
-      tier: fallbackTier,
-      limits: PRICING_TIERS[fallbackTier].limits,
-      daysRemaining: 3,
-      expiresAt: defaultExpiresAt,
-      timeRemaining: calculateTimeRemaining(defaultExpiresAt),
-    };
+    return buildPreviewEntitlement(nowMs, 'fallback');
   }
 }
 

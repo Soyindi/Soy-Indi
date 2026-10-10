@@ -123,4 +123,27 @@ export const userEntitlementSchema = z.object({
   daysRemaining: z.number().int().min(0),
   expiresAt: z.number().nullable(),
   timeRemaining: timeRemainingSchema,
+  serverNow: z.number().int().positive().optional(),
+  source: z.enum(['database', 'anonymous', 'fallback']).optional(),
 });
+
+/**
+ * Contrato de activación idempotente de suscripción tras un pago YA VERIFICADO
+ * contra la API del proveedor (Flow getStatus / Mercado Pago payment.get / Fintoc HMAC).
+ * Toda pasarela converge en este contrato antes de mutar `user.subscriptionEndsAt`.
+ */
+export const verifiedPaymentActivationSchema = z.object({
+  paymentId: z.string().trim().min(1).max(200),
+  userId: z.string().trim().min(1).max(200),
+  provider: paymentProviderSchema,
+  providerPaymentId: z.string().max(200).nullable().optional(),
+  providerSubscriptionId: z.string().max(200).nullable().optional(),
+  planTier: z.enum(['starter', 'pro', 'max']),
+  planInterval: z.enum(['monthly', 'semiannual']),
+  amount: z.number().int().nonnegative(),
+  currency: z.string().default('CLP'),
+  paymentMethodId: z.string().max(200).nullable().optional(),
+  externalReference: z.string().max(200).nullable().optional(),
+});
+
+export type VerifiedPaymentActivationInput = z.input<typeof verifiedPaymentActivationSchema>;

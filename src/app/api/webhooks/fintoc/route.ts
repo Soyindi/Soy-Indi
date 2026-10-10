@@ -62,54 +62,43 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Metadata user_id faltante' }, { status: 400 });
     }
 
-    // Calcular extensión de período de suscripción (30 o 180 días)
-    const subscriptionDurationDays = planInterval === 'semiannual' ? 180 : 30;
-    const now = Date.now();
-    const newSubscriptionEndsAt = new Date(now + subscriptionDurationDays * 24 * 60 * 60 * 1000);
-
-    // 3. Preparar sentencias atómicas de db.batch()
+    // 3. Activación idempotente y atómica de la suscripción
     const paymentId = `fintoc_${data.id}`;
-    await db.batch([
-      // Inserción en historial de pagos con proveedor fintoc
-      db.insert(paymentsHistory).values({
-        id: paymentId,
-        userId: targetUserId,
-        provider: 'fintoc',
-        providerPaymentId: data.id,
-        providerSubscriptionId: data.subscription_id || null,
-        planInterval,
-        planTier,
-        amount,
-        currency: 'CLP',
-        status: 'approved',
-        paymentMethodId: 'fintoc_a2a',
-        externalReference: data.id,
-      }).onConflictDoUpdate({
-        target: paymentsHistory.id,
-        set: { status: 'approved' },
-      }),
-
-      // Actualización de estado y vigencia de membresía del usuario
-      db.update(user)
-        .set({
-          status: 'ACTIVE',
-          subscriptionEndsAt: newSubscriptionEndsAt,
-          updatedAt: new Date(),
-        })
-        .where(eq(user.id, targetUserId)),
-    ]);
-
-    // 4. Procesar comisión de afiliados mediante la acción canónica
-    const { processAffiliateCommissionOnPayment } = await import('@/features/affiliates/actions');
-    await processAffiliateCommissionOnPayment(
+    const { activateSubscriptionFromVerifiedPayment } = await import('@/features/pricing/subscription-activation');
+    const activationResult = await activateSubscriptionFromVerifiedPayment({
       paymentId,
-      targetUserId,
-      amount
-    );
+      userId: targetUserId,
+      provider: 'fintoc',
+      providerPaymentId: data.id,
+      providerSubscriptionId: data.subscription_id || null,
+      planInterval,
+      planTier,
+      amount,
+      currency: 'CLP',
+      paymentMethodId: 'fintoc_a2a',
+      externalReference: data.id,
+    });
+
+    if (activationResult.outcome === 'rejected') {
+      console.error('[Fintoc Webhook] Activación rechazada:', activationResult.error);
+      return NextResponse.json({ success: false, error: activationResult.error }, { status: 400 });
+    }
+
+    // 4. Procesar comisión de afiliados (sólo si no fue procesado antes)
+    if (activationResult.outcome === 'activated') {
+      const { processAffiliateCommissionOnPayment } = await import('@/features/affiliates/commission-engine');
+      await processAffiliateCommissionOnPayment(
+        paymentId,
+        targetUserId,
+        amount
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Pago Fintoc procesado exitosamente y membresía activada.',
+      message: activationResult.outcome === 'activated'
+        ? 'Pago Fintoc procesado exitosamente y membresía activada.'
+        : 'Pago Fintoc previamente procesado (idempotente).',
       paymentId,
     });
   } catch (error: any) {

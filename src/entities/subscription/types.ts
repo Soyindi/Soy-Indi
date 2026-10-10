@@ -206,6 +206,14 @@ export interface TimeRemainingBreakdown {
   totalMs: number;
 }
 
+/**
+ * Origen del entitlement:
+ * - `database`: calculado desde instantes persistidos en Turso (cronómetro real).
+ * - `anonymous`: visitante sin sesión (contrato ilustrativo, sin cronómetro en vivo).
+ * - `fallback`: degradación ante falla de infraestructura (sin cronómetro en vivo).
+ */
+export type EntitlementSource = 'database' | 'anonymous' | 'fallback';
+
 export interface UserEntitlement {
   hasAccess: boolean;
   isTrial: boolean;
@@ -216,6 +224,9 @@ export interface UserEntitlement {
   daysRemaining: number;
   expiresAt: number | null;
   timeRemaining: TimeRemainingBreakdown;
+  /** Epoch ms del servidor al calcular el entitlement (corrección de relojes desfasados). */
+  serverNow?: number;
+  source?: EntitlementSource;
 }
 
 /**

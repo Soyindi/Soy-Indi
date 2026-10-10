@@ -28,7 +28,17 @@ export async function getSafeAuthenticatedUserId(providedUserId?: string): Promi
     // En contextos fuera de request (ej. pruebas unitarias o scripts), continuamos con el flujo estándar
   }
 
-  // 2. Si viene un userId explícito, verificar existencia en la base de datos
+  // 2. En Producción: Bloqueo estricto. Un `providedUserId` NUNCA sustituye a una sesión válida.
+  //    Las Server Actions son endpoints HTTP públicos: confiar en un ID enviado por el cliente
+  //    permitiría suplantar a cualquier usuario existente (IDOR / Broken Object Level Authorization).
+  if (isProd) {
+    return {
+      userId: null,
+      error: 'Acceso no autorizado. Debes iniciar sesión para realizar esta acción.',
+    };
+  }
+
+  // 3. En Desarrollo/Test: si viene un userId explícito, verificar existencia en la base de datos
   if (providedUserId) {
     try {
       const existing = await db.query.user.findFirst({
@@ -39,21 +49,11 @@ export async function getSafeAuthenticatedUserId(providedUserId?: string): Promi
       }
     } catch {
       // Si la tabla no existe o la conexión falla, en desarrollo permitimos el ID provisto
-      if (!isProd) {
-        return { userId: providedUserId };
-      }
+      return { userId: providedUserId };
     }
   }
 
-  // 2. En Producción: Bloqueo estricto de mutaciones no autenticadas
-  if (isProd) {
-    return {
-      userId: null,
-      error: 'Acceso no autorizado. Debes iniciar sesión para realizar esta acción.',
-    };
-  }
-
-  // 3. En Desarrollo: Soporte offline seguro con usuario demo
+  // 4. En Desarrollo: Soporte offline seguro con usuario demo
   const demoEmail = 'demo@indi.bio';
   try {
     const demoUser = await db.query.user.findFirst({

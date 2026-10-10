@@ -61,49 +61,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true, warning: 'Sin user_id en metadatos' }, { status: 200 });
     }
 
-    // 3. Si el pago fue aprobado, extender o activar suscripción
+    // 3. Si el pago fue aprobado, extender o activar suscripción de forma idempotente
     if (status === 'approved') {
-      const durationDays = planInterval === 'semiannual' ? 180 : 30;
-      const now = new Date();
-      const subscriptionEndsAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+      const amount = Math.round(transaction_amount || 0);
+      const { activateSubscriptionFromVerifiedPayment } = await import('@/features/pricing/subscription-activation');
+      const activationResult = await activateSubscriptionFromVerifiedPayment({
+        paymentId: String(paymentId),
+        userId: targetUserId,
+        provider: 'mercadopago',
+        providerPaymentId: String(paymentId),
+        providerSubscriptionId: null,
+        planInterval,
+        planTier,
+        amount,
+        currency: 'CLP',
+        paymentMethodId: payment_method_id || null,
+        externalReference: external_reference || null,
+      });
 
-      // Batching o actualización en Turso
-      await db.batch([
-        // a. Activar estado de usuario
-        db
-          .update(user)
-          .set({
-            status: 'ACTIVE',
-            subscriptionEndsAt,
-            updatedAt: now,
-          })
-          .where(eq(user.id, targetUserId)),
+      if (activationResult.outcome === 'rejected') {
+        console.error('[Mercado Pago Webhook] Activación rechazada:', activationResult.error);
+        return NextResponse.json({ success: false, error: activationResult.error }, { status: 400 });
+      }
 
-        // b. Registrar transacción para auditoría contable
-        db
-          .insert(paymentsHistory)
-          .values({
-            id: String(paymentId),
-            userId: targetUserId,
-            planInterval,
-            planTier,
-            amount: Math.round(transaction_amount || 0),
-            currency: 'CLP',
-            status: 'approved',
-            paymentMethodId: payment_method_id || null,
-            externalReference: external_reference || null,
-            createdAt: now,
-          })
-          .onConflictDoNothing(),
-      ]);
-
-      // c. Procesar comisión de afiliados si el usuario fue referido
-      const { processAffiliateCommissionOnPayment } = await import('@/features/affiliates/actions');
-      await processAffiliateCommissionOnPayment(
-        String(paymentId),
-        targetUserId,
-        Math.round(transaction_amount || 0)
-      );
+      // c. Procesar comisión de afiliados si el usuario fue referido (sólo si no fue procesado antes)
+      if (activationResult.outcome === 'activated') {
+        const { processAffiliateCommissionOnPayment } = await import('@/features/affiliates/commission-engine');
+        await processAffiliateCommissionOnPayment(
+          String(paymentId),
+          targetUserId,
+          amount
+        );
+      }
     } else if (status === 'refunded' || status === 'charged_back') {
       // 4. Si el pago fue reembolsado o presenta contracargo, revertir comisión y actualizar historial
       await db
@@ -111,7 +100,7 @@ export async function POST(req: NextRequest) {
         .set({ status })
         .where(eq(paymentsHistory.id, String(paymentId)));
 
-      const { processAffiliateRefundOnPayment } = await import('@/features/affiliates/actions');
+      const { processAffiliateRefundOnPayment } = await import('@/features/affiliates/commission-engine');
       await processAffiliateRefundOnPayment(String(paymentId), status as 'refunded' | 'charged_back');
     }
 

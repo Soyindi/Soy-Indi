@@ -7,6 +7,7 @@ import { Clock } from 'lucide-react';
 interface TrialCountdownTimerProps {
   expiresAt: number | null;
   initialTimeRemaining?: TimeRemainingBreakdown;
+  serverNow?: number;
   onExpire?: () => void;
   compact?: boolean;
 }
@@ -14,6 +15,7 @@ interface TrialCountdownTimerProps {
 export function TrialCountdownTimer({
   expiresAt,
   initialTimeRemaining,
+  serverNow,
   onExpire,
   compact = false,
 }: TrialCountdownTimerProps) {
@@ -29,28 +31,46 @@ export function TrialCountdownTimer({
     setHasMounted(true);
     if (!expiresAt) return;
 
+    // Calcular desfase si el reloj del dispositivo difiere significativamente del servidor (>60s)
+    const clientMountMs = Date.now();
+    const clockSkew = serverNow ? (Math.abs(serverNow - clientMountMs) > 60_000 ? serverNow - clientMountMs : 0) : 0;
+    const getAdjustedNow = () => Date.now() + clockSkew;
+
     // Sincronizar inmediatamente al montar o si cambia expiresAt
-    const currentRemaining = calculateTimeRemaining(expiresAt);
+    const currentRemaining = calculateTimeRemaining(expiresAt, getAdjustedNow());
     setTimeLeft(currentRemaining);
     if (currentRemaining.isExpired && onExpire) {
       onExpire();
       return;
     }
 
-    const interval = setInterval(() => {
-      const remaining = calculateTimeRemaining(expiresAt);
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    let isDisposed = false;
+
+    const tick = () => {
+      if (isDisposed) return;
+      const now = getAdjustedNow();
+      const remaining = calculateTimeRemaining(expiresAt, now);
       setTimeLeft(remaining);
 
       if (remaining.isExpired) {
-        clearInterval(interval);
-        if (onExpire) {
-          onExpire();
-        }
+        if (onExpire) onExpire();
+        return;
       }
-    }, 1000);
 
-    return () => clearInterval(interval);
-  }, [expiresAt, onExpire]);
+      // Alineación al milisegundo exacto del siguiente segundo para eliminar deriva acumulada
+      const msToNextSecond = 1000 - (now % 1000);
+      timerId = setTimeout(tick, msToNextSecond || 1000);
+    };
+
+    const firstDelay = 1000 - (getAdjustedNow() % 1000);
+    timerId = setTimeout(tick, firstDelay || 1000);
+
+    return () => {
+      isDisposed = true;
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [expiresAt, serverNow, onExpire]);
 
   // Si ya expiró
   if (timeLeft.isExpired) {

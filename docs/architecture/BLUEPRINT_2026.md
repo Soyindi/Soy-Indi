@@ -47,6 +47,13 @@ C:\Users\Matías Riquelme\Desktop\Indi\
 - Endpoint /checkout/return/flow: Sincronizador HTTP POST síncrono con verificación /payment/getStatus en Flow y batch atómico en Turso SQLite.
 - Adaptador FlowAdapter y Registry unificado paymentRegistry.
 
+### Actualización de Arquitectura Q4 2026 (Auditoría Forense & Entitlements Engine):
+- **Motor Determinista de Entitlements (`src/entities/subscription/entitlement-engine.ts`)**: Funciones puras que concentran la máquina de estados temporal (Trial 3d con cuota Pro ➔ Suscripción activa ➔ Grace Period 5d ➔ Expired).
+- **Auto-Healing de Período de Prueba en Base de Datos**: Saneamiento atómico persistente en `checkUserEntitlementAction` para cuentas en TRIAL con `trialEndsAt = null`, garantizando un anclaje temporal de 3 días una sola vez y eliminando el reseteo del cronómetro.
+- **Activación Idempotente Exactly-Once (`src/features/pricing/subscription-activation.ts`)**: Servicio transaccional server-only para Flow, Mercado Pago y Fintoc con `onConflictDoNothing()`.
+- **Aislamiento Server-Only de Comisiones (`src/features/affiliates/commission-engine.ts`)**: Funciones financieras desvinculadas de `'use server'` y blindaje Anti-IDOR en `attributeReferralAction`.
+- **Sincronización de Reloj Cliente-Servidor en UI**: `TrialCountdownTimer` con alineación al milisegundo exacto del segundo y compensación de desfases mayores a 60 segundos mediante `serverNow`.
+
 ├── src/
 │   ├── app/                         # App Router de Next.js (Rutas, Layouts, Providers, Edge Handlers)
 │   │   ├── api/                     # Handlers específicos (Auth, Webhooks, Edge Endpoints)

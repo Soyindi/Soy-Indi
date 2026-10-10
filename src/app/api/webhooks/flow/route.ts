@@ -62,91 +62,43 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'UserId no encontrado' }, { status: 400 });
     }
 
-    // Consultar estado previo para cálculo de crédito temporal (Proration)
-    const existingUser = await db.query.user.findFirst({
-      where: eq(user.id, targetUserId),
-      columns: {
-        status: true,
-        subscriptionEndsAt: true,
-      },
+    // 4. Activación idempotente y atómica de la suscripción
+    const paymentId = `flow_${paymentStatus.flowOrder || token}`;
+    const { activateSubscriptionFromVerifiedPayment } = await import('@/features/pricing/subscription-activation');
+    const activationResult = await activateSubscriptionFromVerifiedPayment({
+      paymentId,
+      userId: targetUserId,
+      provider: 'flow',
+      providerPaymentId: String(paymentStatus.flowOrder || token),
+      providerSubscriptionId: null,
+      planInterval,
+      planTier,
+      amount,
+      currency: 'CLP',
+      paymentMethodId: paymentStatus.paymentData?.media || 'flow_webpay',
+      externalReference: paymentStatus.commerceOrder || token,
     });
 
-    let currentTier: any = null;
-    let currentInterval: any = null;
-    if (existingUser?.status === 'ACTIVE') {
-      const lastPayment = await db.query.paymentsHistory.findFirst({
-        where: and(eq(paymentsHistory.userId, targetUserId), eq(paymentsHistory.status, 'approved')),
-        orderBy: [desc(paymentsHistory.createdAt)],
-      });
-      if (lastPayment) {
-        currentTier = lastPayment.planTier;
-        currentInterval = lastPayment.planInterval;
-      }
+    if (activationResult.outcome === 'rejected') {
+      console.error('[Flow Webhook] Activación rechazada:', activationResult.error);
+      return NextResponse.json({ success: false, error: activationResult.error }, { status: 400 });
     }
 
-    const now = Date.now();
-    let remainingDays = 0;
-    if (existingUser?.subscriptionEndsAt) {
-      const remainingMs = new Date(existingUser.subscriptionEndsAt).getTime() - now;
-      if (remainingMs > 0) {
-        remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
-      }
+    // 5. Procesar comisión del 25% para el afiliado si aplica (sólo si no fue procesado antes)
+    if (activationResult.outcome === 'activated') {
+      const { processAffiliateCommissionOnPayment } = await import('@/features/affiliates/commission-engine');
+      await processAffiliateCommissionOnPayment(
+        paymentId,
+        targetUserId,
+        amount
+      );
     }
-
-    const { calculateUpgradeTimeCredit } = await import('@/entities/subscription/proration');
-    const proration = calculateUpgradeTimeCredit(
-      currentTier,
-      currentInterval,
-      remainingDays,
-      planTier,
-      planInterval
-    );
-
-    const newSubscriptionEndsAt = new Date(now + proration.totalDays * 24 * 60 * 60 * 1000);
-
-    // 4. Ejecución atómica en Turso SQLite con db.batch()
-    const paymentId = `flow_${paymentStatus.flowOrder || token}`;
-    await db.batch([
-      // Inserción en historial de pagos con proveedor 'flow'
-      db.insert(paymentsHistory).values({
-        id: paymentId,
-        userId: targetUserId,
-        provider: 'flow',
-        providerPaymentId: String(paymentStatus.flowOrder || token),
-        providerSubscriptionId: null,
-        planInterval,
-        planTier,
-        amount,
-        currency: 'CLP',
-        status: 'approved',
-        paymentMethodId: paymentStatus.paymentData?.media || 'flow_webpay',
-        externalReference: paymentStatus.commerceOrder || token,
-      }).onConflictDoUpdate({
-        target: paymentsHistory.id,
-        set: { status: 'approved' },
-      }),
-
-      // Actualizar usuario a ACTIVE y extender vigencia
-      db.update(user)
-        .set({
-          status: 'ACTIVE',
-          subscriptionEndsAt: newSubscriptionEndsAt,
-          updatedAt: new Date(),
-        })
-        .where(eq(user.id, targetUserId)),
-    ]);
-
-    // 5. Procesar comisión del 25% para el afiliado si aplica
-    const { processAffiliateCommissionOnPayment } = await import('@/features/affiliates/actions');
-    await processAffiliateCommissionOnPayment(
-      paymentId,
-      targetUserId,
-      amount
-    );
 
     return NextResponse.json({
       success: true,
-      message: 'Pago Flow aprobado y suscripción activada.',
+      message: activationResult.outcome === 'activated'
+        ? 'Pago Flow aprobado y suscripción activada.'
+        : 'Pago Flow previamente procesado (idempotente).',
       paymentId,
     });
   } catch (error: any) {

@@ -158,6 +158,12 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Deep Research & Auditoría Forense de Rechazo de Tarjetas**: Estandarización de especificaciones de investigación para Gemini (`docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_PAYMENT_GATEWAY_MIGRATION_2026.md` y `.json`), analizando causas de rechazo con tarjetas de débito/prepago (Mach, Tenpo, Dale Coopeuch, CuentaRUT) bajo Mercado Pago Checkout Pro.
 - **Hoja de Ruta de Adaptadores Agnósticos (`PaymentProviderAdapter`)**: Arquitectura multi-pasarela unificada (`paymentRegistry`) que permite alternar o añadir proveedores (Flow.cl, Fintoc A2A, Webpay Plus / Transbank, Mercado Pago) manteniendo un único contrato de suscripción.
 - **Auditoría Forense & Prompt de Billing Multi-Plan (`docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_BILLING_AND_SUBSCRIPTION_LOGIC_2026.md`)**: Marco de investigación para Gemini sobre state machines de suscripción, transiciones de plan (Upgrade/Downgrade/Crossgrade), fórmulas matemáticas de prorrateo y time credit, períodos de gracia y verificación anti-spoofing.
+- **Motor Determinista de Entitlements & Cronómetro Sin Deriva (Auditoría 2026)**:
+  - **Auto-Healing de Período de Prueba**: Detección y saneamiento atómico para usuarios en `TRIAL` con `trialEndsAt = null`. Se persiste una sola vez un anclaje absoluto de 3 días (`resolveLegacyTrialAnchor`), eliminando de raíz el bug del *sliding trial* que reseteaba el temporizador a 3 días en cada render.
+  - **Máquina de Estados Unificada (`entitlement-engine.ts`)**: Funciones puras que gobiernan la transición `TRIAL -> EXPIRED` y `ACTIVE -> GRACE_PERIOD (5 días) -> EXPIRED`.
+  - **Activación Idempotente Exactly-Once (`subscription-activation.ts`)**: Servicio transaccional server-only compartido por Flow, Mercado Pago y Fintoc con `onConflictDoNothing()`. Elimina dobles extensiones de vigencia ante arribo simultáneo de webhook y retorno de navegador.
+  - **Sincronización y Tolerancia de Reloj en el Cliente**: `TrialCountdownTimer` utiliza ticks alineados al milisegundo exacto del segundo (`1000 - (now % 1000)`) sin deriva acumulada, corrigiendo desfases de reloj de dispositivo mediante `serverNow` (tolerancia 60s).
+  - **Blindaje Server-Only de Comisiones**: Módulo `commission-engine.ts` aislado sin `'use server'` para evitar la invocación maliciosa de liquidaciones desde el cliente. Guardrail Anti-IDOR en `attributeReferralAction` limitando la atribución exclusivamente al propio usuario autenticado.
 
 ---
 

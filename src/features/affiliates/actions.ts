@@ -377,6 +377,11 @@ export async function getReferralPartnerInfoAction(rawCode?: string | null): Pro
  */
 export async function attributeReferralAction(newUserId: string, rawReferralCode: string) {
   try {
+    // Guardrail Anti-IDOR: sólo el propio usuario autenticado puede atribuirse un referente.
+    // Sin esta verificación, cualquier cliente podía reasignar el referente de cuentas ajenas.
+    const sessionResult = await getSafeAuthenticatedUserId(newUserId);
+    if (!sessionResult.userId || sessionResult.userId !== newUserId) return;
+
     const { sanitizeReferralCode } = await import('@/entities/affiliate/referral-cookie');
     const { normalizeEmailForAntiGaming } = await import('@/entities/affiliate/schemas');
     const referralCode = sanitizeReferralCode(rawReferralCode);
@@ -418,81 +423,11 @@ export async function attributeReferralAction(newUserId: string, rawReferralCode
   }
 }
 
-/**
- * Registrar comisión cuando un pago es aprobado (Invocado desde el Webhook de Mercado Pago)
+/*
+ * NOTA DE SEGURIDAD: `processAffiliateCommissionOnPayment` y `processAffiliateRefundOnPayment`
+ * residen en `./commission-engine.ts` (server-only, sin 'use server') para que no puedan
+ * invocarse como Server Actions públicas desde el navegador.
  */
-export async function processAffiliateCommissionOnPayment(paymentId: string, buyerUserId: string, transactionAmount: number) {
-  try {
-    const buyer = await db.query.user.findFirst({
-      where: eq(user.id, buyerUserId),
-    });
-
-    if (!buyer || !buyer.referredBy) {
-      // El comprador no fue referido por ningún afiliado
-      return;
-    }
-
-    const referrerId = buyer.referredBy;
-
-    // Protección anti-auto-comisión si las cuentas son idénticas
-    if (referrerId === buyerUserId) {
-      return;
-    }
-
-    const commissionClp = Math.round(transactionAmount * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
-
-    if (commissionClp <= 0) return;
-
-    // Idempotencia: Verificar si ya existe comisión registrada para este paymentId
-    const existingCommission = await db.query.affiliateCommissions.findFirst({
-      where: eq(affiliateCommissions.paymentId, paymentId),
-    });
-
-    if (existingCommission) {
-      return;
-    }
-
-    await db.insert(affiliateCommissions).values({
-      affiliateUserId: referrerId,
-      buyerUserId,
-      paymentId,
-      amountClp: commissionClp,
-      status: 'payable', // Listo para el corte quincenal
-      createdAt: new Date(),
-    });
-  } catch (err) {
-    console.error('Error generando comisión de afiliado:', err);
-  }
-}
-
-/**
- * Reversión de comisión ante reembolsos o contracargos (Refunds / Chargebacks de Mercado Pago)
- */
-export async function processAffiliateRefundOnPayment(paymentId: string, reason: 'refunded' | 'charged_back' = 'refunded') {
-  try {
-    const existing = await db.query.affiliateCommissions.findFirst({
-      where: eq(affiliateCommissions.paymentId, paymentId),
-    });
-
-    if (!existing) return;
-
-    // Si ya está marcada como reembolsada o contra-cargo, no hacer nada
-    if (existing.status === 'refunded' || existing.status === 'charged_back') {
-      return;
-    }
-
-    await db
-      .update(affiliateCommissions)
-      .set({
-        status: reason,
-      })
-      .where(eq(affiliateCommissions.id, existing.id));
-
-    console.info(`[Affiliate Refund] Comisión ${existing.id} revertida con estado '${reason}' para pago ${paymentId}`);
-  } catch (err) {
-    console.error('Error procesando reversión de comisión:', err);
-  }
-}
 
 /**
  * Panel de Administración: Listar Liquidaciones Quincenales Pendientes
