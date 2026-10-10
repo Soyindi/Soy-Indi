@@ -2106,6 +2106,31 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 
 ### 51.3 Blindaje y Verificación con Vitest
 - Pruebas añadidas en `tests/unit/presentation-sentence-sanitizer.test.ts` y `tests/unit/cv-integrity-auditor.test.ts`.
-- 100% de la suite pasando: **72 suites de pruebas (446 tests unitarios) aprobados en <10s**.
+- 100% de la suite pasando: **72 suites de pruebas aprobados en <10s**.
+
+---
+
+## 52. Resiliencia de Contenedores de Cronograma (Timeline Roadmap) & Editor Interactivo (Octubre 2026)
+
+### 52.1 Diagnóstico de Campo en Diapositivas de Hitos (Slide 4 - Topic-to-Deck)
+- **Problema Detectado**: Al generar presentaciones por tema libre (ej. *alcohol y drogas*), la última lámina (`visualType: 'timeline'`) sufría degradación visual en las tarjetas:
+  1. *Píldoras de fase vacías*: Modelos de lenguaje emitían `{ label: "Meses 1-6" }` o `{ phase: "Fase 1" }` en vez de `{ step: "..." }`, resultando en un `<span>` vacío en el visor.
+  2. *Titulares faltantes*: El payload contenía únicamente `description`, dejando el encabezado `<h3>` en blanco y mostrando solo una línea de texto suelta bajo el badge `"HITOS 01"`.
+  3. *Ausencia de editor en la barra lateral*: El usuario no disponía de controles visuales en `PresentationStudio.tsx` para retocar o expandir los pasos del cronograma.
+
+### 52.2 Arquitectura de Solución Resiliente Multicapa
+1. **Normalización Defensiva en `timelineItemSchema` (`z.preprocess`)**:
+   - Acepta de forma intercambiable `step`, `label`, `phase`, `hito`, `period` y `time`.
+   - Si `title` viene vacío o nulo pero existe `description`, sintetiza de inmediato un título conceptual limpio de 3 a 5 palabras a partir de las primeras palabras o cláusula inicial.
+2. **Sanitización en Server Actions (`generateAiSlidesAction`, `decomposeAndGeneratePresentationAction`, `refineSlideWithAiAction`)**:
+   - Mapeo unificado con `synthesizeConciseActionTitle` y fallbacks deterministas (`Hito 0X`, `Hito Estratégico 0X`).
+   - El prompt a NVIDIA NIM LLaMA 3.2 90B especifica explícitamente el contrato de cada hito: `{"step": string, "title": string, "description": string}`.
+3. **Defensive Rendering en `SlideViewer.tsx`**:
+   - Respaldo dinámico en el renderizado JSX: si cualquier propiedad es nula o vacía, deduce `displayStep`, `displayTitle` y `displayDesc`, imposibilitando píldoras rotas o encabezados en blanco.
+4. **Editor Interactivo de Cronograma en `PresentationStudio.tsx`**:
+   - Panel de edición cuando `activeSlide.visualType === 'timeline'`: campos dedicados para paso/fase, título del hito, textarea multilínea para la descripción detallada y botones accesibles ($\ge 44$px) para agregar (`+ Hito`) y eliminar hitos.
+5. **Gobernanza y Pruebas Unitarias**:
+   - Casos de prueba añadidos en `tests/unit/presentation-slide-ai-refinement.test.ts` validando la normalización de alias, síntesis de títulos y poblado íntegro de la diapositiva 4. 100% test suites aprobadas (448 tests pasando).
+
 
 

@@ -77,11 +77,44 @@ export const comparisonDataSchema = z.object({
   afterItems: z.array(z.any()).nullish().default([]).transform(items => (items || []).map(i => typeof i === 'string' ? i : (i?.text || i?.point || String(i ?? ''))).filter(Boolean)),
 });
 
-export const timelineItemSchema = z.object({
-  step: z.union([z.string(), z.number()]).nullish().default('Paso').transform(v => (v != null ? String(v) : 'Paso')),
-  title: z.union([z.string(), z.number()]).nullish().default('').transform(v => (v != null ? String(v) : '')),
-  description: z.union([z.string(), z.number()]).nullish().default('').transform(v => (v != null ? String(v) : '')),
-});
+export const timelineItemSchema = z.preprocess((val: any) => {
+  if (typeof val === 'string') {
+    return { step: 'Paso', title: val, description: val };
+  }
+  if (typeof val === 'object' && val !== null) {
+    const rawStep = val.step || val.label || val.phase || val.hito || val.period || val.time;
+    const rawTitle = val.title || val.name || val.heading;
+    const rawDesc = val.description || val.detail || val.text || val.summary || val.desc;
+
+    let step = rawStep != null && String(rawStep).trim() ? String(rawStep).trim() : 'Paso';
+    let title = rawTitle != null && String(rawTitle).trim() ? String(rawTitle).trim() : '';
+    let description = rawDesc != null && String(rawDesc).trim() ? String(rawDesc).trim() : '';
+
+    // Si title viene vacío pero hay description, sintetizar un título conceptual breve de las primeras 4-5 palabras
+    if (!title && description) {
+      const parts = description.split(/[:.–—\n]/);
+      if (parts[0] && parts[0].trim().length >= 4 && parts[0].trim().length <= 40) {
+        title = parts[0].trim();
+      } else {
+        const words = description.split(/\s+/).filter(Boolean);
+        title = words.slice(0, 4).join(' ').replace(/[,;:\-–—\s]+$/, '');
+      }
+    } else if (!description && title) {
+      description = title;
+    }
+
+    return {
+      step: step || 'Paso',
+      title: title || 'Hito Clave',
+      description: description || '',
+    };
+  }
+  return val;
+}, z.object({
+  step: z.union([z.string(), z.number()]).nullish().default('Paso').transform(v => (v != null && String(v).trim() ? String(v).trim() : 'Paso')),
+  title: z.union([z.string(), z.number()]).nullish().default('Hito Clave').transform(v => (v != null && String(v).trim() ? String(v).trim() : 'Hito Clave')),
+  description: z.union([z.string(), z.number()]).nullish().default('').transform(v => (v != null ? String(v).trim() : '')),
+}));
 
 export const presentationSlideSchema = z.object({
   id: z.string().nullish().default(() => crypto.randomUUID()).transform(v => v || crypto.randomUUID()),

@@ -645,11 +645,29 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
       // Sanitizar timelineData si existe
       const timelineData = Array.isArray(s.timelineData) && s.timelineData.length > 0
-        ? s.timelineData.map((step: any, sIdx: number) => ({
-            step: step.step || `Hito 0${sIdx + 1}`,
-            title: synthesizeConciseActionTitle(step.title || `Paso 0${sIdx + 1}`),
-            description: step.description || '',
-          }))
+        ? s.timelineData.map((step: any, sIdx: number) => {
+            const rawStep = step.step || step.label || step.phase || step.hito;
+            const stepName = rawStep && String(rawStep).trim() ? String(rawStep).trim() : `Hito 0${sIdx + 1}`;
+            const rawTitle = step.title;
+            const rawDesc = step.description || step.detail || step.text;
+            
+            let title = rawTitle && String(rawTitle).trim() ? String(rawTitle).trim() : '';
+            if (!title && rawDesc) {
+              const parts = String(rawDesc).split(/[:.–—\n]/);
+              if (parts[0] && parts[0].trim().length >= 4 && parts[0].trim().length <= 40) {
+                title = parts[0].trim();
+              } else {
+                title = String(rawDesc).split(/\s+/).slice(0, 4).join(' ');
+              }
+            }
+            if (!title) title = `Hito Estratégico 0${sIdx + 1}`;
+
+            return {
+              step: stepName,
+              title: synthesizeConciseActionTitle(title),
+              description: rawDesc && String(rawDesc).trim() ? String(rawDesc).trim() : title,
+            };
+          })
         : undefined;
 
       const visualType = s.visualType || 'concept';
@@ -781,7 +799,8 @@ Investiga internamente en tu base de conocimientos profesional sobre este tema y
    - "visualType": uno entre ["concept", "metrics", "comparison", "timeline", "architecture"].
    - "keyPoints": 2 a 4 puntos argumentales sustanciosos, elocuentes y enriquecidos profesionalmente, iniciando con conceptos en negrita.
    - "speakerNotes": Guion conversacional para el orador (~45-60s) con contexto de fondo y directrices escénicas, SIN repetir el texto de la lámina.
-   - Opcionalmente "metricsData" (si aplica para ilustrar datos) o "timelineData" (para hitos).
+   - Opcionalmente "metricsData" (si aplica para ilustrar datos) o "timelineData" (para cronogramas/hitos).
+   - IMPORTANTE PARA "timelineData": Cada elemento DEBE incluir estrictamente {"step": "Fase 1" | "Mes 1-3" | "Hito 1", "title": "Título Conceptual Corto (3-5 palabras)", "description": "Detalle concreto de la acción a ejecutar"}.
 
 RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 {
@@ -799,7 +818,13 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
       "speakerNotes": string,
       "metricsData": optional array,
       "comparisonData": optional object,
-      "timelineData": optional array
+      "timelineData": [
+        {
+          "step": string,
+          "title": string,
+          "description": string
+        }
+      ]
     }
   ]
 }
@@ -827,24 +852,53 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
         const parsed = JSON.parse(cleanJson);
         if (parsed.slides && Array.isArray(parsed.slides) && parsed.slides.length > 0) {
-          const aiSlides: PresentationSlide[] = parsed.slides.slice(0, slidesCount).map((s: any, idx: number) => ({
-            id: s.id || crypto.randomUUID(),
-            title: s.title || `Eje Temático 0${idx + 1}`,
-            actionTitle: s.actionTitle,
-            subtitle: s.subtitle,
-            semanticIntent: s.semanticIntent || 'executive_scqa',
-            visualType: s.visualType || (idx === parsed.slides.length - 1 ? 'timeline' : 'concept'),
-            layout: s.layout || 'standard',
-            badgeText: s.badgeText || `SLIDE ${idx + 1}`,
-            keyPoints: Array.isArray(s.keyPoints)
-              ? s.keyPoints.map((kp: any) => typeof kp === 'string' ? kp : (kp?.text || kp?.point || kp?.detail || kp?.title || String(kp ?? ''))).filter(Boolean)
-              : [],
-            speakerNotes: s.speakerNotes || '',
-            estimatedDurationSeconds: 60,
-            metricsData: Array.isArray(s.metricsData) && s.metricsData.length > 0 ? s.metricsData : undefined,
-            comparisonData: s.comparisonData && typeof s.comparisonData === 'object' ? s.comparisonData : undefined,
-            timelineData: Array.isArray(s.timelineData) && s.timelineData.length > 0 ? s.timelineData : undefined,
-          }));
+          const aiSlides: PresentationSlide[] = parsed.slides.slice(0, slidesCount).map((s: any, idx: number) => {
+            const rawTimeline = Array.isArray(s.timelineData) && s.timelineData.length > 0 ? s.timelineData : undefined;
+            const normalizedTimeline = rawTimeline
+              ? rawTimeline.map((item: any, sIdx: number) => {
+                  const rawStep = item.step || item.label || item.phase || item.hito;
+                  const step = rawStep && String(rawStep).trim() ? String(rawStep).trim() : `Hito 0${sIdx + 1}`;
+                  const rawTitle = item.title;
+                  const rawDesc = item.description || item.detail || item.text;
+                  
+                  let title = rawTitle && String(rawTitle).trim() ? String(rawTitle).trim() : '';
+                  if (!title && rawDesc) {
+                    const parts = String(rawDesc).split(/[:.–—\n]/);
+                    if (parts[0] && parts[0].trim().length >= 4 && parts[0].trim().length <= 40) {
+                      title = parts[0].trim();
+                    } else {
+                      title = String(rawDesc).split(/\s+/).slice(0, 4).join(' ');
+                    }
+                  }
+                  if (!title) title = `Hito Estratégico 0${sIdx + 1}`;
+
+                  return {
+                    step,
+                    title: synthesizeConciseActionTitle(title),
+                    description: rawDesc && String(rawDesc).trim() ? String(rawDesc).trim() : title,
+                  };
+                })
+              : undefined;
+
+            return {
+              id: s.id || crypto.randomUUID(),
+              title: s.title || `Eje Temático 0${idx + 1}`,
+              actionTitle: s.actionTitle,
+              subtitle: s.subtitle,
+              semanticIntent: s.semanticIntent || 'executive_scqa',
+              visualType: s.visualType || (idx === parsed.slides.length - 1 ? 'timeline' : 'concept'),
+              layout: s.layout || 'standard',
+              badgeText: s.badgeText || `SLIDE ${idx + 1}`,
+              keyPoints: Array.isArray(s.keyPoints)
+                ? s.keyPoints.map((kp: any) => typeof kp === 'string' ? kp : (kp?.text || kp?.point || kp?.detail || kp?.title || String(kp ?? ''))).filter(Boolean)
+                : [],
+              speakerNotes: s.speakerNotes || '',
+              estimatedDurationSeconds: 60,
+              metricsData: Array.isArray(s.metricsData) && s.metricsData.length > 0 ? s.metricsData : undefined,
+              comparisonData: s.comparisonData && typeof s.comparisonData === 'object' ? s.comparisonData : undefined,
+              timelineData: normalizedTimeline,
+            };
+          });
 
           return {
             success: true,
@@ -1179,7 +1233,31 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             suggestedVisualType: parsed.suggestedVisualType || effectiveVisualType || undefined,
             metricsData: Array.isArray(parsed.metricsData) && parsed.metricsData.length > 0 ? parsed.metricsData : undefined,
             comparisonData: parsed.comparisonData || undefined,
-            timelineData: Array.isArray(parsed.timelineData) && parsed.timelineData.length > 0 ? parsed.timelineData : undefined,
+            timelineData: Array.isArray(parsed.timelineData) && parsed.timelineData.length > 0
+              ? parsed.timelineData.map((item: any, sIdx: number) => {
+                  const rawStep = item.step || item.phase || item.label || item.hito;
+                  const step = rawStep && String(rawStep).trim() ? String(rawStep).trim() : `Hito 0${sIdx + 1}`;
+                  const rawTitle = item.title;
+                  const rawDesc = item.description || item.detail || item.text;
+
+                  let title = rawTitle && String(rawTitle).trim() ? String(rawTitle).trim() : '';
+                  if (!title && rawDesc) {
+                    const parts = String(rawDesc).split(/[:.–—\n]/);
+                    if (parts[0] && parts[0].trim().length >= 4 && parts[0].trim().length <= 40) {
+                      title = parts[0].trim();
+                    } else {
+                      title = String(rawDesc).split(/\s+/).slice(0, 4).join(' ');
+                    }
+                  }
+                  if (!title) title = `Hito Estratégico 0${sIdx + 1}`;
+
+                  return {
+                    step,
+                    title: synthesizeConciseActionTitle(title),
+                    description: rawDesc && String(rawDesc).trim() ? String(rawDesc).trim() : title,
+                  };
+                })
+              : undefined,
             rationale: parsed.rationale || 'Generación estratégica completada con éxito.',
           },
           modelUsed: aiResult.modelUsed || 'AI Model',

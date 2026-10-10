@@ -1302,6 +1302,86 @@ export function PresentationStudio({
                 </div>
               )}
 
+              {activeSlide.visualType === 'timeline' && activeSlide.timelineData && (
+                <div className="p-3.5 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono font-bold text-cyan-300 uppercase">
+                      Hitos del Cronograma ({activeSlide.timelineData.length})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = activeSlide.timelineData || [];
+                        const nextIdx = current.length + 1;
+                        updateActiveSlide('timelineData', [
+                          ...current,
+                          {
+                            step: `Fase 0${nextIdx}`,
+                            title: `Hito Estratégico 0${nextIdx}`,
+                            description: 'Definición y despliegue del nuevo entregable.',
+                          },
+                        ]);
+                      }}
+                      className="text-[10px] font-mono text-cyan-300 hover:text-cyan-200 flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" /> Hito
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {activeSlide.timelineData.map((item, idx) => (
+                      <div key={idx} className="p-2.5 rounded-xl bg-black/50 border border-white/10 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <input
+                            type="text"
+                            value={item.step}
+                            onChange={(e) => {
+                              const updated = [...(activeSlide.timelineData || [])];
+                              updated[idx] = { ...updated[idx], step: e.target.value };
+                              updateActiveSlide('timelineData', updated);
+                            }}
+                            placeholder="Paso / Fase (ej: Mes 1-3)"
+                            className="w-28 rounded-lg bg-black/60 border border-white/10 px-2 py-1 text-xs text-cyan-300 font-mono font-bold"
+                          />
+                          <input
+                            type="text"
+                            value={item.title}
+                            onChange={(e) => {
+                              const updated = [...(activeSlide.timelineData || [])];
+                              updated[idx] = { ...updated[idx], title: e.target.value };
+                              updateActiveSlide('timelineData', updated);
+                            }}
+                            placeholder="Título conciso del hito"
+                            className="flex-1 rounded-lg bg-black/60 border border-white/10 px-2 py-1 text-xs text-white font-semibold"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = (activeSlide.timelineData || []).filter((_, i) => i !== idx);
+                              updateActiveSlide('timelineData', updated);
+                            }}
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-500 hover:text-rose-400 p-1 rounded-xl hover:bg-rose-500/10 cursor-pointer"
+                            title="Eliminar hito"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <textarea
+                          rows={2}
+                          value={item.description}
+                          onChange={(e) => {
+                            const updated = [...(activeSlide.timelineData || [])];
+                            updated[idx] = { ...updated[idx], description: e.target.value };
+                            updateActiveSlide('timelineData', updated);
+                          }}
+                          placeholder="Descripción detallada de la ejecución..."
+                          className="w-full rounded-lg bg-black/60 border border-white/10 p-2 text-xs text-zinc-300 leading-relaxed"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Notas del orador */}
               <div>
                 <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1.5">

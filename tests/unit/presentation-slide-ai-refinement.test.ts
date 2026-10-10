@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { refineSlideWithAiSchema } from '@/entities/presentation/schemas';
+import { refineSlideWithAiSchema, timelineItemSchema } from '@/entities/presentation/schemas';
 import { refineSlideWithAiAction } from '@/features/orbital-presentations/actions';
 
 // Mock de llamada a NVIDIA NIM
@@ -145,20 +145,53 @@ describe('Orbital Presentations - Slide AI Copilot & Schema Audit', () => {
     expect(valid.success).toBe(true);
   });
 
-  it('generateAiSlidesAction estructura una propuesta completa desde un tema o tesis de usuario', async () => {
+  it('normaliza defensivamente timelineData con alias (label, phase) y sintetiza títulos si vienen vacíos', () => {
+    // Caso 1: Viene con "label" en vez de "step" y sin "title", solo "description"
+    const parsed1 = timelineItemSchema.parse({
+      label: 'Meses 1-6',
+      description: 'Establecer objetivos y desarrollar un plan integral de intervención.',
+    });
+    expect(parsed1.step).toBe('Meses 1-6');
+    expect(parsed1.title).toBe('Establecer objetivos y desarrollar');
+    expect(parsed1.description).toBe('Establecer objetivos y desarrollar un plan integral de intervención.');
+
+    // Caso 2: Viene con "phase"
+    const parsed2 = timelineItemSchema.parse({
+      phase: 'Fase 02',
+      title: 'Despliegue Operativo',
+      description: 'Implementación gradual en terreno.',
+    });
+    expect(parsed2.step).toBe('Fase 02');
+    expect(parsed2.title).toBe('Despliegue Operativo');
+    expect(parsed2.description).toBe('Implementación gradual en terreno.');
+
+    // Caso 3: String plano
+    const parsed3 = timelineItemSchema.parse('Lanzamiento a producción');
+    expect(parsed3.step).toBe('Paso');
+    expect(parsed3.title).toBe('Lanzamiento a producción');
+  });
+
+  it('generateAiSlidesAction genera diapositivas con timelineData completamente poblado en slide 4', async () => {
     const { generateAiSlidesAction } = await import('@/features/orbital-presentations/actions');
-    const result = await generateAiSlidesAction('Plataforma SaaS de Identidad Digital 2026', 'pitch-deck', 4);
+    const result = await generateAiSlidesAction('alcohol y drogas', 'general', 4);
 
     expect(result.success).toBe(true);
     expect(result.data).toBeDefined();
-    expect(result.data?.length).toBeGreaterThanOrEqual(2);
-    expect(result.presentationTitle).toBeDefined();
+    expect(result.data?.length).toBe(4);
 
-    // Las diapositivas deben tener titulares estratégicos sin prefijos obvios
-    const firstSlide = result.data?.[0];
-    expect(firstSlide?.title).toBeDefined();
-    expect(firstSlide?.actionTitle).toBeDefined();
-    expect(firstSlide?.keyPoints?.length).toBeGreaterThan(0);
+    const fourthSlide = result.data?.[3];
+    expect(fourthSlide).toBeDefined();
+    expect(fourthSlide?.visualType).toBe('timeline');
+    expect(fourthSlide?.timelineData).toBeDefined();
+    expect(fourthSlide?.timelineData?.length).toBeGreaterThan(0);
+
+    fourthSlide?.timelineData?.forEach((item: any, i: number) => {
+      expect(item.step).toBeTruthy();
+      expect(item.step.trim().length).toBeGreaterThan(0);
+      expect(item.title).toBeTruthy();
+      expect(item.title.trim().length).toBeGreaterThan(0);
+      expect(item.description).toBeTruthy();
+    });
   });
 });
 

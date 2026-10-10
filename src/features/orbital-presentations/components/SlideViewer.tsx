@@ -361,21 +361,42 @@ export function SlideViewer({
             {/* C. LAYOUT: TIMELINE / ROADMAP STEPS */}
             {slide.visualType === 'timeline' && slide.timelineData && slide.timelineData.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {slide.timelineData.map((step, idx) => (
-                  <div
-                    key={idx}
-                    className="p-5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md relative flex flex-col justify-between"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono font-bold text-xs">
-                        {step.step}
-                      </span>
-                      <span className="text-[10px] font-mono text-zinc-500">HITOS 0{idx + 1}</span>
+                {slide.timelineData.map((step, idx) => {
+                  const rawStep = step.step || (step as any).label || (step as any).phase;
+                  const displayStep = rawStep && String(rawStep).trim() ? String(rawStep).trim() : `Paso 0${idx + 1}`;
+                  const rawTitle = step.title;
+                  const rawDesc = step.description;
+                  
+                  // Sintetizar título si no viene provisto
+                  let displayTitle = rawTitle && String(rawTitle).trim() ? String(rawTitle).trim() : '';
+                  if (!displayTitle && rawDesc) {
+                    const parts = String(rawDesc).split(/[:.–—\n]/);
+                    if (parts[0] && parts[0].trim().length >= 4 && parts[0].trim().length <= 40) {
+                      displayTitle = parts[0].trim();
+                    } else {
+                      displayTitle = String(rawDesc).split(/\s+/).slice(0, 4).join(' ');
+                    }
+                  }
+                  if (!displayTitle) displayTitle = `Hito Estratégico 0${idx + 1}`;
+
+                  const displayDesc = rawDesc && String(rawDesc).trim() ? String(rawDesc).trim() : displayTitle;
+
+                  return (
+                    <div
+                      key={idx}
+                      className="p-5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md relative flex flex-col justify-between"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="px-2.5 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono font-bold text-xs">
+                          {displayStep}
+                        </span>
+                        <span className="text-[10px] font-mono text-zinc-500">HITOS 0{idx + 1}</span>
+                      </div>
+                      <h3 className="text-base font-bold text-white mb-1.5">{displayTitle}</h3>
+                      <p className="text-xs text-zinc-400 leading-relaxed">{displayDesc}</p>
                     </div>
-                    <h3 className="text-base font-bold text-white mb-1.5">{step.title}</h3>
-                    <p className="text-xs text-zinc-400 leading-relaxed">{step.description}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 

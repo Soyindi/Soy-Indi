@@ -222,14 +222,31 @@ export function auditAndRepairPresentationSlides(
 
     // 4. Auditar cronograma (timelineData)
     const repairedTimeline = slide.timelineData?.map((step, sIdx) => {
-      let cleanStepTitle = step.title.trim().replace(/\.{2,}/g, '').trim();
+      const rawStep = step.step || (step as any).label || (step as any).phase;
+      const cleanStep = rawStep && String(rawStep).trim() ? String(rawStep).trim() : `Hito 0${sIdx + 1}`;
+      
+      let cleanStepTitle = (step.title || '').trim().replace(/\.{2,}/g, '').trim();
+      if (!cleanStepTitle && step.description) {
+        const parts = step.description.split(/[:.–—\n]/);
+        if (parts[0] && parts[0].trim().length >= 4 && parts[0].trim().length <= 40) {
+          cleanStepTitle = parts[0].trim();
+        } else {
+          cleanStepTitle = step.description.split(/\s+/).slice(0, 4).join(' ');
+        }
+      }
+      if (!cleanStepTitle) {
+        cleanStepTitle = `Hito Estratégico 0${sIdx + 1}`;
+      }
+
       const checkStep = assertSyntacticCompleteness(cleanStepTitle);
       if (!checkStep.isComplete && checkStep.cleanText.length > 4) {
         cleanStepTitle = checkStep.cleanText;
       }
       return {
         ...step,
+        step: cleanStep,
         title: cleanStepTitle,
+        description: step.description && step.description.trim() ? step.description.trim() : cleanStepTitle,
       };
     });
 
