@@ -95,6 +95,7 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Presentación en Vivo In-Situ**: Proyección en pantalla completa instantánea desde la memoria del estudio (eliminando errores de páginas no publicadas) y modo público resiliente en `/p/[slug]`.
 - **Modo Presentador y Web APIs**: Sincronización en vivo, cronómetro del orador, notas confidenciales, soporte de *Screen Wake Lock API* y hápticos móviles (*Vibration API*).
 - **Ergonomía Móvil & Thumb Zone**: Barra de acción flotante inferior (`fixed bottom-4`) y touch targets $\ge 44\text{px}$ para presentar y editar fluidamente desde smartphones.
+- **Deep Research & Adaptación Inteligente Tipo NotebookLM 2026**: Estandarización de especificaciones de investigación para Gemini (`docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_INTELLIGENT_PRESENTATIONS_INFRASTRUCTURE_2026.md` y `.json`), analizando la arquitectura cognitiva de Source Grounding de Google NotebookLM, Context Caching, y la matriz de decisión entre Agentes Autónomos vs. Skills Especializadas para erradicar el texto amontonado y sintetizar diapositivas con latencia sub-segundo.
 - **Temas Volumétricos OKLCH**: Paletas oscuras inmersivas (*Orbital Cyber*, *Emerald Aurora*, *Deep Space*, *Solar Obsidian*) con iluminación reactiva acelerada por GPU y ratios APCA.
 
 ### 4. 🎛️ Dashboard Unificado Multientidad (`/dashboard`)

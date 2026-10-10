@@ -1,0 +1,67 @@
+{
+  "metadata": {
+    "title": "Deep Research: Arquitectura de Adaptación Inteligente de Documentos a Presentaciones (NotebookLM, RAG, Agentes y Skills 2026)",
+    "version": "1.0.0",
+    "platform": "INDI (https://soyindi.cl)",
+    "target_model": "Gemini 2.0 / 2.5 Pro & Deep Research",
+    "date": "2026-10-09",
+    "runtime_stack": {
+      "framework": "Next.js 16 (App Router) + React 19",
+      "persistence": "Turso (LibSQL Serverless SQLite) + Drizzle ORM",
+      "styling": "Tailwind CSS v4 + OKLCH Gamut P3",
+      "inference_providers": ["Google Gemini API", "NVIDIA NIM (LLaMA 3.3 70B)", "OpenRouter", "Local Heuristic Engine"]
+    }
+  },
+  "execution_directives": {
+    "role": "Principal AI Architect, Staff LLM Systems Engineer & Chief Product Architect",
+    "mindset": "Exhaustivo, riguroso, grado de ingeniería de sistemas de producción 2026",
+    "temperature": 0.2,
+    "top_p": 0.95
+  },
+  "research_pillars": [
+    {
+      "pillar_id": "pillar_1_notebooklm_cognitive_architecture",
+      "title": "Arquitectura Cognitiva Tipo NotebookLM (Source-Grounded Reasoning)",
+      "questions": [
+        "¿Cómo funciona internamente Google NotebookLM para estructurar fuentes complejas sin alucinaciones?",
+        "¿Qué es la 'Source Guide' y cómo segmenta temas clave, preguntas frecuentes y cronologías a partir de documentos no estructurados?",
+        "Comparativa técnica 2026: ¿Context Caching de documentos completos en Gemini vs. RAG vectorial clásico con embeddings?"
+      ]
+    },
+    {
+      "pillar_id": "pillar_2_agents_vs_skills_decision_matrix",
+      "title": "Agentes Autónomos vs. Skills Especializadas vs. Pipelines Deterministas",
+      "questions": [
+        "Definición y límites entre Agentes Autónomos (ReAct/Tool Use), Skills Especializadas y Linear Pipelines en generación de contenido",
+        "¿Se requiere un agente multi-paso para presentaciones o introduce latencia y costos excesivos?",
+        "Matriz de decisión de compensaciones (Trade-offs): latencia, costo por documento, determinismo de UI y tasa de fallos"
+      ]
+    },
+    {
+      "pillar_id": "pillar_3_document_to_canvas_distillation",
+      "title": "Del Texto Denso al Lienzo 16:9: Algoritmo de Destilación Ejecutiva",
+      "questions": [
+        "¿Cómo transformar ensayos de 5 páginas en diapositivas visuales sin incurrir en 'Wall of Text'?",
+        "Formulación matemática y semántica para derivar Action Titles McKinsey (<15 palabras) y viñetas ejecutivas con verbos activos",
+        "Reglas heurísticas y deterministas para asignación automática de tipología visual (Bento Metrics, Comparison Delta, Timeline Roadmap, Concept Architecture)"
+      ]
+    },
+    {
+      "pillar_id": "pillar_4_efficient_infrastructure_and_latency",
+      "title": "Infraestructura Eficiente, Modelos Frontera y Latencia Sub-Segundo",
+      "questions": [
+        "Comparativa de modelos 2026: Gemini 2.0 Flash/Pro con Structured Outputs vs. Claude 3.5 Sonnet vs. LLaMA 3.3 70B en NVIDIA NIM",
+        "Diseño de arquitectura híbrida de 3 capas (Edge Pre-filtering -> LLM Structured Ingestion -> Deterministic Fallback Engine)"
+      ]
+    },
+    {
+      "pillar_id": "pillar_5_production_prompt_and_contracts",
+      "title": "Contratos Técnicos, Prompts Maestros y Plan de Integración en INDI",
+      "questions": [
+        "System Prompt completo de producción INTELLIGENT_PRESENTATION_ORCHESTRATOR_2026",
+        "Esquema Zod fuertemente tipado para el contrato de salida JSON",
+        "Plan de implementación en 3 fases para el repositorio INDI"
+      ]
+    }
+  ]
+}

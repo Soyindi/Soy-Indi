@@ -1956,3 +1956,27 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 - **Suite de Pruebas**:
   - `tests/unit/presentation-sentence-sanitizer.test.ts`, `tests/unit/presentation-decomposition.test.ts` y `tests/unit/presentation-flow-audit.test.ts` validan al 100% la reconstitución sintáctica, división de oraciones con abreviaturas, extracción de contrastes y secuencias completas, y la gobernanza multi-tenant anti-IDOR.
 
+---
+
+## 46. Adaptación Inteligente de Documentos a Presentaciones: Arquitectura Tipo NotebookLM & Orquestación de Agentes vs. Skills (Fase 2026)
+
+### 46.1 Especificación Técnica de Deep Research para Gemini 2.0/2.5 Pro
+- Se formaliza la especificación técnica en Markdown ([docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_INTELLIGENT_PRESENTATIONS_INFRASTRUCTURE_2026.md](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_INTELLIGENT_PRESENTATIONS_INFRASTRUCTURE_2026.md)) y JSON estructurado ([docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_INTELLIGENT_PRESENTATIONS_INFRASTRUCTURE_2026.json](docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_INTELLIGENT_PRESENTATIONS_INFRASTRUCTURE_2026.json)).
+- Aborda los 5 pilares arquitectónicos para resolver la adaptación inteligente de documentos complejos:
+  1. **Arquitectura Cognitiva Tipo NotebookLM (Source-Grounded Reasoning)**:
+     - Desglose del "Source Guide" de Google y segmentación de temas clave sin alucinación.
+     - Comparativa de viabilidad: Context Caching en Gemini 2.0/2.5 vs. RAG vectorial clásico con bases de datos de embeddings.
+  2. **Agentes Autónomos vs. Skills Especializadas vs. Workflows Deterministas**:
+     - Matriz de decisión técnica: Latencia, costo por documento, determinismo de interfaz y tasa de fallos.
+     - Veredicto de diseño: Adopción de un workflow orquestado por Skills modulares (`presentation-intelligence-engine`) para garantizar latencia sub-segundo frente a los ciclos lentos (15-45s) de agentes ReAct pesados.
+  3. **Del Texto Denso al Lienzo 16:9 (Algoritmo de Destilación Ejecutiva)**:
+     - Erradicación de "Wall of Text" en diapositivas.
+     - Destilación de tesis centrales asertivas (<15 palabras) y asignación automática de tipología visual (Bento Metrics, Comparison Delta, Timeline Roadmap, Concept Architecture).
+  4. **Infraestructura Eficiente & Latencia Sub-Segundo**:
+     - Pipeline híbrido de 3 capas: Capa 0 (Client/Edge pre-filtering y purga administrativa), Capa 1 (Inferencia LLM con Structured Outputs tipados), Capa 2 (Fallback heurístico determinista local).
+  5. **Contratos Técnicos & Prompts Maestros de Producción**:
+     - System Prompt `INTELLIGENT_PRESENTATION_ORCHESTRATOR_2026` y contratos Zod compatibles con `PresentationFormValues` en Turso SQLite.
+
+### 46.2 Suite de Pruebas y Validación Continua
+- `tests/unit/presentation-deep-research-prompt.test.ts` valida al 100% la existencia, integridad de sintaxis JSON, directivas de ejecución y presencia de los 5 pilares estratégicos de investigación.
+
