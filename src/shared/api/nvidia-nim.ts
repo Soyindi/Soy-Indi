@@ -36,51 +36,8 @@ export async function callNvidiaNimChat(
     'meta/llama-3.2-90b-vision-instruct',
   ].filter(Boolean) as string[];
 
-  // 1. Intentar NVIDIA NIM si existe la API Key probando modelos candidatos activos
-  if (nvidiaApiKey) {
-    for (const targetModel of candidateModels) {
-      try {
-        const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${nvidiaApiKey}`,
-          },
-          signal: AbortSignal.timeout(8000),
-          body: JSON.stringify({
-            model: targetModel,
-            messages,
-            temperature: options.temperature ?? 0.2,
-            max_tokens: options.maxTokens ?? 3000,
-            response_format: options.responseFormat,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const messageContent = data.choices?.[0]?.message?.content;
-          if (messageContent) {
-            return {
-              success: true,
-              content: messageContent,
-              modelUsed: targetModel,
-            };
-          }
-        } else {
-          const errText = await response.text();
-          console.warn(`[NVIDIA NIM Warning] Status ${response.status} en ${targetModel}: ${errText}`);
-          // Si el modelo expiró (410) o no se encuentra (404), continuar con el siguiente candidato
-          if (response.status === 410 || response.status === 404) {
-            continue;
-          }
-        }
-      } catch (err: any) {
-        console.warn(`[NVIDIA NIM Warning] Error de conexión en ${targetModel}:`, err?.message);
-      }
-    }
-  }
-
-  // 2. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 200ms con Qwen 3.8 27B / GPT-OSS 120B)
+  // 1. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 200ms con Qwen 3.8 27B)
+  // Al priorizar Groq, las solicitudes del usuario responden de inmediato en menos de 300ms
   if (groqApiKey) {
     try {
       const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -89,7 +46,7 @@ export async function callNvidiaNimChat(
           Authorization: `Bearer ${groqApiKey}`,
           'Content-Type': 'application/json',
         },
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(6000),
         body: JSON.stringify({
           model: 'qwen/qwen3.8-27b',
           messages,
@@ -115,6 +72,49 @@ export async function callNvidiaNimChat(
       }
     } catch (groqErr: any) {
       console.warn('[Groq Failover Warning]:', groqErr?.message);
+    }
+  }
+
+  // 2. NVIDIA NIM Frontier Models (Fallback o cuando no se dispone de Groq)
+  if (nvidiaApiKey) {
+    for (const targetModel of candidateModels) {
+      try {
+        const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${nvidiaApiKey}`,
+          },
+          signal: AbortSignal.timeout(5000),
+          body: JSON.stringify({
+            model: targetModel,
+            messages,
+            temperature: options.temperature ?? 0.2,
+            max_tokens: options.maxTokens ?? 3000,
+            response_format: options.responseFormat,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const messageContent = data.choices?.[0]?.message?.content;
+          if (messageContent) {
+            return {
+              success: true,
+              content: messageContent,
+              modelUsed: targetModel,
+            };
+          }
+        } else {
+          const errText = await response.text();
+          console.warn(`[NVIDIA NIM Warning] Status ${response.status} en ${targetModel}: ${errText}`);
+          if (response.status === 410 || response.status === 404) {
+            continue;
+          }
+        }
+      } catch (err: any) {
+        console.warn(`[NVIDIA NIM Warning] Error de conexión en ${targetModel}:`, err?.message);
+      }
     }
   }
 
