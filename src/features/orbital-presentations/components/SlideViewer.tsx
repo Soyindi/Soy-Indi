@@ -116,7 +116,7 @@ export function SlideViewer({
   return (
     <div
       ref={slideRef}
-      className={`relative w-full aspect-[16/9] min-h-[440px] sm:min-h-[500px] rounded-3xl shadow-2xl flex flex-col justify-between p-6 sm:p-10 border border-white/10 select-none transition-all duration-500 overflow-y-auto sm:overflow-hidden ${
+      className={`relative w-full aspect-[16/9] min-h-[460px] sm:min-h-[520px] rounded-3xl shadow-2xl flex flex-col justify-between p-5 sm:p-8 md:p-10 border border-white/10 select-none transition-all duration-500 overflow-y-auto ${
         isSlideFullscreen ? '!rounded-none !min-h-screen !aspect-auto !p-8 sm:!p-14 !overflow-y-auto' : ''
       }`}
       style={{
@@ -155,7 +155,7 @@ export function SlideViewer({
       )}
 
       {/* 1. Cabecera de la diapositiva */}
-      <div className="relative z-10 flex items-center justify-between pb-3 border-b border-white/10">
+      <div className="relative z-10 flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
             {renderVisualIcon()}
@@ -203,7 +203,7 @@ export function SlideViewer({
       </div>
 
       {/* 2. Área Central con Renderizado Específico por Tipología & Transiciones Cinemáticas */}
-      <div className="relative z-10 my-auto py-4 max-w-5xl w-full mx-auto">
+      <div className="relative z-10 my-auto py-2 sm:py-3 max-w-5xl w-full mx-auto flex-1 flex flex-col justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
@@ -238,8 +238,10 @@ export function SlideViewer({
                   <div className="inline-flex items-center gap-2 mb-2 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[10px] font-mono text-cyan-300 font-semibold tracking-wider uppercase">
                     <span>Action Title • Principio de Pirámide</span>
                   </div>
-                  <h2 className={`font-extrabold tracking-tight text-white mb-2 leading-snug break-words ${
-                    (slide.actionTitle?.length || 0) > 90
+                  <h2 className={`font-extrabold tracking-tight text-white mb-1.5 leading-snug break-words ${
+                    (slide.actionTitle?.length || 0) > 120
+                      ? 'text-base sm:text-lg md:text-xl lg:text-2xl'
+                      : (slide.actionTitle?.length || 0) > 70
                       ? 'text-lg sm:text-xl md:text-2xl lg:text-3xl'
                       : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl'
                   }`}>
@@ -256,8 +258,10 @@ export function SlideViewer({
                 </div>
               ) : (
                 <h2 className={`font-extrabold tracking-tight text-white mb-2 leading-tight break-words ${
-                  (slide.title?.length || 0) > 60
-                    ? 'text-xl sm:text-2xl md:text-3xl'
+                  (slide.title?.length || 0) > 80
+                    ? 'text-lg sm:text-xl md:text-2xl'
+                    : (slide.title?.length || 0) > 40
+                    ? 'text-xl sm:text-2xl md:text-3xl lg:text-4xl'
                     : 'text-2xl sm:text-4xl lg:text-5xl'
                 }`}>
                   {slide.title}
