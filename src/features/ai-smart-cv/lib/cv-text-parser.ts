@@ -14,7 +14,7 @@ export function parseCvTextToStructuredData(
   const lines = rawText
     .split(/\r?\n/)
     .map((l) => l.trim())
-    .filter((l) => l.length > 0);
+    .filter((l) => l.length > 0 && !/^(?:---\s*)?p[áa]gina\s+siguiente(?:\s*---)?$/i.test(l) && !/^[-—]{3,}$/.test(l));
 
   // 1.1 Extraer RUT chileno primero con máxima prioridad (formato XX.XXX.XXX-K o XXXXXXXX-K)
   const rutMatch = rawText.match(/\b\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]\b/);
@@ -340,25 +340,39 @@ export function parseCvTextToStructuredData(
       let inlineCompany = '';
       let role = '';
 
-      parts.forEach((p) => {
-        if (datePattern.test(p)) {
-          period = period ? `${period} - ${p}` : p;
-        } else if (!role && looksLikeRoleHeader(p)) {
-          role = p;
-        } else if (!inlineCompany && (p.toLowerCase().includes('hospital') || p.toLowerCase().includes('clínica') || p.toLowerCase().includes('sodexo') || p.toLowerCase().includes('universidad') || p.toLowerCase().includes('programa') || p.toLowerCase().includes('empresa') || p.toLowerCase().includes('instituto') || p.toLowerCase().includes('cesfam') || p.toLowerCase().includes('escuela') || p.toLowerCase().includes('ministerial') || p.toLowerCase().includes('seremi'))) {
-          inlineCompany = p;
-        } else if (!role) {
-          role = p;
-        } else if (!inlineCompany) {
-          inlineCompany = p;
-        }
-      });
+      if (/proyectos?\s+de\s+desarrollo\s+tecnol[óo]gico/i.test(strippedLine)) {
+        role = 'Proyectos de Desarrollo Tecnológico (Autodidacta)';
+        inlineCompany = 'Proyectos Independientes / Portafolio';
+        const yearRange = strippedLine.match(/(?:19|20)\d{2}\s*[-–—]\s*(?:19|20)\d{2}/);
+        period = yearRange ? yearRange[0].replace(/[-–—]/, '–') : '2024 – 2026';
+      } else {
+        // Separar componentes (Cargo · Empresa / Institución - Fechas)
+        const parts = strippedLine.split(/[|–—·•]|\s[-–—]\s/).map((p) => p.trim()).filter(Boolean);
 
-      // Si es un proyecto tecnológico, asignar rol o nombre de proyecto
-      if (isProject && !role) {
-        role = `Proyecto: ${strippedLine}`;
-        inlineCompany = inlineCompany || 'Portafolio Técnico / Proyectos Independientes';
+        parts.forEach((p) => {
+          if (datePattern.test(p)) {
+            period = period ? `${period} - ${p}` : p;
+          } else if (!role && looksLikeRoleHeader(p)) {
+            role = p;
+          } else if (!inlineCompany && (p.toLowerCase().includes('hospital') || p.toLowerCase().includes('clínica') || p.toLowerCase().includes('sodexo') || p.toLowerCase().includes('universidad') || p.toLowerCase().includes('programa') || p.toLowerCase().includes('empresa') || p.toLowerCase().includes('instituto') || p.toLowerCase().includes('cesfam') || p.toLowerCase().includes('escuela') || p.toLowerCase().includes('ministerial') || p.toLowerCase().includes('seremi'))) {
+            inlineCompany = p;
+          } else if (!role) {
+            role = p;
+          } else if (!inlineCompany) {
+            inlineCompany = p;
+          }
+        });
+
+        // Si es un proyecto tecnológico, asignar rol o nombre de proyecto
+        if (isProject && !role) {
+          role = `Proyecto: ${strippedLine}`;
+          inlineCompany = inlineCompany || 'Portafolio Técnico / Proyectos Independientes';
+        }
       }
+
+      // Limpieza de paréntesis huérfanos en rol y periodo
+      if (role) role = role.replace(/\s*\([^)]*$/, '').trim();
+      if (period) period = period.replace(/[()]/g, '').trim();
 
       const effectiveCompany = inlineCompany || pendingCompanyCandidate || 'Institución / Empresa';
       pendingCompanyCandidate = '';
@@ -402,6 +416,9 @@ export function parseCvTextToStructuredData(
       pendingCompanyCandidate = strippedLine;
     } else if (currentExp) {
       const cleanBullet = stripLeadingBullet(strippedLine);
+      if (/^(?:---\s*)?p[áa]gina\s+siguiente(?:\s*---)?$/i.test(cleanBullet) || /^[-—\s.]{3,}$/.test(cleanBullet)) {
+        continue;
+      }
       if (cleanBullet.length > 3) {
         const isUrl = cleanBullet.startsWith('http://') || cleanBullet.startsWith('https://') || cleanBullet.startsWith('github.com');
         const lastBulletIdx = currentExp.xyzBullets.length - 1;
@@ -532,7 +549,7 @@ export function parseCvTextToStructuredData(
       .trim();
 
     if (hasAcademicKeyword(line)) {
-      const parts = line.split(/[|–—\-·•]/).map((p) => p.trim()).filter(Boolean);
+      const parts = line.split(/[|–—·•]|\s[-–—]\s/).map((p) => p.trim()).filter(Boolean);
       let year = '';
       let inst = '';
       let deg = '';
@@ -551,7 +568,11 @@ export function parseCvTextToStructuredData(
           p.toLowerCase().includes('escuela') ||
           p.toLowerCase().includes('platzi') ||
           p.toLowerCase().includes('udemy') ||
-          p.toLowerCase().includes('coursera')
+          p.toLowerCase().includes('coursera') ||
+          p.toLowerCase().includes('group') ||
+          p.toLowerCase().includes('sence') ||
+          p.toLowerCase().includes('senda') ||
+          p.toLowerCase().includes('ops')
         ) {
           inst = p;
         } else if (!deg) {
@@ -565,6 +586,15 @@ export function parseCvTextToStructuredData(
       if (!year) {
         const yearMatch = line.match(/\((?:19|20)\d{2}\s*[-–—]?\s*(?:(?:19|20)\d{2}|presente)?\)/i);
         if (yearMatch) year = yearMatch[0].replace(/[()]/g, '');
+      }
+
+      // Si no se detectó año en la línea, buscar si la línea siguiente en eduLines es un año aislado (ej. "2013 – 2018")
+      const rawIdx = eduLines.indexOf(rawLine);
+      if (!year && rawIdx >= 0 && rawIdx + 1 < eduLines.length) {
+        const nextEdu = eduLines[rawIdx + 1].trim();
+        if (/^(?:19|20)\d{2}(?:\s*[-–—]\s*(?:(?:19|20)\d{2}|presente))?$/i.test(nextEdu)) {
+          year = nextEdu.replace(/[-–—]/, '–');
+        }
       }
 
       // Si no se detectó institución pero hay más de una parte, asignar la segunda

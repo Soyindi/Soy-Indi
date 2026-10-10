@@ -117,6 +117,22 @@ export function detectDocumentArchetype(text: string, fileName?: string): {
     executive_strategy: 0,
   };
 
+  if (fileName) {
+    const fn = fileName.toLowerCase();
+    if (fn.includes('ensayo') || fn.includes('tesis') || fn.includes('paper') || fn.includes('academic') || fn.includes('beca')) {
+      scores.narrative_educational += 6;
+    }
+    if (fn.includes('pitch') || fn.includes('deck') || fn.includes('investor')) {
+      scores.business_pitch += 6;
+    }
+    if (fn.includes('audit') || fn.includes('informe') || fn.includes('reporte')) {
+      scores.audit_report += 6;
+    }
+    if (fn.includes('arch') || fn.includes('tech') || fn.includes('spec')) {
+      scores.technical_architecture += 6;
+    }
+  }
+
   // 1. Arquitectura Técnica
   const techKeywords = [
     'arquitectura', 'api', 'microservicio', 'servidor', 'latencia', 'base de datos',
@@ -147,10 +163,14 @@ export function detectDocumentArchetype(text: string, fileName?: string): {
     if (lower.includes(k)) scores.audit_report += 2;
   });
 
-  // 4. Educacional / Narrativo
+  // 4. Educacional / Narrativo / Académico
   const eduKeywords = [
     'capítulo', 'módulo', 'introducción', 'concepto', 'definición', 'historia',
-    'guía', 'tutorial', 'lección', 'aprender', 'fundamento', 'principios', 'caso de estudio'
+    'guía', 'tutorial', 'lección', 'aprender', 'fundamento', 'principios', 'caso de estudio',
+    'tesis', 'ensayo', 'postulación', 'postulacion', 'máster', 'master', 'maestría', 'maestria',
+    'doctorado', 'investigación', 'investigacion', 'académico', 'academico', 'académica', 'universidad',
+    'posgrado', 'pós-graduação', 'metodología', 'metodologia', 'seguridad pública', 'seguridad publica',
+    'derechos humanos', 'criminología', 'reinserción'
   ];
   eduKeywords.forEach((k) => {
     if (lower.includes(k)) scores.narrative_educational += 2;
@@ -326,6 +346,33 @@ export function cleanAdministrativePreamble(raw: string): string {
   return str;
 }
 
+export function balanceParenthesesString(text: string): string {
+  if (!text) return '';
+  let str = text.trim();
+  let openCount = 0;
+  let balanced = '';
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (ch === '(') {
+      openCount++;
+      balanced += ch;
+    } else if (ch === ')') {
+      if (openCount > 0) {
+        openCount--;
+        balanced += ch;
+      }
+    } else {
+      balanced += ch;
+    }
+  }
+  if (openCount > 0) {
+    for (let k = 0; k < openCount; k++) {
+      balanced += ')';
+    }
+  }
+  return balanced;
+}
+
 /**
  * Remueve prefijos administrativos simples de una sola frase o título.
  */
@@ -333,10 +380,10 @@ export function stripAdministrativePrefix(str: string): string {
   if (!str) return '';
   let cleaned = str
     .replace(/^(?:texto|documento|secci[óo]n)\s*[0-9a-zA-Z]*\s*[:.\-–—]\s*/i, '')
-    .replace(/^(?:candidato|postulante|autor|nombre)\s*:\s*[^•\n,\-–—]+(?:[•\-–—]|\s*,\s*)\s*/i, '')
-    .replace(/^(?:programa|carrera|nivel|grado)\s*:\s*[^•\n,\-–—]+(?:[•\-–—]|\s*,\s*)\s*/i, '')
+    .replace(/^(?:candidato|postulante|autor|nombre)\s*:\s*[^•·\n,\-–—]+(?:[•·\-–—]|\s*,\s*)\s*/i, '')
+    .replace(/^(?:programa|carrera|nivel|grado|l[íi]nea\s+de\s+investigaci[óo]n)\s*:\s*[^•·\n,\-–—]+(?:[•·\-–—]|\s*,\s*)\s*/i, '')
     .trim();
-  cleaned = cleaned.replace(/^[:;,.•\-–—\s]+/, '').trim();
+  cleaned = cleaned.replace(/^[:;,.•·\-–—\s]+/, '').trim();
   return cleaned || str;
 }
 
@@ -370,7 +417,7 @@ export function synthesizeConciseActionTitle(raw: string, fallbackTheme?: string
   const words = cleaned.split(/\s+/).filter(Boolean);
   if (words.length <= 15) {
     // Si la oración no excede 15 palabras, preservarla pulcra sin puntos suspensivos
-    return cleaned.replace(/[.!?]+$/, '');
+    return balanceParenthesesString(cleaned.replace(/[.!?]+$/, ''));
   }
 
   // Si excede 15 palabras:
@@ -378,13 +425,13 @@ export function synthesizeConciseActionTitle(raw: string, fallbackTheme?: string
   const subSlice = words.slice(0, 16).join(' ');
   const pauseMatch = subSlice.match(/^([\s\S]{20,95}?)[,;:\-–—]\s*/);
   if (pauseMatch && pauseMatch[1] && pauseMatch[1].split(/\s+/).length >= 6) {
-    return pauseMatch[1].trim().replace(/[,;:\-–—\s]+$/, '');
+    return balanceParenthesesString(pauseMatch[1].trim().replace(/[,;:\-–—\s]+$/, ''));
   }
 
   // Si la oración tiene hasta 22 palabras y representa una tesis completa,
   // preservarla íntegra para no dejar el titular truncado ni incompleto
   if (words.length <= 22) {
-    return cleaned.replace(/[.!?]+$/, '');
+    return balanceParenthesesString(cleaned.replace(/[.!?]+$/, ''));
   }
 
   // Para oraciones excepcionalmente largas (>22 palabras), tomar las primeras 15 palabras
@@ -395,7 +442,7 @@ export function synthesizeConciseActionTitle(raw: string, fallbackTheme?: string
     safeWords.pop();
   }
 
-  return safeWords.join(' ').replace(/[,;:\-–—\s]+$/, '');
+  return balanceParenthesesString(safeWords.join(' ').replace(/[,;:\-–—\s]+$/, ''));
 }
 
 /**
@@ -462,23 +509,78 @@ export function analyzeDocumentContent(
   rawContent: string,
   fileName?: string
 ): ExtractedDocumentContent {
-  const cleanContent = rawContent.replace(/\r\n/g, '\n').trim();
-  
-  // 1. Detección de Arquetipo
+  // 0. Purgar marcadores de salto de página y estandarizar saltos
+  const cleanContent = rawContent
+    .replace(/\r\n/g, '\n')
+    .replace(/--- PÁGINA SIGUIENTE ---/g, '\n\n')
+    .replace(/^[-—=\s]*p[áa]gina\s+siguiente[-—=\s]*$/gim, '')
+    .trim();
+
+  // 1. Extracción de Título Principal antes de purgar encabezados administrativos
+  const firstHeadingMatch = cleanContent.match(/^(?:#+\s*|TÍTULO:\s*|TITULO:\s*)([^\n]+)/im);
+  const firstLine = cleanContent.split('\n').map((l) => l.trim()).find((l) => l.length > 3 && l.length < 100);
+
+  let titleSuggestion = '';
+  if (firstHeadingMatch && firstHeadingMatch[1].trim().length >= 4) {
+    titleSuggestion = stripAdministrativePrefix(firstHeadingMatch[1].trim());
+  } else if (firstLine && !firstLine.startsWith('-') && !firstLine.startsWith('*')) {
+    titleSuggestion = stripAdministrativePrefix(firstLine.replace(/^#+\s*/, '').trim());
+  } else if (fileName) {
+    titleSuggestion = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+  }
+
+  titleSuggestion = stripAdministrativePrefix(titleSuggestion);
+
+  // 2. Detección y purga de bloque de encabezado administrativo multi-línea
+  const allLines = cleanContent.split('\n');
+  let bodyStartIdx = 0;
+  for (let i = 0; i < Math.min(10, allLines.length); i++) {
+    const l = allLines[i].trim();
+    if (/^(?:texto\s*[0-9a-zA-Z]*|programa|candidato|postulante|nivel|grado|l[íi]nea\s+de\s+investigaci[óo]n|autor|instituci[óo]n|facultad|universidad|carrera)\s*[:.\-–—]/i.test(l)) {
+      bodyStartIdx = i + 1;
+      continue;
+    }
+    if (bodyStartIdx > 0 && (l.includes('PPGSP') || l.includes('Universidade') || l.includes('Universidad') || l.includes('Maestría') || l.includes('Magíster') || l.length < 5)) {
+      bodyStartIdx = i + 1;
+      continue;
+    }
+    if (bodyStartIdx > 0) break;
+  }
+
+  const effectiveBody = (bodyStartIdx > 0 ? allLines.slice(bodyStartIdx).join('\n') : cleanContent).trim();
+
+  // 3. Detección de Arquetipo
   const { archetype: detectedArchetype, confidence: archetypeConfidence } =
     detectDocumentArchetype(cleanContent, fileName);
 
-  // Dividir párrafos por doble salto o salto simple de longitud sustancial
-  const rawParagraphs = cleanContent.split(/\n+/).map((p) => p.trim()).filter((p) => p.length > 20);
-  const paragraphs = rawParagraphs.length >= 2
-    ? rawParagraphs
-    : cleanContent.split(/\n\s*\n/).map((p) => p.trim()).filter((p) => p.length > 20);
+  if (!titleSuggestion || titleSuggestion.length < 4) {
+    titleSuggestion = detectedArchetype === 'technical_architecture'
+      ? 'Especificación de Arquitectura de Sistemas'
+      : detectedArchetype === 'business_pitch'
+      ? 'Propuesta de Valor e Inversión'
+      : detectedArchetype === 'narrative_educational'
+      ? 'Proyecto y Fundamentos de Investigación'
+      : 'Estrategia y Síntesis Ejecutiva';
+  }
 
-  const sentences = splitSentencesSafely(cleanContent)
+  // Dividir párrafos reales por saltos dobles (\n\n), normalizando saltos de línea internos de maquetación
+  const doubleBreakParagraphs = effectiveBody
+    .split(/\n\s*\n+/)
+    .map((p) => p.replace(/[\n\r]+/g, ' ').replace(/\s+/g, ' ').trim())
+    .filter((p) => p.length > 20);
+
+  const paragraphs = doubleBreakParagraphs.length >= 2
+    ? doubleBreakParagraphs
+    : effectiveBody
+        .split(/\n+/)
+        .map((p) => p.replace(/[\n\r]+/g, ' ').replace(/\s+/g, ' ').trim())
+        .filter((p) => p.length > 20);
+
+  const sentences = splitSentencesSafely(effectiveBody)
     .map((s) => s.trim())
     .filter((s) => s.length > 15);
 
-  // 2. Detección de Métricas Cuantitativas reales en el texto (Monedas, Ratios, Deltas, UF, Clientes)
+  // 4. Detección de Métricas Cuantitativas reales en el texto (Monedas, Ratios, Deltas, UF, Clientes)
   const detectedMetrics: Array<{
     label: string;
     value: string;
@@ -488,7 +590,7 @@ export function analyzeDocumentContent(
 
   // Expresión regular robusta de métricas cuantitativas
   const metricRegex = /(?:([a-zA-ZáéíóúÁÉÍÓÚñÑ\s/]{3,30})[:=]\s*)?((?:\$|USD|CLP|EUR|UF)?\s*[+-]?\d+(?:[.,]\d+)?\s*(?:%|k|M|B|x|ms|s|dias|días|usuarios|clientes|cuentas|transacciones|visitas|hits|req\/s|rps)?(?:\s*(?:YoY|MoM|QoQ|anual|mensual))?)/gi;
-  const matches = cleanContent.matchAll(metricRegex);
+  const matches = effectiveBody.matchAll(metricRegex);
   
   for (const match of matches) {
     const rawVal = match[2]?.trim();
@@ -515,30 +617,6 @@ export function analyzeDocumentContent(
     }
   }
 
-  // 3. Extracción de Título Principal y Takeaways
-  const firstHeadingMatch = cleanContent.match(/^(?:#+\s*|TÍTULO:\s*|TITULO:\s*)([^\n]+)/im);
-  const firstLine = cleanContent.split('\n').map((l) => l.trim()).find((l) => l.length > 3 && l.length < 80);
-
-  let titleSuggestion = '';
-  if (firstHeadingMatch && firstHeadingMatch[1].trim().length >= 4) {
-    titleSuggestion = stripAdministrativePrefix(firstHeadingMatch[1].trim());
-  } else if (firstLine && !firstLine.startsWith('-') && !firstLine.startsWith('*')) {
-    titleSuggestion = stripAdministrativePrefix(firstLine.replace(/^#+\s*/, '').trim());
-  } else if (fileName) {
-    titleSuggestion = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-  }
-
-  // Si titleSuggestion sigue teniendo prefijos o contiene rótulos de formulario, limpiarlo
-  titleSuggestion = cleanAdministrativePreamble(titleSuggestion);
-
-  if (!titleSuggestion || titleSuggestion.length < 4) {
-    titleSuggestion = detectedArchetype === 'technical_architecture'
-      ? 'Especificación de Arquitectura de Sistemas'
-      : detectedArchetype === 'business_pitch'
-      ? 'Propuesta de Valor e Inversión'
-      : 'Estrategia y Síntesis Ejecutiva';
-  }
-
   // 4. Detección de Contraste Semántico (Problemas vs Soluciones o Antes vs Después)
   const contrastBlocks: ExtractedContrastBlock[] = [];
   const problemSentences = sentences.filter((s) =>
@@ -560,8 +638,8 @@ export function analyzeDocumentContent(
 
   // 5. Detección de Secuencias / Fases / Pasos Cronológicos (Fase, Paso, Etapa, Hito, Q1-Q4)
   const sequenceSteps: ExtractedSequenceStep[] = [];
-  const stepRegex = /(?:fase|paso|etapa|hito|step|phase|q[1-4])\s*([0-9ivx]+)?[:.\-\s]+([^\n.]+)/gi;
-  const stepMatches = cleanContent.matchAll(stepRegex);
+  const stepRegex = /\b(?:fase|paso|etapa|hito|step|phase|q[1-4])\b\s*([0-9ivx]+)?[:.\-\s]+([^\n.]{8,})/gi;
+  const stepMatches = effectiveBody.matchAll(stepRegex);
   let stepIdx = 1;
   for (const sm of stepMatches) {
     const stepLabel = sm[1] ? sm[1] : String(stepIdx);
@@ -578,13 +656,22 @@ export function analyzeDocumentContent(
 
   // 6. Detección de Conceptos y Definiciones Clave
   const conceptDefinitions: ExtractedConceptDefinition[] = [];
-  const conceptRegex = /(?:^|\n)(?:[-•*]\s*)?([A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s/]{3,35})[:\-—]\s+([A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s,.;()%$]{12,160})/g;
-  const conceptMatches = cleanContent.matchAll(conceptRegex);
+  const conceptRegex = /(?:^|\n)(?:[-•*]\s*)?([A-ZÁÉÍÓÚ][A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s/()]{2,40})[:\-—]\s+([A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s,.;()%$]{12,180})/g;
+  const conceptMatches = effectiveBody.matchAll(conceptRegex);
   for (const cm of conceptMatches) {
-    const term = cm[1].trim();
+    const term = stripAdministrativePrefix(cm[1].trim());
     const definition = cm[2].trim();
     if (term.length > 2 && definition.length > 10 && !term.toLowerCase().startsWith('http')) {
-      conceptDefinitions.push({ term, definition });
+      const isAdministrativeTerm = /^(?:texto|candidato|postulante|programa|mag[íi]ster|maestr[íi]a|doctorado|nivel|autor|fecha|rut|folio|c[óo]digo|email|correo|tel[ée]fono|p[áa]gina|universidad|instituci[óo]n|facultad|carrera|departamento|nota|resumen)\b/i.test(term);
+      if (isAdministrativeTerm) continue;
+
+      // Un concepto debe ser un término conciso (1 a 5 palabras), no una cláusula oracional subordinada
+      const words = term.split(/\s+/);
+      if (words.length > 5) continue;
+      if (/^(?:de|en|por|la|el|los|las|un|una|que|para|con|sobre|muchas|a|y|o)\b/i.test(term)) continue;
+
+      const balancedDef = balanceParenthesesString(definition.replace(/[\n\r]+/g, ' ').trim());
+      conceptDefinitions.push({ term, definition: balancedDef });
       if (conceptDefinitions.length >= 5) break;
     }
   }
@@ -620,7 +707,12 @@ export function analyzeDocumentContent(
     }
   }
   if (currentCluster.paras.length > 0) {
-    topicClusters.push(currentCluster);
+    const trailingLength = currentCluster.paras.join(' ').length;
+    if (topicClusters.length > 0 && trailingLength < 200) {
+      topicClusters[topicClusters.length - 1].paras.push(...currentCluster.paras);
+    } else {
+      topicClusters.push(currentCluster);
+    }
   }
 
   // Si no se formaron suficientes clusters (ej. texto compacto), usar división proporcional
@@ -628,6 +720,8 @@ export function analyzeDocumentContent(
     topicClusters.length >= 2
       ? topicClusters
       : paragraphs.map((p) => ({ heading: undefined, paras: [p] }));
+
+  const usedHeadings = new Set<string>();
 
   for (let idx = 0; idx < Math.min(8, clustersToProcess.length); idx++) {
     const cluster = clustersToProcess[idx];
@@ -654,17 +748,47 @@ export function analyzeDocumentContent(
       const headingMatch = combinedBlock.match(/^(?:#+\s*|(?:\d+\.|\w\))\s*|\*\*)([^\n.:]{4,55})/m);
       if (headingMatch && headingMatch[1].trim().length >= 4) {
         heading = stripAdministrativePrefix(headingMatch[1].replace(/[*_#]/g, '').trim());
-      } else {
-        const cleanFirst = firstSentence.replace(/^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+/, '');
-        const words = cleanFirst.split(/\s+/).slice(0, 5).join(' ');
-        heading = words.length > 5 ? words : `Eje Temático 0${idx + 1}`;
       }
     }
 
-    // Si heading y actionSummary son casi idénticos, diferenciar heading
-    if (heading.toLowerCase() === actionSummary.toLowerCase() || actionSummary.toLowerCase().startsWith(heading.toLowerCase())) {
-      heading = `Eje Temático 0${idx + 1}`;
+    // Si no hay heading explícito o si coincide casi palabra por palabra con el actionSummary, sintetizar título temático conceptual
+    if (!heading || heading.toLowerCase() === actionSummary.toLowerCase() || actionSummary.toLowerCase().startsWith(heading.toLowerCase()) || heading.length < 5) {
+      const lowerBlock = combinedBlock.toLowerCase();
+      if (/formado|psic[óo]logo|cinco\s+a[ñn]os|salud|educaci[óo]n|magallanes|vocaci[óo]n/i.test(lowerBlock)) {
+        heading = 'Trayectoria Profesional & Vocación';
+      } else if (/sobrepasado|estr[ée]s|doscientos|carga|burocra|informes\s+manuales/i.test(lowerBlock)) {
+        heading = 'Sobrecarga Operativa & Gestión de Casos';
+      } else if (/deficiente|dispers|sistemas\s+solo|almacenaban|conectar|informaci[óo]n/i.test(lowerBlock)) {
+        heading = 'Diagnóstico Sistémico de Información';
+      } else if (/erbe|herramienta|ecosistema|evidencia|rehabilitaci[óo]n\s+basada|automatizar/i.test(lowerBlock)) {
+        heading = 'Ecosistema ERBE & Innovación Tecnológica';
+      } else if (/tesis|r[úu]bricas|evaluaci[óo]n\s+de\s+proceso|metodolog|confiabilidad/i.test(lowerBlock)) {
+        heading = 'Metodología de Validación & Tesis';
+      } else if (/retorno|pol[íi]ticas\s+p[úu]blicas|comunidad|prop[óo]sito|cambio\s+que\s+de\s+verdad/i.test(lowerBlock)) {
+        heading = 'Perspectivas de Retorno & Políticas Públicas';
+      } else if (/ppgsp|uea|maestr[íi]a|posgrado|postgrado|universidade|amazonas/i.test(lowerBlock)) {
+        heading = 'Programa de Posgrado PPGSP / UEA';
+      } else if (/igi|riesgo|necesidades\s+crimin[óo]genas|plan\s+de\s+intervenci[óo]n/i.test(lowerBlock)) {
+        heading = 'Gestión Criminógena & Evaluación IGI';
+      } else if (/arquitectura|api|endpoint|microservicio/i.test(lowerBlock)) {
+        heading = 'Arquitectura & Componentes Técnicos';
+      } else if (/financier|ebitda|ingresos|costos|monetiz/i.test(lowerBlock)) {
+        heading = 'Métricas de Negocio & Viabilidad';
+      } else {
+        const capitalizedTerms = combinedBlock.match(/\b[A-ZÁÉÍÓÚ][a-z0-9áéíóú]{3,15}\b/g) || [];
+        const uniqueTerms = Array.from(new Set(capitalizedTerms.filter((t) => !['Texto', 'Programa', 'Candidato', 'Nivel', 'Chile', 'Este', 'Para', 'Como', 'Pero', 'Muchas', 'Todo', 'Cuando', 'Desde', 'Donde'].includes(t))));
+        if (uniqueTerms.length >= 2) {
+          heading = `${uniqueTerms[0]} & ${uniqueTerms[1]}`;
+        } else {
+          heading = `Dimensión Estratégica 0${idx + 1}`;
+        }
+      }
     }
+
+    if (usedHeadings.has(heading)) {
+      heading = `${heading} (Fase ${idx + 1})`;
+    }
+    usedHeadings.add(heading);
 
     semanticSections.push({
       heading,

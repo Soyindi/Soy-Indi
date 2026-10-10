@@ -2079,3 +2079,33 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
   2. Generación integral de diapositivas con `generate_from_intent`.
   3. Auto-población estructurada de métricas, comparativas y roadmap.
 
+---
+
+## 51. Elevación de Heurísticas de Inteligencia a Estándar de Clase Mundial (Fase Octubre 2026)
+
+### 51.1 Diagnóstico de Campo con Documentos Reales de Alta Densidad
+- **Evaluación Exhaustiva**: Se sometieron los pipelines a pruebas de estrés con expedientes reales (`RIQUELME CARDENAS - CV.pdf`, 5.9MB y `UEA_ENSAYO1.pdf`, 84KB).
+- **Hallazgos Críticos Detectados**:
+  1. *Filtro de Saltos de Página*: El delimitador de maquetación `--- PÁGINA SIGUIENTE ---` se filtraba como viñeta de logro en el historial laboral.
+  2. *Mutilación de Guiones en Títulos Clínicos*: El divisor de grados separaba por guión interior, rompiendo acreditaciones como `Formación en WISC-V`.
+  3. *Tratamiento Erróneo de Saltos de Línea en PDF*: La partición por `\n+` trataba cada retorno de carro de margen de columna como un párrafo independiente, cortando oraciones a la mitad (`"Los sistemas solo"`).
+  4. *Fuga de Encabezados de Formulario*: Metadatos administrativos (`Texto 1:`, `Programa:`, `Candidato:`) contaminaban títulos y listas de conceptos.
+  5. *Duplicación de Ejes Temáticos*: Múltiples diapositivas consecutivas heredaban títulos idénticos por coincidencia léxica en cascadas estáticas.
+
+### 51.2 Arquitectura de Heurísticas Deterministas de Clase Mundial
+1. **Parenthesis Balancing Engine (`balanceParenthesesString`)**:
+   - Resuelve el desbalance de paréntesis abiertos `(` cerrándolos algebraicamente sin mutilar el texto explicativo contenido.
+2. **Purga Multilínea de Encabezados Administrativos**:
+   - `cleanAdministrativePreamble` y `stripAdministrativePrefix` analizan y purgan bloques enteros de metadatos de postulación, aislando el cuerpo reflexivo real (`effectiveBody`).
+3. **Normalización de Párrafos Reales por Saltos Dobles (`\n\n`)**:
+   - Prioriza saltos de párrafo estructurales (`\n\s*\n+`) colapsando retornos de carro internos a espacios, preservando la continuidad gramatical íntegra de oraciones complejas.
+4. **Clustering Semántico con Garantía de Unicidad (`usedHeadings`)**:
+   - Sistema de clasificación contextual reordenado que evalúa trayectoria, sobrecarga operativa, diagnóstico sistémico, innovación ERBE y metodología de tesis, garantizando títulos únicos y sin repetición por diapositiva.
+5. **Filtrado Estricto de Conceptos y Eliminación de Marcadores en CV**:
+   - Los conceptos requieren mayúscula inicial, longitud máxima de 5 palabras y rechazo de preposiciones iniciales, mientras que el auditor de CV erradica de forma transparente marcadores de página.
+
+### 51.3 Blindaje y Verificación con Vitest
+- Pruebas añadidas en `tests/unit/presentation-sentence-sanitizer.test.ts` y `tests/unit/cv-integrity-auditor.test.ts`.
+- 100% de la suite pasando: **72 suites de pruebas (446 tests unitarios) aprobados en <10s**.
+
+

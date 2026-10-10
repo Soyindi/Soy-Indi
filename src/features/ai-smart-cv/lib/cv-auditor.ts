@@ -94,6 +94,11 @@ export function auditAndRepairCvBullet(rawBullet: string): {
 } {
   if (!rawBullet) return { repairedText: '', isComplete: true, wasRepaired: false };
 
+  // 0. Si es un artefacto de separación de página ("PÁGINA SIGUIENTE", etc.), descartar
+  if (/p[áa]gina\s+siguiente/i.test(rawBullet) || /^[-—\s.]{3,}$/.test(rawBullet)) {
+    return { repairedText: '', isComplete: true, wasRepaired: true };
+  }
+
   // 1. Eliminar viñetas decorativas y prefijos de etiqueta obvia ("Logro:", "Responsabilidad:", etc.)
   let clean = rawBullet
     .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '')
@@ -147,20 +152,24 @@ export function auditAndRepairCvExtraction(
 
   // 2. Reparar Viñetas de Experiencia
   const auditedExperience = extraction.experience.map((exp) => {
-    const cleanRawAchievements = exp.rawAchievements.map((ach) => {
-      const res = auditAndRepairCvBullet(ach);
-      if (res.wasRepaired) repairedBulletsCount++;
-      return res.repairedText;
-    });
+    const cleanRawAchievements = exp.rawAchievements
+      .map((ach) => {
+        const res = auditAndRepairCvBullet(ach);
+        if (res.wasRepaired) repairedBulletsCount++;
+        return res.repairedText;
+      })
+      .filter((t) => t.length > 5);
 
-    const cleanXyzBullets = exp.xyzBullets.map((bullet) => {
-      const res = auditAndRepairCvBullet(bullet.text);
-      if (res.wasRepaired) repairedBulletsCount++;
-      return {
-        ...bullet,
-        text: res.repairedText,
-      };
-    });
+    const cleanXyzBullets = exp.xyzBullets
+      .map((bullet) => {
+        const res = auditAndRepairCvBullet(bullet.text);
+        if (res.wasRepaired) repairedBulletsCount++;
+        return {
+          ...bullet,
+          text: res.repairedText,
+        };
+      })
+      .filter((b) => b.text.length > 5);
 
     return {
       ...exp,

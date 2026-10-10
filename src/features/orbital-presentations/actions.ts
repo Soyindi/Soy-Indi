@@ -316,14 +316,23 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
       const concepts = docAnalysis.conceptDefinitions;
 
       const fallbackSlides: PresentationSlide[] = [];
+      let metricEmitted = false;
+      let comparisonEmitted = false;
+      let conceptEmitted = false;
 
       for (let i = 0; i < slidesCount; i++) {
         const isFirst = i === 0;
         const isLast = i === slidesCount - 1;
-        const isMetric = i === 1 && metricsFound.length > 0;
-        const isComparison = (i === 2 || (i === 1 && metricsFound.length === 0)) && contrast.length > 0;
-        const isConceptArchitecture = concepts.length > 0 && !isFirst && !isLast && !isMetric && !isComparison;
         const sectionData = sections[i % Math.max(1, sections.length)];
+
+        const isMetric = !isFirst && !isLast && !metricEmitted && metricsFound.length > 0 && i === 1;
+        const isComparison = !isFirst && !isLast && !comparisonEmitted && contrast.length > 0 && (
+          (!metricEmitted && metricsFound.length === 0 && i === 1) ||
+          (metricsFound.length > 0 && i === 2)
+        );
+        const isConceptArchitecture = !isFirst && !isLast && !isMetric && !isComparison && !conceptEmitted && concepts.length > 0 && (
+          (comparisonEmitted && i === 2) || i === 3
+        );
 
         if (isFirst) {
           const mainKeyPoints = takeaways.length >= 2 
@@ -364,6 +373,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             gridSpan: { cols: 12, rows: 2 },
           });
         } else if (isMetric) {
+          metricEmitted = true;
           const metricsForSlide = metricsFound.slice(0, 3).map((m) => ({
             label: m.label,
             value: m.value,
@@ -406,6 +416,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             gridSpan: { cols: 6, rows: 1 },
           });
         } else if (isComparison) {
+          comparisonEmitted = true;
           const abstract: AbstractSlide = {
             intent: 'comparison_delta',
             supportNodes: [
@@ -473,16 +484,24 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
                 description: s.detail,
               }))
             : (sectionData?.points && sectionData.points.length >= 2
-                ? sectionData.points.slice(0, 3).map((pt, pIdx) => ({
-                    step: `Hito 0${pIdx + 1}`,
-                    title: synthesizeConciseActionTitle(pt),
-                    description: pt,
-                  }))
-                : takeaways.slice(0, 3).map((tk, tIdx) => ({
-                    step: `Hito 0${tIdx + 1}`,
-                    title: synthesizeConciseActionTitle(tk),
-                    description: tk,
-                  })));
+                ? sectionData.points.slice(0, 3).map((pt, pIdx) => {
+                    const concise = synthesizeConciseActionTitle(pt);
+                    const shortTitle = concise.split(/\s+/).slice(0, 5).join(' ').replace(/[,;:\-–—\s]+$/, '');
+                    return {
+                      step: `Hito 0${pIdx + 1}`,
+                      title: shortTitle.length >= 4 ? shortTitle : `Hito Estratégico 0${pIdx + 1}`,
+                      description: pt,
+                    };
+                  })
+                : takeaways.slice(0, 3).map((tk, tIdx) => {
+                    const concise = synthesizeConciseActionTitle(tk);
+                    const shortTitle = concise.split(/\s+/).slice(0, 5).join(' ').replace(/[,;:\-–—\s]+$/, '');
+                    return {
+                      step: `Hito 0${tIdx + 1}`,
+                      title: shortTitle.length >= 4 ? shortTitle : `Hito Estratégico 0${tIdx + 1}`,
+                      description: tk,
+                    };
+                  }));
 
           const lastAction = synthesizeConciseActionTitle(
             sectionData?.actionSummary || takeaways[takeaways.length - 1] || 'Conclusiones determinantes del documento',
@@ -511,6 +530,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             gridSpan: { cols: 12, rows: 1 },
           });
         } else if (isConceptArchitecture) {
+          conceptEmitted = true;
           // Slide dedicado a conceptos clave o arquitectura técnica
           const abstract: AbstractSlide = {
             intent: 'executive_scqa',
@@ -552,9 +572,9 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             `Enfoque analítico del módulo ${i + 1}`
           );
 
-          let slideTitle = stripAdministrativePrefix(sectionData?.heading || `Eje Temático 0${i + 1}`);
+          let slideTitle = stripAdministrativePrefix(sectionData?.heading || `Dimensión Estratégica 0${i + 1}`);
           if (slideTitle.toLowerCase() === slideAction.toLowerCase() || slideAction.toLowerCase().startsWith(slideTitle.toLowerCase())) {
-            slideTitle = `Eje Temático 0${i + 1}`;
+            slideTitle = sectionData?.heading || `Dimensión Estratégica 0${i + 1}`;
           }
 
           const slidePoints = sectionData?.points && sectionData.points.length > 0

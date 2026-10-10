@@ -103,5 +103,50 @@ describe('Smart CV Syntactic & Pre-Route Auditor (INDI 2026)', () => {
       expect(auditedExtraction.experience[0].rawAchievements[0]).toBe('Coordinación técnica del equipo.');
       expect(auditedExtraction.experience[0].xyzBullets[0].text).toBe('Diseñé microservicios de alto tráfico.');
     });
+
+    it('purga marcadores de salto de página que se hayan filtrado en viñetas de experiencia', () => {
+      const extraction: MultimodalCvExtraction = {
+        fullName: 'Matías Riquelme',
+        email: 'matias@test.com',
+        phone: '+56 9 1234 5678',
+        location: 'Concepción, Chile',
+        targetRole: 'Psicólogo & Dev',
+        summary: 'Resumen profesional.',
+        skills: ['Python', 'SQL'],
+        experience: [
+          {
+            company: 'Hospital Clínico',
+            role: 'Psicólogo',
+            period: '2020 - 2021',
+            rawAchievements: [
+              'Atención clínica individual.',
+              '--- PÁGINA SIGUIENTE ---',
+              'Gestión de derivaciones hospitalarias.',
+            ],
+            xyzBullets: [
+              { text: 'Atención clínica individual.', needs_metric: false },
+              { text: '--- PÁGINA SIGUIENTE ---', needs_metric: false },
+              { text: 'Gestión de derivaciones hospitalarias.', needs_metric: false },
+            ],
+          },
+        ],
+        education: [
+          {
+            degree: 'Formación en WISC-V',
+            institution: 'Education Business Group',
+            year: '2021',
+          },
+        ],
+        references: [],
+      };
+
+      const { auditedExtraction } = auditAndRepairCvExtraction(extraction);
+
+      expect(auditedExtraction.experience[0].rawAchievements).not.toContain('--- PÁGINA SIGUIENTE ---');
+      expect(auditedExtraction.experience[0].rawAchievements.length).toBe(2);
+      expect(auditedExtraction.experience[0].xyzBullets.some((b) => b.text.includes('PÁGINA SIGUIENTE'))).toBe(false);
+      expect(auditedExtraction.experience[0].xyzBullets.length).toBe(2);
+      expect(auditedExtraction.education[0].degree).toBe('Formación en WISC-V');
+    });
   });
 });

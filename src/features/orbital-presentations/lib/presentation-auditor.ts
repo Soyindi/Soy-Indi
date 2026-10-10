@@ -12,7 +12,8 @@ const ORPHAN_TRAILING_WORDS = new Set([
   'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas',
   'que', 'y', 'o', 'e', 'u', 'pero', 'sino', 'aunque', 'porque',
   'su', 'sus', 'mi', 'mis', 'tu', 'tus', 'nuestro', 'nuestra',
-  'se', 'es', 'era', 'fue', 'son', 'ser', 'estar', 'como', 'entre'
+  'se', 'es', 'era', 'fue', 'son', 'ser', 'estar', 'como', 'entre',
+  'había', 'habia', 'hubo', 'ha', 'han', 'he', 'tener', 'tiene', 'tenía', 'tenia'
 ]);
 
 export interface SlideIntegrityIssue {
@@ -44,6 +45,44 @@ export function assertSyntacticCompleteness(text: string): {
   if (!text) return { isComplete: true, cleanText: '', repairedText: '' };
 
   let trimmed = text.trim().replace(/\.{2,}/g, '').trim().replace(/[.!?…]+$/, '').trim();
+
+  // 1. Limpieza y balanceo de paréntesis huérfanos o desbalanceados
+  let openCount = 0;
+  let hasStrayClosing = false;
+  for (let i = 0; i < trimmed.length; i++) {
+    if (trimmed[i] === '(') openCount++;
+    if (trimmed[i] === ')') {
+      if (openCount > 0) openCount--;
+      else hasStrayClosing = true;
+    }
+  }
+
+  if (hasStrayClosing) {
+    // Remover paréntesis de cierre que no tengan apertura previa
+    let currentOpen = 0;
+    let balanced = '';
+    for (let i = 0; i < trimmed.length; i++) {
+      const ch = trimmed[i];
+      if (ch === '(') {
+        currentOpen++;
+        balanced += ch;
+      } else if (ch === ')') {
+        if (currentOpen > 0) {
+          currentOpen--;
+          balanced += ch;
+        }
+      } else {
+        balanced += ch;
+      }
+    }
+    trimmed = balanced.trim();
+  }
+
+  // Si quedó un '(' sin cerrar, remover el segmento que quedó abierto
+  if (openCount > 0) {
+    trimmed = trimmed.replace(/\s*\([^)]*$/, '').trim();
+  }
+
   const words = trimmed.split(/\s+/).filter(Boolean);
 
   if (words.length === 0) return { isComplete: true, cleanText: '', repairedText: '' };

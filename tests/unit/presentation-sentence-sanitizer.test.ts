@@ -6,7 +6,10 @@ import {
   cleanAdministrativePreamble,
   stripAdministrativePrefix,
   synthesizeConciseActionTitle,
+  balanceParenthesesString,
+  detectDocumentArchetype,
 } from '@/features/orbital-presentations/lib/document-parser';
+import { assertSyntacticCompleteness } from '@/features/orbital-presentations/lib/presentation-auditor';
 
 describe('Presentation Text Sanitizer & Clause Reconstitution', () => {
   it('reconstituye sujeto contextual ante fragmentos que arrancan con "era mío, sino del sistema..."', () => {
@@ -81,6 +84,33 @@ describe('Presentation Text Sanitizer & Clause Reconstitution', () => {
     expect(actionTitle).not.toContain('Texto 1:');
     expect(actionTitle).not.toContain('Candidato:');
     expect(actionTitle.length).toBeGreaterThan(10);
+  });
+
+  it('balancea paréntesis huérfanos sin truncar el contenido con balanceParenthesesString', () => {
+    const unclosed = 'Entendí cómo distintos factores (los pares, el alcohol y las drogas, entre otros';
+    expect(balanceParenthesesString(unclosed)).toBe('Entendí cómo distintos factores (los pares, el alcohol y las drogas, entre otros)');
+
+    const alreadyBalanced = 'Evaluación con el IGI (Inventario de Gestión) completada.';
+    expect(balanceParenthesesString(alreadyBalanced)).toBe(alreadyBalanced);
+  });
+
+  it('clasifica ensayos académicos y de posgrado como narrative_educational', () => {
+    const academicText = `
+      Texto 1: Expectativas académicas, intereses y perspectivas de retorno
+      Programa: Programa de Pós-Graduação em Segurança Pública (PPGSP), Universidade do Estado do Amazonas
+      Candidato: Matías Ricardo Riquelme Cárdenas · Nivel: Maestría
+      El corazón de mi tesis es construir y validar un instrumento de evaluación de proceso basado en rúbricas.
+    `;
+    const result = detectDocumentArchetype(academicText, 'UEA_ENSAYO1.pdf');
+    expect(result.archetype).toBe('narrative_educational');
+    expect(result.confidence).toBeGreaterThanOrEqual(0.7);
+  });
+
+  it('repara títulos con verbos auxiliares huérfanos mediante assertSyntacticCompleteness', () => {
+    const rawTitle = 'Para armar un informe había';
+    const checked = assertSyntacticCompleteness(rawTitle);
+    expect(checked.isComplete).toBe(false);
+    expect(checked.cleanText).toBe('Para armar un informe');
   });
 
   it('maneja strings vacíos o nulos sin lanzar errores', () => {
