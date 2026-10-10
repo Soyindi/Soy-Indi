@@ -3,6 +3,7 @@ import { db } from '@/shared/api/db';
 import { cards, cardEvents, smartCvs, presentations } from '@/entities/schema';
 import { eq, sql } from 'drizzle-orm';
 import { telemetryViewSchema } from '@/entities/telemetry/schemas';
+import { checkTelemetryRateLimit } from '@/shared/lib/rateLimiter';
 
 /**
  * Route Handler de Telemetría Asíncrona (INDI 2026)
@@ -10,6 +11,15 @@ import { telemetryViewSchema } from '@/entities/telemetry/schemas';
  */
 export async function POST(req: NextRequest) {
   try {
+    // 0. Protección contra abusos y ráfagas de escritura (60 req/min por IP)
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+               req.headers.get('x-real-ip') || 
+               'anonymous-client';
+    const rateLimit = await checkTelemetryRateLimit(ip);
+    if (!rateLimit.success) {
+      return NextResponse.json({ success: true, rateLimited: true }, { status: 200 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const parsed = telemetryViewSchema.safeParse(body);
 

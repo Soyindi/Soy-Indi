@@ -129,6 +129,13 @@ src/
       2. *Capa 1 (Inferencia Grounded Tipo NotebookLM & Ledger-Feedback Loop)*: Context Caching en Gemini 2.0/2.5 o LLaMA 3.3 70B vía NVIDIA NIM con Structured Outputs tipados por Zod (`bentoModuleType`, `gridSpan`, `sourceProvenance`). Validación simbólica del Ledger de métricas (`validateDocumentMetricsLedger`) con reconciliación de números y tendencias (+/-), inyectando feedback correctivo atómico al modelo antes de consolidar la respuesta.
       3. *Capa 2 (Skills Modulares vs Agentes Pesados & Bento Grid Layouts)*: En lugar de bucles agénticos lentos y costosos (15-45s), se orquestan Skills deterministas especializadas (`presentation-intelligence-engine`) que garantizan latencia sub-segundo, tipología visual adaptativa, cero truncamiento y diagramación Bento Grid de 12 columnas con jerarquía visual asimétrica (Hero 8/12 vs Secondary 4/12).
 
+21. **Distributed Rate Limiting & Protección contra Abuso y Ráfagas (Upstash Redis & In-Memory Sentinel):**
+   - **Gobernanza de Capacidad y Mitigación DoS**: Todas las Server Actions de Inteligencia Artificial (`rewriteCvSectionAction`, `decomposeAndGeneratePresentationAction`, `refineSlideWithAiAction`, `generateAiSlidesAction`) y endpoints perimetrales de telemetría (`/api/telemetry/view`) deben estar resguardados obligatoriamente por el módulo unificado `@/shared/lib/rateLimiter`.
+   - **Algoritmo Sliding Window**:
+     - *Inferencia IA*: Límite estricto de 12 solicitudes por minuto por usuario autenticado (o IP de sesión), protegiendo cuotas de NVIDIA NIM y modelos LLM de frontera contra vaciado de créditos.
+     - *Telemetría Asíncrona*: Límite de 60 visitas por minuto por IP, protegiendo a Turso SQLite de bloqueos `SQLITE_BUSY` causados por ráfagas masivas de escritura concurrentes.
+   - **Resiliencia Determinista Zero-Downtime**: Si las credenciales de Upstash Redis no están provistas o se produce un fallo de red transitorio, el sistema degrada automáticamente a un almacén LRU en memoria local sin arrojar excepciones 500 ni interrumpir la experiencia de usuario.
+
 ---
 
 ## 🛠️ 6. Catálogo de Recursos Agénticos y Servidores MCP (Tool Orchestration 2026)

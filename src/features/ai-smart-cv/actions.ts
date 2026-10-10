@@ -610,7 +610,17 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
       }
     }
 
-
+    // 2.1 Guardrail de Frecuencia y Protección contra Abuso (Rate Limiting)
+    const rateLimitIdentifier = targetUserId || 'anonymous-user';
+    const { checkAiRateLimit } = await import('@/shared/lib/rateLimiter');
+    const rateLimitResult = await checkAiRateLimit(rateLimitIdentifier);
+    if (!rateLimitResult.success) {
+      return {
+        success: false,
+        suggestions: [],
+        error: 'Has alcanzado el límite de solicitudes de IA por minuto. Por favor, aguarda unos segundos.',
+      };
+    }
 
     // 3. Preparación del Prompt Contextualizado
     const cleanInput = text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim();

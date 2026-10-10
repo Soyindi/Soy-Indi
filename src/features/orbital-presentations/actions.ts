@@ -26,6 +26,7 @@ import {
 } from '@/entities/presentation/heuristics';
 import { PRESENTATION_TEMPLATES, PRESENTATION_THEMES } from '@/entities/presentation/templates';
 import { callNvidiaNimChat } from '@/shared/api/nvidia-nim';
+import { checkAiRateLimit } from '@/shared/lib/rateLimiter';
 import {
   extractTextFromDocument,
   analyzeDocumentContent,
@@ -157,6 +158,37 @@ export async function decomposeAndGeneratePresentationAction(
 
     const { rawContent, durationMinutes, targetAudience, presentationTone, fileName } =
       validated.data;
+
+    // 1.1 Guardrails de Sesión, Entitlement y Rate Limiting
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const targetUserId = sessionResult.userId;
+
+    if (!targetUserId && process.env.NODE_ENV === 'production') {
+      return {
+        success: false,
+        error: sessionResult.error || 'Sesión requerida para generar presentaciones con IA.',
+      };
+    }
+
+    if (targetUserId) {
+      const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
+      const entitlement = await assertUserEntitlementAction(targetUserId);
+      if (!entitlement.allowed) {
+        return {
+          success: false,
+          error: entitlement.error || 'Período de prueba o membresía inactiva.',
+        };
+      }
+    }
+
+    const rateLimitId = targetUserId || 'anonymous-user';
+    const rateLimit = await checkAiRateLimit(rateLimitId);
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: 'Has alcanzado el límite de solicitudes de IA por minuto. Por favor, aguarda un instante.',
+      };
+    }
 
     // 2. Evaluación Pre-Route y Contenedor Aislado (NotebookLM Scoped Container & Plan-then-Execute)
     const preRoute = evaluatePreRouteStrategy(rawContent, fileName);
@@ -771,6 +803,15 @@ export async function generateAiSlidesAction(
       };
     }
 
+    // 1.1 Guardrail de Frecuencia y Protección contra Abuso (Rate Limiting)
+    const rateLimit = await checkAiRateLimit('presentation-generator-global');
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: 'Has alcanzado el límite de solicitudes de IA por minuto. Por favor, aguarda un instante.',
+      };
+    }
+
     // 2. Si hay conexión a NVIDIA NIM, invocar inferencia de frontera para investigación y enriquecimiento profesional del tema escueto
     const nimPrompt = `
 [SYSTEM DIRECTIVE: CORE IDENTITY]
@@ -1125,6 +1166,16 @@ export async function refineSlideWithAiAction(
           error: entitlement.error || 'Período de prueba o suscripción expirada.',
         };
       }
+    }
+
+    // 2.1 Guardrail de Frecuencia y Protección contra Abuso (Rate Limiting)
+    const rateLimitId = targetUserId || 'anonymous-user';
+    const rateLimit = await checkAiRateLimit(rateLimitId);
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: 'Has alcanzado el límite de solicitudes de IA por minuto. Por favor, aguarda un instante.',
+      };
     }
 
     const cleanTitle = slide.title || 'Diapositiva';
