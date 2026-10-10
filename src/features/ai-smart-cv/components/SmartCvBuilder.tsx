@@ -724,6 +724,31 @@ export function SmartCvBuilder({
         {/* Columna Formulario */}
         {(viewMode === 'split' || viewMode === 'edit') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'w-full'} space-y-6`}>
+            {/* Banner de Ingesta Rápida (1 Clic) */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/20 to-slate-900/60 border border-cyan-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                  <UploadCloud className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-white tracking-wide">
+                    ¿Ya tienes un CV en PDF o imagen?
+                  </h4>
+                  <p className="text-[11px] text-slate-300">
+                    Importa tu documento para auto-completar todos los campos con IA y redacción STAR en segundos.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsImportModalOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md transition-all active:scale-95 shrink-0 min-h-[40px]"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Importar CV</span>
+              </button>
+            </div>
+
             {/* Sección: Enlace Digital & Visibilidad */}
             <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-white/5">

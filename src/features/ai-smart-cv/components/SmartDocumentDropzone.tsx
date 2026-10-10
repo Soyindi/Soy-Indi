@@ -67,10 +67,13 @@ export function SmartDocumentDropzone({
       const formData = new FormData();
       formData.append('fileName', file.name);
 
+      // Si el archivo es menor a 4.2 MB, lo adjuntamos siempre para validación de firma o procesamiento multimodal
+      if (fileToSend.size <= 4.2 * 1024 * 1024) {
+        formData.append('file', fileToSend);
+      }
+
       if (clientExtractedText && clientExtractedText.trim().length > 20) {
         formData.append('extractedText', clientExtractedText);
-      } else {
-        formData.append('file', fileToSend);
       }
 
       if (type === 'cv') {
@@ -248,6 +251,7 @@ export function SmartDocumentDropzone({
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
+            e.target.value = '';
             if (file) handleFileUpload(file, 'cv');
           }}
         />
@@ -258,6 +262,7 @@ export function SmartDocumentDropzone({
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
+            e.target.value = '';
             if (file) handleFileUpload(file, 'credential');
           }}
         />
