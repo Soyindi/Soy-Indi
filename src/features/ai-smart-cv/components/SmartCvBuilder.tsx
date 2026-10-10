@@ -277,15 +277,22 @@ export function SmartCvBuilder({
   };
 
   const handleCvParsed = (extractedCv: Partial<CVFormValues>) => {
-    setFormData((prev) => ({
-      ...prev,
-      title: extractedCv.title || prev.title,
-      targetRole: extractedCv.targetRole || prev.targetRole,
-      content: {
-        ...prev.content,
-        ...extractedCv.content,
-      },
-    }));
+    setFormData((prev) => {
+      const newFullName = extractedCv.content?.fullName || prev.content.fullName;
+      const newTargetRole = extractedCv.targetRole || prev.targetRole;
+      const autoSlug = !isSlugManuallyEdited && newFullName ? generateCvSlug(newFullName, false) : prev.slug;
+
+      return {
+        ...prev,
+        title: extractedCv.title || (newFullName ? `CV de ${newFullName}` : prev.title),
+        slug: autoSlug || prev.slug,
+        targetRole: newTargetRole,
+        content: {
+          ...prev.content,
+          ...extractedCv.content,
+        },
+      };
+    });
   };
 
   const handleCredentialParsed = (credential: VerifiedCredential) => {
