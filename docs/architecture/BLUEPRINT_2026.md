@@ -2155,3 +2155,23 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 ### 54.2 Asistente Editorial IA Resiliente (`InlineAiWriter.tsx`)
 - Se implementó gestión de errores explícita (`errorMessage`) con alerta visual en la interfaz del usuario, erradicando estados de carga infinitos ante caídas de red o fallos de proveedores de IA.
 - 100% de la suite de pruebas unitarias aprobada (72/72 archivos, 449 tests pasando) y TypeScript typecheck con 0 errores.
+
+---
+
+## 55. Arquitectura Anti-Colapso de APIs de IA: Circuit Breaker, Request Coalescing & Micro-Caché Semántica (Octubre 2026)
+
+### 55.1 Problemática y Riesgos de Colapso en Producción
+- **Peligro de Rate Limits (HTTP 429)**: Al escalar usuarios concurrentes, invocar llamadas directas a un solo proveedor satura las cuotas por minuto (TPM / RPM) de las APIs gratuitas o de baja cuota.
+- **Peligro de Cascadas de Timeouts en Cadena**: Si un proveedor se satura y se ejecutan reintentos ciegos, las conexiones serverless acumulan hilos bloqueados agotando memoria y tiempos de ejecución.
+- **Consultas Idénticas Redundantes**: Si dos componentes o usuarios solicitan procesar un texto idéntico, ejecutar dos llamadas a la IA genera doble facturación y doble consumo de cuota sin necesidad.
+
+### 55.2 Motor de Resiliencia Industrial (`src/shared/lib/aiCircuitBreaker.ts`)
+1. **Circuit Breaker Adaptativo (Stateful Circuit Breaker)**:
+   - Estados: `CLOSED` (operativo normal), `OPEN` (aislado tras 3 fallas consecutivas de red o HTTP 429/500) y `HALF_OPEN` (reintento gradual tras 30 segundos de enfriamiento).
+   - **Beneficio**: Si un proveedor (ej. Groq o NVIDIA) cae temporalmente, el sistema **no pierde tiempo intentándolo** en cada solicitud; se salta de inmediato en <1ms al siguiente proveedor en la lista (Gemini / OpenRouter / heurísticas locales).
+2. **Deduplicación Concurrente In-Flight (Request Coalescing)**:
+   - Registro en memoria de promesas activas mediante `withInFlightCoalescing(key, fetchFn)`. Si se disparan 3 peticiones idénticas al unísono, se ejecuta **una sola llamada HTTP**, y las 3 promesas reciben la misma respuesta instantánea.
+3. **Micro-Caché Semántica LRU (<1ms Response)**:
+   - Almacena en memoria hasta 100 respuestas recientes con TTL de 10 minutos indexadas por un hash normalizado de los mensajes y parámetros de salida. Respuestas a re-renderizados o solicitudes repetidas se sirven en <1ms sin consumir cuota de las APIs externas.
+4. **Blindaje de Calidad con Vitest**:
+   - `tests/unit/ai-circuit-breaker.test.ts` valida al 100% la transición de estados `CLOSED -> OPEN -> CLOSED`, deduplicación concurrente y micro-caché semántica. Suite completa aprobada (73/73 archivos, 454 tests pasando).

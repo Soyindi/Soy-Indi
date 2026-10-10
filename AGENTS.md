@@ -330,6 +330,11 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 - **Reseteo Determinista de Inputs de Archivo**: Todo `<input type="file" />` debe ejecutar `e.target.value = ''` tras el evento de selección, garantizando que el usuario pueda reintentar la subida con el mismo archivo tras un error de red o validación.
 - **Timeouts Defensivos de Inferencia (`AbortSignal.timeout`)**: Toda llamada a APIs externas de inferencia debe declarar un límite estricto de espera (máximo 8s en NVIDIA NIM, 10s en Groq LPU). Si un modelo sufre sobrecarga o latencia anómala, el sistema conmuta inmediatamente a la siguiente capa de failover sin bloquear la experiencia de usuario ni dejar promesas colgadas.
 
+26. **Gobernanza Anti-Colapso de APIs de IA (Circuit Breaker, Request Coalescing & Micro-Caché Semántica):**
+- **Stateful Circuit Breaker (`src/shared/lib/aiCircuitBreaker.ts`)**: Para evitar colapsar cuotas por minuto (TPM / RPM) y llamadas inútiles cuando una API externa responde con HTTP 429 o 500, el circuito aísla al proveedor tras 3 fallos consecutivos durante 30 segundos, omitiéndolo en micro-segundos para dar paso inmediato a las capas sanas.
+- **Request Coalescing In-Flight**: Las peticiones simultáneas con el mismo contenido comparten la misma promesa HTTP en vuelo, impidiendo duplicar costos y peticiones a los proveedores.
+- **Micro-Caché Semántica en Memoria**: Consultas repetidas dentro de una ventana de 10 minutos se resuelven de inmediato (<1ms) sin consumir saldo ni cuota de las APIs externas.
+
 ---
 
 
