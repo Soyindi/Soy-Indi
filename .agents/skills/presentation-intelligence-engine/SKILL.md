@@ -28,7 +28,12 @@ Esta habilidad documenta y gobierna el protocolo de ingeniería y diseño para l
 - Invocación con `callNvidiaNimChat` solicitando formato JSON tipado con Zod (`PresentationDecompositionRequest`).
 - Fallback determinista que mapea directamente cada cluster temático a diapositivas SCQA sin omitir información crítica.
 
+### 3. Auditor de Integridad y Completitud Sintáctica (`src/features/orbital-presentations/lib/presentation-auditor.ts`)
+- **Erradicación de Truncamientos Ciegos**: Prohíbe terminantemente `words.slice(0, N)` o cortes con puntos suspensivos en titulares ejecutivos y Action Titles.
+- **Detección y Reparación de Palabras Huérfanas (`assertSyntacticCompleteness`)**: Audita preposiciones, conjunciones y determinantes terminales (`de`, `en`, `para`, `con`, `sobre`, `por`, `el`, `la`, `los`, `las`, `que`, `su`, etc.) y restaura la completitud sintáctica oracional.
+- **Auditoría Integral de Diapositivas (`auditAndRepairPresentationSlides`)**: Revisa y garantiza sentido autónomo completo en `title`, `actionTitle`, `keyPoints` y `timelineData` antes de persistir o renderizar en el cliente.
+
 ---
 
 ## 🧪 Pruebas Requeridas
-Toda modificación debe validar `tests/unit/presentation-decomposition.test.ts`, `tests/unit/presentation-adaptive-pipeline.test.ts` y `tests/unit/spatial-document-extraction.test.ts`.
+Toda modificación debe validar `tests/unit/presentation-decomposition.test.ts`, `tests/unit/presentation-adaptive-pipeline.test.ts`, `tests/unit/spatial-document-extraction.test.ts` y `tests/unit/presentation-integrity-auditor.test.ts`.

@@ -2018,3 +2018,22 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
   5. Detección de porcentajes > 100%.
   6. Detección de desorden cronológico en timelines.
   7. Ledger limpio sin observaciones para datos válidos.
+
+---
+
+## 48. Auditor de Integridad y Completitud Sintáctica en Presentaciones (Fase 2026)
+
+### 48.1 Erradicación de Truncamientos Ciegos y Mutilación de Titulares
+- **Diagnóstico Causa Raíz**: Se erradicó el uso de words.slice(0, 13) y recortes artificiales con puntos suspensivos (...) en titulares ejecutivos y Action Titles.
+- **Síntesis Adaptativa (synthesizeConciseActionTitle)**: Preserva oraciones completas de hasta 22 palabras y prioriza cortes en límites de puntuación natural (comas, dos puntos, punto y coma) antes que particiones arbitrarias de palabras.
+
+### 48.2 Auditor de Integridad Sintáctica (src/features/orbital-presentations/lib/presentation-auditor.ts)
+- **Detección y Reparación de Palabras Huérfanas (ssertSyntacticCompleteness)**: Audita preposiciones, conjunciones y determinantes terminales (de, en, para, con, sobre, por, el, la, los, las, que, su, etc.) y elimina recursivamente palabras incompletas al final de frases.
+- **Auditoría Integral de Diapositivas (uditAndRepairPresentationSlides)**: Sanitiza y valida 	itle, ctionTitle, keyPoints y 	imelineData antes de persistir en Turso SQLite o enviar al cliente.
+
+### 48.3 Blindaje con Pruebas Unitarias
+- 	ests/unit/presentation-integrity-auditor.test.ts valida al 100%:
+  1. Reparación de frases truncadas con palabras huérfanas.
+  2. Erradicación de puntos suspensivos mutilantes.
+  3. Preservación de tesis ejecutivas coherentes.
+  4. Auditoría y auto-reparación de diapositivas completas.

@@ -42,6 +42,9 @@ import {
   validateTimelineChronology,
 } from '@/features/orbital-presentations/lib/ledger-validator';
 import {
+  auditAndRepairPresentationSlides,
+} from '@/features/orbital-presentations/lib/presentation-auditor';
+import {
   validateFileSignature,
   sanitizeExtractedText,
   assertZeroBinaryPersistence,
@@ -579,6 +582,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         }
       }
 
+      const { auditedSlides: auditedFallbackSlides } = auditAndRepairPresentationSlides(fallbackSlides);
+
       const finalFormValues: PresentationFormValues = {
         title: presentationTitle,
         slug: safeSlug,
@@ -587,7 +592,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         targetAudience,
         presentationTone,
         themeSettings: matchedTheme,
-        slidesData: fallbackSlides,
+        slidesData: auditedFallbackSlides,
       };
 
       return {
@@ -676,6 +681,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '') || `presentacion-${Date.now()}`;
 
+    const { auditedSlides: auditedNimSlides } = auditAndRepairPresentationSlides(slides);
+
     const finalFormValues: PresentationFormValues = {
       title: generatedData.presentationTitle || 'Presentación Estructurada con IA',
       slug: safeSlug,
@@ -684,7 +691,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
       targetAudience,
       presentationTone,
       themeSettings: matchedTheme,
-      slidesData: slides,
+      slidesData: auditedNimSlides,
     };
 
     return {
@@ -851,7 +858,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 
       const title = section?.heading || (isFirst ? `Visión: ${cleanTopic}` : `Eje Clave 0${i + 1}`);
       const rawTopicAction = (section?.actionSummary && section.actionSummary.length > 15)
-        ? truncateByWordBoundary(section.actionSummary, 200)
+        ? synthesizeConciseActionTitle(section.actionSummary)
         : (takeaways[i] || `Conclusión estratégica sobre ${cleanTopic}`);
       const actionTitle = sanitizeSentenceClause(rawTopicAction);
 
@@ -873,17 +880,19 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         timelineData: isLast
           ? points.slice(0, 3).map((pt, pIdx) => ({
               step: `Hito 0${pIdx + 1}`,
-              title: truncateByWordBoundary(pt, 50),
+              title: synthesizeConciseActionTitle(pt),
               description: pt,
             }))
           : undefined,
       });
     }
 
+    const { auditedSlides: auditedDynamicSlides } = auditAndRepairPresentationSlides(dynamicSlides);
+
     return {
       success: true,
       presentationTitle: docAnalysis.titleSuggestion || cleanTopic,
-      data: dynamicSlides.slice(0, slidesCount),
+      data: auditedDynamicSlides.slice(0, slidesCount),
     };
   } catch (err: any) {
     console.error('Error generando diapositivas IA:', err);

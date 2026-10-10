@@ -366,17 +366,36 @@ export function synthesizeConciseActionTitle(raw: string, fallbackTheme?: string
     }
   }
 
-  // 3. Regla McKinsey: Máximo 14-15 palabras completas
+  // 3. Regla McKinsey: Procurar brevedad (<15 palabras) pero JAMÁS cortar proposiciones incompletas
   const words = cleaned.split(/\s+/).filter(Boolean);
-  if (words.length <= 14) {
-    // Si la oración ya es concisa y no excede 14 palabras, preservarla pulcra sin puntos suspensivos
+  if (words.length <= 15) {
+    // Si la oración no excede 15 palabras, preservarla pulcra sin puntos suspensivos
     return cleaned.replace(/[.!?]+$/, '');
   }
 
-  // Si excede 14 palabras, tomar las primeras 12-14 palabras con sentido completo
-  const conciseClause = words.slice(0, 13).join(' ');
-  // Remover comas o signos finales huérfanos
-  return conciseClause.replace(/[,;:\-–—\s]+$/, '');
+  // Si excede 15 palabras:
+  // Intentar encontrar una frontera natural de pausa (coma, punto y coma, o conector) entre la palabra 8 y 16
+  const subSlice = words.slice(0, 16).join(' ');
+  const pauseMatch = subSlice.match(/^([\s\S]{20,95}?)[,;:\-–—]\s*/);
+  if (pauseMatch && pauseMatch[1] && pauseMatch[1].split(/\s+/).length >= 6) {
+    return pauseMatch[1].trim().replace(/[,;:\-–—\s]+$/, '');
+  }
+
+  // Si la oración tiene hasta 22 palabras y representa una tesis completa,
+  // preservarla íntegra para no dejar el titular truncado ni incompleto
+  if (words.length <= 22) {
+    return cleaned.replace(/[.!?]+$/, '');
+  }
+
+  // Para oraciones excepcionalmente largas (>22 palabras), tomar las primeras 15 palabras
+  // evitando estrictamente dejar preposiciones o artículos huérfanos al final
+  let safeWords = words.slice(0, 15);
+  const orphanWords = new Set(['de', 'del', 'en', 'para', 'con', 'sin', 'sobre', 'por', 'a', 'el', 'la', 'los', 'las', 'un', 'una', 'que', 'y', 'o', 'pero', 'su', 'sus', 'se', 'es']);
+  while (safeWords.length > 8 && orphanWords.has(safeWords[safeWords.length - 1].toLowerCase().replace(/[^a-záéíóúñ]/gi, ''))) {
+    safeWords.pop();
+  }
+
+  return safeWords.join(' ').replace(/[,;:\-–—\s]+$/, '');
 }
 
 /**
@@ -550,7 +569,7 @@ export function analyzeDocumentContent(
       const fullDetail = sm[2].trim();
       sequenceSteps.push({
         stepIndex: stepIdx++,
-        title: `Fase ${stepLabel}: ${truncateByWordBoundary(fullDetail, 60)}`,
+        title: `Fase ${stepLabel}: ${synthesizeConciseActionTitle(fullDetail)}`,
         detail: fullDetail,
       });
       if (sequenceSteps.length >= 5) break;
