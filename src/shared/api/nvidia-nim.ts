@@ -28,42 +28,54 @@ export async function callNvidiaNimChat(
   const nvidiaApiKey = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY;
   const geminiApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
-  const defaultModel = options.model || 'meta/llama-3.3-70b-instruct';
+  // Modelos activos verificados en endpoint público de NVIDIA NIM
+  const candidateModels = [
+    options.model,
+    'meta/llama-3.2-11b-vision-instruct',
+    'meta/llama-3.2-90b-vision-instruct',
+    'mistralai/mistral-large-2-instruct',
+  ].filter(Boolean) as string[];
 
-  // 1. Intentar NVIDIA NIM si existe la API Key
+  // 1. Intentar NVIDIA NIM si existe la API Key probando modelos candidatos activos
   if (nvidiaApiKey) {
-    try {
-      const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${nvidiaApiKey}`,
-        },
-        body: JSON.stringify({
-          model: defaultModel,
-          messages,
-          temperature: options.temperature ?? 0.2,
-          max_tokens: options.maxTokens ?? 3000,
-          response_format: options.responseFormat,
-        }),
-      });
+    for (const targetModel of candidateModels) {
+      try {
+        const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${nvidiaApiKey}`,
+          },
+          body: JSON.stringify({
+            model: targetModel,
+            messages,
+            temperature: options.temperature ?? 0.2,
+            max_tokens: options.maxTokens ?? 3000,
+            response_format: options.responseFormat,
+          }),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        const messageContent = data.choices?.[0]?.message?.content;
-        if (messageContent) {
-          return {
-            success: true,
-            content: messageContent,
-            modelUsed: defaultModel,
-          };
+        if (response.ok) {
+          const data = await response.json();
+          const messageContent = data.choices?.[0]?.message?.content;
+          if (messageContent) {
+            return {
+              success: true,
+              content: messageContent,
+              modelUsed: targetModel,
+            };
+          }
+        } else {
+          const errText = await response.text();
+          console.warn(`[NVIDIA NIM Warning] Status ${response.status} en ${targetModel}: ${errText}`);
+          // Si el modelo expiró (410) o no se encuentra (404), continuar con el siguiente candidato
+          if (response.status === 410 || response.status === 404) {
+            continue;
+          }
         }
-      } else {
-        const errText = await response.text();
-        console.warn(`[NVIDIA NIM Warning] Status ${response.status}: ${errText}`);
+      } catch (err: any) {
+        console.warn(`[NVIDIA NIM Warning] Error de conexión en ${targetModel}:`, err?.message);
       }
-    } catch (err: any) {
-      console.warn('[NVIDIA NIM Warning] Error de conexión, intentando failover:', err?.message);
     }
   }
 

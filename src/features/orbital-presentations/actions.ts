@@ -266,7 +266,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         { role: 'user', content: nimPrompt },
       ],
       {
-        model: 'meta/llama-3.3-70b-instruct',
+        model: 'meta/llama-3.2-90b-vision-instruct',
         temperature: 0.15,
         responseFormat: { type: 'json_object' },
       }
@@ -814,7 +814,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         { role: 'user', content: nimPrompt },
       ],
       {
-        model: 'meta/llama-3.3-70b-instruct',
+        model: 'meta/llama-3.2-90b-vision-instruct',
         temperature: 0.25,
       }
     );
@@ -856,6 +856,100 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
       } catch (parseErr) {
         console.warn('[QuickTopic AI] Fallback a motor heurístico por error de parseo:', parseErr);
       }
+    }
+
+    // 3. Fallback Heurístico Estratégico (SAP Engine & Expansor Temático SCQA)
+    // Si la entrada es un tema breve (<= 25 palabras), generar una narrativa SCQA articulada y enriquecida
+    const isBriefTopic = cleanTopic.split(/\s+/).filter(Boolean).length <= 25;
+    
+    if (isBriefTopic) {
+      const topicLower = cleanTopic.toLowerCase();
+      const dynamicSlides: PresentationSlide[] = [
+        {
+          id: crypto.randomUUID(),
+          title: `Diagnóstico: ${cleanTopic}`,
+          actionTitle: sanitizeSentenceClause(`Comprender la magnitud y prevalencia de ${topicLower} es fundamental para definir una respuesta integral`),
+          subtitle: 'Situación Actual & Alcance',
+          semanticIntent: 'executive_scqa',
+          visualType: 'concept',
+          layout: 'layout-hero-statement',
+          badgeText: 'DIAGNÓSTICO INICIAL',
+          keyPoints: [
+            `Magnitud: Identificar factores de riesgo y patrones de comportamiento asociados a ${topicLower}.`,
+            `Vulnerabilidad: Evaluar el impacto multidimensional en personas, equipos y entornos de convivencia.`,
+            `Visibilidad: Establecer canales de detección temprana con enfoque preventivo y confidencial.`,
+          ],
+          speakerNotes: `Comenzar contextualizando la situación actual en torno a ${cleanTopic}. Enfatizar la necesidad de un enfoque objetivo y libre de sesgos.`,
+        },
+        {
+          id: crypto.randomUUID(),
+          title: 'Impacto & Factores Críticos',
+          actionTitle: sanitizeSentenceClause(`Los efectos de ${topicLower} comprometen el bienestar, la salud y la sostenibilidad comunitaria`),
+          subtitle: 'Complicaciones & Riesgos Clave',
+          semanticIntent: 'executive_scqa',
+          visualType: 'comparison',
+          layout: 'layout-kpi-bento',
+          badgeText: 'ANÁLISIS DE RIESGO',
+          keyPoints: [
+            `Salud Mental: Deterioro cognitivo y emocional progresivo ante la falta de contención oportuna.`,
+            `Entorno Social: Conflictos interpersonales, deserción y pérdida de estabilidad en redes de apoyo.`,
+            `Costos Ocultos: Aumento en incidentes críticos y sobrecarga en los servicios de asistencia.`,
+          ],
+          comparisonData: {
+            beforeTitle: 'Enfoque Punitivo / Reactivo',
+            beforeItems: ['Intervención tardía tras la crisis', 'Estigmatización y aislamiento del afectado'],
+            afterTitle: 'Enfoque Integral / Preventivo',
+            afterItems: ['Detección activa y acompañamiento continuo', 'Redes de apoyo clínico y psicosocial'],
+          },
+          speakerNotes: `Abordar la complicación central: el costo de no intervenir a tiempo. Guiar la mirada hacia las diferencias clave entre un modelo reactivo y uno preventivo.`,
+        },
+        {
+          id: crypto.randomUUID(),
+          title: 'Estrategia de Intervención',
+          actionTitle: sanitizeSentenceClause(`Implementar protocolos estructurados de apoyo y rehabilitación basados en evidencia`),
+          subtitle: 'Pilares de Solución',
+          semanticIntent: 'executive_scqa',
+          visualType: 'concept',
+          layout: 'bento-grid',
+          badgeText: 'ESTRATEGIA & PROTOCOLO',
+          keyPoints: [
+            `Capacitación: Formar a líderes y facilitadores en primeros auxilios psicológicos y contención.`,
+            `Acceso Seguro: Derivación expedita a centros especializados con resguardo estricto de identidad.`,
+            `Cultura Preventiva: Talleres participativos y sensibilización continua sobre autocuidado.`,
+          ],
+          speakerNotes: `Presentar los tres pilares de respuesta. Transmitir convicción sobre la eficacia de los programas estructurados con evidencia.`,
+        },
+        {
+          id: crypto.randomUUID(),
+          title: 'Hoja de Ruta & Resultados',
+          actionTitle: sanitizeSentenceClause(`Establecer un cronograma escalonado con hitos medibles de recuperación y bienestar`),
+          subtitle: 'Plan de Acción y Monitoreo',
+          semanticIntent: 'timeline_roadmap',
+          visualType: 'timeline',
+          layout: 'layout-sequential-timeline',
+          badgeText: 'PRÓXIMOS PASOS',
+          keyPoints: [
+            `Fase 1: Diagnóstico participativo y levantamiento de indicadores basales.`,
+            `Fase 2: Despliegue de programas piloto y mesas de diálogo interdisciplinarias.`,
+            `Fase 3: Evaluación de adherencia, mitigación de riesgos y mejora continua.`,
+          ],
+          timelineData: [
+            { step: 'Fase 01', title: 'Diagnóstico & Sensibilización', description: 'Levantamiento de necesidades y canales de escucha.' },
+            { step: 'Fase 02', title: 'Implementación de Protocolos', description: 'Puesta en marcha de redes de soporte y derivación.' },
+            { step: 'Fase 03', title: 'Evaluación & Sostenibilidad', description: 'Monitoreo de resultados e indicadores de bienestar.' },
+          ],
+          speakerNotes: `Cerrar la exposición invitando a la acción concreta. Destacar que cada fase cuenta con entregables claros y seguimiento constante.`,
+        },
+      ];
+
+      const { auditedSlides } = auditAndRepairPresentationSlides(dynamicSlides.slice(0, slidesCount));
+
+      return {
+        success: true,
+        presentationTitle: `Estrategia & Enfoque: ${cleanTopic}`,
+        data: auditedSlides,
+        modelUsed: 'Heuristic Topic Engine (SAP SCQA)',
+      };
     }
 
     // 3. Fallback: Procesar el input del usuario mediante el analizador semántico heurístico (SAP Engine)
@@ -1060,7 +1154,7 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         { role: 'user', content: prompt },
       ],
       {
-        model: 'meta/llama-3.3-70b-instruct',
+        model: 'meta/llama-3.2-90b-vision-instruct',
         temperature: 0.2,
         responseFormat: { type: 'json_object' },
       }

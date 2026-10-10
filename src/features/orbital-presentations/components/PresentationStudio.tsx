@@ -206,17 +206,21 @@ export function PresentationStudio({
     setTemplateToConfirm(null);
   };
 
+  const [aiSuccessMessage, setAiSuccessMessage] = useState<string | null>(null);
+
   // Generar diapositivas con IA
-  const handleGenerateAi = () => {
-    if (!aiTopicPrompt.trim()) {
+  const handleGenerateAi = (explicitPrompt?: string) => {
+    const promptToUse = (explicitPrompt || aiTopicPrompt).trim();
+    if (!promptToUse) {
       setShowDecomposerModal(true);
       return;
     }
     setSaveError(null);
+    setAiSuccessMessage(null);
     startAiTransition(async () => {
-      const res = await generateAiSlidesAction(aiTopicPrompt, selectedTemplateCategory, 4);
+      const res = await generateAiSlidesAction(promptToUse, selectedTemplateCategory, 4);
       if (res.success && res.data) {
-        const newTitle = res.presentationTitle || aiTopicPrompt.trim();
+        const newTitle = res.presentationTitle || promptToUse;
         setPresentation((prev) => ({
           ...prev,
           title: newTitle,
@@ -224,6 +228,8 @@ export function PresentationStudio({
           slidesData: res.data,
         }));
         setCurrentSlideIndex(0);
+        setAiSuccessMessage(`¡Propuesta generada con éxito! Se estructuraron ${res.data.length} diapositivas estratégicas.`);
+        setTimeout(() => setAiSuccessMessage(null), 4500);
       } else if (!res.success) {
         setSaveError(res.error || 'Error al generar diapositivas con IA.');
       }
@@ -631,12 +637,30 @@ export function PresentationStudio({
           </button>
         </form>
 
+        {/* Mensaje de Éxito al Generar con IA */}
+        {aiSuccessMessage && (
+          <div className="p-3 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between gap-2 animate-fade-in">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="font-medium">{aiSuccessMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAiSuccessMessage(null)}
+              className="text-emerald-400 hover:text-white p-1 rounded-lg"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Ideas y Sugerencias Rápidas */}
         <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px] text-zinc-400">
           <span className="font-mono text-zinc-500 flex items-center gap-1">
             <Lightbulb className="w-3 h-3 text-amber-400" /> Sugerencias:
           </span>
           {[
+            'Prevención de Alcohol y Drogas en el Trabajo',
             'Pitch de Inversión Semilla',
             'Arquitectura Cloud & Microservicios',
             'Estrategia de Crecimiento B2B',
@@ -645,8 +669,12 @@ export function PresentationStudio({
             <button
               type="button"
               key={sugg}
-              onClick={() => setAiTopicPrompt(sugg)}
-              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-cyan-500/30 text-zinc-300 hover:text-cyan-300 text-[10px] font-mono transition-all cursor-pointer"
+              onClick={() => {
+                setAiTopicPrompt(sugg);
+                handleGenerateAi(sugg);
+              }}
+              disabled={aiGenerating}
+              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-cyan-500/30 text-zinc-300 hover:text-cyan-300 text-[10px] font-mono transition-all cursor-pointer disabled:opacity-50"
             >
               {sugg}
             </button>
