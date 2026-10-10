@@ -1980,3 +1980,41 @@ En cumplimiento de las directrices de `Investigación Técnica y Crecimiento IND
 ### 46.2 Suite de Pruebas y Validación Continua
 - `tests/unit/presentation-deep-research-prompt.test.ts` valida al 100% la existencia, integridad de sintaxis JSON, directivas de ejecución y presencia de los 5 pilares estratégicos de investigación.
 
+
+---
+
+## 47. Arquitectura Cognitiva de Presentaciones: Pre-Route, Ledger-Feedback & Bento Grid Layouts (Fase 2026)
+
+### 47.1 Implementación de Motor Pre-Route & Aislamiento Hermético de Fuentes
+- **Pre-Route Strategy Assessment (evaluatePreRouteStrategy)**:
+  - Clasificación micro-segundo de dispersión léxica y densidad tabular en document-parser.ts.
+  - Enrutamiento inteligente a estrategias de extracción (	abular_financial, dense_analytical, 
+arrative_conceptual) determinando el número ideal de diapositivas (5 a 10) y la distribución visual.
+- **Hermetic Source Context (ScopedPresentationContext)**:
+  - Aislamiento hermético de fragmentos de texto fuente (sourceIndex, 
+awChunk, charCount) garantizando trazabilidad y citas exactas tipo NotebookLM sin contaminación entre bloques temáticos.
+
+### 47.2 Bucle de Reconciliación Simbólica y Validación de Ledger (ledger-validator.ts)
+- **Detección de Contradicciones Signo/Tendencia & Cuotas**:
+  - parseMetricNumericValue y alidateDocumentMetricsLedger concilian métricas extraídas contra el texto fuente.
+  - Alerta inmediata si un texto reporta un decremento ('disminuyó', 'bajó') y la métrica tiene signo positivo ('+15%'), o si un valor porcentual excede el 100% de manera ilógica.
+  - Validación cronológica de líneas de tiempo con alidateTimelineChronology.
+- **Inyección de Feedback Correctivo al LLM**:
+  - generatePresentationFromDocumentAction valida el ledger preliminar y, si detecta discrepancias, inyecta directrices de corrección simbólica al prompt del modelo antes de consolidar la respuesta final.
+
+### 47.3 Diagramación Bento Grid de 12 Columnas & Atribución de Fuentes
+- **Contrato Zod Enriquecido (presentationSlideSchema)**:
+  - Campos tipados entoModuleType (hero | metric | comparison | timeline | concept), gridSpan (cols: 1..12, 
+ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
+- **Composición Visual Asimétrica (SlideViewer.tsx)**:
+  - Soporte de visual weighting en layouts de arquitectura y concepto: la tarjeta principal con entoModuleType === 'hero' asume md:col-span-12 lg:col-span-8, mientras las tarjetas complementarias asumen col-span-4, erradicando rejillas monótonas de tamaño uniforme.
+
+### 47.4 Control de Calidad y Suite de Pruebas
+- 	ests/unit/presentation-ledger-feedback.test.ts valida con 8 pruebas unitarias:
+  1. Clasificación Pre-Route tabular y narrativa.
+  2. Generación de contexto aislado ScopedPresentationContext.
+  3. Extracción de valores numéricos y unidades monetarias.
+  4. Detección de discrepancias de signo/tendencia.
+  5. Detección de porcentajes > 100%.
+  6. Detección de desorden cronológico en timelines.
+  7. Ledger limpio sin observaciones para datos válidos.

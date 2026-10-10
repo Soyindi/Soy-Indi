@@ -34,7 +34,13 @@ import {
   synthesizeConciseActionTitle,
   stripAdministrativePrefix,
   cleanAdministrativePreamble,
+  evaluatePreRouteStrategy,
+  ScopedPresentationContext,
 } from '@/features/orbital-presentations/lib/document-parser';
+import {
+  validateDocumentMetricsLedger,
+  validateTimelineChronology,
+} from '@/features/orbital-presentations/lib/ledger-validator';
 import {
   validateFileSignature,
   sanitizeExtractedText,
@@ -149,9 +155,23 @@ export async function decomposeAndGeneratePresentationAction(
     const { rawContent, durationMinutes, targetAudience, presentationTone, fileName } =
       validated.data;
 
-    // 2. Analizar semánticamente el documento o texto recibido (SAP Engine)
+    // 2. Evaluación Pre-Route y Contenedor Aislado (NotebookLM Scoped Container & Plan-then-Execute)
+    const preRoute = evaluatePreRouteStrategy(rawContent, fileName);
+    const scopedContext = new ScopedPresentationContext();
+    scopedContext.addSource(fileName || 'document_source_0', rawContent);
+
+    // Analizar semánticamente el documento o texto recibido (SAP Engine)
     const docAnalysis = analyzeDocumentContent(rawContent, fileName);
     const resolvedArchetype = validated.data.documentArchetype || docAnalysis.detectedArchetype;
+
+    // Ejecutar Ledger Validator para auditar consistencia matemática y signos
+    const ledgerDiagnosis = validateDocumentMetricsLedger(
+      docAnalysis.detectedMetrics.map((m) => ({
+        label: m.label,
+        value: m.value,
+        trend: m.trend,
+      }))
+    );
 
     // 3. Calcular pacing y número de diapositivas según duración
     const { slidesCount, pacingSecondsPerSlide } = calculateSlidePacingAndCount(durationMinutes);
@@ -162,16 +182,21 @@ export async function decomposeAndGeneratePresentationAction(
       PRESENTATION_THEMES[0];
 
     // 5. Intentar inferencia de frontera con NVIDIA NIM (deepseek-ai/deepseek-r1 o llama-3.3-70b)
+    const ledgerAuditNote = ledgerDiagnosis.feedbackPromptChunk
+      ? `\nAUDITORÍA DE CONSISTENCIA DE LIBRO MAYOR:\n${ledgerDiagnosis.feedbackPromptChunk}\n`
+      : '';
+
     const nimPrompt = `
 Eres un Principal Executive Presentation Designer y consultor de estrategia empresarial.
 Analiza la siguiente información de entrada y descompón el contenido en una presentación ejecutiva de EXACTAMENTE ${slidesCount} diapositivas.
 
-PERFIL SEMÁNTICO DETECTADO:
+PERFIL SEMÁNTICO Y ENRUTAMIENTO PRE-ROUTE:
 - Arquetipo de Documento: ${resolvedArchetype} (Confianza: ${(docAnalysis.archetypeConfidence * 100).toFixed(0)}%)
 - Título Sugerido: "${docAnalysis.titleSuggestion}"
+- Estrategia Pre-Route: ${preRoute.recommendedPipeline} (Dispersión: ${preRoute.semanticDispersionScore})
 - Contiene Métricas Reales: ${docAnalysis.hasMetrics ? 'SÍ (' + docAnalysis.detectedMetrics.map(m => m.label + ': ' + m.value).join(', ') + ')' : 'NO (PROHIBIDO inventar métricas si no están en el texto)'}
 - Contiene Contraste/Dolores: ${docAnalysis.hasContrast ? 'SÍ (' + docAnalysis.contrastBlocks.length + ' bloques detectados)' : 'NO'}
-- Contiene Pasos/Secuencias: ${docAnalysis.hasSequence ? 'SÍ (' + docAnalysis.sequenceSteps.length + ' pasos detectados)' : 'NO'}
+- Contiene Pasos/Secuencias: ${docAnalysis.hasSequence ? 'SÍ (' + docAnalysis.sequenceSteps.length + ' pasos detectados)' : 'NO'}${ledgerAuditNote}
 
 INFORMACIÓN DE ENTRADA (TEXTO REAL DEL USUARIO):
 """
@@ -332,6 +357,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             estimatedDurationSeconds: pacingSecondsPerSlide,
             keyPoints: mainKeyPoints,
             speakerNotes: `Exponer los fundamentos iniciales del documento analizado.`,
+            bentoModuleType: 'hero',
+            gridSpan: { cols: 12, rows: 2 },
           });
         } else if (isMetric) {
           const metricsForSlide = metricsFound.slice(0, 3).map((m) => ({
@@ -372,6 +399,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             keyPoints: keyMetricPoints,
             metricsData: metricsForSlide,
             speakerNotes: `Detallar las cifras y deltas extraídos del archivo durante aproximadamente ${pacingSecondsPerSlide} segundos.`,
+            bentoModuleType: 'metric',
+            gridSpan: { cols: 6, rows: 1 },
           });
         } else if (isComparison) {
           const abstract: AbstractSlide = {
@@ -417,6 +446,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
               afterItems,
             },
             speakerNotes: `Contrastar con claridad los puntos analizados en el documento.`,
+            bentoModuleType: 'comparison',
+            gridSpan: { cols: 12, rows: 1 },
           });
         } else if (isLast) {
           const abstract: AbstractSlide = {
@@ -473,6 +504,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             keyPoints: closingPoints,
             timelineData,
             speakerNotes: `Cerrar con los puntos de conclusión extraídos directamente del documento.`,
+            bentoModuleType: 'timeline',
+            gridSpan: { cols: 12, rows: 1 },
           });
         } else if (isConceptArchitecture) {
           // Slide dedicado a conceptos clave o arquitectura técnica
@@ -501,6 +534,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             estimatedDurationSeconds: pacingSecondsPerSlide,
             keyPoints: concepts.slice(0, 3).map((c) => `${c.term}: ${c.definition}`),
             speakerNotes: `Explicar los términos y la arquitectura descrita. Tiempo asignado: ${pacingSecondsPerSlide} segundos.`,
+            bentoModuleType: 'concept',
+            gridSpan: { cols: 12, rows: 1 },
           });
         } else {
           // Diapositivas intermedias mapeadas con el contenido específico de cada sección
@@ -538,6 +573,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
             estimatedDurationSeconds: pacingSecondsPerSlide,
             keyPoints: slidePoints,
             speakerNotes: `Mantener el ritmo. Duración estimada para este slide: ${pacingSecondsPerSlide} segundos.`,
+            bentoModuleType: 'concept',
+            gridSpan: { cols: 12, rows: 1 },
           });
         }
       }
@@ -590,13 +627,32 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
           }))
         : undefined;
 
+      const visualType = s.visualType || 'concept';
+      const bentoModuleType =
+        idx === 0
+          ? 'hero'
+          : visualType === 'metrics'
+          ? 'metric'
+          : visualType === 'comparison'
+          ? 'comparison'
+          : visualType === 'timeline'
+          ? 'timeline'
+          : 'concept';
+
+      const gridSpan =
+        bentoModuleType === 'hero'
+          ? { cols: 12, rows: 2 }
+          : bentoModuleType === 'metric'
+          ? { cols: 6, rows: 1 }
+          : { cols: 12, rows: 1 };
+
       return {
         id: s.id || crypto.randomUUID(),
         title,
         actionTitle,
         subtitle: s.subtitle,
         semanticIntent: s.semanticIntent || 'executive_scqa',
-        visualType: s.visualType || 'concept',
+        visualType,
         layout: s.layout || optimalLayout,
         badgeText: s.badgeText || `SLIDE ${idx + 1}`,
         keyPoints: Array.isArray(s.keyPoints)
@@ -607,6 +663,8 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         metricsData: Array.isArray(s.metricsData) && s.metricsData.length > 0 ? s.metricsData : undefined,
         comparisonData: s.comparisonData && typeof s.comparisonData === 'object' ? s.comparisonData : undefined,
         timelineData,
+        bentoModuleType,
+        gridSpan,
       };
     });
 

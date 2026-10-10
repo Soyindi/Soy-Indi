@@ -181,6 +181,89 @@ export function detectDocumentArchetype(text: string, fileName?: string): {
 }
 
 /**
+ * Evaluación de Estrategia Pre-Route (Paradigma Plan-then-Execute 2026)
+ * Determina si el documento requiere RAG profundo/extracción multimodal o
+ * un procesamiento directo liviano, previniendo el "Context Rot" y estabilizando latencias.
+ */
+export interface PreRouteAssessment {
+  recommendedPipeline: 'deep_ledger_extraction' | 'direct_heuristic_fast_path';
+  semanticDispersionScore: number; // 0 (muy localizado) a 1 (alta dispersión en el texto)
+  estimatedTokens: number;
+  hasTabularDensity: boolean;
+  requiresCrossInference: boolean;
+  routingReason: string;
+}
+
+export function evaluatePreRouteStrategy(
+  text: string,
+  fileName?: string
+): PreRouteAssessment {
+  const clean = text || '';
+  const estimatedTokens = Math.ceil(clean.length / 4);
+
+  // Detección de densidad tabular o matemática
+  const tableMarkers = (clean.match(/\||(?:\b(?:total|balance|activos|pasivos|patrimonio|ebitda|ingresos|costos)\b[:\s]+[\$0-9])/gi) || []).length;
+  const hasTabularDensity = tableMarkers >= 5;
+
+  // Detección de dispersión semántica según tamaño y variedad léxica
+  const paragraphs = clean.split(/\n\s*\n/).filter((p) => p.trim().length > 40);
+  const semanticDispersionScore = Math.min(1, Math.max(0.1, paragraphs.length / 25));
+
+  const requiresCrossInference = hasTabularDensity || estimatedTokens > 4000;
+
+  const isDeep = requiresCrossInference || semanticDispersionScore > 0.45;
+
+  return {
+    recommendedPipeline: isDeep ? 'deep_ledger_extraction' : 'direct_heuristic_fast_path',
+    semanticDispersionScore: Math.round(semanticDispersionScore * 100) / 100,
+    estimatedTokens,
+    hasTabularDensity,
+    requiresCrossInference,
+    routingReason: isDeep
+      ? 'Documento extenso o de alta densidad tabular: activando extracción profunda con validación de libro mayor.'
+      : 'Documento estructurado y conciso: procesando mediante vía rápida determinista.',
+  };
+}
+
+/**
+ * Contenedor Aislado de Presentación (Scoped Container - Paradigma NotebookLM)
+ * Previene la contaminación cruzada entre fuentes, notas y sesiones.
+ */
+export class ScopedPresentationContext {
+  private readonly presentationId: string;
+  private readonly sourceTexts: Map<string, string> = new Map();
+  private readonly pinnedNotes: string[] = [];
+
+  constructor(presentationId?: string) {
+    this.presentationId = presentationId || crypto.randomUUID();
+  }
+
+  public getContextId(): string {
+    return this.presentationId;
+  }
+
+  public addSource(sourceId: string, text: string): void {
+    this.sourceTexts.set(sourceId, text);
+  }
+
+  public addPinnedNote(note: string): void {
+    if (note && note.trim().length > 0) {
+      this.pinnedNotes.push(note.trim());
+    }
+  }
+
+  public getAggregatedCleanText(): string {
+    const rawAll = Array.from(this.sourceTexts.values()).join('\n\n');
+    return rawAll.trim();
+  }
+
+  public getPinnedContextDirective(): string {
+    if (this.pinnedNotes.length === 0) return '';
+    return `\nNOTAS FIJADAS DEL USUARIO (DIRECTIVAS PRIORITARIAS):\n${this.pinnedNotes.map((n) => `- ${n}`).join('\n')}\n`;
+  }
+}
+
+/**
  * Divide texto en oraciones respetando abreviaciones comunes y números decimales
  * para no romper proposiciones a la mitad (evitando generar cláusulas huérfanas).
  */

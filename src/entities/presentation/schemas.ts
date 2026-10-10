@@ -109,6 +109,16 @@ export const presentationSlideSchema = z.object({
   quoteData: quoteDataSchema.nullish().transform(v => (v && (v.quote || v.author) ? v : undefined)).optional(),
   comparisonData: comparisonDataSchema.nullish().transform(v => (v && (v.beforeTitle || v.afterTitle || (v.beforeItems && v.beforeItems.length > 0)) ? v : undefined)).optional(),
   timelineData: z.array(timelineItemSchema).nullish().transform(v => (v && v.length > 0 ? v : undefined)).optional(),
+  bentoModuleType: z.enum(['hero', 'metric', 'comparison', 'timeline', 'concept']).nullish().transform(v => v || undefined).optional(),
+  gridSpan: z.object({
+    cols: z.number().min(1).max(12).default(12),
+    rows: z.number().min(1).max(6).default(1),
+  }).nullish().transform(v => v || undefined).optional(),
+  sourceProvenance: z.object({
+    sourceParagraphIndex: z.number().optional(),
+    snippetExcerpt: z.string().optional(),
+    confidenceScore: z.number().optional(),
+  }).nullish().transform(v => v || undefined).optional(),
 });
 
 export const presentationThemeSchema = z.object({

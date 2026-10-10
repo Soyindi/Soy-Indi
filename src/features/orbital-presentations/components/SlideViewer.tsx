@@ -397,23 +397,36 @@ export function SlideViewer({
               slide.visualType === 'code' ||
               (!slide.metricsData && !slide.comparisonData && !slide.timelineData && !slide.quoteData)) && (
               <div className={`grid gap-3 sm:gap-4 ${
-                slide.keyPoints.length <= 2
+                slide.bentoModuleType === 'hero'
+                  ? 'grid-cols-1 md:grid-cols-12'
+                  : slide.keyPoints.length <= 2
                   ? 'grid-cols-1'
                   : 'grid-cols-1 sm:grid-cols-2'
               }`}>
-                {slide.keyPoints.map((pt, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-3 p-3.5 sm:p-4.5 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md hover:border-white/20 transition-all"
-                  >
-                    <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                {slide.keyPoints.map((pt, idx) => {
+                  const isHeroFirst = slide.bentoModuleType === 'hero' && idx === 0;
+                  const itemColSpan = isHeroFirst
+                    ? 'md:col-span-12 lg:col-span-8 bg-cyan-950/20 border-cyan-500/30'
+                    : slide.bentoModuleType === 'hero'
+                    ? 'md:col-span-6 lg:col-span-4 bg-black/40 border-white/10'
+                    : 'bg-black/40 border-white/10';
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-start gap-3 p-3.5 sm:p-4.5 rounded-2xl border backdrop-blur-md hover:border-white/20 transition-all ${itemColSpan}`}
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                      </div>
+                      <span className={`text-xs sm:text-sm leading-relaxed font-normal break-words ${
+                        isHeroFirst ? 'text-zinc-100 font-medium' : 'text-zinc-200'
+                      }`}>
+                        {pt}
+                      </span>
                     </div>
-                    <span className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-normal break-words">
-                      {pt}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </motion.div>
