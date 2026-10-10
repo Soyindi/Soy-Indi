@@ -93,11 +93,9 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
           company: exp.company,
           role: exp.role,
           period: exp.period,
-          bullets: exp.xyzBullets.map((b) =>
-            b.text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim()
-          ),
+          bullets: exp.xyzBullets.map((b) => b.text.trim()),
           detailedBullets: exp.xyzBullets.map((b) => ({
-            text: b.text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim(),
+            text: b.text.trim(),
             needs_metric: b.needs_metric,
           })),
         })),
@@ -668,9 +666,15 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
           .trim();
         const parsedJson = JSON.parse(cleanedJson);
         if (Array.isArray(parsedJson.suggestions) && parsedJson.suggestions.length > 0) {
+          const { auditAndRepairCvBullet } = await import('@/features/ai-smart-cv/lib/cv-auditor');
+          const cleanedSuggestions = parsedJson.suggestions.slice(0, 3).map((s: any) => {
+            const raw = String(s).trim();
+            const { repairedText } = auditAndRepairCvBullet(raw);
+            return repairedText;
+          });
           return {
             success: true,
-            suggestions: parsedJson.suggestions.slice(0, 3).map((s: any) => String(s).trim()),
+            suggestions: cleanedSuggestions,
           };
         }
       } catch (jsonErr) {
@@ -680,9 +684,14 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
           .map((l) => l.replace(/^[\d\.\-\*\•\s"]+|["]+$/g, '').trim())
           .filter((l) => l.length > 15);
         if (lines.length >= 2) {
+          const { auditAndRepairCvBullet } = await import('@/features/ai-smart-cv/lib/cv-auditor');
+          const cleanedSuggestions = lines.slice(0, 3).map((s) => {
+            const { repairedText } = auditAndRepairCvBullet(s);
+            return repairedText;
+          });
           return {
             success: true,
-            suggestions: lines.slice(0, 3),
+            suggestions: cleanedSuggestions,
           };
         }
       }

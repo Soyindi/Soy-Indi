@@ -33,7 +33,12 @@ Esta habilidad documenta y gobierna el protocolo de ingeniería y arquitectura p
 - Manejo de teléfonos internacionales y RUT chileno con exclusión de colisiones.
 - Desacoplamiento de nombres de empresa multilínea y protección contra corte prematuro de viñetas con años históricos.
 
+### 4. Auditor de Integridad Sintáctica & Pre-Route (`src/features/ai-smart-cv/lib/cv-auditor.ts`)
+- **Pre-Route Candidate Classifier (`evaluateCvPreRouteStrategy`)**: Clasificación determinista en micro-segundos del arquetipo profesional (`executive_c_level`, `technical_specialist`, `clinical_healthcare`, `business_growth`) para guiar la inferencia LLM con tono y palabras clave personalizadas.
+- **Auditor de Viñetas Laborales (`auditAndRepairCvBullet`)**: Erradicación de palabras huérfanas terminales (`de`, `en`, `para`, `con`, `sobre`), puntos suspensivos mutilantes (`...`) y prefijos obsoletos (`Logro:`, `Responsabilidad:`).
+- **Auditor Integral de Extracción (`auditAndRepairCvExtraction`)**: Sanitización de resumen profesional y array de viñetas XYZ antes de su presentación y persistencia en Turso SQLite.
+
 ---
 
 ## 🧪 Pruebas Requeridas
-Toda modificación debe aprobar la suite en `tests/unit/smart-cv-crud-and-export.test.ts` y `tests/unit/spatial-document-extraction.test.ts`.
+Toda modificación debe aprobar la suite en `tests/unit/smart-cv-crud-and-export.test.ts`, `tests/unit/spatial-document-extraction.test.ts` y `tests/unit/cv-integrity-auditor.test.ts`.

@@ -2037,3 +2037,23 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
   2. Erradicación de puntos suspensivos mutilantes.
   3. Preservación de tesis ejecutivas coherentes.
   4. Auditoría y auto-reparación de diapositivas completas.
+
+---
+
+## 49. Homologación de Inteligencia de Smart CV: Pre-Route & Auditor Sintáctico (Fase 2026)
+
+### 49.1 Transferencia de Paridad Arquitectónica desde Orbital Presentations
+- **Pre-Route Candidate Classifier (evaluateCvPreRouteStrategy)**: Clasificación determinista en micro-segundos del arquetipo profesional del postulante (executive_c_level, 	echnical_specialist, clinical_healthcare, usiness_growth, general_professional) evaluando densidad léxica, términos de dominio y estimación de seniority (entry, mid, senior, executive).
+- **Inyección Contextual en Cascade AI Router**: parseCvTextWithAiCascade alimenta los prompts del modelo 70B con el arquetipo y tono recomendado, adaptando el estándar de Google XYZ a la disciplina del candidato.
+
+### 49.2 Auditor de Integridad y Completitud Sintáctica en Currículums (cv-auditor.ts)
+- **Erradicación de Palabras Huérfanas (uditAndRepairCvBullet)**: Reutiliza la función matemática de completitud oracional ssertSyntacticCompleteness para purgar de manera recursiva cualquier preposición o determinante terminal (de, en, para, con, sobre, por) tanto en el resumen profesional como en las viñetas laborales.
+- **Eliminación de Prefijos Obsoletos de Formulario**: Purga rótulos redundantes como Logro:, Responsabilidad:, Funciones: y suprime puntos suspensivos que mutilaban logros cuantificables.
+- **Auditor Integral (uditAndRepairCvExtraction)**: Sanitiza y valida las experiencias y resumen antes de enviarlos al cliente y persistirlos en Turso SQLite.
+
+### 49.3 Blindaje con Pruebas Unitarias
+- 	ests/unit/cv-integrity-auditor.test.ts valida al 100%:
+  1. Clasificación Pre-Route técnica, ejecutiva y clínica.
+  2. Reparación de viñetas con palabras huérfanas terminales.
+  3. Erradicación de puntos suspensivos mutilantes.
+  4. Auditoría integral de extracciones de CV.

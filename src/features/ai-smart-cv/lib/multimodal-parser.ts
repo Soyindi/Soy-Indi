@@ -171,7 +171,9 @@ export async function parseCvDocumentMultimodal(
       const validated = multimodalCvExtractionSchema.safeParse(parsed);
       if (validated.success) {
         console.log(`[IDP] Extracción estructurada exitosa vía ${nimResult.modelUsed || 'AI Engine'}`);
-        return validated.data;
+        const { auditAndRepairCvExtraction } = await import('@/features/ai-smart-cv/lib/cv-auditor');
+        const { auditedExtraction } = auditAndRepairCvExtraction(validated.data);
+        return auditedExtraction;
       }
     }
   } catch (err) {
@@ -180,11 +182,17 @@ export async function parseCvDocumentMultimodal(
 
   // 3. Si se extrajo texto real del documento del usuario, parsearlo de inmediato
   if (extractedRawText && extractedRawText.trim().length > 30) {
-    return parseCvTextToStructuredData(extractedRawText, fileName);
+    const rawParsed = parseCvTextToStructuredData(extractedRawText, fileName);
+    const { auditAndRepairCvExtraction } = await import('@/features/ai-smart-cv/lib/cv-auditor');
+    const { auditedExtraction } = auditAndRepairCvExtraction(rawParsed);
+    return auditedExtraction;
   }
 
   // 4. Fallback si el archivo era una imagen o no se pudo extraer texto
-  return synthesizeDeterministicExtraction(fileName);
+  const synth = synthesizeDeterministicExtraction(fileName);
+  const { auditAndRepairCvExtraction } = await import('@/features/ai-smart-cv/lib/cv-auditor');
+  const { auditedExtraction } = auditAndRepairCvExtraction(synth);
+  return auditedExtraction;
 }
 
 /**
@@ -195,9 +203,15 @@ export async function parseCvTextWithAiCascade(
   extractedRawText: string,
   fileName: string = 'cv.pdf'
 ): Promise<MultimodalCvExtraction> {
+  const { evaluateCvPreRouteStrategy, auditAndRepairCvExtraction } = await import('@/features/ai-smart-cv/lib/cv-auditor');
+  const preRoute = evaluateCvPreRouteStrategy(extractedRawText);
+
   try {
     const { callNvidiaNimChat } = await import('@/shared/api/nvidia-nim');
-    const userPrompt = `A continuación se encuentra el texto extraído del currículum con preservación espacial de columnas. Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIENTO CRÍTICAS (EU AI Act, Google XYZ y needs_metric):\n\n${extractedRawText.slice(0, 16000)}`;
+    const userPrompt = `A continuación se encuentra el texto extraído del currículum con preservación espacial de columnas.
+[PRE-ROUTE ARCHETYPE: ${preRoute.detectedArchetype.toUpperCase()}]
+[TONO RECOMENDADO: ${preRoute.recommendedTone}]
+Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIENTO CRÍTICAS (EU AI Act, Google XYZ y needs_metric):\n\n${extractedRawText.slice(0, 16000)}`;
 
     const nimResult = await callNvidiaNimChat(
       [
@@ -221,14 +235,17 @@ export async function parseCvTextWithAiCascade(
       const validated = multimodalCvExtractionSchema.safeParse(parsed);
       if (validated.success) {
         console.log(`[IDP] Extracción estructurada desde texto exitosa vía ${nimResult.modelUsed || 'AI Engine'}`);
-        return validated.data;
+        const { auditedExtraction } = auditAndRepairCvExtraction(validated.data);
+        return auditedExtraction;
       }
     }
   } catch (err) {
     console.warn('[IDP] Fallo en Cascade AI Router para texto, recurriendo a parseCvTextToStructuredData:', err);
   }
 
-  return parseCvTextToStructuredData(extractedRawText, fileName);
+  const rawParsed = parseCvTextToStructuredData(extractedRawText, fileName);
+  const { auditedExtraction } = auditAndRepairCvExtraction(rawParsed);
+  return auditedExtraction;
 }
 
 /**
