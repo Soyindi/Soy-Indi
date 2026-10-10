@@ -218,7 +218,11 @@ export function SlideAiAssistant({
                   : 'bg-black/40 border-white/10 hover:border-cyan-400/40 hover:bg-white/5 text-zinc-200'
               }`}
             >
-              <Lightbulb className="w-3.5 h-3.5 text-cyan-400 mt-0.5 shrink-0" />
+              {isPending && activeAction === 'action_title' ? (
+                <Loader2 className="w-3.5 h-3.5 text-cyan-400 mt-0.5 shrink-0 animate-spin" />
+              ) : (
+                <Lightbulb className="w-3.5 h-3.5 text-cyan-400 mt-0.5 shrink-0" />
+              )}
               <div>
                 <span className="text-[11px] font-semibold block">Titular Estratégico</span>
                 <span className="text-[9px] text-zinc-400 block">Conclusión clara (&lt;14 palabras)</span>
@@ -236,7 +240,11 @@ export function SlideAiAssistant({
                   : 'bg-black/40 border-white/10 hover:border-cyan-400/40 hover:bg-white/5 text-zinc-200'
               }`}
             >
-              <ListOrdered className="w-3.5 h-3.5 text-indigo-400 mt-0.5 shrink-0" />
+              {isPending && activeAction === 'punchy_bullets' ? (
+                <Loader2 className="w-3.5 h-3.5 text-indigo-400 mt-0.5 shrink-0 animate-spin" />
+              ) : (
+                <ListOrdered className="w-3.5 h-3.5 text-indigo-400 mt-0.5 shrink-0" />
+              )}
               <div>
                 <span className="text-[11px] font-semibold block">Viñetas de Impacto</span>
                 <span className="text-[9px] text-zinc-400 block">Con verbos de acción</span>
@@ -254,7 +262,11 @@ export function SlideAiAssistant({
                   : 'bg-black/40 border-white/10 hover:border-cyan-400/40 hover:bg-white/5 text-zinc-200'
               }`}
             >
-              <Volume2 className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+              {isPending && activeAction === 'speaker_notes' ? (
+                <Loader2 className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0 animate-spin" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+              )}
               <div>
                 <span className="text-[11px] font-semibold block">Notas del Orador</span>
                 <span className="text-[9px] text-zinc-400 block">Guion verbal (~45-60s)</span>
@@ -272,7 +284,11 @@ export function SlideAiAssistant({
                   : 'bg-indigo-600/20 border-indigo-500/30 hover:bg-indigo-600/30 text-white'
               }`}
             >
-              <Wand2 className="w-3.5 h-3.5 text-pink-400 mt-0.5 shrink-0" />
+              {isPending && activeAction === 'all_enhancements' ? (
+                <Loader2 className="w-3.5 h-3.5 text-pink-400 mt-0.5 shrink-0 animate-spin" />
+              ) : (
+                <Wand2 className="w-3.5 h-3.5 text-pink-400 mt-0.5 shrink-0" />
+              )}
               <div>
                 <span className="text-[11px] font-semibold block">Optimizar Diapositiva</span>
                 <span className="text-[9px] text-zinc-300 block">Título, viñetas y orador</span>

@@ -47,20 +47,20 @@ const PACING_OPTIONS = [
 
 const AUDIENCES: { id: TargetAudience; label: string }[] = [
   { id: 'investors', label: 'Inversionistas (VC / Seed)' },
-  { id: 'b2b_clients', label: 'Clientes & B2B' },
-  { id: 'engineering', label: 'Equipo de Ingeniería' },
-  { id: 'general', label: 'Audiencia General' },
+  { id: 'b2b_clients', label: 'Clientes B2B' },
+  { id: 'engineering', label: 'Ingeniería & Tech' },
+  { id: 'general', label: 'Público General' },
 ];
 
 const TONES: { id: PresentationTone; label: string }[] = [
-  { id: 'orbital_cyber', label: 'Orbital Cyber (Futurista / Tech)' },
-  { id: 'emerald_aurora', label: 'Emerald Aurora (Crecimiento / ESG)' },
-  { id: 'deep_space', label: 'Deep Space (Impacto / Disruptivo)' },
-  { id: 'solar_obsidian', label: 'Solar Obsidian (Corporativo / Premium)' },
+  { id: 'orbital_cyber', label: 'Orbital Cyber (Tech)' },
+  { id: 'emerald_aurora', label: 'Emerald Aurora (ESG)' },
+  { id: 'deep_space', label: 'Deep Space (Disruptivo)' },
+  { id: 'solar_obsidian', label: 'Solar Obsidian (Premium)' },
 ];
 
 const ARCHETYPES: { id: DocumentArchetype | 'auto'; label: string; desc: string }[] = [
-  { id: 'auto', label: 'Auto-Adaptativo (Recomendado)', desc: 'Detecta si es técnico, negocio o auditoría' },
+  { id: 'auto', label: 'Auto-Adaptativo', desc: 'Detecta si es técnico, negocio o auditoría' },
   { id: 'business_pitch', label: 'Pitch Deck & Negocio', desc: 'Problema, mercado, modelo y tracción' },
   { id: 'technical_architecture', label: 'Arquitectura Técnica', desc: 'Topología, APIs, resiliencia y datos' },
   { id: 'audit_report', label: 'Informe & Auditoría', desc: 'Hallazgos, métricas y mitigación' },
@@ -372,7 +372,7 @@ export function SmartPresentationDropzone({
         </div>
 
         {/* Parámetros: Duración, Arquetipo, Audiencia y Tono */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-5">
           {/* Pacing / Duración */}
           <div className="space-y-2">
             <label className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
@@ -410,7 +410,8 @@ export function SmartPresentationDropzone({
             <select
               value={archetype}
               onChange={(e) => setArchetype(e.target.value as any)}
-              className="w-full min-h-[44px] rounded-xl bg-black/60 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-sans cursor-pointer"
+              className="w-full min-h-[44px] rounded-xl bg-black/60 border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-sans cursor-pointer truncate"
+              title={ARCHETYPES.find((a) => a.id === archetype)?.label}
             >
               {ARCHETYPES.map((arch) => (
                 <option key={arch.id} value={arch.id} className="bg-zinc-900 text-white">
@@ -432,7 +433,8 @@ export function SmartPresentationDropzone({
             <select
               value={targetAudience}
               onChange={(e) => setTargetAudience(e.target.value as TargetAudience)}
-              className="w-full min-h-[44px] rounded-xl bg-black/60 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-sans cursor-pointer"
+              className="w-full min-h-[44px] rounded-xl bg-black/60 border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-sans cursor-pointer truncate"
+              title={AUDIENCES.find((a) => a.id === targetAudience)?.label}
             >
               {AUDIENCES.map((aud) => (
                 <option key={aud.id} value={aud.id} className="bg-zinc-900 text-white">
@@ -454,7 +456,8 @@ export function SmartPresentationDropzone({
             <select
               value={tone}
               onChange={(e) => setTone(e.target.value as PresentationTone)}
-              className="w-full min-h-[44px] rounded-xl bg-black/60 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-sans cursor-pointer"
+              className="w-full min-h-[44px] rounded-xl bg-black/60 border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-sans cursor-pointer truncate"
+              title={TONES.find((t) => t.id === tone)?.label}
             >
               {TONES.map((t) => (
                 <option key={t.id} value={t.id} className="bg-zinc-900 text-white">

@@ -934,12 +934,12 @@ export function PresentationStudio({
                   <span>Action Title (Pirámide McKinsey)</span>
                   <span className="text-[10px] text-zinc-500">Asertivo &lt;15 palabras</span>
                 </label>
-                <input
-                  type="text"
+                <textarea
+                  rows={2}
                   value={activeSlide.actionTitle || ''}
                   onChange={(e) => updateActiveSlide('actionTitle', e.target.value)}
                   placeholder="Conclusión clave y asertiva de la diapositiva..."
-                  className="w-full min-h-[44px] rounded-xl bg-black/50 border border-cyan-500/30 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-medium"
+                  className="w-full min-h-[48px] rounded-xl bg-black/50 border border-cyan-500/30 px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 font-medium resize-none leading-relaxed"
                 />
               </div>
 
@@ -961,11 +961,12 @@ export function PresentationStudio({
                 <label className="block text-[11px] font-mono text-zinc-400 uppercase tracking-wider mb-1.5">
                   Subtítulo / Bajada
                 </label>
-                <input
-                  type="text"
+                <textarea
+                  rows={2}
                   value={activeSlide.subtitle || ''}
                   onChange={(e) => updateActiveSlide('subtitle', e.target.value)}
-                  className="w-full min-h-[44px] rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  placeholder="Contextualización o bajada de la diapositiva..."
+                  className="w-full min-h-[44px] rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 resize-none leading-relaxed"
                 />
               </div>
 
@@ -1002,16 +1003,17 @@ export function PresentationStudio({
                 </div>
                 <div className="space-y-2">
                   {(activeSlide.keyPoints || []).map((kp, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <input
-                        type="text"
+                    <div key={idx} className="flex items-start gap-2">
+                      <textarea
+                        rows={2}
                         value={kp}
                         onChange={(e) => {
                           const updated = [...activeSlide.keyPoints];
                           updated[idx] = e.target.value;
                           updateActiveSlide('keyPoints', updated);
                         }}
-                        className="flex-1 min-h-[38px] rounded-xl bg-black/50 border border-white/10 px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-cyan-400"
+                        placeholder="Argumento o viñeta de impacto..."
+                        className="flex-1 min-h-[44px] rounded-xl bg-black/50 border border-white/10 px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-cyan-400 resize-none leading-relaxed font-sans"
                       />
                       <button
                         type="button"
@@ -1019,7 +1021,7 @@ export function PresentationStudio({
                           const updated = activeSlide.keyPoints.filter((_, i) => i !== idx);
                           updateActiveSlide('keyPoints', updated);
                         }}
-                        className="min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-500 hover:text-rose-400 transition cursor-pointer rounded-xl hover:bg-rose-500/10"
+                        className="min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-500 hover:text-rose-400 transition cursor-pointer rounded-xl hover:bg-rose-500/10 shrink-0"
                         title="Eliminar punto"
                       >
                         <Trash2 className="w-4 h-4" />
