@@ -46,6 +46,7 @@ export async function callNvidiaNimChat(
             'Content-Type': 'application/json',
             Authorization: `Bearer ${nvidiaApiKey}`,
           },
+          signal: AbortSignal.timeout(8000),
           body: JSON.stringify({
             model: targetModel,
             messages,
@@ -88,6 +89,7 @@ export async function callNvidiaNimChat(
           Authorization: `Bearer ${groqApiKey}`,
           'Content-Type': 'application/json',
         },
+        signal: AbortSignal.timeout(10000),
         body: JSON.stringify({
           model: 'qwen/qwen3.8-27b',
           messages,

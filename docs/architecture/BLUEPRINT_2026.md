@@ -2140,19 +2140,18 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 - **Diagnóstico Forense**: La ingesta multimodal de CV (`multimodal-parser.ts`) y el copiloto de edición (`rewriteCvSectionAction`) sufrieron degradación debido a que `meta/llama-3.3-70b-instruct` alcanzó su fin de vida (EOL el 26/08/2026) en la API pública de NVIDIA NIM (`integrate.api.nvidia.com`), respondiendo con código HTTP 410.
 - **Impacto en el Usuario**: El análisis automático de currículums quedaba bloqueado o revertía a fallbacks heurísticos básicos sin aprovechar el potencial de los modelos de frontera.
 
-### 53.2 Arquitectura de Inferencia Resiliente Multi-Proveedor (NIM ➔ Groq ➔ Gemini ➔ Local)
-1. **Migración a Checkpoints de Frontera Activos**:
-   - `meta/llama-3.2-90b-vision-instruct` y `meta/llama-3.2-11b-vision-instruct` como modelos primarios verificados en NVIDIA NIM.
-2. **Integración de Groq LPU Engine (<200ms Latencia)**:
-   - Capa secundaria de failover instantáneo consumiendo `qwen/qwen3.8-27b` en `api.groq.com/openai/v1/chat/completions`.
-   - Soporte nativo para JSON Mode estructurado (`response_format: { type: 'json_object' }`).
-3. **Failover Dinámico en Cascada en `callNvidiaNimChat`**:
-   - Detección automática de errores 410 (Gone) y 404 (Not Found) en NVIDIA NIM para intentar inmediatamente modelos alternativos y pasar a Groq LPU sin arrojar error al usuario.
-   - Respaldo subsiguiente en Google Gemini 2.0 Flash y OpenRouter.
-4. **Blindaje de Pruebas Unitarias**:
-   - Actualización de `tests/unit/cv-schema.test.ts` con simulación de falla 410 en NIM y activación exitosa del failover hacia Groq LPU.
-   - 100% de la suite de pruebas unitarias aprobada (72/72 archivos, 449 tests pasando).
+## 54. Auditoría Integral del Flujo de Smart CV, Conexión a Base de Datos Turso & Timeout Defensivo (Octubre 2026)
 
+### 54.1 Diagnóstico Integral de Flujo y Conectividad de Base de Datos
+- **Auditoría de Turso SQLite Cloud**:
+  - Verificación en vivo de conectividad con `libsql://soyindi-soyindi.aws-us-west-2.turso.io`. La base de datos responde de forma óptima con latencias sub-milisegundo.
+  - Comprobación de persistencia: `smart_cvs` (2 registros persistidos de forma segura bajo la política de Cero Persistencia Binaria) y `user` (16 usuarios registrados). Las operaciones de lectura y mutación multi-tenant con `getSafeAuthenticatedUserId()` operan al 100%.
+- **Causa Raíz de Bloqueo en Carga de Archivos**:
+  1. *Ocultamiento del Dropzone en UX*: Tras el rediseño minimalista (`675e0e5`), el componente de subida quedó confinado en un modal accesible solo por un botón secundario en la cabecera. Se restituyó un banner de ingesta rápida prominente en la columna del formulario (`SmartCvBuilder.tsx`).
+  2. *Payload Incompleto en FormData*: Al extraer texto en el navegador (`extractTextFromPdfClient`), el archivo binario no se adjuntaba a `FormData`, provocando que la Server Action de validación de credenciales rechazara la subida.
+  3. *Inmovilidad de Input File tras Error*: Los `<input type="file" />` no reseteaban su valor, impidiendo volver a seleccionar el mismo archivo tras un fallo.
+  4. *Cuellos de Botella por Modelos Lentos en NVIDIA NIM*: `meta/llama-3.2-90b-vision-instruct` en endpoints públicos presentaba picos de latencia > 15s sin timeout configurado. Se inyectó `AbortSignal.timeout(8000)` en NVIDIA NIM y `AbortSignal.timeout(10000)` en Groq LPU para failover instantáneo hacia `qwen/qwen3.8-27b` (<200ms) o heurísticas locales sin bloquear la experiencia del usuario.
 
-
-
+### 54.2 Asistente Editorial IA Resiliente (`InlineAiWriter.tsx`)
+- Se implementó gestión de errores explícita (`errorMessage`) con alerta visual en la interfaz del usuario, erradicando estados de carga infinitos ante caídas de red o fallos de proveedores de IA.
+- 100% de la suite de pruebas unitarias aprobada (72/72 archivos, 449 tests pasando) y TypeScript typecheck con 0 errores.

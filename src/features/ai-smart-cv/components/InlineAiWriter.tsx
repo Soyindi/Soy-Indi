@@ -26,23 +26,32 @@ export function InlineAiWriter({
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeMode, setActiveMode] = useState<'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS'>('XYZ_IMPACT');
 
   const handleGenerate = (mode: 'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS') => {
     setActiveMode(mode);
+    setErrorMessage(null);
     startTransition(async () => {
-      const res = await rewriteCvSectionAction({
-        text: currentText,
-        type,
-        mode,
-        targetRole,
-        company,
-        role,
-        skills,
-      });
+      try {
+        const res = await rewriteCvSectionAction({
+          text: currentText,
+          type,
+          mode,
+          targetRole,
+          company,
+          role,
+          skills,
+        });
 
-      if (res.success && res.suggestions.length > 0) {
-        setSuggestions(res.suggestions);
+        if (res.success && res.suggestions.length > 0) {
+          setSuggestions(res.suggestions);
+          setErrorMessage(null);
+        } else {
+          setErrorMessage(res.error || 'No se pudieron generar sugerencias.');
+        }
+      } catch (err: any) {
+        setErrorMessage(err?.message || 'Error de conexión con el servicio de IA.');
       }
     });
   };
@@ -120,6 +129,13 @@ export function InlineAiWriter({
               Palabras Clave ATS
             </button>
           </div>
+
+          {/* Mensaje de Error */}
+          {errorMessage && (
+            <div className="mb-2 p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[11px] leading-tight">
+              {errorMessage}
+            </div>
+          )}
 
           {/* Contenido / Sugerencias */}
           {isPending ? (

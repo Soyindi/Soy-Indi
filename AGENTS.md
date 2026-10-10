@@ -325,6 +325,11 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
   4. *Capa 4 (OpenRouter & Fallback Heurístico Local)*: Garantiza 100% de disponibilidad sin caídas ante incidencias de red o cuotas de proveedores.
 - **Smart CV AI Copilot y Extractor Multimodal**: `multimodal-parser.ts` y `rewriteCvSectionAction` consumen esta arquitectura resiliente, asegurando que el análisis de currículums y la reescritura de viñetas operen con velocidad de grado industrial y cero fallos por modelos descontinuados.
 
+25. **Gobernanza de Carga de Documentos Smart CV & Timeouts Defensivos de IA:**
+- **Payload Dual Resiliente en Dropzone**: En documentos $\le 4.2\text{ MB}$, el formulario multipart (`FormData`) debe adjuntar **tanto** el binario original (`file`) para validación criptográfica de Magic Bytes y visión multimodal, **como** el texto plano pre-extraído en cliente (`extractedText`) para neutralizar límites serverless de 4.5 MB.
+- **Reseteo Determinista de Inputs de Archivo**: Todo `<input type="file" />` debe ejecutar `e.target.value = ''` tras el evento de selección, garantizando que el usuario pueda reintentar la subida con el mismo archivo tras un error de red o validación.
+- **Timeouts Defensivos de Inferencia (`AbortSignal.timeout`)**: Toda llamada a APIs externas de inferencia debe declarar un límite estricto de espera (máximo 8s en NVIDIA NIM, 10s en Groq LPU). Si un modelo sufre sobrecarga o latencia anómala, el sistema conmuta inmediatamente a la siguiente capa de failover sin bloquear la experiencia de usuario ni dejar promesas colgadas.
+
 ---
 
 
