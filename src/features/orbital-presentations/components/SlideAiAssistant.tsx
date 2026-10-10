@@ -8,16 +8,18 @@ import {
   Loader2,
   RefreshCw,
   Lightbulb,
-  MessageSquareQuote,
   ListOrdered,
   Volume2,
   ChevronDown,
   ChevronUp,
+  Send,
+  Zap,
 } from 'lucide-react';
 import {
   PresentationSlide,
   TargetAudience,
   PresentationTone,
+  PresentationVisualType,
 } from '@/entities/presentation/schemas';
 import { refineSlideWithAiAction } from '@/features/orbital-presentations/actions';
 
@@ -41,8 +43,9 @@ export function SlideAiAssistant({
   onApplyEnhancements,
 }: SlideAiAssistantProps) {
   const [isPending, startTransition] = useTransition();
+  const [userIntent, setUserIntent] = useState<string>('');
   const [activeAction, setActiveAction] = useState<
-    'action_title' | 'punchy_bullets' | 'speaker_notes' | 'all_enhancements' | null
+    'action_title' | 'punchy_bullets' | 'speaker_notes' | 'all_enhancements' | 'generate_from_intent' | null
   >(null);
   const [lastRationale, setLastRationale] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -50,7 +53,8 @@ export function SlideAiAssistant({
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
   const handleTriggerRefinement = (
-    action: 'action_title' | 'punchy_bullets' | 'speaker_notes' | 'all_enhancements'
+    action: 'action_title' | 'punchy_bullets' | 'speaker_notes' | 'all_enhancements' | 'generate_from_intent',
+    targetVisualType?: PresentationVisualType
   ) => {
     setActiveAction(action);
     setLastRationale(null);
@@ -60,6 +64,8 @@ export function SlideAiAssistant({
       const res = await refineSlideWithAiAction({
         slide,
         action,
+        userIntentPrompt: userIntent.trim() || undefined,
+        targetVisualType: targetVisualType || slide.visualType,
         presentationContext: {
           presentationTitle,
           targetAudience,
@@ -72,33 +78,63 @@ export function SlideAiAssistant({
       if (res.success && res.data) {
         const updates: Partial<PresentationSlide> = {};
 
-        if (action === 'action_title' || action === 'all_enhancements') {
+        if (res.data.title && (action === 'generate_from_intent' || action === 'all_enhancements')) {
+          updates.title = res.data.title;
+        }
+
+        if (res.data.subtitle && (action === 'generate_from_intent' || action === 'all_enhancements')) {
+          updates.subtitle = res.data.subtitle;
+        }
+
+        if (res.data.badgeText && (action === 'generate_from_intent' || action === 'all_enhancements')) {
+          updates.badgeText = res.data.badgeText;
+        }
+
+        if (action === 'action_title' || action === 'all_enhancements' || action === 'generate_from_intent') {
           if (res.data.actionTitle) updates.actionTitle = res.data.actionTitle;
         }
 
-        if (action === 'punchy_bullets' || action === 'all_enhancements') {
+        if (action === 'punchy_bullets' || action === 'all_enhancements' || action === 'generate_from_intent') {
           if (res.data.keyPoints && res.data.keyPoints.length > 0) {
             updates.keyPoints = res.data.keyPoints;
           }
         }
 
-        if (action === 'speaker_notes' || action === 'all_enhancements') {
+        if (action === 'speaker_notes' || action === 'all_enhancements' || action === 'generate_from_intent') {
           if (res.data.speakerNotes) updates.speakerNotes = res.data.speakerNotes;
         }
 
-        if (action === 'all_enhancements' && res.data.suggestedVisualType) {
+        if (res.data.suggestedVisualType) {
           updates.visualType = res.data.suggestedVisualType;
+        }
+
+        if (res.data.metricsData) {
+          updates.metricsData = res.data.metricsData;
+        }
+
+        if (res.data.comparisonData) {
+          updates.comparisonData = res.data.comparisonData;
+        }
+
+        if (res.data.timelineData) {
+          updates.timelineData = res.data.timelineData;
         }
 
         onApplyEnhancements(updates);
         setLastRationale(res.data.rationale || 'Mejora aplicada con éxito.');
         setAppliedAction(action);
-        setTimeout(() => setAppliedAction(null), 3000);
+        setTimeout(() => setAppliedAction(null), 3500);
       } else if (!res.success) {
         setErrorMessage(res.error || 'No fue posible optimizar la diapositiva.');
       }
       setActiveAction(null);
     });
+  };
+
+  const handleGenerateFromIntent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userIntent.trim() || isPending) return;
+    handleTriggerRefinement('generate_from_intent');
   };
 
   return (
@@ -135,8 +171,43 @@ export function SlideAiAssistant({
 
       {isExpanded && (
         <>
+          {/* 1. Input de Intención Ejecutiva (Executive Intent Prompting) */}
+          <form onSubmit={handleGenerateFromIntent} className="space-y-1.5 pt-1">
+            <label className="block text-[11px] font-mono text-cyan-200 uppercase tracking-wider flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Zap className="w-3 h-3 text-cyan-400" />
+                ¿Qué idea o tesis deseas defender aquí?
+              </span>
+              <span className="text-[10px] text-zinc-500 font-sans">1 frase clave</span>
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={userIntent}
+                onChange={(e) => setUserIntent(e.target.value)}
+                placeholder="Ej: Reducción del 40% de costos con automatización en Q3..."
+                disabled={isPending}
+                className="flex-1 min-h-[44px] rounded-xl bg-black/50 border border-cyan-500/30 px-3.5 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400 font-medium"
+              />
+              <button
+                type="submit"
+                disabled={isPending || !userIntent.trim()}
+                className="min-h-[44px] px-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 disabled:opacity-40 transition-all cursor-pointer shadow-md shadow-cyan-500/10 shrink-0"
+                title="Generar diapositiva completa desde esta idea"
+              >
+                {isPending && activeAction === 'generate_from_intent' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
+                <span className="hidden sm:inline">Generar</span>
+              </button>
+            </div>
+          </form>
+
+          {/* 2. Grid de Acciones de Refinamiento Específico */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            {/* 1. Generar Titular Estratégico */}
+            {/* Generar Titular Estratégico */}
             <button
               type="button"
               disabled={isPending}
@@ -150,11 +221,11 @@ export function SlideAiAssistant({
               <Lightbulb className="w-3.5 h-3.5 text-cyan-400 mt-0.5 shrink-0" />
               <div>
                 <span className="text-[11px] font-semibold block">Titular Estratégico</span>
-                <span className="text-[9px] text-zinc-400 block">Conclusión clara y directa (&lt;14 palabras)</span>
+                <span className="text-[9px] text-zinc-400 block">Conclusión clara (&lt;14 palabras)</span>
               </div>
             </button>
 
-            {/* 2. Viñetas de Impacto */}
+            {/* Viñetas de Impacto */}
             <button
               type="button"
               disabled={isPending}
@@ -172,7 +243,7 @@ export function SlideAiAssistant({
               </div>
             </button>
 
-            {/* 3. Guion del Orador */}
+            {/* Guion del Orador */}
             <button
               type="button"
               disabled={isPending}
@@ -190,7 +261,7 @@ export function SlideAiAssistant({
               </div>
             </button>
 
-            {/* 4. Optimización Completa */}
+            {/* Optimización Completa */}
             <button
               type="button"
               disabled={isPending}
@@ -233,4 +304,5 @@ export function SlideAiAssistant({
     </div>
   );
 }
+
 

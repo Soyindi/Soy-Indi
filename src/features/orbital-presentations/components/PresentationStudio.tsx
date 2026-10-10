@@ -879,10 +879,42 @@ export function PresentationStudio({
                     return (
                       <button
                         key={t.id}
-                        onClick={() =>
-                          updateActiveSlide('visualType', t.id as PresentationVisualType)
-                        }
-                        className={`min-h-[44px] p-2 rounded-xl border text-[11px] font-semibold flex flex-col items-center justify-center gap-1 transition-all ${
+                        onClick={() => {
+                          const newType = t.id as PresentationVisualType;
+                          const updates: Partial<PresentationSlide> = { visualType: newType };
+                          
+                          // Inicializar estructura básica si el usuario cambia a una tipología enriquecida
+                          if (newType === 'metrics' && (!activeSlide.metricsData || activeSlide.metricsData.length === 0)) {
+                            updates.metricsData = [
+                              { label: 'Crecimiento / Impacto', value: '+45%', change: '+12%', trend: 'up' },
+                              { label: 'Eficiencia Clave', value: '98.5%', change: '+5.4%', trend: 'up' },
+                            ];
+                          } else if (newType === 'comparison' && !activeSlide.comparisonData) {
+                            updates.comparisonData = {
+                              beforeTitle: 'Situación Previa / Diagnóstico',
+                              beforeItems: ['Proceso manual y disperso', 'Tiempos de respuesta prolongados'],
+                              afterTitle: 'Solución con INDI 2026',
+                              afterItems: ['Automatización con modelos 70B', 'Visibilidad y velocidad inmediata'],
+                            };
+                          } else if (newType === 'timeline' && (!activeSlide.timelineData || activeSlide.timelineData.length === 0)) {
+                            updates.timelineData = [
+                              { step: 'Q1', title: 'Planificación & Despliegue', description: 'Definición de arquitectura y validación de hipótesis.' },
+                              { step: 'Q2', title: 'Adopción & Crecimiento', description: 'Incorporación de clientes y retroalimentación de métricas.' },
+                              { step: 'Q3', title: 'Escalamiento Global', description: 'Optimización de latencia y expansión de funcionalidades.' },
+                            ];
+                          }
+                          
+                          const updated = [...presentation.slidesData];
+                          updated[currentSlideIndex] = {
+                            ...updated[currentSlideIndex],
+                            ...updates,
+                          };
+                          setPresentation((prev) => ({
+                            ...prev,
+                            slidesData: updated,
+                          }));
+                        }}
+                        className={`min-h-[44px] p-2 rounded-xl border text-[11px] font-semibold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-indigo-600/30 border-cyan-400 text-cyan-300 shadow-sm'
                             : 'bg-black/30 border-white/5 text-zinc-400 hover:border-white/10'

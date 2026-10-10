@@ -2052,8 +2052,30 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 - **Auditor Integral (uditAndRepairCvExtraction)**: Sanitiza y valida las experiencias y resumen antes de enviarlos al cliente y persistirlos en Turso SQLite.
 
 ### 49.3 Blindaje con Pruebas Unitarias
-- 	ests/unit/cv-integrity-auditor.test.ts valida al 100%:
+- tests/unit/cv-integrity-auditor.test.ts valida al 100%:
   1. Clasificación Pre-Route técnica, ejecutiva y clínica.
   2. Reparación de viñetas con palabras huérfanas terminales.
   3. Erradicación de puntos suspensivos mutilantes.
   4. Auditoría integral de extracciones de CV.
+
+---
+
+## 50. Desbloqueo Creativo & Executive Intent Prompting en Copiloto IA (Fase 2026)
+
+### 50.1 Erradicación de la Trampa del Formulario Fragmentado
+- **Diagnóstico Staff & Tech Lead**: El usuario se enfrentaba a un formulario con 6 campos aislados, requiriendo rellenar texto manualmente antes de poder optimizar. Se detectó que el copiloto IA solo refinaba contenido ya existente, limitando la generación de valor de 0 a 1.
+- **Executive Intent Prompting (`generate_from_intent`)**:
+  - Incorporación de un input de intención ejecutiva en `SlideAiAssistant.tsx` (*"¿Qué idea o tesis deseas defender aquí?"*).
+  - Permite a LLaMA 3.3 70B y Gemini 2.0 sintetizar una diapositiva ejecutiva completa desde una sola frase clave (generando Action Title, título, subtítulo, badge, viñetas de impacto con verbos de acción, datos cuantitativos estructurados y guion de orador).
+
+### 50.2 Auto-Población y Enriquecimiento de Tipologías Visuales
+- **Tipologías Dinámicas (`metrics`, `comparison`, `timeline`)**:
+  - Al seleccionar o conmutar entre tipos visuales en `PresentationStudio.tsx`, el sistema autogenera estructuras de datos iniciales válidas (`metricsData`, `comparisonData`, `timelineData`) para que el visualizador 16:9 refleje de inmediato el componente interactivo.
+  - El contrato Zod `refineSlideWithAiSchema` admite `userIntentPrompt` y `targetVisualType` con soporte para `populate_visual_structure`.
+
+### 50.3 Blindaje con Pruebas Unitarias
+- `tests/unit/presentation-slide-ai-refinement.test.ts` valida al 100%:
+  1. Validación de contratos Zod con `userIntentPrompt` y nuevas acciones.
+  2. Generación integral de diapositivas con `generate_from_intent`.
+  3. Auto-población estructurada de métricas, comparativas y roadmap.
+

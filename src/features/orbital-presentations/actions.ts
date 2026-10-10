@@ -910,10 +910,16 @@ export async function refineSlideWithAiAction(
 ): Promise<{
   success: boolean;
   data?: {
+    title?: string;
+    subtitle?: string;
+    badgeText?: string;
     actionTitle?: string;
     keyPoints?: string[];
     speakerNotes?: string;
     suggestedVisualType?: any;
+    metricsData?: any[];
+    comparisonData?: any;
+    timelineData?: any[];
     rationale?: string;
   };
   modelUsed?: string;
@@ -929,7 +935,7 @@ export async function refineSlideWithAiAction(
       };
     }
 
-    const { slide, action, presentationContext, userId } = validated.data;
+    const { slide, action, userIntentPrompt, targetVisualType, presentationContext, userId } = validated.data;
 
     // 2. Guardrails de Sesión y Entitlements
     const sessionResult = await getSafeAuthenticatedUserId(userId);
@@ -959,6 +965,7 @@ export async function refineSlideWithAiAction(
     const audience = presentationContext?.targetAudience || 'investors';
     const tone = presentationContext?.tone || 'orbital_cyber';
     const deckTitle = presentationContext?.presentationTitle || 'Presentación Ejecutiva';
+    const effectiveVisualType = targetVisualType || slide.visualType || 'concept';
     const slidePos =
       presentationContext?.slideIndex != null && presentationContext?.totalSlides != null
         ? `Diapositiva ${presentationContext.slideIndex + 1} de ${presentationContext.totalSlides}`
@@ -968,13 +975,14 @@ export async function refineSlideWithAiAction(
     const prompt = `
 [SYSTEM DIRECTIVE: CORE IDENTITY]
 Eres un Principal Executive Presentation Designer y consultor senior de estrategia (Ex-McKinsey/Bain).
-Tu tarea es optimizar con rigor, elocuencia profesional y sofisticación estratégica la siguiente diapositiva.
+Tu tarea es optimizar o generar con rigor, elocuencia profesional y sofisticación estratégica la siguiente diapositiva.
 
 CONTEXTO GENERAL DEL DECK:
 - Título del Deck: "${deckTitle}"
 - Audiencia Objetivo: ${audience}
 - Tono Visual: ${tone}
 - Ubicación Narrativa: ${slidePos}
+- Tipo Visual Solicitado: ${effectiveVisualType}
 
 DIAPOSITIVA ACTUAL:
 - Título: "${cleanTitle}"
@@ -984,6 +992,9 @@ DIAPOSITIVA ACTUAL:
 - Puntos Clave Actuales:
 ${currentPoints.map((p, i) => `  ${i + 1}. ${p}`).join('\n') || '  (Sin puntos)'}
 - Notas del Orador Actuales: "${slide.speakerNotes || ''}"
+
+INTENCIÓN O IDEA DEL USUARIO (SI EXISTE):
+"${userIntentPrompt || 'Optimizar el contenido existente'}"
 
 ACCIÓN SOLICITADA: "${action}"
 
@@ -998,15 +1009,23 @@ ACCIÓN SOLICITADA: "${action}"
    - De 2 a 4 viñetas directas de alto impacto, iniciando con conceptos clave en negrita, sin relleno innecesario.
 4. "speakerNotes":
    - Guion conversacional en primera persona (~45-60s) con directrices escénicas, anticipación de objeciones y anécdotas estratégicas. NO repetir el texto proyectado en la pantalla.
-5. "suggestedVisualType":
-   - Uno entre ["concept", "metrics", "comparison", "timeline", "quote", "architecture"].
+5. DATOS ESTRUCTURADOS SEGÚN TIPOLOGÍA ("${effectiveVisualType}"):
+   - Si es "metrics": Proveer "metricsData": [{"label": string, "value": string, "change": string, "trend": "up"|"down"|"neutral"}].
+   - Si es "comparison": Proveer "comparisonData": {"beforeTitle": string, "beforeItems": string[], "afterTitle": string, "afterItems": string[]}.
+   - Si es "timeline": Proveer "timelineData": [{"phase": string, "title": string, "description": string, "status": "completed"|"in_progress"|"upcoming"}].
 
 RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 {
+  "title": string (opcional si mejora el título),
+  "subtitle": string (opcional),
+  "badgeText": string (opcional, en mayúsculas breves ej: "IMPACTO Q3"),
   "actionTitle": string,
   "keyPoints": string[],
   "speakerNotes": string,
   "suggestedVisualType": "concept" | "metrics" | "comparison" | "timeline" | "architecture",
+  "metricsData": [{"label": string, "value": string, "change": string, "trend": "up"|"down"|"neutral"}] (opcional),
+  "comparisonData": {"beforeTitle": string, "beforeItems": string[], "afterTitle": string, "afterItems": string[]} (opcional),
+  "timelineData": [{"phase": string, "title": string, "description": string, "status": "completed"|"in_progress"|"upcoming"}] (opcional),
   "rationale": string (breve explicación en 1 frase)
 }
 `;
@@ -1037,11 +1056,17 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
         return {
           success: true,
           data: {
+            title: parsed.title || undefined,
+            subtitle: parsed.subtitle || undefined,
+            badgeText: parsed.badgeText || undefined,
             actionTitle: parsed.actionTitle || undefined,
             keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints.filter(Boolean) : undefined,
             speakerNotes: parsed.speakerNotes || undefined,
-            suggestedVisualType: parsed.suggestedVisualType || undefined,
-            rationale: parsed.rationale || 'Optimización semántica completada.',
+            suggestedVisualType: parsed.suggestedVisualType || effectiveVisualType || undefined,
+            metricsData: Array.isArray(parsed.metricsData) && parsed.metricsData.length > 0 ? parsed.metricsData : undefined,
+            comparisonData: parsed.comparisonData || undefined,
+            timelineData: Array.isArray(parsed.timelineData) && parsed.timelineData.length > 0 ? parsed.timelineData : undefined,
+            rationale: parsed.rationale || 'Generación estratégica completada con éxito.',
           },
           modelUsed: aiResult.modelUsed || 'AI Model',
         };
@@ -1051,54 +1076,86 @@ RESPONDE EXCLUSIVAMENTE CON UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
     }
 
     // 5. Fallback Heurístico Determinista de Alta Calidad (Garantía Offline y Cero Latencia)
+    const topicHint = userIntentPrompt?.trim() || cleanTitle;
     let fallbackActionTitle = slide.actionTitle;
-    let fallbackKeyPoints = currentPoints.length > 0 ? [...currentPoints] : ['Fundamento clave del proyecto.'];
+    let fallbackKeyPoints = currentPoints.length > 0 ? [...currentPoints] : [`Consolidar la estrategia de ${topicHint}.`];
     let fallbackSpeakerNotes = slide.speakerNotes;
-    let fallbackVisualType = slide.visualType || 'concept';
+    let fallbackVisualType = effectiveVisualType;
+    let fallbackMetrics = slide.metricsData;
+    let fallbackComparison = slide.comparisonData;
+    let fallbackTimeline = slide.timelineData;
 
     // Generar Action Title McKinsey heurístico
-    if (action === 'action_title' || action === 'all_enhancements' || !fallbackActionTitle) {
-      if (slide.visualType === 'metrics' || (slide.metricsData && slide.metricsData.length > 0)) {
+    if (action === 'action_title' || action === 'all_enhancements' || action === 'generate_from_intent' || !fallbackActionTitle) {
+      if (effectiveVisualType === 'metrics') {
         fallbackActionTitle = `Validar el desempeño cuantitativo y tracción con métricas verificables`;
-      } else if (slide.visualType === 'comparison') {
+      } else if (effectiveVisualType === 'comparison') {
         fallbackActionTitle = `Superar las limitaciones tradicionales mediante una solución escalable`;
-      } else if (slide.visualType === 'timeline') {
+      } else if (effectiveVisualType === 'timeline') {
         fallbackActionTitle = `Ejecutar la hoja de ruta estratégica cumpliendo hitos críticos`;
       } else {
-        fallbackActionTitle = `Alinear la visión de ${cleanTitle.toLowerCase()} con los objetivos clave de negocio`;
+        fallbackActionTitle = `Alinear la propuesta de ${topicHint.toLowerCase()} con los objetivos clave de negocio`;
       }
     }
 
     // Generar viñetas ejecutivas con verbos de acción
-    if (action === 'punchy_bullets' || action === 'all_enhancements') {
-      fallbackKeyPoints = fallbackKeyPoints.map((kp) => {
-        const cleaned = kp.replace(/^[-•*#]\s*/, '').trim();
-        if (/^(liderar|diseñar|implementar|reducir|aumentar|optimizar|garantizar|consolidar)/i.test(cleaned)) {
-          return cleaned;
-        }
-        return `Optimizar: ${cleaned}`;
-      });
-      if (fallbackKeyPoints.length === 0) {
+    if (action === 'punchy_bullets' || action === 'all_enhancements' || action === 'generate_from_intent') {
+      if (userIntentPrompt) {
         fallbackKeyPoints = [
-          `Establecer los pilares estratégicos de ${cleanTitle}.`,
-          `Consolidar la adopción en la audiencia clave.`,
+          `Implementar: Priorizar la iniciativa clave de ${topicHint}.`,
+          `Escalar: Optimizar procesos asegurando eficiencia y calidad.`,
+          `Consolidar: Medir el impacto directo en la satisfacción de usuarios.`,
         ];
+      } else {
+        fallbackKeyPoints = fallbackKeyPoints.map((kp) => {
+          const cleaned = kp.replace(/^[-•*#]\s*/, '').trim();
+          if (/^(liderar|diseñar|implementar|reducir|aumentar|optimizar|garantizar|consolidar)/i.test(cleaned)) {
+            return cleaned;
+          }
+          return `Optimizar: ${cleaned}`;
+        });
       }
     }
 
+    // Poblar estructura visual si se solicitó o si falta
+    if (effectiveVisualType === 'metrics' && (!fallbackMetrics || fallbackMetrics.length === 0)) {
+      fallbackMetrics = [
+        { label: 'Eficiencia Operativa', value: '+45%', change: '+12% QoQ', trend: 'up' },
+        { label: 'Tasa de Adopción', value: '88.4%', change: '+15.2%', trend: 'up' },
+        { label: 'Tiempo de Respuesta', value: '< 20ms', change: '-60%', trend: 'up' },
+      ];
+    } else if (effectiveVisualType === 'comparison' && !fallbackComparison) {
+      fallbackComparison = {
+        beforeTitle: 'Enfoque Convencional',
+        beforeItems: ['Procesos manuales propensos a errores', 'Falta de visibilidad en tiempo real'],
+        afterTitle: 'Enfoque INDI 2026',
+        afterItems: ['Automatización con IA y modelos 70B', 'Métricas instantáneas y trazabilidad total'],
+      };
+    } else if (effectiveVisualType === 'timeline' && (!fallbackTimeline || fallbackTimeline.length === 0)) {
+      fallbackTimeline = [
+        { step: 'Fase 1', title: 'Diagnóstico & Despliegue', description: 'Auditoría inicial y configuración de base.' },
+        { step: 'Fase 2', title: 'Adopción & Escala', description: 'Integración activa de usuarios y métricas.' },
+        { step: 'Fase 3', title: 'Consolidación', description: 'Monitoreo autónomo y expansión de mercado.' },
+      ];
+    }
+
     // Generar notas del orador
-    if (action === 'speaker_notes' || action === 'all_enhancements' || !fallbackSpeakerNotes) {
-      fallbackSpeakerNotes = `Presentar con claridad ${cleanTitle}. Destacar el titular de impacto: "${fallbackActionTitle}". Guiar a la audiencia a través de los puntos argumentales manteniendo un ritmo firme de exposición.`;
+    if (action === 'speaker_notes' || action === 'all_enhancements' || action === 'generate_from_intent' || !fallbackSpeakerNotes) {
+      fallbackSpeakerNotes = `Presentar con claridad ${topicHint}. Destacar el titular de impacto: "${fallbackActionTitle}". Guiar a la audiencia a través de los puntos argumentales manteniendo un ritmo firme de exposición.`;
     }
 
     return {
       success: true,
       data: {
+        title: userIntentPrompt ? topicHint.slice(0, 50) : undefined,
         actionTitle: fallbackActionTitle,
         keyPoints: fallbackKeyPoints,
         speakerNotes: fallbackSpeakerNotes,
         suggestedVisualType: fallbackVisualType,
-        rationale: 'Sugerencia generada mediante el motor heurístico determinista McKinsey.',
+        metricsData: fallbackMetrics,
+        comparisonData: fallbackComparison,
+        timelineData: fallbackTimeline,
+        rationale: 'Generación completada mediante el motor heurístico determinista McKinsey.',
       },
       modelUsed: 'INDI Heuristic Copilot',
     };

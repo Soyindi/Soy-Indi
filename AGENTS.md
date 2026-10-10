@@ -239,9 +239,11 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
    - La home (src/app/page.tsx) admite como máximo LANDING_MAX_SECTIONS (5) secciones; toda copia pública se edita en @/entities/landing/schemas (LANDING_CONTENT), nunca hardcodeada en JSX.
    - Vitrinas internas de assets (BrandIdentityShowcase) no se exponen en la landing pública.
 
-11. **Estudio Cinemático Orbital & Copiloto IA de Diapositiva (McKinsey SCQA Standard):**
+11. **Estudio Cinemático Orbital & Copiloto IA de Diapositiva (McKinsey SCQA Standard & Executive Intent Prompting):**
    - El estudio de presentaciones (`PresentationStudio.tsx`) integra un copiloto IA por diapositiva (`SlideAiAssistant.tsx`) con botones táctiles ergonómicos $\ge 44\text{px}$ para optimizar en un toque: *Action Title McKinsey* (<14 palabras asertivas), *Viñetas de Impacto* con verbos de acción y *Notas del Orador* temporalizadas (~45-60s).
-   - Inferencia con orquestador resiliente multi-proveedor (`callNvidiaNimChat`): Failover transparente NVIDIA NIM ➔ Google Gemini 1.5 Flash ➔ OpenRouter ➔ Motor Heurístico Determinista local, garantizando cero caídas en producción y desarrollo offline.
+   - **Prompting de Intención Ejecutiva (Executive Intent Prompting)**: Dispone de un input de intención directa en el copiloto (*"¿Qué idea o tesis deseas defender aquí?"*) permitiendo a modelos de frontera (LLaMA 3.3 70B / Gemini 2.0) sintetizar de 0 a 100 una diapositiva ejecutiva completa (título, bajada, badge, titular asertivo, viñetas de acción, datos cuantitativos y notas del orador).
+   - **Inicialización y Auto-Población Estructurada por Tipología**: Al seleccionar o pivotar tipologías visuales (`metrics`, `comparison`, `timeline`), el sistema provee estructuras de datos inmediatas (`metricsData`, `comparisonData`, `timelineData`) para que el usuario nunca enfrente un lienzo vacío.
+   - Inferencia con orquestador resiliente multi-proveedor (`callNvidiaNimChat`): Failover transparente NVIDIA NIM (LLaMA 3.3 70B) ➔ Google Gemini 2.0 Flash ➔ OpenRouter ➔ Motor Heurístico Determinista local, garantizando cero caídas en producción y desarrollo offline.
    - Ingesta exhaustiva de documentos (`document-parser.ts`): Extracción algorítmica de métricas complejas (UF, USD, CLP, %, deltas `+`/`-`, ratios `x`, rps, MoM/YoY), cronogramas y pares de contraste semántico problema/solución.
 
 12. **Identificadores Públicos Profesionales, Disponibilidad en Tiempo Real & Protección de Rutas (Homologación Universal de Slugs: Cards, Smart CV y Presentaciones):**

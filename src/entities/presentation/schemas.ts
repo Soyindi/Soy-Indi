@@ -284,7 +284,16 @@ export function generatePresentationSlugAlternatives(baseSlug: string): string[]
  */
 export const refineSlideWithAiSchema = z.object({
   slide: presentationSlideSchema,
-  action: z.enum(['action_title', 'punchy_bullets', 'speaker_notes', 'all_enhancements']),
+  action: z.enum([
+    'action_title',
+    'punchy_bullets',
+    'speaker_notes',
+    'all_enhancements',
+    'generate_from_intent',
+    'populate_visual_structure',
+  ]),
+  userIntentPrompt: z.string().max(1000).optional(),
+  targetVisualType: presentationVisualTypeSchema.optional(),
   presentationContext: z
     .object({
       presentationTitle: z.string().optional(),
@@ -298,4 +307,5 @@ export const refineSlideWithAiSchema = z.object({
 });
 
 export type RefineSlideWithAiInput = z.infer<typeof refineSlideWithAiSchema>;
+
 

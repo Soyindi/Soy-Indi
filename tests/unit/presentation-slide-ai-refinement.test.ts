@@ -107,5 +107,43 @@ describe('Orbital Presentations - Slide AI Copilot & Schema Audit', () => {
     expect(res.data?.speakerNotes).toBeDefined();
     expect(res.data?.keyPoints?.length).toBeGreaterThan(0);
   });
+
+  it('procesa generate_from_intent sintetizando una diapositiva completa desde una idea ejecutiva', async () => {
+    const res = await refineSlideWithAiAction({
+      slide: {
+        id: 'slide-303',
+        title: 'Nueva Diapositiva',
+        visualType: 'concept' as const,
+        keyPoints: [],
+      },
+      action: 'generate_from_intent',
+      userIntentPrompt: 'Reducción del 40% de costos operativos con automatización en Q3',
+      targetVisualType: 'metrics',
+      presentationContext: {
+        presentationTitle: 'Roadmap Operativo 2026',
+        targetAudience: 'investors',
+        tone: 'orbital_cyber',
+      },
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.data?.actionTitle).toBeDefined();
+    expect(res.data?.keyPoints?.length).toBeGreaterThanOrEqual(2);
+    expect(res.data?.speakerNotes).toBeDefined();
+    expect(res.data?.metricsData?.length).toBeGreaterThanOrEqual(1);
+    expect(res.data?.suggestedVisualType).toBe('metrics');
+  });
+
+  it('valida que populate_visual_structure sea una acción Zod válida', () => {
+    const valid = refineSlideWithAiSchema.safeParse({
+      slide: sampleSlide,
+      action: 'populate_visual_structure',
+      targetVisualType: 'comparison',
+      userIntentPrompt: 'Comparativa de arquitecturas monolito vs distributed edge',
+    });
+
+    expect(valid.success).toBe(true);
+  });
 });
+
 
