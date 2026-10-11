@@ -539,20 +539,21 @@ export function UnifiedDashboardView({
               {filteredCards.map((card) => (
                 <div
                   key={card.id}
-                  className={`glass-panel rounded-3xl p-5 sm:p-6 border transition-all flex flex-col justify-between ${
+                  className={`glass-panel rounded-3xl p-5 sm:p-6 border transition-all flex flex-col justify-between group overflow-hidden ${
                     card.isActive ? 'border-white/10 hover:border-indigo-500/40' : 'border-white/5 opacity-60'
                   }`}
                 >
-                  <div>
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div>
-                        <h3 className="text-base sm:text-lg font-bold text-white leading-tight">{card.title}</h3>
-                        <p className="text-xs text-zinc-400 mt-0.5">{card.profession}</p>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0 pr-1">
+                        <h3 className="text-base sm:text-lg font-bold text-white leading-tight break-words line-clamp-1">{card.title}</h3>
+                        <p className="text-xs text-zinc-400 mt-0.5 truncate">{card.profession}</p>
                       </div>
                       <button
+                        type="button"
                         onClick={() => handleToggleActiveCard(card.id, card.isActive)}
-                        className={`min-h-[44px] min-w-[44px] p-2.5 rounded-xl transition flex items-center justify-center cursor-pointer ${
-                          card.isActive ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
+                        className={`min-h-[44px] min-w-[44px] p-2.5 rounded-xl transition flex items-center justify-center cursor-pointer shrink-0 ${
+                          card.isActive ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700 border border-zinc-700'
                         }`}
                         title={card.isActive ? 'Desactivar Tarjeta' : 'Activar Tarjeta'}
                       >
@@ -560,36 +561,37 @@ export function UnifiedDashboardView({
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 py-2.5 my-2 border-y border-white/5">
+                    <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 py-2.5 border-y border-white/5">
                       <span className="flex items-center gap-1.5">
-                        <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                        {card.viewsCount || 0} visitas
+                        <Eye className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span>{card.viewsCount || 0} {card.viewsCount === 1 ? 'visita' : 'visitas'}</span>
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <MousePointerClick className="w-3.5 h-3.5 text-indigo-400" />
-                        {card.clicksCount || 0} clicks
+                        <MousePointerClick className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <span>{card.clicksCount || 0} {card.clicksCount === 1 ? 'clic' : 'clics'}</span>
                       </span>
                     </div>
 
-                    <div className="text-[11px] font-mono text-zinc-500 truncate mb-3">
+                    <div className="text-[11px] font-mono text-zinc-500 truncate">
                       /c/{card.slug}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-3 border-t border-white/5">
+                  <div className="flex items-center gap-2 pt-4 mt-2 border-t border-white/5">
                     <button
+                      type="button"
                       onClick={() => handleCopyLink(card.slug)}
-                      className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition cursor-pointer"
+                      className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition cursor-pointer border border-white/5 min-w-0"
                     >
                       {copiedSlug === card.slug ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Copiado</span>
+                          <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span className="truncate">Copiado</span>
                         </>
                       ) : (
                         <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Copiar Link</span>
+                          <Copy className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">Copiar Link</span>
                         </>
                       )}
                     </button>
@@ -597,7 +599,7 @@ export function UnifiedDashboardView({
                     <Link
                       href={`/c/${card.slug}`}
                       target="_blank"
-                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition flex items-center justify-center"
+                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 border border-indigo-500/20 transition flex items-center justify-center shrink-0"
                       title="Ver Tarjeta en Vivo"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -605,15 +607,16 @@ export function UnifiedDashboardView({
 
                     <Link
                       href={`/cards/new?id=${card.id}`}
-                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 transition flex items-center justify-center"
+                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 border border-cyan-500/20 transition flex items-center justify-center shrink-0"
                       title="Editar Tarjeta"
                     >
                       <Edit3 className="w-4 h-4" />
                     </Link>
 
                     <button
+                      type="button"
                       onClick={() => handleDeleteCard(card.id, card.title)}
-                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition flex items-center justify-center cursor-pointer"
+                      className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition flex items-center justify-center cursor-pointer shrink-0 border border-transparent hover:border-rose-500/30"
                       title="Eliminar Tarjeta"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -656,74 +659,74 @@ export function UnifiedDashboardView({
                 return (
                   <div
                     key={cv.id}
-                    className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-emerald-500/40 transition-all flex flex-col justify-between"
+                    className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-emerald-500/40 transition-all flex flex-col justify-between group overflow-hidden"
                   >
-                    <div>
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-base sm:text-lg font-bold text-white leading-tight">{cv.title}</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0 pr-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h3 className="text-base sm:text-lg font-bold text-white leading-tight break-words line-clamp-1">{cv.title}</h3>
                             {cv.isPublic !== false ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
                                 Digital Activo
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-800 text-zinc-400 border border-zinc-700 shrink-0">
                                 Privado
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-zinc-400 mt-0.5">{cv.targetRole}</p>
+                          <p className="text-xs text-zinc-400 truncate">{cv.targetRole}</p>
                         </div>
-                        <div className={`px-2.5 py-1 rounded-xl border font-mono font-bold text-xs ${scoreColor}`}>
+                        <div className={`px-2.5 py-1 rounded-xl border font-mono font-bold text-xs shrink-0 ${scoreColor}`}>
                           ATS {score}/100
                         </div>
                       </div>
 
                       {cv.slug && (
-                        <div className="flex items-center gap-2 mb-3 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[11px] text-zinc-300 font-mono">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5 text-[11px] text-zinc-300 font-mono">
                           <Share2 className="w-3.5 h-3.5 text-teal-400 shrink-0" />
                           <span className="truncate">/cv/{cv.slug}</span>
                         </div>
                       )}
 
-                      <div className="space-y-1.5 py-2.5 my-2 text-xs text-zinc-400 border-y border-white/5">
+                      <div className="space-y-1.5 py-2.5 text-xs text-zinc-400 border-y border-white/5 font-mono">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Plantilla: {cv.templateId}</span>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span className="truncate">Plantilla: {cv.templateId}</span>
                           </div>
                           {typeof cv.viewsCount === 'number' && (
-                            <div className="flex items-center gap-1.5 text-zinc-300 font-mono text-[11px]">
+                            <div className="flex items-center gap-1.5 text-zinc-300 text-[11px] shrink-0">
                               <Eye className="w-3.5 h-3.5 text-teal-400" />
                               <span>{cv.viewsCount} {cv.viewsCount === 1 ? 'visita' : 'visitas'}</span>
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                        <div className="flex items-center gap-2 text-zinc-500 text-[11px]">
+                          <Clock className="w-3.5 h-3.5 shrink-0" />
                           <span>Actualizado: {new Date(cv.updatedAt).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-3 border-t border-white/5">
+                    <div className="flex items-center gap-2 pt-4 mt-2 border-t border-white/5">
                       {cv.slug && (
                         <>
                           <button
                             type="button"
                             onClick={() => handleCopyCvLink(cv.slug!)}
-                            className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition cursor-pointer"
+                            className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition cursor-pointer border border-white/5 min-w-0"
                           >
                             {copiedCvSlug === cv.slug ? (
                               <>
-                                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                <span>Copiado</span>
+                                <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                <span className="truncate">Copiado</span>
                               </>
                             ) : (
                               <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copiar Link</span>
+                                <Copy className="w-3.5 h-3.5 shrink-0" />
+                                <span className="truncate">Copiar Link</span>
                               </>
                             )}
                           </button>
@@ -731,7 +734,7 @@ export function UnifiedDashboardView({
                           <Link
                             href={`/cv/${cv.slug}`}
                             target="_blank"
-                            className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition flex items-center justify-center"
+                            className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/20 transition flex items-center justify-center shrink-0"
                             title="Ver CV Digital en Vivo"
                           >
                             <ExternalLink className="w-4 h-4" />
@@ -741,17 +744,17 @@ export function UnifiedDashboardView({
 
                       <Link
                         href={`/cv?id=${cv.id}`}
-                        className={`min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-xs shadow-sm hover:opacity-95 transition ${!cv.slug ? 'flex-1' : ''}`}
+                        className={`min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-xs shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 hover:opacity-95 active:scale-[0.98] transition min-w-0 ${!cv.slug ? 'flex-1' : ''}`}
                         title="Abrir Editor A4"
                       >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span className={cv.slug ? 'hidden sm:inline' : 'inline'}>Editar</span>
+                        <FileText className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Editar</span>
                       </Link>
 
                       <button
                         type="button"
                         onClick={() => handleDeleteCv(cv.id, cv.title)}
-                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition flex items-center justify-center cursor-pointer"
+                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition flex items-center justify-center cursor-pointer shrink-0 border border-transparent hover:border-rose-500/30"
                         title="Eliminar Currículum"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -790,37 +793,40 @@ export function UnifiedDashboardView({
                 return (
                   <div
                     key={pres.id}
-                    className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-amber-500/40 transition-all flex flex-col justify-between"
+                    className="glass-panel rounded-3xl p-5 sm:p-6 border border-white/10 hover:border-amber-500/40 transition-all flex flex-col justify-between group overflow-hidden"
                   >
-                    <div>
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div>
-                          <h3 className="text-base sm:text-lg font-bold text-white leading-tight">{pres.title}</h3>
-                          <span className="text-[11px] font-mono text-zinc-500 mt-0.5 block truncate">
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0 pr-1">
+                          <h3 className="text-base sm:text-lg font-bold text-white leading-tight break-words line-clamp-2">
+                            {pres.title}
+                          </h3>
+                          <span className="text-[11px] font-mono text-zinc-500 mt-1 block truncate">
                             /p/{pres.slug}
                           </span>
                         </div>
-                        <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono text-[10px]">
+                        <span className="shrink-0 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono text-[10px] font-semibold tracking-wide self-start shadow-sm">
                           16:9 HD
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 py-2.5 my-2 border-y border-white/5">
+                      <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 py-2.5 border-y border-white/5">
                         <span className="flex items-center gap-1.5">
-                          <Layers className="w-3.5 h-3.5 text-amber-400" />
-                          {slidesCount} diapositivas
+                          <Layers className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span>{slidesCount} {slidesCount === 1 ? 'diapositiva' : 'diapositivas'}</span>
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <Eye className="w-3.5 h-3.5 text-zinc-400" />
-                          {pres.viewsCount || 0} vistas
+                          <Eye className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                          <span>{pres.viewsCount || 0} {pres.viewsCount === 1 ? 'vista' : 'vistas'}</span>
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-3 border-t border-white/5">
+                    <div className="flex items-center gap-2 pt-4 mt-2 border-t border-white/5">
                       <button
+                        type="button"
                         onClick={() => handleCopyPresentationLink(pres.slug)}
-                        className="min-h-[44px] px-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition flex items-center gap-1.5 cursor-pointer"
+                        className="min-h-[44px] px-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-white/5"
                         title="Copiar enlace de presentación"
                       >
                         {copiedPresSlug === pres.slug ? (
@@ -838,24 +844,25 @@ export function UnifiedDashboardView({
 
                       <Link
                         href={`/presentations?id=${pres.id}`}
-                        className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-sm hover:opacity-95 transition"
+                        className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-xs shadow-md shadow-orange-500/10 hover:shadow-orange-500/20 hover:opacity-95 active:scale-[0.98] transition min-w-0"
                       >
-                        <MonitorPlay className="w-3.5 h-3.5" />
-                        <span>Abrir Estudio</span>
+                        <MonitorPlay className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Abrir Estudio</span>
                       </Link>
 
                       <Link
                         href={`/p/${pres.slug || 'demo'}`}
                         target="_blank"
-                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition flex items-center justify-center text-xs font-semibold"
+                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 hover:text-white transition flex items-center justify-center text-xs font-semibold shrink-0"
                         title="Ver presentación en vivo"
                       >
                         <Play className="w-3.5 h-3.5 text-cyan-400" />
                       </Link>
 
                       <button
+                        type="button"
                         onClick={() => handleDeletePresentation(pres.id, pres.title)}
-                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition flex items-center justify-center cursor-pointer"
+                        className="min-h-[44px] min-w-[44px] p-2.5 rounded-xl hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 transition flex items-center justify-center cursor-pointer shrink-0 border border-transparent hover:border-rose-500/30"
                         title="Eliminar presentación"
                       >
                         <Trash2 className="w-4 h-4" />
