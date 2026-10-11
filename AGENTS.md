@@ -147,6 +147,14 @@ src/
    - **Análisis de Búfer Off-Screen 64x64px & Cuantización Perceptual**: El análisis renderiza en un canvas virtual de $64\times64\text{ px}$ en memoria con cuantización en histogramas HSL, calculando vivacidad (`vibrantHex`), dominancia (`dominantHex`) y fondos ambientales complementarios (`darkMutedHex` y `lightMutedHex`) con contraste garantizado WCAG 2.2 AA ($\ge 4.5:1$).
    - **Swatches Interactivos & Sincronización Inmediata**: El sistema adapta automáticamente el acento (`primaryColorOklch`) y el fondo ambiental, al tiempo que expone swatches interactivos de los matices detectados con nombres semánticos para personalización con un solo toque y botón de re-adaptación inmediata.
 
+24. **Gobernanza de Capacidad Free-Tier ($0 USD Operational Cost Architecture):**
+   - **Umbrales Máximos sin Costo**: La plataforma sostiene hasta **100.000 usuarios registrados**, **40.000 tarjetas con multimedia completa** y más de **1.000.000 de visitas mensuales** sin incurrir en costos de infraestructura ($0 USD).
+   - **Zero-Binary Turso Protection**: Turso SQLite (9 GB) aloja únicamente JSON semántico (<50KB por usuario completo), previniendo saturación de disco y tolerando hasta 225.000 cuentas.
+   - **Cloudflare R2 Egress Immunity**: Las imágenes comprimidas a WebP (<260KB por perfil completo) se sirven con $0 USD de costo de descarga (Zero Egress Fees), tolerando hasta 10M de lecturas mensuales.
+   - **In-Memory Fallback Sentinel**: Ante el límite diario de Upstash Redis (10k comandos/día), el sistema conmuta automáticamente a memoria local LRU sin interrupciones.
+   - **Detalle de Auditoría**: Especificado en `docs/architecture/FREE_TIER_CAPACITY_AUDIT_2026.md`.
+
+
 
 ---
 
