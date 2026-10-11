@@ -12,6 +12,13 @@ export const cardThemeConfigSchema = z.object({
   ctaLabel: z.string().max(40).optional().nullable(),
   cardFinish: z.enum(['classic', 'holographic', 'titanium', 'obsidian', 'minimal', 'luminous-glass', 'aurora-light']).default('classic').optional(),
   surfaceTexture: z.enum(['none', 'dot-grid', 'radial-glow', 'frosted-prism']).default('radial-glow').optional(),
+  coverImageUrl: z.string().optional().nullable().or(z.literal('')),
+  backgroundImageUrl: z.string().optional().nullable().or(z.literal('')),
+  backgroundType: z.enum(['theme', 'mesh', 'pattern', 'custom-image']).default('theme').optional(),
+  backgroundOverlayBlur: z.enum(['none', 'subtle', 'medium', 'deep']).default('medium').optional(),
+  backgroundOverlayOpacity: z.number().min(0).max(1).default(0.5).optional(),
+  operationalStatus: z.enum(['none', 'open_now', 'taking_orders', 'available_by_appointment', 'custom']).default('none').optional(),
+  customStatusText: z.string().max(60).optional().nullable(),
 });
 
 export const cardBentoBlockSchema = z.object({

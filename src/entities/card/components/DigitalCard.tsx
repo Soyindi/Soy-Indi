@@ -51,6 +51,13 @@ export interface CardData {
     ctaLabel?: string | null;
     cardFinish?: 'classic' | 'holographic' | 'titanium' | 'obsidian' | 'minimal' | 'luminous-glass' | 'aurora-light';
     surfaceTexture?: 'none' | 'dot-grid' | 'radial-glow' | 'frosted-prism';
+    coverImageUrl?: string | null;
+    backgroundImageUrl?: string | null;
+    backgroundType?: 'theme' | 'mesh' | 'pattern' | 'custom-image';
+    backgroundOverlayBlur?: 'none' | 'subtle' | 'medium' | 'deep';
+    backgroundOverlayOpacity?: number;
+    operationalStatus?: 'none' | 'open_now' | 'taking_orders' | 'available_by_appointment' | 'custom';
+    customStatusText?: string | null;
   };
   bentoBlocks?: Array<{
     id: string;
@@ -231,6 +238,28 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
   const isLightMode = Boolean(activeFinish.isLight);
 
+  const hasCover = Boolean(card.themeConfig?.coverImageUrl);
+  const hasBgImage = Boolean(card.themeConfig?.backgroundImageUrl);
+  const operationalStatus = card.themeConfig?.operationalStatus;
+
+  const getOperationalStatusDisplay = () => {
+    if (!operationalStatus || operationalStatus === 'none') return null;
+    switch (operationalStatus) {
+      case 'open_now':
+        return { label: 'Abierto ahora', color: 'bg-emerald-500' };
+      case 'taking_orders':
+        return { label: card.themeConfig?.customStatusText || 'Aceptando pedidos', color: 'bg-amber-500' };
+      case 'available_by_appointment':
+        return { label: 'Disponible con cita previa', color: 'bg-cyan-500' };
+      case 'custom':
+        return { label: card.themeConfig?.customStatusText || 'En servicio', color: 'bg-indigo-500' };
+      default:
+        return null;
+    }
+  };
+
+  const statusDisplay = getOperationalStatusDisplay();
+
   return (
     <SmartParticles
       enabled={true}
@@ -252,10 +281,36 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           ...activeFinish.borderStyle,
         }}
       >
+        {/* Fondo de Imagen Personalizado con Scrim Inteligente y Blur Adaptativo */}
+        {hasBgImage && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+            <div 
+              className="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-105"
+              style={{ backgroundImage: `url(${card.themeConfig!.backgroundImageUrl})` }}
+            />
+            <div 
+              className={`absolute inset-0 transition-all duration-500 ${
+                card.themeConfig?.backgroundOverlayBlur === 'none'
+                  ? ''
+                  : card.themeConfig?.backgroundOverlayBlur === 'subtle'
+                  ? 'backdrop-blur-sm'
+                  : card.themeConfig?.backgroundOverlayBlur === 'deep'
+                  ? 'backdrop-blur-2xl'
+                  : 'backdrop-blur-md'
+              }`}
+              style={{
+                backgroundColor: isLightMode 
+                  ? `rgba(255, 255, 255, ${card.themeConfig?.backgroundOverlayOpacity ?? 0.65})`
+                  : `rgba(9, 10, 16, ${card.themeConfig?.backgroundOverlayOpacity ?? 0.65})`,
+              }}
+            />
+          </div>
+        )}
+
         {/* Textura de fondo Dot Grid sutil con alta nitidez */}
         {texture === 'dot-grid' && (
           <div 
-            className="absolute inset-0 opacity-[0.22] pointer-events-none"
+            className="absolute inset-0 opacity-[0.22] pointer-events-none z-[1]"
             style={{
               backgroundImage: isLightMode 
                 ? 'radial-gradient(rgba(15, 23, 42, 0.6) 1.2px, transparent 1.2px)'
@@ -268,7 +323,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         {/* Textura Prisma Escarchado (Frosted Prism) */}
         {texture === 'frosted-prism' && (
           <div 
-            className="absolute inset-0 opacity-40 pointer-events-none mix-blend-overlay"
+            className="absolute inset-0 opacity-40 pointer-events-none mix-blend-overlay z-[1]"
             style={{
               backgroundImage: `linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, transparent 40%, rgba(255, 255, 255, 0.4) 60%, transparent 100%), radial-gradient(circle at 20% 20%, ${primaryColor}22 0%, transparent 50%)`,
               backgroundSize: '100% 100%, 100% 100%',
@@ -279,39 +334,61 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         {/* Glow Superior Reactivo con gradiente del acabado */}
         {texture !== 'none' && (
           <div 
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-36 blur-3xl pointer-events-none opacity-60 transition-all duration-700"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-36 blur-3xl pointer-events-none opacity-60 transition-all duration-700 z-[1]"
             style={{
               background: activeFinish.glowGradient,
             }}
           />
         )}
 
+        {/* Banner Hero Superior de Fachada o Vitrina Temática */}
+        {hasCover && (
+          <div className="relative -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-4 h-32 sm:h-36 overflow-hidden rounded-t-[2rem] z-10 group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={card.themeConfig!.coverImageUrl!}
+              alt="Portada de negocio"
+              className="w-full h-full object-cover select-none pointer-events-none transform transition-transform duration-700 group-hover:scale-105"
+            />
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: isLightMode
+                  ? 'linear-gradient(to top, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.25) 55%, rgba(0, 0, 0, 0.25) 100%)'
+                  : 'linear-gradient(to top, rgba(9, 10, 16, 0.95) 0%, rgba(9, 10, 16, 0.25) 55%, rgba(0, 0, 0, 0.35) 100%)',
+              }}
+            />
+          </div>
+        )}
+
         {/* Badge Superior Contextual o Indicador de Acabado */}
         <div className="relative z-10 flex items-center justify-between gap-2 mb-3">
           <span 
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase border shadow-sm ${activeFinish.tagColor}`}
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase border shadow-sm backdrop-blur-md ${activeFinish.tagColor}`}
             style={{ borderColor: `${primaryColor}66` }}
           >
             <Sparkles className="w-2.5 h-2.5" style={{ color: primaryColor }} />
             <span>{activeFinish.tagLabel}</span>
           </span>
 
-          {card.themeConfig?.badgeText && (
-            <span 
-              className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase border shadow-sm ${
-                isLightMode ? 'bg-black/5 text-slate-800 border-slate-300' : 'bg-white/10 text-white'
-              }`}
-              style={{ borderColor: `${primaryColor}55`, color: primaryColor }}
-            >
-              <span>{card.themeConfig.badgeText}</span>
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {card.themeConfig?.badgeText && (
+              <span 
+                className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase border shadow-sm backdrop-blur-md ${
+                  isLightMode ? 'bg-black/5 text-slate-800 border-slate-300' : 'bg-white/10 text-white'
+                }`}
+                style={{ borderColor: `${primaryColor}55`, color: primaryColor }}
+              >
+                <span>{card.themeConfig.badgeText}</span>
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Header de la Tarjeta */}
         <div className="relative z-10 flex flex-col items-center text-center">
-          {/* Foto de Perfil con Anillo de Degradado y Glow Reactivo */}
-          <div className="relative w-24 h-24 mb-5 group">
+          {/* Foto de Perfil con Anillo de Degradado y Glow Reactivo (con solapamiento si hay portada) */}
+          <div className={`relative w-24 h-24 group transition-all duration-300 ${hasCover ? '-mt-14 sm:-mt-16 mb-4' : 'mb-5'}`}>
             <div 
               className="absolute inset-0 rounded-full animate-pulse blur-md opacity-75 transition-all duration-500" 
               style={{
@@ -319,7 +396,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               }}
             />
             <div 
-              className="relative w-full h-full rounded-full p-[2.5px] transition-all duration-500 shadow-lg"
+              className="relative w-full h-full rounded-full p-[2.5px] transition-all duration-500 shadow-xl"
               style={{
                 background: `linear-gradient(135deg, ${primaryColor}, #ffffff 40%, ${primaryColor})`
               }}
@@ -329,7 +406,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
                 <img
                   src={card.photoUrl}
                   alt={card.title}
-                  className="w-full h-full rounded-full object-cover bg-zinc-900 select-none pointer-events-auto"
+                  className="w-full h-full rounded-full object-cover bg-zinc-900 select-none pointer-events-auto shadow-inner"
                   onContextMenu={(e) => e.preventDefault()}
                   onDragStart={(e) => e.preventDefault()}
                 />
@@ -349,6 +426,17 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               )}
             </div>
           </div>
+
+          {/* Insignia de Estado Operacional con LED Pulsante */}
+          {statusDisplay && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide border shadow-sm backdrop-blur-md mb-2 bg-black/30 text-white border-white/15">
+              <span className="relative flex h-2 w-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${statusDisplay.color} opacity-75`}></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${statusDisplay.color}`}></span>
+              </span>
+              <span>{statusDisplay.label}</span>
+            </div>
+          )}
 
           <h2 className={`text-2xl font-bold tracking-tight mb-1 ${
             isLightMode ? 'text-slate-900' : 'text-white'

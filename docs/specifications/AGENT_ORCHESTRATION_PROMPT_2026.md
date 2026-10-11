@@ -33,54 +33,60 @@ El prompt anterior presentaba vacíos críticos que obligaban al usuario a inter
 
 ## 📋 3. Plantillas de Prompts Listas para Usar
 
-### 🏆 3.1 Prompt Maestro Oficial: Flujo Integral de Ingeniería (Full-Feature & Architecture)
+### 🏆 3.1 Prompt Maestro Oficial: Titanium Delivery Flow (Full-Feature & Architecture)
 > **Uso recomendado**: Para nuevas funcionalidades, refactorizaciones, cambios de esquema, integraciones de API o módulos completos.
 
 ```markdown
-Actúa como Tech Lead & Staff Software Engineer bajo los estándares de AGENTS.md y docs/architecture/BLUEPRINT_2026.md.
+Actúa como Staff Principal Software Engineer & Lead Product Designer bajo los estándares de AGENTS.md y docs/architecture/BLUEPRINT_2026.md.
 
-Para la tarea de hoy:
+TAREA DE ALTO IMPACTO:
 [DESCRIBE AQUÍ TU TAREA DETALLADAMENTE]
 
-Ejecuta el flujo profesional completo (Prompt-to-Push):
+Ejecuta el protocolo de entrega "Titanium Delivery Flow" en 6 fases:
 
-0. Diagnóstico Pre-flight:
-   - Verifica el estado de Git (rama actual y working tree clean) antes de modificar código.
+FASE 0: PRE-FLIGHT, CONTEXTO & ACTIVACIÓN DE SKILLS
+- Verifica que el working tree de Git esté limpio y en la rama correspondiente.
+- Identifica y lee los SKILL.md pertinentes en .agents/skills/ antes de escribir código:
+  * Si impacta UI/UX ➔ Activa 'ui-ux-pro-max' y 'frontend-design'.
+  * Si impacta DB/Server Actions ➔ Activa 'flow-and-persistence-audit' y 'drizzle-sqlite'.
+  * Si impacta CVs/Presentaciones ➔ Activa 'cv-intelligence-orchestrator' o 'presentation-intelligence-engine'.
+- Revisa las especificaciones en docs/specifications/ si la tarea se relaciona con pagos, presentaciones, CVs o SEO.
 
-1. Arquitectura FSD & Seguridad Multi-Tenant:
-   - Respeta estrictamente la jerarquía unidireccional (app ➔ features ➔ entities ➔ shared).
-   - Valida todas las entradas con contratos Zod (`safeParse`).
-   - Aplica aislamiento multi-tenant con `getSafeAuthenticatedUserId()` y cláusulas compuestas anti-IDOR.
-   - Aplica política Zero-Binary Persistence en base de datos Turso SQLite.
+FASE 1: ARQUITECTURA FSD & SEGURIDAD MULTI-TENANT BLINDADA
+- Cumplimiento unidireccional estricto (app ➔ features ➔ entities ➔ shared).
+- Valida entradas al 100% con Zod (safeParse).
+- En Server Actions: guardrail obligatorio con getSafeAuthenticatedUserId() y cláusula compuesta anti-IDOR:
+  and(eq(table.id, id), eq(table.userId, targetUserId)).
+- Política Zero-Binary Persistence en Turso SQLite (cero buffers/base64 de docs completos; sólo JSON semántico <50KB).
 
-2. Estándares UI/UX, Rendimiento & Accesibilidad:
-   - Retícula Base 8 (espaciados múltiplos de 8px) y touch targets >= 44px (48px en móvil).
-   - Ergonomía móvil: Thumb Zone inferior en acciones primarias y soporte táctil.
-   - Paleta OKLCH con contraste perceptual WCAG 2.2 AA (>= 4.5:1).
-   - Identidad canónica mediante `<BrandLogo />` (cero loops autorreferenciales ni texto genérico).
-   - Gobernanza Edge: ISR 60s en páginas públicas y telemetría desacoplada con `trackResourceView`.
+FASE 2: CRAFTSMANSHIP VISUAL, ERGONOMÍA & ACCESIBILIDAD (WOW FACTOR)
+- Retícula Base 8 (8/16/24/32/48px) y Touch Targets >= 44px (48px en móvil).
+- Mobile-First & Thumb Zone: acciones críticas al alcance del pulgar.
+- Paleta OKLCH con contraste perceptual WCAG 2.2 AA (>= 4.5:1).
+- Estados completos: loading esqueletal (shimmer), estado vacío expresivo y feedback de error elegante.
+- Identidad canónica con <BrandLogo /> (sin loops ni texto improvisado).
+- Rendimiento Edge: ISR 60s en rutas públicas y telemetría desacoplada con trackResourceView.
 
-3. Puerta de Calidad & Testing (Quality Gate Innegociable):
-   - Añade o actualiza pruebas unitarias en `tests/unit/*.test.ts`.
-   - Ejecuta y aprueba al 100%:
-     * `npm run typecheck` (0 errores permitidos).
-     * `npm test` (100% test suites pasando).
-   - Si se detecta un error o timeout, resuélvelo de inmediato antes de continuar.
+FASE 3: TRIPLE PUERTA DE CALIDAD (LOGICAL + SENSORIAL BROWSER GATE)
+- Lógica: Añade o actualiza tests en tests/unit/*.test.ts.
+- Ejecuta y aprueba:
+  * npm run typecheck (0 errores permitidos).
+  * npm test (100% suites aprobadas).
+- Sensorial (Si hubo cambios de UI):
+  * Utiliza el navegador / browser_subagent o Chrome DevTools para validar en viewport móvil (390px) y desktop.
+  * Certifica: cero desbordamiento horizontal, navegación fluida y jerarquía tipográfica nítida.
 
-4. Gobernanza Doc-as-Code en Cascada:
-   - Sincroniza atómicamente los cambios en:
-     * `README.md` (árbol de componentes, nuevas rutas o métricas).
-     * `docs/architecture/BLUEPRINT_2026.md` (especificaciones técnicas de la fase).
-     * `AGENTS.md` (nuevas reglas, contratos o dependencias arquitectónicas).
+FASE 4: GOBERNANZA DOC-AS-CODE EN CASCADA
+- Actualiza atómicamente:
+  * README.md (rutas o componentes nuevos).
+  * docs/architecture/BLUEPRINT_2026.md (especificaciones técnicas actualizadas).
+  * AGENTS.md (si se introdujeron nuevas reglas o contratos arquitectónicos).
 
-5. Ciclo Git Completo (Stage, Commit Semántico & Push):
-   - Realiza `git add` de los archivos impactados.
-   - Genera un commit bajo la convención Conventional Commits (feat, fix, docs, chore, test, refactor).
-   - Ejecuta `git push origin <rama>` (ej. `origin main`).
-   - Verifica con `git status` que el árbol quede limpio y sincronizado.
-
-6. Reporte Ejecutivo de Entrega:
-   - Proporciona un resumen con: cambios realizados, estado de pruebas (typecheck & vitest), commit hash y confirmación del push a GitHub.
+FASE 5: CICLO GIT & ENTREGA EJECUTIVA
+- Git add selectivo de archivos impactados.
+- Commit semántico bajo Conventional Commits (feat, fix, refactor, test, docs).
+- git push origin <rama>.
+- Reporte ejecutivo con: tabla de archivos impactados, resultado de pruebas, validación sensorial y commit hash.
 ```
 
 ---

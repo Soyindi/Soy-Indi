@@ -6,7 +6,7 @@ import { DigitalCard, CardData } from '@/entities/card/components/DigitalCard';
 import { upsertCardAction, checkCardSlugAvailabilityAction, SlugAvailabilityResult } from '@/features/card-builder/actions';
 import { generateBioVariantsAction } from '@/features/card-builder/ai-bio-actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
-import { CARD_DESIGN_PRESETS, CardDesignPreset } from '@/entities/card/themes';
+import { CARD_DESIGN_PRESETS, CardDesignPreset, INDUSTRY_COVERS_GALLERY } from '@/entities/card/themes';
 import { slugifyCardName, generateCardSlug } from '@/entities/card/schemas';
 import { compressImageClient } from '@/shared/lib/imageCompression';
 import { 
@@ -30,7 +30,10 @@ import {
   Copy,
   CheckCheck,
   AlertCircle,
-  AlertTriangle
+  AlertTriangle,
+  Image as ImageIcon,
+  Store,
+  Clock
 } from 'lucide-react';
 
 interface CardBuilderProps {
@@ -94,6 +97,13 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
       particleIntensity: initialData?.themeConfig?.particleIntensity || 'balanced',
       cardFinish: initialData?.themeConfig?.cardFinish || 'classic',
       surfaceTexture: initialData?.themeConfig?.surfaceTexture || 'radial-glow',
+      coverImageUrl: initialData?.themeConfig?.coverImageUrl || '',
+      backgroundImageUrl: initialData?.themeConfig?.backgroundImageUrl || '',
+      backgroundType: initialData?.themeConfig?.backgroundType || 'theme',
+      backgroundOverlayBlur: initialData?.themeConfig?.backgroundOverlayBlur || 'medium',
+      backgroundOverlayOpacity: initialData?.themeConfig?.backgroundOverlayOpacity ?? 0.5,
+      operationalStatus: initialData?.themeConfig?.operationalStatus || 'none',
+      customStatusText: initialData?.themeConfig?.customStatusText || '',
     },
   });
 
@@ -281,6 +291,13 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
             surfaceTexture: formData.themeConfig?.surfaceTexture || 'radial-glow',
             badgeText: formData.themeConfig?.badgeText || null,
             ctaLabel: formData.themeConfig?.ctaLabel || null,
+            coverImageUrl: formData.themeConfig?.coverImageUrl || null,
+            backgroundImageUrl: formData.themeConfig?.backgroundImageUrl || null,
+            backgroundType: formData.themeConfig?.backgroundType || 'theme',
+            backgroundOverlayBlur: formData.themeConfig?.backgroundOverlayBlur || 'medium',
+            backgroundOverlayOpacity: formData.themeConfig?.backgroundOverlayOpacity ?? 0.5,
+            operationalStatus: formData.themeConfig?.operationalStatus || 'none',
+            customStatusText: formData.themeConfig?.customStatusText || null,
           },
           bentoBlocks: formData.bentoBlocks || [],
         },
@@ -809,6 +826,9 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                               particleIntensity: preset.particleIntensity,
                               cardFinish: preset.cardFinish,
                               surfaceTexture: preset.surfaceTexture,
+                              coverImageUrl: preset.coverImageUrl ?? prev.themeConfig?.coverImageUrl,
+                              badgeText: preset.badgeText ?? prev.themeConfig?.badgeText,
+                              operationalStatus: preset.operationalStatus ?? prev.themeConfig?.operationalStatus,
                             },
                           }));
                         }}
@@ -838,6 +858,228 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                       </button>
                     );
                   })}
+                </div>
+              </div>
+
+              {/* Atmósfera & Portada de Industria (Industry Covers & Custom Background) */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 space-y-5">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-mono font-semibold uppercase text-zinc-300 flex items-center gap-1.5">
+                      <Store className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Vitrina & Portada de Industria</span>
+                    </label>
+                    <span className="text-[10px] font-mono text-zinc-400 uppercase">1-Click Setup</span>
+                  </div>
+                  <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
+                    Personaliza la cabecera cinematográfica según tu actividad (ej. pastelerías, cafeterías, estudios jurídicos o salud).
+                  </p>
+
+                  {/* Galería de Portadas Curadas */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3">
+                    {INDUSTRY_COVERS_GALLERY.map((item) => {
+                      const isCoverSelected = formData.themeConfig?.coverImageUrl === item.url;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              themeConfig: {
+                                ...prev.themeConfig,
+                                coverImageUrl: item.url,
+                                primaryColorOklch: item.suggestedPrimaryColor,
+                                badgeText: item.suggestedBadge,
+                              },
+                            }));
+                          }}
+                          className={`group relative rounded-xl overflow-hidden border text-left p-2 transition-all cursor-pointer ${
+                            isCoverSelected
+                              ? 'border-amber-400 ring-2 ring-amber-400/40 shadow-lg shadow-amber-500/10'
+                              : 'border-white/10 hover:border-white/30'
+                          }`}
+                        >
+                          <div className="aspect-[16/9] w-full rounded-lg overflow-hidden mb-1.5 bg-zinc-900 relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={item.thumbnail}
+                              alt={item.name}
+                              className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            />
+                            {isCoverSelected && (
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                <Check className="w-4 h-4 text-amber-400 stroke-[3]" />
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[11px] font-bold text-white block truncate">
+                            {item.name}
+                          </span>
+                          <span className="text-[9px] text-zinc-400 block truncate">
+                            {item.category}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Input URL propia de portada + botón para quitar */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <ImageIcon className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="url"
+                        value={formData.themeConfig?.coverImageUrl || ''}
+                        onChange={(e) => handleThemeChange('coverImageUrl', e.target.value)}
+                        placeholder="https://... URL de portada personalizada"
+                        className="w-full rounded-xl bg-black/50 border border-white/10 pl-9 pr-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 transition-colors font-mono"
+                      />
+                    </div>
+                    {formData.themeConfig?.coverImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => handleThemeChange('coverImageUrl', '')}
+                        className="min-h-[36px] px-3 py-1.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 text-xs font-semibold transition-all flex items-center gap-1"
+                        title="Quitar portada"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Quitar</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Fondo de Tarjeta con Scrim Inteligente */}
+                <div className="pt-3 border-t border-white/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-mono font-semibold uppercase text-zinc-300 flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Fondo Personalizado con Scrim de Vidrio</span>
+                    </label>
+                    <span className="text-[10px] font-mono text-zinc-400">Glass Backdrop</span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <input
+                      type="url"
+                      value={formData.themeConfig?.backgroundImageUrl || ''}
+                      onChange={(e) => handleThemeChange('backgroundImageUrl', e.target.value)}
+                      placeholder="https://... Imagen de fondo de la tarjeta"
+                      className="flex-1 rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-colors font-mono"
+                    />
+                    {formData.themeConfig?.backgroundImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => handleThemeChange('backgroundImageUrl', '')}
+                        className="min-h-[36px] px-3 py-1.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 text-xs font-semibold transition-all flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Quitar</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {formData.themeConfig?.backgroundImageUrl && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                      <div>
+                        <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1.5">
+                          Desenfoque de Fondo (Blur)
+                        </label>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {[
+                            { id: 'none', label: '0' },
+                            { id: 'subtle', label: 'Bajo' },
+                            { id: 'medium', label: 'Medio' },
+                            { id: 'deep', label: 'Alto' },
+                          ].map((b) => (
+                            <button
+                              key={b.id}
+                              type="button"
+                              onClick={() => handleThemeChange('backgroundOverlayBlur', b.id)}
+                              className={`py-1.5 px-2 rounded-lg border text-[11px] font-semibold transition-all ${
+                                (formData.themeConfig?.backgroundOverlayBlur || 'medium') === b.id
+                                  ? 'bg-cyan-500/30 border-cyan-400 text-white'
+                                  : 'glass-pill text-zinc-400 border-white/5'
+                              }`}
+                            >
+                              {b.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1.5">
+                          Opacidad del Velo Scrim
+                        </label>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {[
+                            { val: 0.35, label: '35%' },
+                            { val: 0.5, label: '50%' },
+                            { val: 0.65, label: '65%' },
+                            { val: 0.8, label: '80%' },
+                          ].map((op) => (
+                            <button
+                              key={op.val}
+                              type="button"
+                              onClick={() => handleThemeChange('backgroundOverlayOpacity', op.val)}
+                              className={`py-1.5 px-2 rounded-lg border text-[11px] font-semibold transition-all ${
+                                Math.abs((formData.themeConfig?.backgroundOverlayOpacity ?? 0.5) - op.val) < 0.05
+                                  ? 'bg-indigo-600/40 border-indigo-400 text-white'
+                                  : 'glass-pill text-zinc-400 border-white/5'
+                              }`}
+                            >
+                              {op.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Insignia de Estado de Operación (Status Beacon) */}
+                <div className="pt-3 border-t border-white/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-mono font-semibold uppercase text-zinc-300 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Insignia de Operación (Status Beacon)</span>
+                    </label>
+                    <span className="text-[10px] font-mono text-zinc-400">LED Pulse</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                    {[
+                      { id: 'none', label: 'Sin Estado' },
+                      { id: 'open_now', label: '🟢 Abierto Ahora' },
+                      { id: 'taking_orders', label: '🍰 Pedidos Activos' },
+                      { id: 'available_by_appointment', label: '🗓️ Previa Cita' },
+                    ].map((st) => (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => handleThemeChange('operationalStatus', st.id)}
+                        className={`min-h-[40px] py-2 px-2.5 rounded-xl border text-[11px] font-semibold transition-all ${
+                          (formData.themeConfig?.operationalStatus || 'none') === st.id
+                            ? 'bg-emerald-500/25 border-emerald-400 text-white shadow-sm'
+                            : 'glass-pill text-zinc-400 hover:text-white border-white/5'
+                        }`}
+                      >
+                        {st.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {(formData.themeConfig?.operationalStatus === 'taking_orders' ||
+                    formData.themeConfig?.operationalStatus === 'custom') && (
+                    <input
+                      type="text"
+                      maxLength={50}
+                      value={formData.themeConfig?.customStatusText || ''}
+                      onChange={(e) => handleThemeChange('customStatusText', e.target.value)}
+                      placeholder="Texto del estado (ej. 🍰 Pastelería abierta • Pedidos WhatsApp)"
+                      className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400 transition-colors"
+                    />
+                  )}
                 </div>
               </div>
 

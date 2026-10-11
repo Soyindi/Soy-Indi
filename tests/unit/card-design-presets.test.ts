@@ -3,8 +3,8 @@ import { cardFormSchema } from '@/entities/card/schemas';
 import { CARD_DESIGN_PRESETS } from '@/entities/card/themes';
 
 describe('Card Design Presets & Materials', () => {
-  it('debe contener los 7 arquetipos de diseño curados con paletas OKLCH válidas incluyendo opciones claras', () => {
-    expect(CARD_DESIGN_PRESETS).toHaveLength(7);
+  it('debe contener los arquetipos de diseño curados con paletas OKLCH válidas incluyendo gastronomía y belleza', () => {
+    expect(CARD_DESIGN_PRESETS).toHaveLength(9);
     const ids = CARD_DESIGN_PRESETS.map((p) => p.id);
     expect(ids).toContain('luminous-opal');
     expect(ids).toContain('aurora-lumina');
@@ -13,6 +13,8 @@ describe('Card Design Presets & Materials', () => {
     expect(ids).toContain('emerald-botanical');
     expect(ids).toContain('solar-obsidian');
     expect(ids).toContain('swiss-monochrome');
+    expect(ids).toContain('gourmet-bakery');
+    expect(ids).toContain('beauty-salon');
   });
 
   it('debe validar exitosamente acabados de tarjeta (cardFinish) claros y oscuros, y texturas de superficie', () => {

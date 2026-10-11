@@ -16,6 +16,10 @@ export interface CardDesignPreset {
   cardFinish: 'classic' | 'holographic' | 'titanium' | 'obsidian' | 'minimal' | 'luminous-glass' | 'aurora-light';
   surfaceTexture: 'none' | 'dot-grid' | 'radial-glow' | 'frosted-prism';
   accentGlow: string;
+  coverImageUrl?: string | null;
+  backgroundImageUrl?: string | null;
+  badgeText?: string | null;
+  operationalStatus?: 'none' | 'open_now' | 'taking_orders' | 'available_by_appointment' | 'custom';
 }
 
 export const CARD_DESIGN_PRESETS: CardDesignPreset[] = [
@@ -117,4 +121,115 @@ export const CARD_DESIGN_PRESETS: CardDesignPreset[] = [
     surfaceTexture: 'dot-grid',
     accentGlow: 'from-white/20 via-zinc-400/10 to-transparent',
   },
+  {
+    id: 'gourmet-bakery',
+    name: 'Gourmet Bakery & Café',
+    category: 'Gastronomía & Repostería',
+    description: 'Atmósfera cálida de repostería de autor, tonos vainilla, caramelo y chocolate dorado.',
+    primaryColorOklch: '#d97706',
+    backgroundColorOklch: '#1c120c',
+    particleBehavior: 'ambient',
+    particleIntensity: 'subtle',
+    fontFamily: 'Inter',
+    cardFinish: 'classic',
+    surfaceTexture: 'radial-glow',
+    accentGlow: 'from-amber-600/30 via-orange-400/15 to-transparent',
+    coverImageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1200&auto=format&fit=crop',
+    badgeText: '🍰 Pastelería Artesanal',
+    operationalStatus: 'taking_orders',
+  },
+  {
+    id: 'beauty-salon',
+    name: 'Atelier & Beauty Spa',
+    category: 'Estética, Spa & Belleza',
+    description: 'Oro rosa y cuarzo con luz suave de estudio para estilistas y centros de bienestar.',
+    primaryColorOklch: '#f43f5e',
+    backgroundColorOklch: '#1a0d13',
+    particleBehavior: 'interactive',
+    particleIntensity: 'balanced',
+    fontFamily: 'Inter',
+    cardFinish: 'luminous-glass',
+    surfaceTexture: 'frosted-prism',
+    accentGlow: 'from-rose-500/25 via-pink-400/15 to-transparent',
+    coverImageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1200&auto=format&fit=crop',
+    badgeText: '✨ Estudio de Estética',
+    operationalStatus: 'available_by_appointment',
+  },
 ];
+
+export interface IndustryCoverGalleryItem {
+  id: string;
+  name: string;
+  category: string;
+  url: string;
+  thumbnail: string;
+  suggestedPrimaryColor: string;
+  suggestedBadge: string;
+}
+
+export const INDUSTRY_COVERS_GALLERY: IndustryCoverGalleryItem[] = [
+  {
+    id: 'bakery-artisan',
+    name: 'Pastelería & Panadería Fina',
+    category: 'Gastronomía',
+    url: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1200&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=300&auto=format&fit=crop',
+    suggestedPrimaryColor: '#d97706',
+    suggestedBadge: '🍰 Pastelería Artesanal',
+  },
+  {
+    id: 'coffee-roaster',
+    name: 'Cafetería de Especialidad',
+    category: 'Gastronomía',
+    url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1200&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=300&auto=format&fit=crop',
+    suggestedPrimaryColor: '#b45309',
+    suggestedBadge: '☕ Café de Especialidad',
+  },
+  {
+    id: 'tech-developer',
+    name: 'Ingeniería de Software & AI',
+    category: 'Tecnología',
+    url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1200&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=300&auto=format&fit=crop',
+    suggestedPrimaryColor: '#6366f1',
+    suggestedBadge: '⚡ Software & AI',
+  },
+  {
+    id: 'legal-advisory',
+    name: 'Estudio Jurídico & Corporativo',
+    category: 'Legal & Finanzas',
+    url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=300&auto=format&fit=crop',
+    suggestedPrimaryColor: '#0284c7',
+    suggestedBadge: '⚖️ Asesoría Jurídica',
+  },
+  {
+    id: 'medical-clinic',
+    name: 'Salud, Clínica & Nutrición',
+    category: 'Salud',
+    url: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=1200&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=300&auto=format&fit=crop',
+    suggestedPrimaryColor: '#10b981',
+    suggestedBadge: '🩺 Atención Médica',
+  },
+  {
+    id: 'beauty-spa',
+    name: 'Estilismo, Spa & Cosmética',
+    category: 'Belleza',
+    url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1200&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=300&auto=format&fit=crop',
+    suggestedPrimaryColor: '#f43f5e',
+    suggestedBadge: '✨ Estudio de Estética',
+  },
+  {
+    id: 'architecture-studio',
+    name: 'Arquitectura & Obras',
+    category: 'Diseño',
+    url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop',
+    suggestedPrimaryColor: '#f59e0b',
+    suggestedBadge: '🏛️ Arquitectura & Interiorismo',
+  },
+];
+
