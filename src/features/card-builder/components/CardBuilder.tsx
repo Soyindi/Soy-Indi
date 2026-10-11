@@ -59,6 +59,23 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
   } | null>(null);
   const photoFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Estados para compresión client-side de portada y fondo
+  const [isCompressingCover, setIsCompressingCover] = useState(false);
+  const [coverCompressionInfo, setCoverCompressionInfo] = useState<{
+    originalKb: number;
+    compressedKb: number;
+    ratio: number;
+  } | null>(null);
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
+
+  const [isCompressingBg, setIsCompressingBg] = useState(false);
+  const [bgCompressionInfo, setBgCompressionInfo] = useState<{
+    originalKb: number;
+    compressedKb: number;
+    ratio: number;
+  } | null>(null);
+  const bgFileInputRef = useRef<HTMLInputElement>(null);
+
   // Inicialización inteligente del slug: derivado del nombre si existe o del default profesional
   const [initialSlug] = useState(() => {
     if (initialData?.slug) return initialData.slug;
@@ -255,6 +272,123 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
       // Reset input value para permitir re-selección del mismo archivo
       if (photoFileInputRef.current) {
         photoFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Manejador de subida y compresión WebP para Portada (Cover)
+  const handleCoverFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsCompressingCover(true);
+      setErrorMsg(null);
+
+      // Comprimir en cliente a máx 1400px y calidad WebP 0.82
+      const result = await compressImageClient(file, {
+        maxDimension: 1400,
+        quality: 0.82,
+        mimeType: 'image/webp',
+      });
+
+      let finalUrl = result.dataUrl;
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', result.file);
+        uploadFormData.append('category', 'covers');
+
+        const uploadRes = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          if (uploadData.success && uploadData.url) {
+            finalUrl = uploadData.url;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('Fallback a almacenamiento local tras error en upload de portada:', uploadErr);
+      }
+
+      handleThemeChange('coverImageUrl', finalUrl);
+      setCoverCompressionInfo({
+        originalKb: Math.round(result.originalSize / 1024),
+        compressedKb: Math.round(result.compressedSize / 1024),
+        ratio: result.compressionRatioPercent,
+      });
+    } catch (err: any) {
+      console.error('Error al comprimir portada:', err);
+      setErrorMsg('No se pudo procesar la imagen de portada.');
+    } finally {
+      setIsCompressingCover(false);
+      if (coverFileInputRef.current) {
+        coverFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Manejador de subida y compresión WebP para Fondo de Tarjeta
+  const handleBgFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsCompressingBg(true);
+      setErrorMsg(null);
+
+      // Comprimir en cliente a máx 1200px y calidad WebP 0.80
+      const result = await compressImageClient(file, {
+        maxDimension: 1200,
+        quality: 0.80,
+        mimeType: 'image/webp',
+      });
+
+      let finalUrl = result.dataUrl;
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', result.file);
+        uploadFormData.append('category', 'backgrounds');
+
+        const uploadRes = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          if (uploadData.success && uploadData.url) {
+            finalUrl = uploadData.url;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('Fallback a almacenamiento local tras error en upload de fondo:', uploadErr);
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        themeConfig: {
+          ...prev.themeConfig,
+          backgroundImageUrl: finalUrl,
+          backgroundType: 'custom-image',
+          backgroundOverlayBlur: prev.themeConfig?.backgroundOverlayBlur || 'medium',
+          backgroundOverlayOpacity: prev.themeConfig?.backgroundOverlayOpacity ?? 0.65,
+        },
+      }));
+      setBgCompressionInfo({
+        originalKb: Math.round(result.originalSize / 1024),
+        compressedKb: Math.round(result.compressedSize / 1024),
+        ratio: result.compressionRatioPercent,
+      });
+    } catch (err: any) {
+      console.error('Error al comprimir fondo:', err);
+      setErrorMsg('No se pudo procesar la imagen de fondo.');
+    } finally {
+      setIsCompressingBg(false);
+      if (bgFileInputRef.current) {
+        bgFileInputRef.current.value = '';
       }
     }
   };
@@ -924,29 +1058,72 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                     })}
                   </div>
 
-                  {/* Input URL propia de portada + botón para quitar */}
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
+                  {/* Zona de Subida y URL de Portada */}
+                  <div className="space-y-2.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        type="file"
+                        ref={coverFileInputRef}
+                        accept="image/png,image/jpeg,image/webp,image/jpg"
+                        className="hidden"
+                        onChange={handleCoverFileUpload}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => coverFileInputRef.current?.click()}
+                        disabled={isCompressingCover}
+                        className="min-h-[44px] px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {isCompressingCover ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                            <span>Optimizando Portada WebP...</span>
+                          </>
+                        ) : (
+                          <>
+                            <UploadCloud className="w-4 h-4 text-amber-400" />
+                            <span>Subir Portada (Auto-WebP 1400px)</span>
+                          </>
+                        )}
+                      </button>
+
+                      {formData.themeConfig?.coverImageUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleThemeChange('coverImageUrl', '');
+                            setCoverCompressionInfo(null);
+                          }}
+                          className="min-h-[44px] px-3.5 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                          title="Quitar portada"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Quitar</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Métricas de Compresión de Portada */}
+                    {coverCompressionInfo && (
+                      <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-mono text-emerald-300 flex items-center justify-between animate-fade-in">
+                        <span>⚡ Portada WebP: {coverCompressionInfo.originalKb} KB ➔ {coverCompressionInfo.compressedKb} KB</span>
+                        <span className="font-bold">-{coverCompressionInfo.ratio}% tamaño</span>
+                      </div>
+                    )}
+
+                    <div className="relative">
                       <ImageIcon className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                       <input
                         type="url"
-                        value={formData.themeConfig?.coverImageUrl || ''}
-                        onChange={(e) => handleThemeChange('coverImageUrl', e.target.value)}
-                        placeholder="https://... URL de portada personalizada"
+                        value={formData.themeConfig?.coverImageUrl?.startsWith('data:image/') ? '' : (formData.themeConfig?.coverImageUrl || '')}
+                        onChange={(e) => {
+                          handleThemeChange('coverImageUrl', e.target.value);
+                          setCoverCompressionInfo(null);
+                        }}
+                        placeholder="O pega una URL web externa de portada (https://...)"
                         className="w-full rounded-xl bg-black/50 border border-white/10 pl-9 pr-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 transition-colors font-mono"
                       />
                     </div>
-                    {formData.themeConfig?.coverImageUrl && (
-                      <button
-                        type="button"
-                        onClick={() => handleThemeChange('coverImageUrl', '')}
-                        className="min-h-[36px] px-3 py-1.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 text-xs font-semibold transition-all flex items-center gap-1"
-                        title="Quitar portada"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Quitar</span>
-                      </button>
-                    )}
                   </div>
                 </div>
 
@@ -959,24 +1136,70 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                     </label>
                     <span className="text-[10px] font-mono text-zinc-400">Glass Backdrop</span>
                   </div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <input
-                      type="url"
-                      value={formData.themeConfig?.backgroundImageUrl || ''}
-                      onChange={(e) => handleThemeChange('backgroundImageUrl', e.target.value)}
-                      placeholder="https://... Imagen de fondo de la tarjeta"
-                      className="flex-1 rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-colors font-mono"
-                    />
-                    {formData.themeConfig?.backgroundImageUrl && (
+
+                  {/* Zona de Subida y URL de Fondo */}
+                  <div className="space-y-2.5 mb-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        type="file"
+                        ref={bgFileInputRef}
+                        accept="image/png,image/jpeg,image/webp,image/jpg"
+                        className="hidden"
+                        onChange={handleBgFileUpload}
+                      />
                       <button
                         type="button"
-                        onClick={() => handleThemeChange('backgroundImageUrl', '')}
-                        className="min-h-[36px] px-3 py-1.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 text-xs font-semibold transition-all flex items-center gap-1"
+                        onClick={() => bgFileInputRef.current?.click()}
+                        disabled={isCompressingBg}
+                        className="min-h-[44px] px-4 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-200 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Quitar</span>
+                        {isCompressingBg ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                            <span>Optimizando Fondo WebP...</span>
+                          </>
+                        ) : (
+                          <>
+                            <UploadCloud className="w-4 h-4 text-cyan-400" />
+                            <span>Subir Fondo (Auto-WebP 1200px)</span>
+                          </>
+                        )}
                       </button>
+
+                      {formData.themeConfig?.backgroundImageUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleThemeChange('backgroundImageUrl', '');
+                            setBgCompressionInfo(null);
+                          }}
+                          className="min-h-[44px] px-3.5 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                          title="Quitar fondo"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Quitar</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Métricas de Compresión de Fondo */}
+                    {bgCompressionInfo && (
+                      <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-mono text-emerald-300 flex items-center justify-between animate-fade-in">
+                        <span>⚡ Fondo WebP: {bgCompressionInfo.originalKb} KB ➔ {bgCompressionInfo.compressedKb} KB</span>
+                        <span className="font-bold">-{bgCompressionInfo.ratio}% tamaño</span>
+                      </div>
                     )}
+
+                    <input
+                      type="url"
+                      value={formData.themeConfig?.backgroundImageUrl?.startsWith('data:image/') ? '' : (formData.themeConfig?.backgroundImageUrl || '')}
+                      onChange={(e) => {
+                        handleThemeChange('backgroundImageUrl', e.target.value);
+                        setBgCompressionInfo(null);
+                      }}
+                      placeholder="O pega una URL web externa de fondo (https://...)"
+                      className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-colors font-mono"
+                    />
                   </div>
 
                   {formData.themeConfig?.backgroundImageUrl && (

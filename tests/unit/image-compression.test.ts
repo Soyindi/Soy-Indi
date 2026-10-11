@@ -38,6 +38,20 @@ describe('Image Compression Engine & Proportional Geometry', () => {
     expect(dims.height).toBe(1);
   });
 
+  it('debe calcular correctamente dimensiones panorámicas para portadas (maxDimension 1400)', () => {
+    // Foto panorámica de 2800 x 1400 redimensionada con maxDimension = 1400
+    const dims = calculateAspectRatioFit(2800, 1400, 1400);
+    expect(dims.width).toBe(1400);
+    expect(dims.height).toBe(700);
+  });
+
+  it('debe calcular correctamente dimensiones de fondo de alta resolución (maxDimension 1200)', () => {
+    // Foto de fondo 1920 x 1080 redimensionada con maxDimension = 1200
+    const dims = calculateAspectRatioFit(1920, 1080, 1200);
+    expect(dims.width).toBe(1200);
+    expect(dims.height).toBe(675);
+  });
+
   it('debe retornar fallback de seguridad en entorno Node/SSR sin fallar', async () => {
     // En Node.js (Vitest sin canvas nativo), compressImageClient debe retornar el archivo original como fallback
     const mockFile = new File(['mock content'], 'avatar.jpg', { type: 'image/jpeg' });
