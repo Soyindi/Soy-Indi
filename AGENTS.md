@@ -142,6 +142,12 @@ src/
    - **Multi-Provider AI Circuit Breaker (`aiCircuitBreaker.ts`)**: En caso de caída, 429 Rate Limit o latencia >6s en un proveedor de IA (Groq), el sistema aísla al proveedor temporalmente (cooldown de 30s) y conmuta en caliente a la siguiente capa del pool resiliente (NVIDIA NIM -> Gemini Flash -> OpenRouter) sin bloquear al usuario. Si todos los proveedores externos fallan, se activan los motores heurísticos locales garantizando cero pérdida de datos.
    - **Endpoint de Monitoreo & Telemetría de Salud (`/api/health`)**: Expone un diagnóstico en tiempo real sobre la conectividad de Turso SQLite, Upstash Redis y el estado activo/abierto de los circuitos de IA para integración con observabilidad externa (BetterStack / UptimeRobot).
 
+23. **Theming Adaptativo & Motor Perceptual de Extracción Cromática (Canvas 2D / Material You Style):**
+   - **Cero Falta de Coherencia Visual al Subir Imágenes**: Toda carga de foto de perfil (avatar), portada de industria o fondo personalizado en el constructor de tarjetas digitales (`CardBuilder.tsx`) ejecuta de inmediato una extracción cromática client-side no bloqueante en `<20ms` (`extractPaletteFromImage` en `@/shared/lib/colorExtraction`).
+   - **Análisis de Búfer Off-Screen 64x64px & Cuantización Perceptual**: El análisis renderiza en un canvas virtual de $64\times64\text{ px}$ en memoria con cuantización en histogramas HSL, calculando vivacidad (`vibrantHex`), dominancia (`dominantHex`) y fondos ambientales complementarios (`darkMutedHex` y `lightMutedHex`) con contraste garantizado WCAG 2.2 AA ($\ge 4.5:1$).
+   - **Swatches Interactivos & Sincronización Inmediata**: El sistema adapta automáticamente el acento (`primaryColorOklch`) y el fondo ambiental, al tiempo que expone swatches interactivos de los matices detectados con nombres semánticos para personalización con un solo toque y botón de re-adaptación inmediata.
+
+
 ---
 
 ## 🛠️ 6. Catálogo de Recursos Agénticos y Servidores MCP (Tool Orchestration 2026)

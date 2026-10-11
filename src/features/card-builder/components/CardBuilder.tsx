@@ -9,6 +9,7 @@ import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { CARD_DESIGN_PRESETS, CardDesignPreset, INDUSTRY_COVERS_GALLERY } from '@/entities/card/themes';
 import { slugifyCardName, generateCardSlug } from '@/entities/card/schemas';
 import { compressImageClient } from '@/shared/lib/imageCompression';
+import { extractPaletteFromImage, ExtractedPalette } from '@/shared/lib/colorExtraction';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -33,7 +34,8 @@ import {
   AlertTriangle,
   Image as ImageIcon,
   Store,
-  Clock
+  Clock,
+  Wand2
 } from 'lucide-react';
 
 interface CardBuilderProps {
@@ -75,6 +77,11 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
     ratio: number;
   } | null>(null);
   const bgFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Estado para la paleta adaptativa extraída de fotos (Avatar, Portada o Fondo)
+  const [extractedPalette, setExtractedPalette] = useState<ExtractedPalette | null>(null);
+  const [isExtractingColors, setIsExtractingColors] = useState(false);
+  const [colorSourceLabel, setColorSourceLabel] = useState<string | null>(null);
 
   // Inicialización inteligente del slug: derivado del nombre si existe o del default profesional
   const [initialSlug] = useState(() => {
@@ -220,6 +227,32 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
     }));
   };
 
+  // Función auxiliar de extracción cromática adaptativa e inmediata
+  const triggerAdaptiveColorExtraction = async (source: string | File, label: string) => {
+    try {
+      setIsExtractingColors(true);
+      const palette = await extractPaletteFromImage(source);
+      if (palette && palette.vibrantHex) {
+        setExtractedPalette(palette);
+        setColorSourceLabel(label);
+
+        // Adaptación automática inteligente: se aplica el color vibrante como acento y el fondo coordinado
+        setFormData((prev) => ({
+          ...prev,
+          themeConfig: {
+            ...prev.themeConfig,
+            primaryColorOklch: palette.vibrantHex,
+            backgroundColorOklch: palette.darkMutedHex,
+          },
+        }));
+      }
+    } catch (paletteErr) {
+      console.warn('Error en extracción cromática adaptativa:', paletteErr);
+    } finally {
+      setIsExtractingColors(false);
+    }
+  };
+
   // Manejador de subida y compresión WebP en cliente
   const handlePhotoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -235,6 +268,9 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
         quality: 0.82,
         mimeType: 'image/webp',
       });
+
+      // Extracción adaptativa instantánea desde el archivo comprimido local
+      triggerAdaptiveColorExtraction(result.file, 'Foto de Perfil');
 
       // Intentar subir a Cloudflare R2 vía streaming multipart
       let finalPhotoUrl = result.dataUrl;
@@ -292,6 +328,9 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
         mimeType: 'image/webp',
       });
 
+      // Extracción adaptativa desde portada
+      triggerAdaptiveColorExtraction(result.file, 'Portada de Industria');
+
       let finalUrl = result.dataUrl;
       try {
         const uploadFormData = new FormData();
@@ -345,6 +384,9 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
         quality: 0.80,
         mimeType: 'image/webp',
       });
+
+      // Extracción adaptativa desde fondo personalizado
+      triggerAdaptiveColorExtraction(result.file, 'Fondo Personalizado');
 
       let finalUrl = result.dataUrl;
       try {
@@ -793,6 +835,19 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                     {formData.photoUrl && (
                       <button
                         type="button"
+                        onClick={() => triggerAdaptiveColorExtraction(formData.photoUrl!, 'Foto de Perfil')}
+                        disabled={isExtractingColors}
+                        className="min-h-[44px] px-3.5 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        title="Extraer y adaptar colores desde la foto"
+                      >
+                        <Wand2 className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Adaptar Colores</span>
+                      </button>
+                    )}
+
+                    {formData.photoUrl && (
+                      <button
+                        type="button"
                         onClick={() => {
                           handleChange('photoUrl', '');
                           setPhotoCompressionInfo(null);
@@ -805,6 +860,26 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                     )}
                   </div>
                 </div>
+
+                {/* Feedback de Extracción Cromática Adaptativa */}
+                {extractedPalette && colorSourceLabel === 'Foto de Perfil' && (
+                  <div className="mt-2 p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-[11px] text-cyan-200 flex items-center justify-between animate-fade-in">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-3.5 h-3.5 rounded-full border border-white/50 shadow-sm shrink-0"
+                        style={{ backgroundColor: extractedPalette.vibrantHex }}
+                      />
+                      <span>Colores adaptados a tu foto ({extractedPalette.vibrantHex})</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('theme')}
+                      className="text-[10px] font-mono underline hover:text-white"
+                    >
+                      Ajustar en Efectos →
+                    </button>
+                  </div>
+                )}
 
                 {/* Métricas de Compresión */}
                 {photoCompressionInfo && (
@@ -1090,6 +1165,19 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                       {formData.themeConfig?.coverImageUrl && (
                         <button
                           type="button"
+                          onClick={() => triggerAdaptiveColorExtraction(formData.themeConfig!.coverImageUrl!, 'Portada de Industria')}
+                          disabled={isExtractingColors}
+                          className="min-h-[44px] px-3.5 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                          title="Extraer colores de portada"
+                        >
+                          <Wand2 className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Adaptar Colores</span>
+                        </button>
+                      )}
+
+                      {formData.themeConfig?.coverImageUrl && (
+                        <button
+                          type="button"
                           onClick={() => {
                             handleThemeChange('coverImageUrl', '');
                             setCoverCompressionInfo(null);
@@ -1165,6 +1253,19 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                           </>
                         )}
                       </button>
+
+                      {formData.themeConfig?.backgroundImageUrl && (
+                        <button
+                          type="button"
+                          onClick={() => triggerAdaptiveColorExtraction(formData.themeConfig!.backgroundImageUrl!, 'Fondo Personalizado')}
+                          disabled={isExtractingColors}
+                          className="min-h-[44px] px-3.5 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-200 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                          title="Extraer colores de fondo"
+                        >
+                          <Wand2 className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Adaptar Colores</span>
+                        </button>
+                      )}
 
                       {formData.themeConfig?.backgroundImageUrl && (
                         <button
@@ -1364,6 +1465,118 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                   ))}
                 </div>
               </div>
+
+              {/* Paleta Adaptativa Inteligente (Extraída de tu Imagen / Material You) */}
+              {extractedPalette && (
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/40 via-black/50 to-cyan-950/30 border border-cyan-500/30 shadow-lg space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
+                        <Wand2 className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-mono font-bold text-white uppercase block">
+                          Paleta Adaptativa de {colorSourceLabel || 'tu Imagen'}
+                        </span>
+                        <span className="text-[10px] text-zinc-400">
+                          Colores calibrados con armonía y contraste WCAG 2.2 AA
+                        </span>
+                      </div>
+                    </div>
+                    {isExtractingColors && (
+                      <span className="flex items-center gap-1 text-[10px] font-mono text-cyan-400">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Analizando...
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Swatches extraídos interactivos */}
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1.5">
+                      Tonos detectados (Toca para aplicar a tu tarjeta):
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {extractedPalette.swatches.map((swatch) => {
+                        const isSelected = formData.themeConfig?.primaryColorOklch === swatch.hex;
+                        return (
+                          <button
+                            key={swatch.hex}
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                themeConfig: {
+                                  ...prev.themeConfig,
+                                  themeId: 'adaptive-photo',
+                                  primaryColorOklch: swatch.hex,
+                                },
+                              }));
+                            }}
+                            className={`min-h-[44px] px-3 py-1.5 rounded-xl border flex items-center gap-2 transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-white/15 border-cyan-400 ring-2 ring-cyan-400/50 shadow-md'
+                                : 'bg-black/40 border-white/10 hover:border-white/30'
+                            }`}
+                          >
+                            <span
+                              className="w-4 h-4 rounded-full border border-white/40 shadow-sm shrink-0"
+                              style={{ backgroundColor: swatch.hex }}
+                            />
+                            <div className="text-left">
+                              <span className="text-[11px] font-bold text-white block leading-tight">
+                                {swatch.name}
+                              </span>
+                              <span className="text-[9px] font-mono text-zinc-400 block leading-none">
+                                {swatch.hex}
+                              </span>
+                            </div>
+                            {isSelected && (
+                              <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0 stroke-[3]" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Atajos Rápidos de Armonía de Fondo */}
+                  <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] font-mono text-zinc-400">Fondo ambiental:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleThemeChange('backgroundColorOklch', extractedPalette.darkMutedHex)}
+                      className={`text-[10px] font-mono px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                        formData.themeConfig?.backgroundColorOklch === extractedPalette.darkMutedHex
+                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200'
+                          : 'bg-white/5 border-white/10 text-zinc-300 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className="w-2.5 h-2.5 rounded-full border border-white/30"
+                        style={{ backgroundColor: extractedPalette.darkMutedHex }}
+                      />
+                      <span>Noche Ambiental ({extractedPalette.darkMutedHex})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleThemeChange('backgroundColorOklch', extractedPalette.lightMutedHex)}
+                      className={`text-[10px] font-mono px-2.5 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                        formData.themeConfig?.backgroundColorOklch === extractedPalette.lightMutedHex
+                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200'
+                          : 'bg-white/5 border-white/10 text-zinc-300 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className="w-2.5 h-2.5 rounded-full border border-white/30"
+                        style={{ backgroundColor: extractedPalette.lightMutedHex }}
+                      />
+                      <span>Opalino Suave ({extractedPalette.lightMutedHex})</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Color Personalizado de Acento */}
               <div>
