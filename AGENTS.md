@@ -137,6 +137,11 @@ src/
      - *Telemetría Asíncrona*: Límite de 60 visitas por minuto por IP, protegiendo a Turso SQLite de bloqueos `SQLITE_BUSY` causados por ráfagas masivas de escritura concurrentes.
    - **Resiliencia Determinista Zero-Downtime**: Si las credenciales de Upstash Redis no están provistas o se produce un fallo de red transitorio, el sistema degrada automáticamente a un almacén LRU en memoria local sin arrojar excepciones 500 ni interrumpir la experiencia de usuario.
 
+22. **Manejo Integral de Errores, Circuit Breakers de IA y Resiliencia UI (INDI 2026):**
+   - **Error Boundaries Perimetrales (`src/app/error.tsx` y `src/app/not-found.tsx`)**: Ninguna excepción no controlada en el cliente o servidor puede mostrar una pantalla en blanco o mensajes crudos de stack trace. El sistema captura las anomalías con `<SystemErrorFallback />`, discriminando automáticamente entre caídas de base de datos, saturación de IA o fallos de red.
+   - **Multi-Provider AI Circuit Breaker (`aiCircuitBreaker.ts`)**: En caso de caída, 429 Rate Limit o latencia >6s en un proveedor de IA (Groq), el sistema aísla al proveedor temporalmente (cooldown de 30s) y conmuta en caliente a la siguiente capa del pool resiliente (NVIDIA NIM -> Gemini Flash -> OpenRouter) sin bloquear al usuario. Si todos los proveedores externos fallan, se activan los motores heurísticos locales garantizando cero pérdida de datos.
+   - **Endpoint de Monitoreo & Telemetría de Salud (`/api/health`)**: Expone un diagnóstico en tiempo real sobre la conectividad de Turso SQLite, Upstash Redis y el estado activo/abierto de los circuitos de IA para integración con observabilidad externa (BetterStack / UptimeRobot).
+
 ---
 
 ## 🛠️ 6. Catálogo de Recursos Agénticos y Servidores MCP (Tool Orchestration 2026)

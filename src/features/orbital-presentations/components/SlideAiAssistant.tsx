@@ -14,6 +14,8 @@ import {
   ChevronUp,
   Send,
   Zap,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import {
   PresentationSlide,
@@ -311,8 +313,23 @@ export function SlideAiAssistant({
           )}
 
           {errorMessage && !isPending && (
-            <div className="p-2 rounded-xl bg-rose-950/40 border border-rose-500/30 text-[10px] text-rose-300 font-mono">
-              ⚠️ {errorMessage}
+            <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-[11px] text-rose-200 flex items-start justify-between gap-2 animate-fade-in">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
+                <div>
+                  <span className="font-semibold block text-rose-300">Aviso del Copiloto de IA</span>
+                  <span className="text-[10px] text-rose-200/90 leading-tight block mt-0.5">{errorMessage}</span>
+                  <span className="text-[9px] text-zinc-400 block mt-1">Tus datos y diapositivas están seguros. Puedes editar manualmente o reintentar.</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setErrorMessage(null)}
+                className="p-1 hover:bg-rose-500/20 rounded-lg text-rose-400 hover:text-white transition cursor-pointer"
+                title="Descartar aviso"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
         </>

@@ -134,8 +134,12 @@ export function InlineAiWriter({
 
           {/* Mensaje de Error */}
           {errorMessage && (
-            <div className="mb-2 p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[11px] leading-tight">
-              {errorMessage}
+            <div className="mb-2 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[11px] leading-tight flex items-start gap-2 animate-fade-in">
+              <span className="shrink-0 text-rose-400">⚠️</span>
+              <div>
+                <span className="font-semibold block">{errorMessage}</span>
+                <span className="text-[10px] text-zinc-400 block mt-0.5">Puedes conservar tu texto original o reintentar en un instante.</span>
+              </div>
             </div>
           )}
 

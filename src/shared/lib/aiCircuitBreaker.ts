@@ -152,3 +152,16 @@ export async function withInFlightCoalescing<T>(
   inFlightRequests.set(key, promise);
   return promise;
 }
+
+/**
+ * Retorna el estado consolidado de todos los circuitos de IA para telemetría
+ */
+export function getCircuitStateSummary(): Record<string, { isOpen: boolean; failures: number }> {
+  return Object.entries(providerCircuits).reduce((acc, [provider, circuit]) => {
+    acc[provider] = {
+      isOpen: circuit.isOpen,
+      failures: circuit.failures,
+    };
+    return acc;
+  }, {} as Record<string, { isOpen: boolean; failures: number }>);
+}
