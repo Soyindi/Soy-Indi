@@ -1419,6 +1419,7 @@ export default async function PublicCardPage({ params }: PageProps) {
    - **Personalización de Código en Tiempo Real:** El usuario puede modificar su código por defecto a uno personalizado y memorable (ej. `mi-marca`, `dev-pro`) mediante `updateReferralCodeAction` y verificación de colisiones en tiempo real (`checkReferralCodeAvailabilityAction`) con debounce y protección de palabras reservadas del sistema (`RESERVED_REFERRAL_CODES`).
    - Métricas en tiempo real: *Referidos Activos*, *Por Cobrar (Próximo Corte Quincenal)*, *Total Pagado* y *Próxima Fecha de Pago* (días 1 y 15).
    - Formulario de datos bancarios para transferencia (bancos chilenos, Cuenta RUT, Cuenta Vista, Corriente) con formateo y validación de RUT.
+   - **Simulador Educativo de Ganancias (AffiliateEarningsCalculator)**: Módulo interactivo con switch dinámico Mensual / Semestral, cálculo transparente del 25% sobre el valor cobrado en cada plan (Starter: $625/$1.500 CLP, Pro: $1.248/$3.750 CLP, Max: $2.248/$7.498 CLP), sliders en tiempo real y guía pedagógica desplegable con matriz comparativa y ejemplos de ingresos.
 4. **Panel de Administración (`/admin`)**:
    - Ruta protegida con guardrail de sesión y rol de usuario (`role = 'admin'`).
    - Resumen del monto consolidado a transferir en el corte quincenal actual.

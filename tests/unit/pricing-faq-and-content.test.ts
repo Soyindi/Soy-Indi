@@ -26,7 +26,7 @@ describe('Auditoría de Contenido y FAQ de Precios Multi-Tier 2026 (tests/unit)'
 
     // Validación de comisiones de afiliados
     expect(content).toContain('25% de comisión en pesos chilenos');
-    expect(content).toContain('desde $625 hasta $7.497 CLP');
+    expect(content).toContain('desde $625 CLP mensual ($1.500 semestral) en Starter, hasta $2.248 CLP mensual ($7.498 semestral) en Max');
   });
 
   it('el esquema JSON-LD de page.tsx expone la información sincronizada de planes y pasarelas', () => {

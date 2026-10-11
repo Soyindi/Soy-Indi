@@ -65,13 +65,23 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
     it('fija la comisión oficial en el 25% del cobro aprobado', () => {
       expect(AFFILIATE_COMMISSION_PERCENTAGE).toBe(25);
       
-      // Comisión por plan mensual ($2.500 CLP)
-      const monthlyCommission = Math.round(2500 * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
-      expect(monthlyCommission).toBe(625);
+      // Validación exhaustiva de planes mensuales (25% directo)
+      const starterMonthly = Math.round(2500 * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
+      const proMonthly = Math.round(4990 * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
+      const maxMonthly = Math.round(8990 * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
 
-      // Comisión por plan semestral ($6.000 CLP)
-      const semiannualCommission = Math.round(6000 * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
-      expect(semiannualCommission).toBe(1500);
+      expect(starterMonthly).toBe(625);
+      expect(proMonthly).toBe(1248);
+      expect(maxMonthly).toBe(2248);
+
+      // Validación exhaustiva de planes semestrales (25% directo sobre cobro semestral)
+      const starterSemiannual = Math.round(6000 * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
+      const proSemiannual = Math.round(15000 * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
+      const maxSemiannual = Math.round(29990 * (AFFILIATE_COMMISSION_PERCENTAGE / 100));
+
+      expect(starterSemiannual).toBe(1500);
+      expect(proSemiannual).toBe(3750);
+      expect(maxSemiannual).toBe(7498);
     });
 
     it('calcula la próxima fecha de corte quincenal (día 1 o día 15)', () => {

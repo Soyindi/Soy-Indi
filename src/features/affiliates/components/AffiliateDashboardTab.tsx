@@ -33,6 +33,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { ReferralQrModal } from './ReferralQrModal';
+import { AffiliateEarningsCalculator } from './AffiliateEarningsCalculator';
 
 interface AffiliateDashboardTabProps {
   overview: AffiliateOverview;
@@ -182,10 +183,13 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
           </h2>
           <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
             Comparte tu enlace de recomendación. Cada vez que alguien se suscriba a cualquier plan de INDI (Starter, Pro o Max), 
-            ganas el <strong>25% de comisión en pesos chilenos</strong> (desde $625 hasta $7.497 CLP por suscripción). Los pagos se transfieren automáticamente a tu cuenta bancaria cada 15 días.
+            ganas el <strong>25% de comisión en pesos chilenos</strong>: desde <strong>$625 CLP</strong> (Starter mensual) hasta <strong>$7.498 CLP</strong> (Max semestral) por suscripción. Los pagos se transfieren automáticamente a tu cuenta bancaria cada 15 días.
           </p>
         </div>
       </div>
+
+      {/* Simulador Educativo y Calculadora de Ganancias */}
+      <AffiliateEarningsCalculator />
 
       {/* Tarjeta de Enlace Único y Personalización de Código */}
       <div className="glass-panel rounded-2xl p-6 border border-cyan-500/30 bg-cyan-950/20 space-y-4">

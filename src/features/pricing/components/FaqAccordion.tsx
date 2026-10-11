@@ -47,7 +47,7 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: '¿Cómo funciona el programa de recomendación y afiliados?',
     answer:
-      'Todos los miembros de INDI tienen un enlace y código QR de afiliado exclusivo en su panel. Ganas el 25% de comisión en pesos chilenos sobre cada suscripción cobrada (desde $625 hasta $7.497 CLP según el plan), abonado directamente a tu Cuenta RUT o banco chileno cada 15 días (días 1 y 15 de cada mes).',
+      'Todos los miembros de INDI tienen un enlace y código QR de afiliado exclusivo en su panel. Ganas el 25% de comisión en pesos chilenos sobre cada suscripción cobrada: desde $625 CLP mensual ($1.500 semestral) en Starter, hasta $2.248 CLP mensual ($7.498 semestral) en Max. Las comisiones se abonan directamente a tu Cuenta RUT o banco chileno cada 15 días (días 1 y 15 de cada mes).',
   },
 ];
 
