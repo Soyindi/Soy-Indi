@@ -14,17 +14,56 @@ interface CvDocumentPreviewProps {
 export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocumentPreviewProps) {
   const { content } = cv;
 
-  // Determinar si el contenido requiere paginación en 2 hojas
-  // Regla editorial: más de 3 experiencias o referencias o más de 4 ítems de educación justifican Hoja 2
-  const hasReferences = Boolean(content.references && content.references.length > 0);
-  const needsTwoPages =
-    content.experience.length > 3 ||
-    (content.experience.length > 2 && (content.education.length > 3 || hasReferences)) ||
-    (content.summary.length > 320 && content.experience.length > 2);
+  // Estimación de altura y densidad de contenido para distribución armónica A4
+  // Resumen: aprox 1 unidad por cada 70 caracteres
+  const summaryWeight = Math.ceil((content.summary || '').length / 70);
+  
+  // Peso por experiencia basado en cantidad y longitud de viñetas
+  const expWeights = content.experience.map((exp) => {
+    const bulletsCount = exp.bullets?.length || 0;
+    const bulletsLength = exp.bullets?.reduce((acc, b) => acc + b.length, 0) || 0;
+    // Base de header/cargo/empresa (3) + peso de viñetas
+    return 3 + bulletsCount * 1.5 + Math.ceil(bulletsLength / 80);
+  });
+  const totalExpWeight = expWeights.reduce((a, b) => a + b, 0);
 
-  // División de experiencias entre Hoja 1 y Hoja 2
-  const page1Experiences = needsTwoPages ? content.experience.slice(0, 3) : content.experience;
-  const page2Experiences = needsTwoPages ? content.experience.slice(3) : [];
+  // Peso de secciones secundarias
+  const skillsWeight = content.skills && content.skills.length > 0 ? 3 + Math.ceil(content.skills.length / 5) : 0;
+  const eduWeight = content.education && content.education.length > 0 ? 2 + content.education.length * 2 : 0;
+  const refWeight = content.references && content.references.length > 0 ? 2 + content.references.length * 2.5 : 0;
+
+  // Umbral de capacidad A4 de Hoja 1 (máx ~24 unidades de peso vertical antes de desborde)
+  const page1MaxCapacity = 23;
+  let accumulatedPage1Weight = summaryWeight + 4; // 4 por el header del documento
+  let splitExpIndex = 0;
+
+  while (splitExpIndex < content.experience.length) {
+    const nextWeight = expWeights[splitExpIndex] || 3;
+    if (accumulatedPage1Weight + nextWeight <= page1MaxCapacity) {
+      accumulatedPage1Weight += nextWeight;
+      splitExpIndex++;
+    } else {
+      break;
+    }
+  }
+
+  // Asegurar al menos 1 o 2 experiencias en hoja 1 si existen
+  if (splitExpIndex === 0 && content.experience.length > 0) {
+    splitExpIndex = 1;
+  }
+
+  const remainingExperiences = content.experience.slice(splitExpIndex);
+  const remainingWeight = 
+    remainingExperiences.reduce((acc, _, i) => acc + (expWeights[splitExpIndex + i] || 3), 0) +
+    skillsWeight +
+    eduWeight +
+    refWeight;
+
+  const needsTwoPages = remainingExperiences.length > 0 || (accumulatedPage1Weight + skillsWeight + eduWeight + refWeight > page1MaxCapacity);
+
+  // División de experiencias
+  const page1Experiences = needsTwoPages ? content.experience.slice(0, splitExpIndex) : content.experience;
+  const page2Experiences = needsTwoPages ? content.experience.slice(splitExpIndex) : [];
 
   // Helper de sanitización: previene viñetas duplicadas (• •) si el texto ya trae viñeta literal
   const cleanBullet = (text: string) =>
