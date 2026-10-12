@@ -596,13 +596,13 @@ export function SmartCvBuilder({
         categoryHref="/dashboard?tab=cvs"
         badgeText="Swiss Canvas"
       >
-        {/* Selector de modo de vista */}
-        <div className="hidden md:flex bg-slate-900/80 p-0.5 rounded-xl border border-white/10 text-xs">
+        {/* Grupo 1: Selector de modo de vista */}
+        <div className="hidden lg:flex bg-slate-900/90 p-1 rounded-xl border border-white/10 text-xs shadow-inner">
           <button
             type="button"
             onClick={() => setViewMode('split')}
             className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
-              viewMode === 'split' ? 'bg-white/15 text-white font-medium' : 'text-slate-400 hover:text-white'
+              viewMode === 'split' ? 'bg-white/15 text-white font-medium shadow-sm' : 'text-slate-400 hover:text-white'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -612,7 +612,7 @@ export function SmartCvBuilder({
             type="button"
             onClick={() => setViewMode('edit')}
             className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
-              viewMode === 'edit' ? 'bg-white/15 text-white font-medium' : 'text-slate-400 hover:text-white'
+              viewMode === 'edit' ? 'bg-white/15 text-white font-medium shadow-sm' : 'text-slate-400 hover:text-white'
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -622,7 +622,7 @@ export function SmartCvBuilder({
             type="button"
             onClick={() => setViewMode('preview')}
             className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
-              viewMode === 'preview' ? 'bg-white/15 text-white font-medium' : 'text-slate-400 hover:text-white'
+              viewMode === 'preview' ? 'bg-white/15 text-white font-medium shadow-sm' : 'text-slate-400 hover:text-white'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -630,113 +630,129 @@ export function SmartCvBuilder({
           </button>
         </div>
 
-        {/* Botón Discreto de Importación */}
-        <button
-          type="button"
-          onClick={() => setIsImportModalOpen(true)}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 text-xs font-medium transition-all"
-        >
-          <UploadCloud className="w-3.5 h-3.5" />
-          <span>Importar</span>
-        </button>
+        {/* Grupo 2: Herramientas de Creación e Inteligencia */}
+        <div className="flex items-center gap-2">
+          {/* Botón Discreto de Importación */}
+          <button
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 text-xs font-medium transition-all cursor-pointer active:scale-95"
+            title="Importa un CV existente en PDF o imagen para autocompletar campos con IA"
+          >
+            <UploadCloud className="w-3.5 h-3.5" />
+            <span>Importar</span>
+          </button>
 
-        {/* Botón de Firma Digital */}
-        <button
-          type="button"
-          onClick={() => setIsSignatureModalOpen(true)}
-          className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-medium transition-all ${
-            formData.content.signatureUrl
-              ? 'bg-purple-500/10 text-purple-300 border-purple-500/30 hover:bg-purple-500/20'
-              : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
-          }`}
-        >
-          <PenTool className="w-3.5 h-3.5 text-purple-400" />
-          <span>{formData.content.signatureUrl ? 'Firma Adjunta' : 'Adjuntar Firma'}</span>
-        </button>
+          {/* Botón de Firma Digital */}
+          <button
+            type="button"
+            onClick={() => setIsSignatureModalOpen(true)}
+            className={`inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl border text-xs font-medium transition-all cursor-pointer active:scale-95 ${
+              formData.content.signatureUrl
+                ? 'bg-purple-500/10 text-purple-300 border-purple-500/30 hover:bg-purple-500/20'
+                : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
+            }`}
+          >
+            <PenTool className="w-3.5 h-3.5 text-purple-400" />
+            <span className="hidden sm:inline">{formData.content.signatureUrl ? 'Firma Adjunta' : 'Adjuntar Firma'}</span>
+          </button>
 
-        {/* Botón Job Match AI (Comparar Oferta Laboral) */}
-        <button
-          type="button"
-          onClick={() => setIsJobMatchModalOpen(true)}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-semibold shadow-sm transition-all"
-          title="Compara tu currículum contra una oferta laboral real y detecta brechas ATS"
-        >
-          <Target className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Comparar Oferta</span>
-        </button>
-
-        {/* Badge Compacto de Score ATS */}
-        <button
-          type="button"
-          onClick={handleRunAtsAudit}
-          disabled={auditPending}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 border border-white/10 hover:border-indigo-500/40 text-xs transition-all"
-          title="Score de compatibilidad con filtros ATS"
-        >
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="font-mono font-bold text-white">{currentScore}% ATS</span>
-        </button>
-
-        {/* Selector de Arquetipo de Diseño Profesional */}
-        <CvTemplateSelector
-          currentTemplateId={formData.templateId || 'executive-modern'}
-          onSelectTemplate={(newTemplateId) =>
-            setFormData((prev) => ({ ...prev, templateId: newTemplateId }))
-          }
-        />
-
-        {/* Formato Unificado Empresarial A4 */}
-        <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-zinc-300">
-          <FileText className="w-3.5 h-3.5 text-cyan-400" />
-          <span>A4 Ejecutivo (ISO 216)</span>
+          {/* Botón Job Match AI (Comparar Oferta Laboral) */}
+          <button
+            type="button"
+            onClick={() => setIsJobMatchModalOpen(true)}
+            className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-semibold shadow-sm transition-all cursor-pointer active:scale-95"
+            title="Compara tu currículum contra una oferta laboral real y detecta brechas ATS"
+          >
+            <Target className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Comparar Oferta</span>
+          </button>
         </div>
 
-        {/* Descargar PDF Directo en 1 Clic */}
-        <button
-          onClick={handleDownloadPdf}
-          disabled={isDownloading}
-          className={`inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all disabled:opacity-50 ${
-            downloadSuccess
-              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-emerald-500/20'
-              : downloadError
-              ? 'bg-red-500/20 text-red-300 border border-red-500/40'
-              : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-          }`}
-          title="Descarga directa del archivo PDF vectorial (Compatible con ATS)"
-        >
-          {isDownloading ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : downloadSuccess ? (
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
-          ) : (
-            <Download className="w-3.5 h-3.5" />
-          )}
-          <span>
-            {isDownloading
-              ? 'Generando PDF...'
-              : downloadSuccess
-              ? '¡PDF Descargado!'
-              : downloadError
-              ? 'Error al descargar'
-              : 'Descargar PDF'}
-          </span>
-        </button>
+        {/* Separador vertical sutil entre herramientas y visualización */}
+        <div className="h-6 w-[1px] bg-white/10 hidden xl:block" />
 
-        {/* Guardar CV */}
-        <button
-          onClick={handleSaveCv}
-          disabled={isPending}
-          className="inline-flex items-center gap-2 min-h-[44px] px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-md shadow-indigo-500/20 hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-50"
-        >
-          {isPending ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : savedSuccess ? (
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
-          ) : (
-            <FileText className="w-3.5 h-3.5" />
-          )}
-          <span>{savedSuccess ? '¡Guardado!' : 'Guardar'}</span>
-        </button>
+        {/* Grupo 3: Diseño y Métricas ATS */}
+        <div className="flex items-center gap-2">
+          {/* Badge Compacto de Score ATS */}
+          <button
+            type="button"
+            onClick={handleRunAtsAudit}
+            disabled={auditPending}
+            className="inline-flex items-center gap-2 min-h-[44px] px-3 py-2 rounded-xl bg-slate-900 border border-white/10 hover:border-emerald-500/40 text-xs transition-all cursor-pointer active:scale-95"
+            title="Score de compatibilidad con filtros ATS. Clic para auditar."
+          >
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-mono font-bold text-white">{currentScore}% ATS</span>
+          </button>
+
+          {/* Selector de Arquetipo de Diseño Profesional */}
+          <CvTemplateSelector
+            currentTemplateId={formData.templateId || 'executive-modern'}
+            onSelectTemplate={(newTemplateId) =>
+              setFormData((prev) => ({ ...prev, templateId: newTemplateId }))
+            }
+          />
+
+          {/* Formato Unificado Empresarial A4 */}
+          <div className="hidden 2xl:inline-flex items-center gap-1.5 min-h-[44px] px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-zinc-300">
+            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            <span>A4 (ISO 216)</span>
+          </div>
+        </div>
+
+        {/* Separador vertical sutil antes de las acciones de salida */}
+        <div className="h-6 w-[1px] bg-white/10 hidden xl:block" />
+
+        {/* Grupo 4: Acciones Finales (Descargar PDF & Guardar) */}
+        <div className="flex items-center gap-2">
+          {/* Descargar PDF Directo en 1 Clic */}
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isDownloading}
+            className={`inline-flex items-center gap-2 min-h-[44px] px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all disabled:opacity-50 cursor-pointer active:scale-95 ${
+              downloadSuccess
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-emerald-500/20'
+                : downloadError
+                ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                : 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+            }`}
+            title="Descarga directa del archivo PDF vectorial (Compatible con ATS)"
+          >
+            {isDownloading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : downloadSuccess ? (
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
+            ) : (
+              <Download className="w-3.5 h-3.5" />
+            )}
+            <span>
+              {isDownloading
+                ? 'Generando...'
+                : downloadSuccess
+                ? '¡Listo!'
+                : downloadError
+                ? 'Reintentar'
+                : 'Descargar PDF'}
+            </span>
+          </button>
+
+          {/* Guardar CV */}
+          <button
+            onClick={handleSaveCv}
+            disabled={isPending}
+            className="inline-flex items-center gap-2 min-h-[44px] px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-semibold text-xs shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+          >
+            {isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : savedSuccess ? (
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
+            ) : (
+              <FileText className="w-3.5 h-3.5" />
+            )}
+            <span>{savedSuccess ? '¡Guardado!' : 'Guardar'}</span>
+          </button>
+        </div>
       </AppEditorHeader>
 
       {/* Alerta de Error de Guardado */}

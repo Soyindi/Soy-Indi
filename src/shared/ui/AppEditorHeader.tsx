@@ -65,7 +65,7 @@ export function AppEditorHeader({
 
       {/* Acciones principales del editor (Guardar, Asistente, etc.) */}
       {children && (
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center justify-start xl:justify-end gap-2.5 max-w-full">
           {children}
         </div>
       )}
