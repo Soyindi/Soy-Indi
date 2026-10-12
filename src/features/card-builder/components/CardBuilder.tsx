@@ -69,6 +69,7 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
     ratio: number;
   } | null>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
+  const [showCustomPhotoUrl, setShowCustomPhotoUrl] = useState(false);
 
   const [isCompressingBg, setIsCompressingBg] = useState(false);
   const [bgCompressionInfo, setBgCompressionInfo] = useState<{
@@ -555,50 +556,50 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Panel de Controles / Formulario */}
         <div className="lg:col-span-7 glass-panel rounded-3xl p-6 sm:p-8">
-          {/* Pestañas */}
-          <div className="flex items-center gap-2 mb-8 p-1.5 rounded-2xl bg-black/40 border border-white/5 overflow-x-auto">
+          {/* Pestañas de Alta Ergonomía (Glassmorphism 2.0 Segmented Controls) */}
+          <div className="flex items-center gap-1.5 mb-8 p-1.5 rounded-2xl bg-zinc-900/60 border border-white/10 shadow-inner overflow-x-auto">
             <button
               onClick={() => setActiveTab('profile')}
               className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'profile'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-500/30 to-cyan-500/25 border border-cyan-400/50 text-white shadow-lg shadow-indigo-500/20'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <User className="w-3.5 h-3.5" />
+              <User className="w-3.5 h-3.5 text-cyan-400" />
               <span>Perfil</span>
             </button>
             <button
               onClick={() => setActiveTab('contact')}
               className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'contact'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-500/30 to-cyan-500/25 border border-cyan-400/50 text-white shadow-lg shadow-indigo-500/20'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Phone className="w-3.5 h-3.5" />
+              <Phone className="w-3.5 h-3.5 text-cyan-400" />
               <span>Contacto</span>
             </button>
             <button
               onClick={() => setActiveTab('social')}
               className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'social'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-500/30 to-cyan-500/25 border border-cyan-400/50 text-white shadow-lg shadow-indigo-500/20'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Globe className="w-3.5 h-3.5" />
+              <Globe className="w-3.5 h-3.5 text-cyan-400" />
               <span>Redes</span>
             </button>
             <button
               onClick={() => setActiveTab('theme')}
               className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'theme'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-indigo-500/30 to-cyan-500/25 border border-cyan-400/50 text-white shadow-lg shadow-indigo-500/20'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Palette className="w-3.5 h-3.5" />
+              <Palette className="w-3.5 h-3.5 text-cyan-400" />
               <span>Efectos</span>
             </button>
           </div>
@@ -642,41 +643,41 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                   </div>
                 </div>
 
-                <div className={`flex items-center rounded-xl bg-black/50 border px-3.5 py-2.5 text-sm transition-colors ${
+                <div className={`flex items-center rounded-2xl bg-zinc-950/80 border px-4 py-3 text-sm shadow-inner transition-all ${
                   !slugAvailability.available && !isCheckingSlug
-                    ? 'border-amber-500/50 focus-within:border-amber-500'
-                    : 'border-white/10 focus-within:border-indigo-500/80'
+                    ? 'border-amber-500/50 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/20'
+                    : 'border-white/15 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/20'
                 }`}>
-                  <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">soyindi.cl/c/</span>
+                  <span className="text-zinc-400 font-mono select-none text-xs sm:text-sm font-semibold">soyindi.cl/c/</span>
                   <input
                     type="text"
                     value={formData.slug}
                     onChange={(e) => handleSlugChange(e.target.value)}
-                    className="flex-1 bg-transparent text-white font-mono text-xs sm:text-sm focus:outline-none pl-1"
+                    className="flex-1 bg-transparent text-white font-mono text-xs sm:text-sm font-semibold tracking-wide focus:outline-none pl-1"
                     placeholder="tu-nombre"
                     spellCheck={false}
                   />
 
                   {/* Estado dinámico de disponibilidad con Turso */}
-                  <div className="flex items-center gap-1.5 ml-2">
+                  <div className="flex items-center gap-1.5 ml-2 shrink-0">
                     {isCheckingSlug ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400">
-                        <Loader2 className="w-3 h-3 animate-spin text-indigo-400" />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+                        <Loader2 className="w-3 h-3 animate-spin text-cyan-400" />
                         <span className="hidden sm:inline">Verificando</span>
                       </span>
                     ) : slugAvailability.status === 'available' ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        <Check className="w-2.5 h-2.5" />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-xs">
+                        <Check className="w-3 h-3 text-emerald-400 stroke-[3]" />
                         <span>Disponible</span>
                       </span>
                     ) : slugAvailability.status === 'reserved' ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                        <AlertCircle className="w-2.5 h-2.5" />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-xs">
+                        <AlertCircle className="w-3 h-3 text-rose-400" />
                         <span>Reservado</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                        <AlertTriangle className="w-2.5 h-2.5" />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-xs">
+                        <AlertTriangle className="w-3 h-3 text-amber-400" />
                         <span>En uso</span>
                       </span>
                     )}
@@ -800,11 +801,11 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                 )}
               </div>
 
-              {/* Foto de Perfil con Compresión WebP en Cliente */}
+              {/* Foto de Perfil con Miniatura en Vivo y Acciones Ergonómicas */}
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2.5">
                   <label className="block text-xs font-mono font-semibold uppercase text-zinc-400">
-                    Foto de Perfil o Avatar (WebP Ultra-Comprimido)
+                    Foto de Perfil o Avatar (WebP Comprimido)
                   </label>
                   {isCompressingPhoto && (
                     <span className="flex items-center gap-1.5 text-[11px] font-mono text-cyan-400">
@@ -814,98 +815,123 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                   )}
                 </div>
 
-                {/* Zona de Subida y Previsualización */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <div className="flex-1 flex items-center gap-2">
-                    <input
-                      type="file"
-                      ref={photoFileInputRef}
-                      accept="image/png,image/jpeg,image/webp,image/jpg"
-                      className="hidden"
-                      onChange={handlePhotoFileUpload}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => photoFileInputRef.current?.click()}
-                      disabled={isCompressingPhoto}
-                      className="min-h-[44px] px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/50 text-white text-xs font-medium flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
-                    >
-                      <UploadCloud className="w-4 h-4 text-cyan-400" />
-                      <span>Subir Foto (Auto-WebP)</span>
-                    </button>
-
-                    {formData.photoUrl && (
-                      <button
-                        type="button"
-                        onClick={() => triggerAdaptiveColorExtraction(formData.photoUrl!, 'Foto de Perfil')}
-                        disabled={isExtractingColors}
-                        className="min-h-[44px] px-3.5 py-2.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                        title="Extraer y adaptar colores desde la foto"
-                      >
-                        <Wand2 className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Adaptar Colores</span>
-                      </button>
-                    )}
-
-                    {formData.photoUrl && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleChange('photoUrl', '');
-                          setPhotoCompressionInfo(null);
-                        }}
-                        className="min-h-[44px] min-w-[44px] px-3 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs flex items-center justify-center transition-all cursor-pointer"
-                        title="Quitar foto actual"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Feedback de Extracción Cromática Adaptativa */}
-                {extractedPalette && colorSourceLabel === 'Foto de Perfil' && (
-                  <div className="mt-2 p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-[11px] text-cyan-200 flex items-center justify-between animate-fade-in">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-3.5 h-3.5 rounded-full border border-white/50 shadow-sm shrink-0"
-                        style={{ backgroundColor: extractedPalette.vibrantHex }}
-                      />
-                      <span>Colores adaptados a tu foto ({extractedPalette.vibrantHex})</span>
+                <div className="p-3.5 rounded-2xl bg-zinc-950/60 border border-white/10 shadow-inner space-y-3">
+                  <div className="flex items-center gap-3.5">
+                    {/* Miniatura Circular */}
+                    <div className="relative w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-white/20 shadow-md bg-zinc-900 flex items-center justify-center">
+                      {formData.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={formData.photoUrl}
+                          alt="Avatar de perfil"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-6 h-6 text-zinc-500" />
+                      )}
                     </div>
+
+                    {/* Botones de Acción */}
+                    <div className="flex-1 flex flex-wrap items-center gap-2">
+                      <input
+                        type="file"
+                        ref={photoFileInputRef}
+                        accept="image/png,image/jpeg,image/webp,image/jpg"
+                        className="hidden"
+                        onChange={handlePhotoFileUpload}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => photoFileInputRef.current?.click()}
+                        disabled={isCompressingPhoto}
+                        className="min-h-[42px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <UploadCloud className="w-4 h-4 text-cyan-400" />
+                        <span>{formData.photoUrl ? 'Cambiar Foto' : 'Subir Foto'}</span>
+                      </button>
+
+                      {formData.photoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => triggerAdaptiveColorExtraction(formData.photoUrl!, 'Foto de Perfil')}
+                          disabled={isExtractingColors}
+                          className="min-h-[42px] px-3.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                          title="Extraer y adaptar colores desde la foto"
+                        >
+                          <Wand2 className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Adaptar Colores</span>
+                        </button>
+                      )}
+
+                      {formData.photoUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleChange('photoUrl', '');
+                            setPhotoCompressionInfo(null);
+                          }}
+                          className="min-h-[42px] min-w-[42px] px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-rose-300 text-xs flex items-center justify-center transition-all cursor-pointer"
+                          title="Quitar foto actual"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Feedback de Extracción Cromática Adaptativa */}
+                  {extractedPalette && colorSourceLabel === 'Foto de Perfil' && (
+                    <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-[11px] text-cyan-200 flex items-center justify-between animate-fade-in">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-3.5 h-3.5 rounded-full border border-white/50 shadow-sm shrink-0"
+                          style={{ backgroundColor: extractedPalette.vibrantHex }}
+                        />
+                        <span>Colores adaptados a tu foto ({extractedPalette.vibrantHex})</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('theme')}
+                        className="text-[10px] font-mono underline hover:text-white"
+                      >
+                        Ajustar en Efectos →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Métricas de Compresión */}
+                  {photoCompressionInfo && (
+                    <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-mono text-emerald-300 flex items-center justify-between">
+                      <span>⚡ Optimizado WebP: {photoCompressionInfo.originalKb} KB ➔ {photoCompressionInfo.compressedKb} KB</span>
+                      <span className="font-bold">-{photoCompressionInfo.ratio}% tamaño</span>
+                    </div>
+                  )}
+
+                  {/* Toggle para ingresar URL directa */}
+                  <div className="pt-1 border-t border-white/5">
                     <button
                       type="button"
-                      onClick={() => setActiveTab('theme')}
-                      className="text-[10px] font-mono underline hover:text-white"
+                      onClick={() => setShowCustomPhotoUrl(!showCustomPhotoUrl)}
+                      className="text-[11px] text-zinc-400 hover:text-cyan-300 font-mono transition-colors flex items-center gap-1 cursor-pointer"
                     >
-                      Ajustar en Efectos →
+                      <span>{showCustomPhotoUrl ? '▾ Ocultar enlace URL' : '▸ O pegar URL web externa'}</span>
                     </button>
-                  </div>
-                )}
 
-                {/* Métricas de Compresión */}
-                {photoCompressionInfo && (
-                  <div className="mt-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-mono text-emerald-300 flex items-center justify-between">
-                    <span>⚡ Optimizado WebP: {photoCompressionInfo.originalKb} KB ➔ {photoCompressionInfo.compressedKb} KB</span>
-                    <span className="font-bold">-{photoCompressionInfo.ratio}% tamaño</span>
+                    {showCustomPhotoUrl && (
+                      <div className="mt-2 animate-fade-in">
+                        <input
+                          type="text"
+                          value={formData.photoUrl?.startsWith('data:image/') ? '' : (formData.photoUrl || '')}
+                          onChange={(e) => {
+                            handleChange('photoUrl', e.target.value);
+                            setPhotoCompressionInfo(null);
+                          }}
+                          className="w-full rounded-xl bg-black/60 border border-white/10 px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 transition-colors font-mono"
+                          placeholder="https://..."
+                        />
+                      </div>
+                    )}
                   </div>
-                )}
-
-                {/* Input de URL directa opcional */}
-                <div className="mt-2.5">
-                  <input
-                    type="text"
-                    value={formData.photoUrl?.startsWith('data:image/') ? '' : (formData.photoUrl || '')}
-                    onChange={(e) => {
-                      handleChange('photoUrl', e.target.value);
-                      setPhotoCompressionInfo(null);
-                    }}
-                    className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono text-xs"
-                    placeholder="O pega una URL web externa (https://...)"
-                  />
-                  <p className="text-[11px] text-zinc-500 mt-1">
-                    Las fotos subidas se comprimen en tu navegador a formato WebP sin saturar tu red.
-                  </p>
                 </div>
               </div>
             </div>
@@ -1694,15 +1720,15 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
           )}
         </div>
 
-        {/* Panel de Previsualización en Vivo */}
-        <div className="lg:col-span-5 flex flex-col items-center">
+        {/* Panel de Previsualización en Vivo (Sticky Desktop Ergonomics) */}
+        <div className="lg:col-span-5 lg:sticky lg:top-8 flex flex-col items-center">
           <div className="w-full flex items-center justify-between mb-4 px-2">
             <span className="text-xs font-mono font-semibold text-zinc-400 uppercase tracking-wider">
               Vista Previa en Vivo
             </span>
-            <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+            <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Sincronizado
+              Sincronizado 60 FPS
             </span>
           </div>
 
