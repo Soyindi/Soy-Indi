@@ -14,6 +14,8 @@ import { JsonLd } from '@/shared/ui/JsonLd';
 import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon, TikTokIcon } from '@/shared/ui/icons/SocialBrandIcons';
 import { getOfficialBrandSocialsAction } from '@/features/brand/actions';
 
+export const revalidate = 0;
+
 const HOME_STRUCTURED_DATA = [
   {
     '@context': 'https://schema.org',
