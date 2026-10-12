@@ -7,10 +7,15 @@ import { useSession, signOut } from '@/shared/lib/auth-client';
 import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, Tag, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { motion, AnimatePresence } from 'framer-motion';
-import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon } from '@/shared/ui/icons/SocialBrandIcons';
-import { OFFICIAL_BRAND_SOCIALS } from '@/entities/brand/socials';
+import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon, TikTokIcon } from '@/shared/ui/icons/SocialBrandIcons';
+import { OFFICIAL_BRAND_SOCIALS, BrandSocialLinks } from '@/entities/brand/socials';
 
-export function MobileNavDrawer() {
+interface MobileNavDrawerProps {
+  socials?: BrandSocialLinks;
+}
+
+export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
+  const activeSocials = socials || OFFICIAL_BRAND_SOCIALS;
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -250,11 +255,11 @@ export function MobileNavDrawer() {
                   </>
                 )}
 
-                {/* Redes Sociales Oficiales de INDI (Móvil) */}
-                <div className="pt-4 border-t border-white/10 flex items-center justify-center gap-3">
-                  {OFFICIAL_BRAND_SOCIALS.instagramUrl && (
+                {/* Redes Sociales Oficiales de INDI (Móvil Dinámico) */}
+                <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-center gap-2.5">
+                  {activeSocials.instagramUrl && (
                     <a
-                      href={OFFICIAL_BRAND_SOCIALS.instagramUrl}
+                      href={activeSocials.instagramUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-pink-400 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
@@ -264,9 +269,9 @@ export function MobileNavDrawer() {
                       <InstagramIcon className="w-4 h-4" />
                     </a>
                   )}
-                  {OFFICIAL_BRAND_SOCIALS.linkedinUrl && (
+                  {activeSocials.linkedinUrl && (
                     <a
-                      href={OFFICIAL_BRAND_SOCIALS.linkedinUrl}
+                      href={activeSocials.linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-blue-400 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
@@ -276,9 +281,21 @@ export function MobileNavDrawer() {
                       <LinkedInIcon className="w-4 h-4" />
                     </a>
                   )}
-                  {OFFICIAL_BRAND_SOCIALS.xUrl && (
+                  {activeSocials.tiktokUrl && (
                     <a
-                      href={OFFICIAL_BRAND_SOCIALS.xUrl}
+                      href={activeSocials.tiktokUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-cyan-300 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
+                      title="TikTok Oficial"
+                      aria-label="TikTok"
+                    >
+                      <TikTokIcon className="w-4 h-4" />
+                    </a>
+                  )}
+                  {activeSocials.xUrl && (
+                    <a
+                      href={activeSocials.xUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-white border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
@@ -288,9 +305,9 @@ export function MobileNavDrawer() {
                       <XTwitterIcon className="w-4 h-4" />
                     </a>
                   )}
-                  {OFFICIAL_BRAND_SOCIALS.whatsappUrl && (
+                  {activeSocials.whatsappUrl && (
                     <a
-                      href={OFFICIAL_BRAND_SOCIALS.whatsappUrl}
+                      href={activeSocials.whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-emerald-400 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"

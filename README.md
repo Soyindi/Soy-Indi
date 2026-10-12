@@ -150,7 +150,7 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Panel de Administración (`/admin`)**: Vista consolidada con tres pestañas especializadas:
   1. *Auditoría de Referidos*: Monitoreo en tiempo real de usuarios referidos (`TRIAL` y `ACTIVE`), tasas de conversión y anfitrión asociado.
   2. *Liquidaciones Quincenales*: Consolidado quincenal de liquidaciones pendientes (días 1 y 15) con desglose de retención tributaria SII 15,25%, detalle bancario con copia en 1 clic y confirmación de pago transferido.
-  3. *Gestión de Redes Sociales Oficiales*: Módulo administrativo para actualizar los canales oficiales de INDI (Instagram, LinkedIn, X, WhatsApp Soporte) con previsualización en vivo y propagación perimetral a portada, footer y menú móvil.
+  3. *Gestión de Redes Sociales Oficiales*: Módulo administrativo persistido dinámicamente en Turso LibSQL (`system_settings`) para actualizar los canales oficiales de INDI (LinkedIn, Instagram, TikTok, X, WhatsApp Soporte) con previsualización viva, touch targets $\ge 44\text{px}$ y propagación perimetral a portada, footer y menú móvil.
 
 ---
 

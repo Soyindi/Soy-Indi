@@ -3,14 +3,15 @@ import { brandSocialLinksSchema, OFFICIAL_BRAND_SOCIALS } from '@/entities/brand
 import { LANDING_CONTENT } from '@/entities/landing/schemas';
 
 describe('Brand Social Networks & Pricing Copy Consistency (INDI 2026)', () => {
-  it('valida el esquema canónico de enlaces sociales oficiales', () => {
+  it('valida el esquema canónico de enlaces sociales oficiales con TikTok y cuentas reales', () => {
     const parseRes = brandSocialLinksSchema.safeParse(OFFICIAL_BRAND_SOCIALS);
     expect(parseRes.success).toBe(true);
     if (parseRes.success) {
-      expect(parseRes.data.instagramUrl).toContain('instagram.com/soyindi.cl');
-      expect(parseRes.data.linkedinUrl).toContain('linkedin.com/company/soyindi');
-      expect(parseRes.data.xUrl).toContain('x.com/soyindicorporate');
-      expect(parseRes.data.whatsappUrl).toContain('wa.me/56900000000');
+      expect(parseRes.data.instagramUrl).toBe('https://www.instagram.com/soyindi.cl');
+      expect(parseRes.data.linkedinUrl).toBe('https://www.linkedin.com/in/soyindi-cl');
+      expect(parseRes.data.tiktokUrl).toBe('https://www.tiktok.com/@soyindi.cl');
+      expect(parseRes.data.xUrl).toContain('x.com');
+      expect(parseRes.data.whatsappUrl).toContain('wa.me');
     }
   });
 

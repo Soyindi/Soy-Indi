@@ -8,11 +8,14 @@ import { BrandLogo } from './BrandLogo';
 import { AuthModal } from '@/features/dashboard/components/AuthModal';
 import { Sparkles, LayoutDashboard, LogIn, LogOut, Plus } from 'lucide-react';
 
+import { BrandSocialLinks } from '@/entities/brand/socials';
+
 interface GlobalNavbarProps {
   className?: string;
+  socials?: BrandSocialLinks;
 }
 
-export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
+export function GlobalNavbar({ className = '', socials }: GlobalNavbarProps) {
   const { data: sessionData, isPending } = useSession();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -160,8 +163,8 @@ export function GlobalNavbar({ className = '' }: GlobalNavbarProps) {
             </>
           )}
 
-          {/* Menú Drawer Móvil */}
-          <MobileNavDrawer />
+          {/* Menú Drawer Móvil Dinámico */}
+          <MobileNavDrawer socials={socials} />
         </div>
       </div>
     </header>

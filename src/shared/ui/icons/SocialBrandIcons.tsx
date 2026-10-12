@@ -24,6 +24,14 @@ export function XTwitterIcon({ className = 'w-4 h-4' }: { className?: string }) 
   );
 }
 
+export function TikTokIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.99v7.75c0 1.94-.48 3.9-1.59 5.48-1.41 2.01-3.79 3.29-6.24 3.34-2.45.05-4.9-1.12-6.39-3.08-1.57-2.07-1.92-4.92-1-7.35.88-2.33 2.95-4.04 5.42-4.52.48-.09.97-.13 1.47-.13.33 0 .66.02.98.07v4.11c-.34-.1-.7-.16-1.06-.16-1.28 0-2.52.61-3.26 1.64-.78 1.09-.85 2.58-.2 3.73.65 1.16 1.95 1.87 3.28 1.82 1.34-.05 2.56-.88 3.04-2.13.25-.66.33-1.37.31-2.08V.02h.45z" />
+    </svg>
+  );
+}
+
 export function WhatsAppIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">

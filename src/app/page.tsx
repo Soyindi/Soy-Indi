@@ -11,8 +11,8 @@ import { BrandLogo } from '@/shared/ui/BrandLogo';
 import { HeroBrandIdentity } from '@/shared/ui/HeroBrandIdentity';
 import { BrandHeroBackdrop } from '@/shared/ui/BrandHeroBackdrop';
 import { JsonLd } from '@/shared/ui/JsonLd';
-import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon } from '@/shared/ui/icons/SocialBrandIcons';
-import { OFFICIAL_BRAND_SOCIALS } from '@/entities/brand/socials';
+import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon, TikTokIcon } from '@/shared/ui/icons/SocialBrandIcons';
+import { getOfficialBrandSocialsAction } from '@/features/brand/actions';
 
 const HOME_STRUCTURED_DATA = [
   {
@@ -174,7 +174,8 @@ import { OFFICIAL_DEMO_CARD } from '@/entities/card/themes';
 
 const DEMO_CARD: CardData = OFFICIAL_DEMO_CARD;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const brandSocials = await getOfficialBrandSocialsAction();
   const { hero, valueProps, products, closing } = LANDING_CONTENT;
 
   return (
@@ -182,7 +183,7 @@ export default function HomePage() {
       <JsonLd data={HOME_STRUCTURED_DATA} />
       <div id="inicio" className="absolute top-0 left-0 w-0 h-0" aria-hidden="true" />
 
-      <GlobalNavbar />
+      <GlobalNavbar socials={brandSocials} />
 
       <main className="relative z-10 flex-1">
         {/* 1 · HERO CINEMÁTICO: halo CSS ambiental + identidad fotónica viva sin recuadro */}
@@ -291,11 +292,11 @@ export default function HomePage() {
           <p>© 2026 INDI</p>
         </div>
 
-        {/* Canales y Redes Sociales Oficiales de INDI */}
-        <div className="flex items-center gap-2" aria-label="Redes Sociales Oficiales">
-          {OFFICIAL_BRAND_SOCIALS.instagramUrl && (
+        {/* Canales y Redes Sociales Oficiales de INDI (Persistidos en Turso LibSQL) */}
+        <div className="flex flex-wrap items-center justify-center gap-2" aria-label="Redes Sociales Oficiales">
+          {brandSocials.instagramUrl && (
             <a
-              href={OFFICIAL_BRAND_SOCIALS.instagramUrl}
+              href={brandSocials.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-pink-400 border border-white/10 hover:border-pink-500/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
@@ -305,9 +306,9 @@ export default function HomePage() {
               <InstagramIcon className="w-4 h-4" />
             </a>
           )}
-          {OFFICIAL_BRAND_SOCIALS.linkedinUrl && (
+          {brandSocials.linkedinUrl && (
             <a
-              href={OFFICIAL_BRAND_SOCIALS.linkedinUrl}
+              href={brandSocials.linkedinUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-blue-400 border border-white/10 hover:border-blue-500/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
@@ -317,9 +318,21 @@ export default function HomePage() {
               <LinkedInIcon className="w-4 h-4" />
             </a>
           )}
-          {OFFICIAL_BRAND_SOCIALS.xUrl && (
+          {brandSocials.tiktokUrl && (
             <a
-              href={OFFICIAL_BRAND_SOCIALS.xUrl}
+              href={brandSocials.tiktokUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-cyan-300 border border-white/10 hover:border-cyan-400/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
+              title="TikTok Oficial de INDI"
+              aria-label="TikTok"
+            >
+              <TikTokIcon className="w-4 h-4" />
+            </a>
+          )}
+          {brandSocials.xUrl && (
+            <a
+              href={brandSocials.xUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-white border border-white/10 hover:border-white/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
@@ -329,9 +342,9 @@ export default function HomePage() {
               <XTwitterIcon className="w-4 h-4" />
             </a>
           )}
-          {OFFICIAL_BRAND_SOCIALS.whatsappUrl && (
+          {brandSocials.whatsappUrl && (
             <a
-              href={OFFICIAL_BRAND_SOCIALS.whatsappUrl}
+              href={brandSocials.whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"

@@ -258,7 +258,19 @@ export const affiliateCommissions = sqliteTable('affiliate_commissions', {
 ]);
 
 // ============================================================================
-// 7. RELACIONES DECLARATIVAS
+// 7. CONFIGURACIÓN DEL SISTEMA Y METADATOS DE MARCA
+// ============================================================================
+export const systemSettings = sqliteTable('system_settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+// ============================================================================
+// 8. RELACIONES DECLARATIVAS
 // ============================================================================
 export const userRelations = relations(user, ({ one, many }) => ({
   cards: many(cards),

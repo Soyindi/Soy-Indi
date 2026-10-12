@@ -16,12 +16,13 @@ export type BrandSocialLinks = z.infer<typeof brandSocialLinksSchema>;
 
 /**
  * Redes Sociales Oficiales Canónicas de INDI (2026)
+ * Valores iniciales verificados
  */
 export const OFFICIAL_BRAND_SOCIALS: BrandSocialLinks = {
-  instagramUrl: 'https://instagram.com/soyindi.cl',
-  linkedinUrl: 'https://www.linkedin.com/company/soyindi',
+  instagramUrl: 'https://www.instagram.com/soyindi.cl',
+  linkedinUrl: 'https://www.linkedin.com/in/soyindi-cl',
+  tiktokUrl: 'https://www.tiktok.com/@soyindi.cl',
   xUrl: 'https://x.com/soyindicorporate',
   whatsappUrl: 'https://wa.me/56900000000',
   youtubeUrl: '',
-  tiktokUrl: '',
 };

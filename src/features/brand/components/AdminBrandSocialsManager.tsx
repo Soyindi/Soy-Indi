@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { BrandSocialLinks } from '@/entities/brand/socials';
 import { updateOfficialBrandSocialsAction } from '@/features/brand/actions';
-import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon } from '@/shared/ui/icons/SocialBrandIcons';
+import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon, TikTokIcon } from '@/shared/ui/icons/SocialBrandIcons';
 import { Save, Check, RefreshCw, AlertCircle, Share2, Globe, Sparkles } from 'lucide-react';
 
 interface AdminBrandSocialsManagerProps {
@@ -26,7 +26,7 @@ export function AdminBrandSocialsManager({ initialSocials }: AdminBrandSocialsMa
       const res = await updateOfficialBrandSocialsAction(socials);
       if (res.success && res.data) {
         setSocials(res.data);
-        setSuccessMessage('¡Redes sociales actualizadas y sincronizadas en la portada!');
+        setSuccessMessage('¡Redes sociales guardadas en Turso y sincronizadas en la portada!');
         setTimeout(() => setSuccessMessage(null), 4000);
       } else {
         setErrorMessage(res.error || 'No se pudieron actualizar las redes sociales.');
@@ -45,11 +45,11 @@ export function AdminBrandSocialsManager({ initialSocials }: AdminBrandSocialsMa
           <div className="flex items-center gap-2 mb-1">
             <Share2 className="w-4 h-4 text-pink-400" />
             <h3 className="text-base font-bold text-white tracking-tight">
-              Gestión de Canales y Redes Sociales Oficiales
+              Gestión de Canales y Redes Sociales Oficiales (Turso LibSQL)
             </h3>
           </div>
           <p className="text-xs text-zinc-400">
-            Configura los enlaces oficiales de la marca INDI que se exhiben en la portada web, pie de página y menú móvil.
+            Configura los enlaces oficiales de la marca INDI persistidos dinámicamente en Turso SQLite (portada, footer y menú móvil).
           </p>
         </div>
 
@@ -76,6 +76,17 @@ export function AdminBrandSocialsManager({ initialSocials }: AdminBrandSocialsMa
               title="LinkedIn"
             >
               <LinkedInIcon className="w-3.5 h-3.5" />
+            </a>
+          )}
+          {socials.tiktokUrl && (
+            <a
+              href={socials.tiktokUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-300 transition"
+              title="TikTok"
+            >
+              <TikTokIcon className="w-3.5 h-3.5" />
             </a>
           )}
           {socials.xUrl && (
@@ -195,6 +206,26 @@ export function AdminBrandSocialsManager({ initialSocials }: AdminBrandSocialsMa
             onChange={(e) => setSocials({ ...socials, whatsappUrl: e.target.value })}
             placeholder="https://wa.me/56900000000"
             className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors font-mono"
+          />
+        </div>
+
+        {/* TikTok Oficial */}
+        <div className="glass-panel p-5 rounded-2xl border border-white/5 space-y-2">
+          <div className="flex items-center gap-2 text-cyan-400">
+            <TikTokIcon className="w-4 h-4" />
+            <label className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+              TikTok Oficial
+            </label>
+          </div>
+          <p className="text-[11px] text-zinc-400">
+            Canal de video corto, contenido viral y tutoriales rápidos.
+          </p>
+          <input
+            type="url"
+            value={socials.tiktokUrl || ''}
+            onChange={(e) => setSocials({ ...socials, tiktokUrl: e.target.value })}
+            placeholder="https://www.tiktok.com/@soyindi.cl"
+            className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-colors font-mono"
           />
         </div>
 

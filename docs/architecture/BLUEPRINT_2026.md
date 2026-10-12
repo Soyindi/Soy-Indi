@@ -47,10 +47,12 @@ C:\Users\Matías Riquelme\Desktop\Indi\
 - Endpoint /checkout/return/flow: Sincronizador HTTP POST síncrono con verificación /payment/getStatus en Flow y batch atómico en Turso SQLite.
 - Adaptador FlowAdapter y Registry unificado paymentRegistry.
 
-### Actualización de Arquitectura Q4 2026 (Gobernanza de Redes Sociales Oficiales & Pricing Consistency):
-- **Gobernanza de Redes Sociales Oficiales (`src/entities/brand/socials.ts`)**: Esquema Zod canónico (`brandSocialLinksSchema`) y catálogo por defecto para Instagram, LinkedIn, X y WhatsApp.
-- **Acciones Administrativas Seguras (`src/features/brand/actions.ts`)**: `getOfficialBrandSocialsAction` y `updateOfficialBrandSocialsAction` con guardrail multi-tenant de rol `admin` y purga ISR perimetral (`revalidatePath`).
-- **Módulo de Gestión en Admin (`AdminBrandSocialsManager.tsx`)**: Pestaña dedicada en `/admin` con vista previa reactiva en vivo y controles ergonómicos.
+### Actualización de Arquitectura Q4 2026 (Gobernanza de Redes Sociales Dinámicas en Turso LibSQL & TikTok):
+- **Persistencia en Turso LibSQL (`system_settings`)**: Creación y migración de la tabla `system_settings` (`key` text PK, `value` text, `updated_at` integer timestamp) para almacenamiento atómico y desacoplado de variables globales de configuración.
+- **Soporte Canónico de TikTok & Cuentas Oficiales**: Inclusión de TikTok en el esquema Zod (`brandSocialLinksSchema`), en el componente vectorial `<TikTokIcon />` y en los defaults canónicos con las cuentas oficiales verificadas (`linkedin.com/in/soyindi-cl`, `instagram.com/soyindi.cl`, `tiktok.com/@soyindi.cl`).
+- **Acciones Administrativas Seguras (`src/features/brand/actions.ts`)**: `getOfficialBrandSocialsAction` y `updateOfficialBrandSocialsAction` con guardrail multi-tenant de rol `admin`, soporte de revalidación perimetral resiliente (`revalidatePath`) y sincronización inmediata sin demoras de caché.
+- **Módulo de Gestión en Admin (`AdminBrandSocialsManager.tsx`)**: Pestaña dedicada en `/admin` con vista previa reactiva en vivo, inputs accesibles con touch targets $\ge 44\text{px}$ y persistencia confirmada en Turso.
+- **Renderizado Dinámico en Portada y Menú Móvil**: `HomePage` (`src/app/page.tsx`) Server Component y `MobileNavDrawer` configurados para renderizar dinámicamente las redes sociales desde Turso, habilitando TikTok en todos los viewports.
 - **Consistencia Comercial de Precios en Portada**: Actualización de botones y microcopias para reflejar la tarifa base de $2.500 CLP/mes de forma transparente en toda la experiencia.
 
 ### Actualización de Arquitectura Q4 2026 (Auditoría Forense & Entitlements Engine):
