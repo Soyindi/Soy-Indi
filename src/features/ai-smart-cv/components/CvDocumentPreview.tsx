@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CVFormValues } from '@/entities/cv/schemas';
+import { getCvDesignTemplate } from '@/entities/cv/templates';
 import { Mail, Phone, MapPin, Globe, ShieldCheck, Link2 } from 'lucide-react';
 import { sanitizeBulletText } from '@/features/ai-smart-cv/lib/pdf-engine';
 
@@ -13,6 +14,8 @@ interface CvDocumentPreviewProps {
 
 export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocumentPreviewProps) {
   const { content } = cv;
+  const template = getCvDesignTemplate(cv.templateId);
+  const { webTokens } = template;
 
   // Estimación de altura y densidad de contenido para distribución armónica A4
   // Resumen: aprox 1 unidad por cada 75 caracteres
@@ -120,11 +123,11 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
         >
           <div>
             {/* Cabecera del CV */}
-            <div className="border-b-2 border-zinc-900 pb-5 mb-6">
+            <div className={`border-b-2 ${webTokens.headerDivider} pb-5 mb-6`}>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-950 uppercase leading-snug">
                 {content.fullName || 'Tu Nombre Completo'}
               </h1>
-              <p className="text-xs sm:text-sm font-bold text-indigo-700 uppercase tracking-wider mt-1.5 line-clamp-2">
+              <p className={`text-xs sm:text-sm font-bold ${webTokens.roleText} uppercase tracking-wider mt-1.5 line-clamp-2`}>
                 {cv.targetRole || 'Rol Profesional Objetivo'}
               </p>
 
@@ -158,9 +161,9 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                     href={content.linkedinUrl.startsWith('http') ? content.linkedinUrl : `https://${content.linkedinUrl}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold transition-colors"
+                    className={`flex items-center gap-1 ${webTokens.accentText} hover:opacity-80 font-semibold transition-colors`}
                   >
-                    <Link2 className="w-3.5 h-3.5 text-indigo-500" />
+                    <Link2 className="w-3.5 h-3.5" />
                     LinkedIn
                   </a>
                 )}
@@ -169,9 +172,9 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                     href={content.websiteUrl.startsWith('http') ? content.websiteUrl : `https://${content.websiteUrl}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold transition-colors"
+                    className={`flex items-center gap-1 ${webTokens.accentText} hover:opacity-80 font-semibold transition-colors`}
                   >
-                    <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                    <Globe className="w-3.5 h-3.5" />
                     Portafolio / Web
                   </a>
                 )}
@@ -181,7 +184,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
             {/* Resumen Profesional (Justificado Grado Empresarial) */}
             {content.summary && (
               <div className="mb-6">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
+                <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-2.5`}>
                   Resumen Profesional
                 </h2>
                 <p className="text-xs text-zinc-700 leading-relaxed font-normal text-justify">
@@ -193,7 +196,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
             {/* Experiencia Laboral (Página 1) */}
             {page1Experiences.length > 0 && (
               <div className="mb-6">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-3.5">
+                <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-3.5`}>
                   Experiencia Laboral
                 </h2>
                 <div className="space-y-4">
@@ -203,7 +206,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                         <span className="text-[13px]">{exp.role}</span>
                         <span className="text-zinc-500 text-[11px] font-normal font-mono">{exp.period}</span>
                       </div>
-                      <div className="text-indigo-700 font-semibold mb-1.5 text-[11px]">
+                      <div className={`${webTokens.accentText} font-semibold mb-1.5 text-[11px]`}>
                         {exp.company}
                       </div>
                       {exp.bullets.length > 0 && (
@@ -213,7 +216,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                             if (!cleaned) return null;
                             return (
                               <li key={bIdx} className="flex items-start gap-2 text-justify leading-relaxed">
-                                <span className="text-zinc-400 select-none mt-0.5">•</span>
+                                <span className={`${webTokens.bulletColor} select-none mt-0.5`}>•</span>
                                 <span className="flex-1">{cleaned}</span>
                               </li>
                             );
@@ -336,11 +339,11 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
           >
             <div>
               {/* Encabezado corporativo de continuación */}
-              <div className="border-b border-zinc-200 pb-3 mb-6 flex items-center justify-between text-xs text-zinc-500">
+              <div className={`border-b ${webTokens.sectionHeaderBorder} pb-3 mb-6 flex items-center justify-between text-xs text-zinc-500`}>
                 <span className="font-bold text-zinc-900 uppercase tracking-wider">
                   {content.fullName}
                 </span>
-                <span className="text-indigo-600 font-medium">
+                <span className={`${webTokens.accentText} font-medium`}>
                   {cv.targetRole} (Continuación)
                 </span>
               </div>
@@ -348,7 +351,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
               {/* Experiencias de Continuación */}
               {page2Experiences.length > 0 && (
                 <div className="mb-6">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-3.5">
+                  <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-3.5`}>
                     Experiencia Laboral (Continuación)
                   </h2>
                   <div className="space-y-4">
@@ -358,7 +361,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                           <span className="text-[13px]">{exp.role}</span>
                           <span className="text-zinc-500 text-[11px] font-normal font-mono">{exp.period}</span>
                         </div>
-                        <div className="text-indigo-700 font-semibold mb-1.5 text-[11px]">
+                        <div className={`${webTokens.accentText} font-semibold mb-1.5 text-[11px]`}>
                           {exp.company}
                         </div>
                         {exp.bullets.length > 0 && (
@@ -368,7 +371,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                               if (!cleaned) return null;
                               return (
                                 <li key={bIdx} className="flex items-start gap-2 text-justify leading-relaxed">
-                                  <span className="text-zinc-400 select-none mt-0.5">•</span>
+                                  <span className={`${webTokens.bulletColor} select-none mt-0.5`}>•</span>
                                   <span className="flex-1">{cleaned}</span>
                                 </li>
                               );
@@ -384,14 +387,14 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
               {/* Competencias y Habilidades Clave */}
               {content.skills.length > 0 && (
                 <div className="mb-6">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
+                  <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-2.5`}>
                     Habilidades y Tecnologías
                   </h2>
                   <div className="flex flex-wrap gap-1.5">
                     {content.skills.map((skill, sIdx) => (
                       <span
                         key={sIdx}
-                        className="px-2.5 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-zinc-800 text-[11px] font-medium"
+                        className={`px-2.5 py-0.5 rounded ${webTokens.tagBg} border ${webTokens.tagBorder} ${webTokens.tagText} text-[11px]`}
                       >
                         {skill}
                       </span>
@@ -403,7 +406,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
               {/* Educación y Títulos */}
               {content.education.length > 0 && (
                 <div className="mb-6">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
+                  <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-2.5`}>
                     Educación & Formación
                   </h2>
                   <div className="space-y-2">
@@ -419,7 +422,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                             </span>
                           )}
                           {edu.credentialType === 'CERTIFICATION' && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold ${webTokens.accentText} ${webTokens.accentBg} px-2 py-0.5 rounded-full border ${webTokens.accentBorder}/30`}>
                               <ShieldCheck className="w-3 h-3 text-indigo-600" />
                               Certificado Oficial
                             </span>
@@ -435,7 +438,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
               {/* Referencias Laborales (Hoja 2) */}
               {content.references && content.references.length > 0 && (
                 <div className="mb-6">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
+                  <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-2.5`}>
                     Referencias Laborales
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -443,7 +446,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                       <div key={rIdx} className="text-xs p-3 rounded-lg bg-zinc-50 border border-zinc-200 flex flex-col justify-between">
                         <div>
                           <div className="font-bold text-zinc-900 text-[12px]">{ref.name}</div>
-                          <div className="text-indigo-700 text-[11px] font-medium mt-0.5">{ref.role} • {ref.company}</div>
+                          <div className={`${webTokens.accentText} text-[11px] font-medium mt-0.5`}>{ref.role} • {ref.company}</div>
                         </div>
                         {ref.contact ? (
                           <div className="mt-2 pt-1.5 border-t border-zinc-200/60 flex items-center gap-1.5 text-zinc-600 text-[10.5px] font-mono">

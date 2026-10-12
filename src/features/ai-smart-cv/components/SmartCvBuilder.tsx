@@ -17,6 +17,7 @@ import {
   getSkillRecommendationsAction
 } from '@/features/ai-smart-cv/actions';
 import { CvDocumentPreview } from '@/features/ai-smart-cv/components/CvDocumentPreview';
+import { CvTemplateSelector } from '@/features/ai-smart-cv/components/CvTemplateSelector';
 import { ImportDocumentModal } from '@/features/ai-smart-cv/components/ImportDocumentModal';
 import { SignatureModal } from '@/features/ai-smart-cv/components/SignatureModal';
 import { InlineAiWriter } from '@/features/ai-smart-cv/components/InlineAiWriter';
@@ -675,6 +676,14 @@ export function SmartCvBuilder({
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="font-mono font-bold text-white">{currentScore}% ATS</span>
         </button>
+
+        {/* Selector de Arquetipo de Diseño Profesional */}
+        <CvTemplateSelector
+          currentTemplateId={formData.templateId || 'executive-modern'}
+          onSelectTemplate={(newTemplateId) =>
+            setFormData((prev) => ({ ...prev, templateId: newTemplateId }))
+          }
+        />
 
         {/* Formato Unificado Empresarial A4 */}
         <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-zinc-300">

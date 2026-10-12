@@ -2211,3 +2211,26 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 - **Validación en Suite de Pruebas**:
   - Test unitario en tests/unit/smart-cv-sharing.test.ts certificando el umbral de capacidad >= 4 experiencias y el límite máximo <= 30.0.
   - 491 pruebas pasando en 80 archivos de test con 0 errores de TypeScript (npm run typecheck).
+
+---
+
+## 57. Sistema de Arquetipos de Diseño y Paletas de Acento ATS-Friendly para Smart CV (Octubre 2026)
+
+### 57.1 Gobernanza de Diseño: ¿Por qué Arquetipos y no Diseños Destructivos?
+- **Problema de la Industria**: Las plantillas tradicionales con dos columnas asimétricas, gráficos densos, barras de progreso porcentuales y fondos oscuros son repudiadas y descartadas automáticamente por los sistemas ATS (Applicant Tracking Systems como Workday, Taleo, Greenhouse y SAP SuccessFactors).
+- **Estándar INDI 2026**: Preservación del 100% de la jerarquía espacial A4 Internacional (ISO 216) y cumplimiento estricto con la normativa EU AI Act, ofreciendo personalización a través de **4 Arquetipos Ejecutivos Curados** basados en tokens cromáticos y tipográficos armónicos.
+
+### 57.2 Catálogo Canónico de Arquetipos (src/entities/cv/templates.ts)
+1. **Executive Sapphire (executive-modern, Default)**: Acentos azul zafiro e índigo profundo para perfiles C-Level, directores y consultoría estratégica.
+2. **Nordic Monochrome (minimal-ats)**: Minimalismo escandinavo en escala de grises y grafito puro para ingeniería de software, consultoría top y banca.
+3. **Clinical Emerald (tech-emerald)**: Acentos verde esmeralda y salvia diseñados para profesionales de la salud, medicina, biotecnología y ciencias.
+4. **Editorial Burgundy (editorial-burgundy)**: Distinción borgoña/vino clásico para derecho, psicología, humanidades, educación y proyectos culturales.
+
+### 57.3 Sincronización Bimodal Web <-> PDF Vectorial
+- **Previsualización React (CvDocumentPreview.tsx)**: Consume dinámicamente webTokens adaptando cabeceras, divisores, cargos, viñetas, chips de habilidades y tarjetas de referencias en tiempo real.
+- **Motor jsPDF (pdf-engine.ts)**: Resuelve pdfTokens con valores RGB exactos para reproducir fielmente la paleta seleccionada en el archivo descargable.
+- **Selector Ergonómico (CvTemplateSelector.tsx)**: Dropdown accesible en el header del editor (Touch Targets >= 44px) con vista previa de gradientes y selección en 1 clic.
+
+### 57.4 Blindaje de Calidad
+- 8 pruebas unitarias aprobadas en 	ests/unit/cv-schema.test.ts validando los 4 templates y su esquema Zod.
+- Suite global aprobada con 493 pruebas en 80 archivos de test y 0 errores de TypeScript (pm run typecheck).

@@ -140,4 +140,39 @@ describe('CVFormSchema & EU AI Act Guardrails', () => {
       }
     }
   });
+
+  describe('CV_DESIGN_TEMPLATES & Archetype Palette Engine', () => {
+    it('debe contener los 4 arquetipos ejecutivos con tokens cromáticos web y PDF completos', async () => {
+      const { CV_DESIGN_TEMPLATES, getCvDesignTemplate, ALL_CV_DESIGN_TEMPLATES } = await import('@/entities/cv/templates');
+      
+      expect(ALL_CV_DESIGN_TEMPLATES.length).toBe(4);
+      expect(CV_DESIGN_TEMPLATES['executive-modern']).toBeDefined();
+      expect(CV_DESIGN_TEMPLATES['minimal-ats']).toBeDefined();
+      expect(CV_DESIGN_TEMPLATES['tech-emerald']).toBeDefined();
+      expect(CV_DESIGN_TEMPLATES['editorial-burgundy']).toBeDefined();
+
+      // Probar fallback determinista
+      const fallback = getCvDesignTemplate('non-existent-template');
+      expect(fallback.id).toBe('executive-modern');
+
+      // Probar tokens de cada arquetipo
+      for (const tpl of ALL_CV_DESIGN_TEMPLATES) {
+        expect(tpl.webTokens.accentText).toBeDefined();
+        expect(tpl.pdfTokens.headerColor.length).toBe(3);
+        expect(tpl.pdfTokens.accentColor.length).toBe(3);
+      }
+    });
+
+    it('debe aceptar cualquiera de los 4 templates en cvFormSchema', () => {
+      const templates = ['executive-modern', 'minimal-ats', 'tech-emerald', 'editorial-burgundy'];
+      for (const tplId of templates) {
+        const result = cvFormSchema.safeParse({
+          ...validCv,
+          templateId: tplId,
+        });
+        expect(result.success).toBe(true);
+      }
+    });
+  });
 });
+

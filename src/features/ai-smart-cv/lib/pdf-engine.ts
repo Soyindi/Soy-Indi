@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { CVFormValues } from '@/entities/cv/schemas';
+import { getCvDesignTemplate } from '@/entities/cv/templates';
 
 export interface GeneratePdfOptions {
   format?: 'a4' | 'letter';
@@ -30,6 +31,8 @@ export function buildCvPdfDocument(
 ): jsPDF {
   const { format = 'a4' } = options;
   const { content } = cv;
+  const template = getCvDesignTemplate(cv.templateId);
+  const { pdfTokens } = template;
 
   // 1. Inicialización con estándar empresarial unificado A4 (o carta si se solicita expresamente)
   const doc = new jsPDF({
@@ -72,10 +75,10 @@ export function buildCvPdfDocument(
     cursorY += 4;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10.5);
-    doc.setTextColor(30, 41, 59); // Slate 800
+    doc.setTextColor(...pdfTokens.sectionTitleColor);
     doc.text(title.toUpperCase(), marginX, cursorY);
     cursorY += 2;
-    doc.setDrawColor(203, 213, 225); // Slate 300
+    doc.setDrawColor(...pdfTokens.dividerColor);
     doc.setLineWidth(0.3);
     doc.line(marginX, cursorY, marginX + contentWidth, cursorY);
     cursorY += 5;
@@ -84,14 +87,14 @@ export function buildCvPdfDocument(
   // --- CABECERA PRINCIPAL ---
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(22);
-  doc.setTextColor(15, 23, 42); // Slate 900
+  doc.setTextColor(...pdfTokens.headerColor);
   doc.text(fullName, marginX, cursorY);
   cursorY += 6.5;
 
   // Cargo objetivo
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(67, 56, 202); // Indigo 700
+  doc.setTextColor(...pdfTokens.accentColor);
   doc.text(targetRole.toUpperCase(), marginX, cursorY);
   cursorY += 5.5;
 
@@ -107,7 +110,7 @@ export function buildCvPdfDocument(
   if (contactParts.length > 0) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
-    doc.setTextColor(100, 116, 139); // Slate 500
+    doc.setTextColor(...pdfTokens.metaColor);
     const contactLine = contactParts.join('  •  ');
     const splitContact = doc.splitTextToSize(contactLine, contentWidth);
     doc.text(splitContact, marginX, cursorY);
@@ -116,7 +119,7 @@ export function buildCvPdfDocument(
 
   // Divisor superior elegante
   cursorY += 1.5;
-  doc.setDrawColor(15, 23, 42); // Slate 900
+  doc.setDrawColor(...pdfTokens.headerColor);
   doc.setLineWidth(0.8);
   doc.line(marginX, cursorY, marginX + contentWidth, cursorY);
   cursorY += 6;
@@ -126,7 +129,7 @@ export function buildCvPdfDocument(
     drawSectionHeader('Resumen Profesional');
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
-    doc.setTextColor(51, 65, 85); // Slate 700
+    doc.setTextColor(...pdfTokens.bodyColor);
     const summaryLines = doc.splitTextToSize(content.summary, contentWidth);
     checkPageBreak(summaryLines.length * 4.5);
     doc.text(content.summary, marginX, cursorY, {
@@ -146,14 +149,14 @@ export function buildCvPdfDocument(
       // Cargo y Empresa
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
-      doc.setTextColor(15, 23, 42); // Slate 900
+      doc.setTextColor(...pdfTokens.headerColor);
       doc.text(exp.role || 'Cargo', marginX, cursorY);
 
       // Periodo alineado a la derecha
       if (exp.period) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(...pdfTokens.metaColor);
         doc.text(exp.period, marginX + contentWidth, cursorY, { align: 'right' });
       }
       cursorY += 4.2;
@@ -161,7 +164,7 @@ export function buildCvPdfDocument(
       // Empresa
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
-      doc.setTextColor(79, 70, 229); // Indigo 600
+      doc.setTextColor(...pdfTokens.accentColor);
       doc.text(exp.company || 'Empresa', marginX, cursorY);
       cursorY += 4.5;
 
@@ -183,13 +186,13 @@ export function buildCvPdfDocument(
         // Símbolo de viñeta limpio y único
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9);
-        doc.setTextColor(148, 163, 184); // Slate 400
+        doc.setTextColor(...pdfTokens.bulletColor);
         doc.text('•', marginX, cursorY);
 
         // Texto de la viñeta justificado pulcramente
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
-        doc.setTextColor(51, 65, 85); // Slate 700
+        doc.setTextColor(...pdfTokens.bodyColor);
         doc.text(bullet, marginX + bulletIndent, cursorY, {
           align: 'justify',
           maxWidth: bulletTextWidth,
@@ -210,20 +213,20 @@ export function buildCvPdfDocument(
       const degreeTitle = sanitizeBulletText(edu.degree || 'Título o Grado');
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9.5);
-      doc.setTextColor(15, 23, 42);
+      doc.setTextColor(...pdfTokens.headerColor);
       doc.text(degreeTitle, marginX, cursorY);
 
       if (edu.year) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
-        doc.setTextColor(100, 116, 139);
+        doc.setTextColor(...pdfTokens.metaColor);
         doc.text(edu.year, marginX + contentWidth, cursorY, { align: 'right' });
       }
       cursorY += 4;
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
-      doc.setTextColor(71, 85, 105);
+      doc.setTextColor(...pdfTokens.bodyColor);
       const instName = sanitizeBulletText(edu.institution || 'Institución');
       doc.text(instName, marginX, cursorY);
 
@@ -231,7 +234,7 @@ export function buildCvPdfDocument(
         cursorY += 3.8;
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
-        doc.setTextColor(5, 150, 105); // Emerald 600
+        doc.setTextColor(...pdfTokens.accentColor);
         doc.text(`[✓ VERIFICADO W3C: ${edu.verifiedCredentialId}]`, marginX, cursorY);
       }
       cursorY += 5;
@@ -244,7 +247,7 @@ export function buildCvPdfDocument(
     const skillsText = content.skills.join('  •  ');
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    doc.setTextColor(51, 65, 85);
+    doc.setTextColor(...pdfTokens.bodyColor);
     const skillLines = doc.splitTextToSize(skillsText, contentWidth);
     checkPageBreak(skillLines.length * 4.4);
     doc.text(skillsText, marginX, cursorY, {
@@ -281,13 +284,13 @@ export function buildCvPdfDocument(
         // Nombre
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9.5);
-        doc.setTextColor(15, 23, 42); // Slate 900
+        doc.setTextColor(...pdfTokens.headerColor);
         doc.text(ref.name, xPos, startY);
 
         // Cargo y Empresa
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
-        doc.setTextColor(67, 56, 202); // Indigo 700
+        doc.setTextColor(...pdfTokens.accentColor);
         const roleOrg = `${ref.role} • ${ref.company}`;
         const splitRoleOrg = doc.splitTextToSize(roleOrg, cardWidth);
         doc.text(splitRoleOrg, xPos, startY + 4);
@@ -298,12 +301,12 @@ export function buildCvPdfDocument(
         if (ref.contact && ref.contact.trim().length > 0) {
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(8);
-          doc.setTextColor(30, 41, 59); // Slate 800
+          doc.setTextColor(...pdfTokens.headerColor);
           doc.text(`Contacto: `, xPos, afterRoleY + 1);
 
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(8);
-          doc.setTextColor(71, 85, 105); // Slate 600
+          doc.setTextColor(...pdfTokens.metaColor);
           const contactX = xPos + doc.getTextWidth('Contacto: ');
           doc.text(ref.contact, contactX, afterRoleY + 1);
         }
