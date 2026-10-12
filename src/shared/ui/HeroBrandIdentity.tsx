@@ -45,8 +45,8 @@ export function HeroBrandIdentity({ className = '' }: HeroBrandIdentityProps) {
           className="w-full h-full object-cover motion-reduce:hidden transition-transform duration-700 hover:scale-105"
           aria-label="Logotipo oficial cinemático animado INDI"
         >
-          <source src="/brand/indi-logo-animated.webm" type="video/webm" />
           <source src="/brand/indi-logo-animated.mp4" type="video/mp4" />
+          <source src="/brand/indi-logo-animated.webm" type="video/webm" />
         </video>
 
         {/* Fallback accesible para usuarios con prefers-reduced-motion */}

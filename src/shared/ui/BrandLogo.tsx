@@ -89,13 +89,13 @@ export function BrandLogo({
               >
                 {isCinematic ? (
                   <>
-                    <source src="/brand/indi-logo-tight.webm" type="video/webm" />
                     <source src="/brand/indi-logo-tight.mp4" type="video/mp4" />
+                    <source src="/brand/indi-logo-tight.webm" type="video/webm" />
                   </>
                 ) : (
                   <>
-                    <source src="/brand/indi-logo-animated.webm" type="video/webm" />
                     <source src="/brand/indi-logo-animated.mp4" type="video/mp4" />
+                    <source src="/brand/indi-logo-animated.webm" type="video/webm" />
                   </>
                 )}
               </video>
