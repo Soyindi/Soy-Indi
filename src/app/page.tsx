@@ -11,6 +11,8 @@ import { BrandLogo } from '@/shared/ui/BrandLogo';
 import { HeroBrandIdentity } from '@/shared/ui/HeroBrandIdentity';
 import { BrandHeroBackdrop } from '@/shared/ui/BrandHeroBackdrop';
 import { JsonLd } from '@/shared/ui/JsonLd';
+import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon } from '@/shared/ui/icons/SocialBrandIcons';
+import { OFFICIAL_BRAND_SOCIALS } from '@/entities/brand/socials';
 
 const HOME_STRUCTURED_DATA = [
   {
@@ -288,6 +290,59 @@ export default function HomePage() {
           <BrandLogo variant="horizontal" size="sm" linkToHome={true} />
           <p>© 2026 INDI</p>
         </div>
+
+        {/* Canales y Redes Sociales Oficiales de INDI */}
+        <div className="flex items-center gap-2" aria-label="Redes Sociales Oficiales">
+          {OFFICIAL_BRAND_SOCIALS.instagramUrl && (
+            <a
+              href={OFFICIAL_BRAND_SOCIALS.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-pink-400 border border-white/10 hover:border-pink-500/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
+              title="Instagram Oficial de INDI"
+              aria-label="Instagram"
+            >
+              <InstagramIcon className="w-4 h-4" />
+            </a>
+          )}
+          {OFFICIAL_BRAND_SOCIALS.linkedinUrl && (
+            <a
+              href={OFFICIAL_BRAND_SOCIALS.linkedinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-blue-400 border border-white/10 hover:border-blue-500/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
+              title="LinkedIn Oficial de INDI"
+              aria-label="LinkedIn"
+            >
+              <LinkedInIcon className="w-4 h-4" />
+            </a>
+          )}
+          {OFFICIAL_BRAND_SOCIALS.xUrl && (
+            <a
+              href={OFFICIAL_BRAND_SOCIALS.xUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-white border border-white/10 hover:border-white/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
+              title="X / Twitter Oficial de INDI"
+              aria-label="X"
+            >
+              <XTwitterIcon className="w-4 h-4" />
+            </a>
+          )}
+          {OFFICIAL_BRAND_SOCIALS.whatsappUrl && (
+            <a
+              href={OFFICIAL_BRAND_SOCIALS.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
+              title="WhatsApp de Soporte INDI"
+              aria-label="WhatsApp"
+            >
+              <WhatsAppIcon className="w-4 h-4" />
+            </a>
+          )}
+        </div>
+
         <nav aria-label="Enlaces del pie" className="flex flex-wrap justify-center gap-2 font-medium">
           {FOOTER_LINKS.map((link) => (
             <Link

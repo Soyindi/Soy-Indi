@@ -147,7 +147,10 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
 - **Experiencia de Bienvenida Contextual (`ReferralWelcomeBanner`)**: Detección del referente y despliegue de badge visual de confirmación de acceso VIP en el Onboarding Hub (`/start`) y formulario de registro (`/login`).
 - **Abono Quincenal a Cuentas Chilenas & Retención SII (Ley 21.133)**: Módulo de datos bancarios para transferencia directa a Cuenta RUT, Cuenta Vista, Corriente o Ahorro en los principales bancos de Chile, con validador de RUT algoritmo Módulo 11 y cálculo automático del monto bruto requerido en Boleta de Honorarios considerando la retención legal del 15,25% (2026) ante el SII.
 - **Seguridad Criptográfica, Anti-Replay & Anti-Gaming**: Verificación de firmas HMAC-SHA256 (`x-signature`) con ventana de tolerancia temporal (5 min) anti-replay attacks en webhooks de Mercado Pago, heurística anti-auto-referidos con normalización de correos (`+alias` y puntos en Gmail) y reversión atómica de comisiones ante reembolsos/contracargos.
-- **Panel de Administración (`/admin`)**: Vista dual con auditoría en tiempo real de usuarios referidos (`TRIAL` y `ACTIVE`), consolidado quincenal de liquidaciones pendientes (días 1 y 15) con desglose de retención tributaria, detalle bancario con copia en 1 clic y confirmación de pago transferido.
+- **Panel de Administración (`/admin`)**: Vista consolidada con tres pestañas especializadas:
+  1. *Auditoría de Referidos*: Monitoreo en tiempo real de usuarios referidos (`TRIAL` y `ACTIVE`), tasas de conversión y anfitrión asociado.
+  2. *Liquidaciones Quincenales*: Consolidado quincenal de liquidaciones pendientes (días 1 y 15) con desglose de retención tributaria SII 15,25%, detalle bancario con copia en 1 clic y confirmación de pago transferido.
+  3. *Gestión de Redes Sociales Oficiales*: Módulo administrativo para actualizar los canales oficiales de INDI (Instagram, LinkedIn, X, WhatsApp Soporte) con previsualización en vivo y propagación perimetral a portada, footer y menú móvil.
 
 ---
 

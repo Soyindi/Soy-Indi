@@ -47,6 +47,12 @@ C:\Users\Matías Riquelme\Desktop\Indi\
 - Endpoint /checkout/return/flow: Sincronizador HTTP POST síncrono con verificación /payment/getStatus en Flow y batch atómico en Turso SQLite.
 - Adaptador FlowAdapter y Registry unificado paymentRegistry.
 
+### Actualización de Arquitectura Q4 2026 (Gobernanza de Redes Sociales Oficiales & Pricing Consistency):
+- **Gobernanza de Redes Sociales Oficiales (`src/entities/brand/socials.ts`)**: Esquema Zod canónico (`brandSocialLinksSchema`) y catálogo por defecto para Instagram, LinkedIn, X y WhatsApp.
+- **Acciones Administrativas Seguras (`src/features/brand/actions.ts`)**: `getOfficialBrandSocialsAction` y `updateOfficialBrandSocialsAction` con guardrail multi-tenant de rol `admin` y purga ISR perimetral (`revalidatePath`).
+- **Módulo de Gestión en Admin (`AdminBrandSocialsManager.tsx`)**: Pestaña dedicada en `/admin` con vista previa reactiva en vivo y controles ergonómicos.
+- **Consistencia Comercial de Precios en Portada**: Actualización de botones y microcopias para reflejar la tarifa base de $2.500 CLP/mes de forma transparente en toda la experiencia.
+
 ### Actualización de Arquitectura Q4 2026 (Auditoría Forense & Entitlements Engine):
 - **Motor Determinista de Entitlements (`src/entities/subscription/entitlement-engine.ts`)**: Funciones puras que concentran la máquina de estados temporal (Trial 3d con cuota Pro ➔ Suscripción activa ➔ Grace Period 5d ➔ Expired).
 - **Auto-Healing de Período de Prueba en Base de Datos**: Saneamiento atómico persistente en `checkUserEntitlementAction` para cuentas en TRIAL con `trialEndsAt = null`, garantizando un anclaje temporal de 3 días una sola vez y eliminando el reseteo del cronómetro.

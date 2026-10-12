@@ -55,7 +55,7 @@ export function HeroCtaButtons({ className = '' }: HeroCtaButtonsProps) {
         href="/pricing"
         className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass-panel text-zinc-300 hover:text-white font-medium text-sm transition-all min-h-[48px]"
       >
-        <span>Ver Precios ($1.000 al mes)</span>
+        <span>Ver Precios ($2.500 al mes)</span>
       </Link>
     </div>
   );

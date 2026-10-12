@@ -1,0 +1,27 @@
+import { z } from 'zod';
+
+/**
+ * Esquema Zod canónico para las Redes Sociales Oficiales de INDI
+ */
+export const brandSocialLinksSchema = z.object({
+  instagramUrl: z.string().url().or(z.literal('')).default('https://instagram.com/soyindi.cl'),
+  linkedinUrl: z.string().url().or(z.literal('')).default('https://www.linkedin.com/company/soyindi'),
+  xUrl: z.string().url().or(z.literal('')).default('https://x.com/soyindicorporate'),
+  whatsappUrl: z.string().url().or(z.literal('')).default('https://wa.me/56900000000'),
+  youtubeUrl: z.string().url().or(z.literal('')).default(''),
+  tiktokUrl: z.string().url().or(z.literal('')).default(''),
+});
+
+export type BrandSocialLinks = z.infer<typeof brandSocialLinksSchema>;
+
+/**
+ * Redes Sociales Oficiales Canónicas de INDI (2026)
+ */
+export const OFFICIAL_BRAND_SOCIALS: BrandSocialLinks = {
+  instagramUrl: 'https://instagram.com/soyindi.cl',
+  linkedinUrl: 'https://www.linkedin.com/company/soyindi',
+  xUrl: 'https://x.com/soyindicorporate',
+  whatsappUrl: 'https://wa.me/56900000000',
+  youtubeUrl: '',
+  tiktokUrl: '',
+};

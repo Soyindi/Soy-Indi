@@ -66,7 +66,11 @@ export default async function AdminPage() {
   }
 
   const { getAdminDashboardDataAction } = await import('@/features/affiliates/actions');
-  const dashboardData = await getAdminDashboardDataAction(session.user.id);
+  const { getOfficialBrandSocialsAction } = await import('@/features/brand/actions');
+  const [dashboardData, brandSocials] = await Promise.all([
+    getAdminDashboardDataAction(session.user.id),
+    getOfficialBrandSocialsAction(),
+  ]);
 
   const payouts = dashboardData.payouts || [];
   const referralsAudit = dashboardData.referralsAudit || [];
@@ -112,6 +116,7 @@ export default async function AdminPage() {
         <AdminPayoutsView
           initialPayouts={payouts}
           initialReferralsAudit={referralsAudit}
+          initialSocials={brandSocials}
         />
       </main>
     </div>

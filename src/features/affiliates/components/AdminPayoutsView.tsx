@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { AdminAffiliatePayoutItem, AdminReferralAuditItem } from '@/entities/affiliate/schemas';
+import { BrandSocialLinks } from '@/entities/brand/socials';
+import { AdminBrandSocialsManager } from '@/features/brand/components/AdminBrandSocialsManager';
 import { markAffiliateCommissionsAsPaidAction, getAdminDashboardDataAction } from '../actions';
 import { 
   Users, 
@@ -17,19 +19,22 @@ import {
   Sparkles,
   Clock,
   ArrowUpRight,
-  RefreshCw
+  RefreshCw,
+  Share2
 } from 'lucide-react';
 
 interface AdminDashboardViewProps {
   initialPayouts: AdminAffiliatePayoutItem[];
   initialReferralsAudit: AdminReferralAuditItem[];
+  initialSocials?: BrandSocialLinks;
 }
 
 export function AdminPayoutsView({
   initialPayouts,
   initialReferralsAudit = [],
+  initialSocials,
 }: AdminDashboardViewProps) {
-  const [activeTab, setActiveTab] = useState<'audit' | 'payouts'>('audit');
+  const [activeTab, setActiveTab] = useState<'audit' | 'payouts' | 'socials'>('audit');
   const [payouts, setPayouts] = useState<AdminAffiliatePayoutItem[]>(initialPayouts);
   const [referrals, setReferrals] = useState<AdminReferralAuditItem[]>(initialReferralsAudit);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -158,6 +163,22 @@ export function AdminPayoutsView({
           >
             <DollarSign className="w-4 h-4" />
             <span>Liquidaciones Quincenales ({payouts.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('socials');
+              setSearchTerm('');
+            }}
+            className={`min-h-[44px] px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer ${
+              activeTab === 'socials'
+                ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/20'
+                : 'glass-pill text-zinc-400 hover:text-white border border-white/10'
+            }`}
+          >
+            <Share2 className="w-4 h-4" />
+            <span>Redes Sociales</span>
           </button>
         </div>
 
@@ -622,6 +643,20 @@ export function AdminPayoutsView({
             </div>
           </div>
         </div>
+      )}
+
+      {/* PESTAÑA 3: GESTIÓN DE REDES SOCIALES OFICIALES DE LA MARCA */}
+      {activeTab === 'socials' && (
+        <AdminBrandSocialsManager
+          initialSocials={initialSocials || {
+            instagramUrl: 'https://instagram.com/soyindi.cl',
+            linkedinUrl: 'https://www.linkedin.com/company/soyindi',
+            xUrl: 'https://x.com/soyindicorporate',
+            whatsappUrl: 'https://wa.me/56900000000',
+            youtubeUrl: '',
+            tiktokUrl: '',
+          }}
+        />
       )}
     </div>
   );

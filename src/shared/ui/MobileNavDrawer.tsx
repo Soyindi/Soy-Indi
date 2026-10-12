@@ -7,6 +7,8 @@ import { useSession, signOut } from '@/shared/lib/auth-client';
 import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, Tag, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { motion, AnimatePresence } from 'framer-motion';
+import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon } from '@/shared/ui/icons/SocialBrandIcons';
+import { OFFICIAL_BRAND_SOCIALS } from '@/entities/brand/socials';
 
 export function MobileNavDrawer() {
   const [isOpen, setIsOpen] = useState(false);
@@ -247,6 +249,58 @@ export function MobileNavDrawer() {
                     </div>
                   </>
                 )}
+
+                {/* Redes Sociales Oficiales de INDI (Móvil) */}
+                <div className="pt-4 border-t border-white/10 flex items-center justify-center gap-3">
+                  {OFFICIAL_BRAND_SOCIALS.instagramUrl && (
+                    <a
+                      href={OFFICIAL_BRAND_SOCIALS.instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-pink-400 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
+                      title="Instagram Oficial"
+                      aria-label="Instagram"
+                    >
+                      <InstagramIcon className="w-4 h-4" />
+                    </a>
+                  )}
+                  {OFFICIAL_BRAND_SOCIALS.linkedinUrl && (
+                    <a
+                      href={OFFICIAL_BRAND_SOCIALS.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-blue-400 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
+                      title="LinkedIn Oficial"
+                      aria-label="LinkedIn"
+                    >
+                      <LinkedInIcon className="w-4 h-4" />
+                    </a>
+                  )}
+                  {OFFICIAL_BRAND_SOCIALS.xUrl && (
+                    <a
+                      href={OFFICIAL_BRAND_SOCIALS.xUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-white border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
+                      title="X Oficial"
+                      aria-label="X"
+                    >
+                      <XTwitterIcon className="w-4 h-4" />
+                    </a>
+                  )}
+                  {OFFICIAL_BRAND_SOCIALS.whatsappUrl && (
+                    <a
+                      href={OFFICIAL_BRAND_SOCIALS.whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-emerald-400 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
+                      title="WhatsApp Soporte"
+                      aria-label="WhatsApp"
+                    >
+                      <WhatsAppIcon className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
               </div>
             </motion.div>
           </div>

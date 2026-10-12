@@ -61,7 +61,7 @@ export const LANDING_CONTENT: LandingContent = landingContentSchema.parse({
     { title: 'Siempre actualizada', description: 'Cambia tu foto, número u ofertas en segundos, sin reimprimir.' },
     { title: 'WhatsApp en un toque', description: 'Tu cliente presiona un botón y abre la conversación contigo.' },
     { title: 'Métricas reales', description: 'Sabes cuántas personas vieron tu tarjeta y cuántas te hablaron.' },
-    { title: 'Más barata que el papel', description: 'Desde $1.000 al mes frente a ~$35.000 por 100 tarjetas impresas.' },
+    { title: 'Más barata que el papel', description: 'Desde $2.500 al mes frente a ~$35.000 por 100 tarjetas impresas.' },
   ],
   products: [
     {
