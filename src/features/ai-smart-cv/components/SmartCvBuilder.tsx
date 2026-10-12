@@ -262,14 +262,14 @@ export function SmartCvBuilder({
     }
   }, [initialCvId, initialData, initialScore]);
 
-  // Sincronizar recomendaciones de habilidades predictivas según el rol objetivo
+  // Sincronizar recomendaciones de habilidades predictivas según el rol objetivo (con debounce 300ms)
   React.useEffect(() => {
     let isMounted = true;
-    const fetchSkills = async () => {
+    const timer = setTimeout(async () => {
       try {
         const res = await getSkillRecommendationsAction(
           formData.targetRole || 'Software',
-          formData.content.skills || []
+          []
         );
         if (isMounted && res.success && res.data) {
           setSkillGroups(res.data);
@@ -277,12 +277,13 @@ export function SmartCvBuilder({
       } catch (err) {
         console.warn('Error cargando sugerencias de habilidades:', err);
       }
-    };
-    fetchSkills();
+    }, 300);
+
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
-  }, [formData.targetRole, formData.content.skills]);
+  }, [formData.targetRole]);
 
   const handleContentChange = (field: string, value: any) => {
     setFormData((prev) => {
@@ -1239,6 +1240,7 @@ export function SmartCvBuilder({
                       <div className="flex items-center justify-between">
                         <label className="text-[11px] font-mono text-zinc-400">Logros Cuantificables</label>
                         <InlineAiWriter
+                          key={`writer-exp-${idx}-${exp.company}-${exp.role}`}
                           currentText={exp.bullets.join('\n') || ''}
                           type="BULLET"
                           role={exp.role}

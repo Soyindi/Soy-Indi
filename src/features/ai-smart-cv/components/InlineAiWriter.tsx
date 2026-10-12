@@ -31,6 +31,12 @@ export function InlineAiWriter({
     type === 'BULLET' ? 'XYZ_IMPACT' : 'EXECUTIVE'
   );
 
+  // Resetear sugerencias si el texto o contexto del elemento cambia
+  React.useEffect(() => {
+    setSuggestions([]);
+    setErrorMessage(null);
+  }, [currentText, role, company, targetRole]);
+
   const handleGenerate = (mode: 'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS') => {
     setActiveMode(mode);
     setErrorMessage(null);
@@ -59,8 +65,9 @@ export function InlineAiWriter({
   };
 
   const handleOpen = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen && suggestions.length === 0) {
+    const nextState = !isOpen;
+    setIsOpen(nextState);
+    if (nextState && suggestions.length === 0) {
       handleGenerate(type === 'BULLET' ? 'XYZ_IMPACT' : 'EXECUTIVE');
     }
   };

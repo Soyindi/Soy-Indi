@@ -32,6 +32,7 @@ describe('Smart CV Job Matching Engine & Skill Taxonomies', () => {
     ],
     references: [],
     credentials: [],
+    signatureType: 'NONE',
   };
 
   describe('analyzeCvJobMatchDeterministically', () => {

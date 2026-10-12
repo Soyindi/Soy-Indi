@@ -129,7 +129,7 @@ export function analyzeCvJobMatchDeterministically(
     ...(cvContent.skills || []),
     ...(cvContent.experience || []).map((e) => {
       const bulletsText = Array.isArray(e.bullets) ? e.bullets.join(' ') : '';
-      const detailedText = Array.isArray(e.detailedBullets) ? e.detailedBullets.map((b) => `${b.action} ${b.impact}`).join(' ') : '';
+      const detailedText = Array.isArray(e.detailedBullets) ? e.detailedBullets.map((b) => `${b.text} ${b.action_verb || ''}`).join(' ') : '';
       return `${e.company || ''} ${e.role || ''} ${bulletsText} ${detailedText} ${((e as Record<string, unknown>).description as string) || ''}`;
     }),
     ...(cvContent.education || []).map((ed) => `${ed.degree || ''} ${ed.institution || ''}`),
