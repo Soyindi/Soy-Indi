@@ -155,6 +155,23 @@ export const CARD_DESIGN_PRESETS: CardDesignPreset[] = [
     badgeText: '✨ Estudio de Estética',
     operationalStatus: 'available_by_appointment',
   },
+  {
+    id: 'solar-sunset',
+    name: 'Sunset Clarity & Energy',
+    category: 'Dirección Creativa, Growth & Tech',
+    description: 'Blanco escarchado de alta luminosidad con acentos naranja sunset, resplandor ámbar y contraste nítido.',
+    primaryColorOklch: '#ea580c',
+    backgroundColorOklch: '#fafaf9',
+    particleBehavior: 'interactive',
+    particleIntensity: 'prominent',
+    fontFamily: 'Inter',
+    cardFinish: 'luminous-glass',
+    surfaceTexture: 'frosted-prism',
+    accentGlow: 'from-orange-500/35 via-amber-400/25 to-transparent',
+    coverImageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop',
+    badgeText: '🚀 Directora de Growth & Producto',
+    operationalStatus: 'open_now',
+  },
 ];
 
 export interface IndustryCoverGalleryItem {
@@ -230,6 +247,15 @@ export const INDUSTRY_COVERS_GALLERY: IndustryCoverGalleryItem[] = [
     thumbnail: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=300&auto=format&fit=crop',
     suggestedPrimaryColor: '#f59e0b',
     suggestedBadge: '🏛️ Arquitectura & Interiorismo',
+  },
+  {
+    id: 'sunset-creativity',
+    name: 'Sunset, Growth & Innovación Digital',
+    category: 'Creatividad & Tech',
+    url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=300&auto=format&fit=crop',
+    suggestedPrimaryColor: '#ea580c',
+    suggestedBadge: '🚀 Growth & Innovación',
   },
 ];
 
