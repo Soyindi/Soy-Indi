@@ -204,7 +204,7 @@ export function AdminBrandSocialsManager({ initialSocials }: AdminBrandSocialsMa
             type="url"
             value={socials.whatsappUrl}
             onChange={(e) => setSocials({ ...socials, whatsappUrl: e.target.value })}
-            placeholder="https://wa.me/56900000000"
+            placeholder="https://wa.me/56985350038"
             className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors font-mono"
           />
         </div>

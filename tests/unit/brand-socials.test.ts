@@ -11,7 +11,7 @@ describe('Brand Social Networks & Pricing Copy Consistency (INDI 2026)', () => {
       expect(parseRes.data.linkedinUrl).toBe('https://www.linkedin.com/in/soyindi-cl');
       expect(parseRes.data.tiktokUrl).toBe('https://www.tiktok.com/@soyindi.cl');
       expect(parseRes.data.xUrl).toContain('x.com');
-      expect(parseRes.data.whatsappUrl).toContain('wa.me');
+      expect(parseRes.data.whatsappUrl).toBe('https://wa.me/56985350038');
     }
   });
 

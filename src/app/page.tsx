@@ -295,17 +295,21 @@ export default async function HomePage() {
         </div>
 
         {/* Canales y Redes Sociales Oficiales de INDI (Persistidos en Turso LibSQL) */}
-        <div className="flex flex-wrap items-center justify-center gap-2" aria-label="Redes Sociales Oficiales">
+        <div
+          className="flex flex-wrap items-center justify-center gap-2.5 p-1.5 rounded-2xl bg-zinc-900/60 border border-white/5 backdrop-blur-md shadow-inner shadow-black/40"
+          aria-label="Redes Sociales y Canales Oficiales"
+        >
           {brandSocials.instagramUrl && (
             <a
               href={brandSocials.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-pink-400 border border-white/10 hover:border-pink-500/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
-              title="Instagram Oficial de INDI"
-              aria-label="Instagram"
+              className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-white/[0.03] hover:bg-pink-500/15 text-zinc-400 hover:text-pink-300 border border-white/5 hover:border-pink-500/30 transition-all duration-300 hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+              title="Instagram Oficial de INDI (@soyindi.cl)"
+              aria-label="Instagram Oficial de INDI"
             >
-              <InstagramIcon className="w-4 h-4" />
+              <InstagramIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+              <span className="sr-only">Instagram</span>
             </a>
           )}
           {brandSocials.linkedinUrl && (
@@ -313,11 +317,12 @@ export default async function HomePage() {
               href={brandSocials.linkedinUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-blue-400 border border-white/10 hover:border-blue-500/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
-              title="LinkedIn Oficial de INDI"
-              aria-label="LinkedIn"
+              className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-white/[0.03] hover:bg-blue-500/15 text-zinc-400 hover:text-blue-300 border border-white/5 hover:border-blue-500/30 transition-all duration-300 hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+              title="LinkedIn Oficial de INDI (/in/soyindi-cl)"
+              aria-label="LinkedIn Oficial de INDI"
             >
-              <LinkedInIcon className="w-4 h-4" />
+              <LinkedInIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+              <span className="sr-only">LinkedIn</span>
             </a>
           )}
           {brandSocials.tiktokUrl && (
@@ -325,11 +330,12 @@ export default async function HomePage() {
               href={brandSocials.tiktokUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-cyan-300 border border-white/10 hover:border-cyan-400/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
-              title="TikTok Oficial de INDI"
-              aria-label="TikTok"
+              className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-white/[0.03] hover:bg-cyan-500/15 text-zinc-400 hover:text-cyan-300 border border-white/5 hover:border-cyan-400/30 transition-all duration-300 hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+              title="TikTok Oficial de INDI (@soyindi.cl)"
+              aria-label="TikTok Oficial de INDI"
             >
-              <TikTokIcon className="w-4 h-4" />
+              <TikTokIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+              <span className="sr-only">TikTok</span>
             </a>
           )}
           {brandSocials.xUrl && (
@@ -337,11 +343,12 @@ export default async function HomePage() {
               href={brandSocials.xUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-white border border-white/10 hover:border-white/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
+              className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-white/[0.03] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/5 hover:border-white/20 transition-all duration-300 hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-300"
               title="X / Twitter Oficial de INDI"
-              aria-label="X"
+              aria-label="X Oficial de INDI"
             >
-              <XTwitterIcon className="w-4 h-4" />
+              <XTwitterIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+              <span className="sr-only">X</span>
             </a>
           )}
           {brandSocials.whatsappUrl && (
@@ -349,11 +356,12 @@ export default async function HomePage() {
               href={brandSocials.whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/30 transition-all hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px]"
-              title="WhatsApp de Soporte INDI"
-              aria-label="WhatsApp"
+              className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 hover:scale-105 active:scale-95 min-h-[44px] min-w-[44px] shadow-sm shadow-emerald-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              title="WhatsApp de Soporte Directo INDI (+56 9 8535 0038)"
+              aria-label="WhatsApp de Soporte Directo INDI"
             >
-              <WhatsAppIcon className="w-4 h-4" />
+              <WhatsAppIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+              <span className="sr-only">WhatsApp</span>
             </a>
           )}
         </div>

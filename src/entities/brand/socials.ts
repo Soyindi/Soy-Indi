@@ -7,9 +7,9 @@ export const brandSocialLinksSchema = z.object({
   instagramUrl: z.string().url().or(z.literal('')).default('https://instagram.com/soyindi.cl'),
   linkedinUrl: z.string().url().or(z.literal('')).default('https://www.linkedin.com/company/soyindi'),
   xUrl: z.string().url().or(z.literal('')).default('https://x.com/soyindicorporate'),
-  whatsappUrl: z.string().url().or(z.literal('')).default('https://wa.me/56900000000'),
+  whatsappUrl: z.string().url().or(z.literal('')).default('https://wa.me/56985350038'),
   youtubeUrl: z.string().url().or(z.literal('')).default(''),
-  tiktokUrl: z.string().url().or(z.literal('')).default(''),
+  tiktokUrl: z.string().url().or(z.literal('')).default('https://www.tiktok.com/@soyindi.cl'),
 });
 
 export type BrandSocialLinks = z.infer<typeof brandSocialLinksSchema>;
@@ -23,6 +23,6 @@ export const OFFICIAL_BRAND_SOCIALS: BrandSocialLinks = {
   linkedinUrl: 'https://www.linkedin.com/in/soyindi-cl',
   tiktokUrl: 'https://www.tiktok.com/@soyindi.cl',
   xUrl: 'https://x.com/soyindicorporate',
-  whatsappUrl: 'https://wa.me/56900000000',
+  whatsappUrl: 'https://wa.me/56985350038',
   youtubeUrl: '',
 };

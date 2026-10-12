@@ -255,68 +255,76 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
                   </>
                 )}
 
-                {/* Redes Sociales Oficiales de INDI (Móvil Dinámico) */}
-                <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-center gap-2.5">
-                  {activeSocials.instagramUrl && (
-                    <a
-                      href={activeSocials.instagramUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-pink-400 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
-                      title="Instagram Oficial"
-                      aria-label="Instagram"
-                    >
-                      <InstagramIcon className="w-4 h-4" />
-                    </a>
-                  )}
-                  {activeSocials.linkedinUrl && (
-                    <a
-                      href={activeSocials.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-blue-400 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
-                      title="LinkedIn Oficial"
-                      aria-label="LinkedIn"
-                    >
-                      <LinkedInIcon className="w-4 h-4" />
-                    </a>
-                  )}
-                  {activeSocials.tiktokUrl && (
-                    <a
-                      href={activeSocials.tiktokUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-cyan-300 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
-                      title="TikTok Oficial"
-                      aria-label="TikTok"
-                    >
-                      <TikTokIcon className="w-4 h-4" />
-                    </a>
-                  )}
-                  {activeSocials.xUrl && (
-                    <a
-                      href={activeSocials.xUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-white border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
-                      title="X Oficial"
-                      aria-label="X"
-                    >
-                      <XTwitterIcon className="w-4 h-4" />
-                    </a>
-                  )}
-                  {activeSocials.whatsappUrl && (
-                    <a
-                      href={activeSocials.whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-11 h-11 rounded-xl flex items-center justify-center glass-pill text-zinc-400 hover:text-emerald-400 border border-white/10 transition-all active:scale-95 min-h-[44px] min-w-[44px]"
-                      title="WhatsApp Soporte"
-                      aria-label="WhatsApp"
-                    >
-                      <WhatsAppIcon className="w-4 h-4" />
-                    </a>
-                  )}
+                {/* Redes Sociales Oficiales de INDI (Móvil Dinámico con Micro-Interacciones) */}
+                <div className="pt-4 border-t border-white/10 flex flex-col items-center gap-2">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Canales Oficiales</span>
+                  <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-zinc-900/60 border border-white/5 backdrop-blur-md">
+                    {activeSocials.instagramUrl && (
+                      <a
+                        href={activeSocials.instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-white/[0.03] hover:bg-pink-500/15 text-zinc-400 hover:text-pink-300 border border-white/5 hover:border-pink-500/30 transition-all duration-300 active:scale-95 min-h-[44px] min-w-[44px]"
+                        title="Instagram Oficial (@soyindi.cl)"
+                        aria-label="Instagram Oficial"
+                      >
+                        <InstagramIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+                        <span className="sr-only">Instagram</span>
+                      </a>
+                    )}
+                    {activeSocials.linkedinUrl && (
+                      <a
+                        href={activeSocials.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-white/[0.03] hover:bg-blue-500/15 text-zinc-400 hover:text-blue-300 border border-white/5 hover:border-blue-500/30 transition-all duration-300 active:scale-95 min-h-[44px] min-w-[44px]"
+                        title="LinkedIn Oficial (/in/soyindi-cl)"
+                        aria-label="LinkedIn Oficial"
+                      >
+                        <LinkedInIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+                        <span className="sr-only">LinkedIn</span>
+                      </a>
+                    )}
+                    {activeSocials.tiktokUrl && (
+                      <a
+                        href={activeSocials.tiktokUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-white/[0.03] hover:bg-cyan-500/15 text-zinc-400 hover:text-cyan-300 border border-white/5 hover:border-cyan-400/30 transition-all duration-300 active:scale-95 min-h-[44px] min-w-[44px]"
+                        title="TikTok Oficial (@soyindi.cl)"
+                        aria-label="TikTok Oficial"
+                      >
+                        <TikTokIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+                        <span className="sr-only">TikTok</span>
+                      </a>
+                    )}
+                    {activeSocials.xUrl && (
+                      <a
+                        href={activeSocials.xUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-white/[0.03] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/5 hover:border-white/20 transition-all duration-300 active:scale-95 min-h-[44px] min-w-[44px]"
+                        title="X Oficial"
+                        aria-label="X Oficial"
+                      >
+                        <XTwitterIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+                        <span className="sr-only">X</span>
+                      </a>
+                    )}
+                    {activeSocials.whatsappUrl && (
+                      <a
+                        href={activeSocials.whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative w-11 h-11 rounded-xl flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300 active:scale-95 min-h-[44px] min-w-[44px] shadow-sm shadow-emerald-500/10"
+                        title="WhatsApp Soporte (+56 9 8535 0038)"
+                        aria-label="WhatsApp Soporte"
+                      >
+                        <WhatsAppIcon className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+                        <span className="sr-only">WhatsApp</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
