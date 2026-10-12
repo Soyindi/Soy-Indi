@@ -4,6 +4,7 @@ import { db } from '@/shared/api/db';
 import { cards } from '@/entities/schema';
 import { eq, sql } from 'drizzle-orm';
 import { DigitalCard } from '@/entities/card/components/DigitalCard';
+import { OFFICIAL_DEMO_CARD } from '@/entities/card/themes';
 import { PublicContextualHeader } from '@/shared/ui/PublicContextualHeader';
 import { JsonLd } from '@/shared/ui/JsonLd';
 
@@ -18,11 +19,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   // Si es slug demo, retornamos metadatos de presentación
   if (slug === 'demo') {
-    const ogImageUrl = `https://soyindi.cl/api/og?type=card&title=${encodeURIComponent('Matías Riquelme')}&role=${encodeURIComponent('Ingeniero de Software & Arquitecto Cloud')}&about=${encodeURIComponent('Especialista en arquitecturas web distribuidas, Edge computing y sistemas de alta concurrencia.')}&verified=1`;
+    const ogImageUrl = `https://soyindi.cl/api/og?type=card&title=${encodeURIComponent(OFFICIAL_DEMO_CARD.title)}&role=${encodeURIComponent(OFFICIAL_DEMO_CARD.profession)}&about=${encodeURIComponent(OFFICIAL_DEMO_CARD.about)}&verified=1`;
 
     return {
-      title: 'Matías Riquelme — Ingeniero de Software & Arquitecto Cloud | INDI',
-      description: 'Conecta directamente con Matías Riquelme en un solo clic por WhatsApp o redes.',
+      title: `${OFFICIAL_DEMO_CARD.title} — ${OFFICIAL_DEMO_CARD.profession} | INDI`,
+      description: `Conecta directamente con ${OFFICIAL_DEMO_CARD.title} en un solo clic por WhatsApp o redes.`,
       openGraph: {
         title: 'Matías Riquelme — Ingeniero de Software',
         description: 'Tarjeta de identidad interactiva y networking profesional.',
@@ -98,50 +99,7 @@ export default async function PublicCardPage({ params }: PageProps) {
         <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-cyan-500/15 blur-[120px] pointer-events-none" />
 
         <div className="my-auto px-4">
-          <DigitalCard
-            card={{
-              slug: 'demo',
-              title: 'Valentina Silva',
-              profession: 'Directora de Growth & Producto',
-              about: 'Lidero estrategias de crecimiento y producto digital en LatAm. Conectemos para impulsar tu próximo proyecto.',
-              whatsapp: '+56987654321',
-              emailContact: 'valentina@indi.cl',
-              websiteUrl: 'https://soyindi.cl',
-              linkedinUrl: 'https://linkedin.com/in/valentina-silva',
-              instagramUrl: 'https://instagram.com/valentina.growth',
-              photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80',
-              address: 'Av. Andrés Bello 2457, Piso 18, Las Condes, Santiago',
-              themeConfig: {
-                themeId: 'solar-sunset',
-                primaryColorOklch: '#ea580c',
-                backgroundColorOklch: '#fafaf9',
-                particleBehavior: 'interactive',
-                particleIntensity: 'prominent',
-                cardFinish: 'luminous-glass',
-                surfaceTexture: 'frosted-prism',
-                coverImageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80',
-                badgeText: '🚀 Growth & Producto',
-                operationalStatus: 'open_now',
-              },
-              bentoBlocks: [
-                {
-                  id: 'metric-1',
-                  type: 'metric',
-                  title: 'Tasa de Conversión Web',
-                  subtitle: 'Optimización de funnels B2B & SaaS',
-                  metricValue: '+42%',
-                  metricDelta: '↑ récord trimestral',
-                },
-                {
-                  id: 'project-1',
-                  type: 'featured_project',
-                  title: 'Portafolio de Casos de Éxito',
-                  subtitle: 'Auditorías de producto y UX estratégica',
-                  url: 'https://soyindi.cl',
-                },
-              ],
-            }}
-          />
+          <DigitalCard card={OFFICIAL_DEMO_CARD} />
         </div>
       </div>
     );

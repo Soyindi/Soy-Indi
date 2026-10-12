@@ -168,48 +168,9 @@ const FOOTER_LINKS = [
  * Landing Minimalista INDI 2026 — presupuesto de 5 secciones:
  * Hero (marca + demo) · Por qué INDI · Herramientas · Precios · FAQ (+ cierre).
  */
-const DEMO_CARD: CardData = {
-  slug: 'demo',
-  title: 'Valentina Silva',
-  profession: 'Directora de Growth & Producto',
-  about: 'Lidero estrategias de crecimiento y producto digital en LatAm. Conectemos para impulsar tu próximo proyecto.',
-  whatsapp: '+56987654321',
-  emailContact: 'valentina@indi.cl',
-  websiteUrl: 'https://soyindi.cl',
-  linkedinUrl: 'https://linkedin.com/in/valentina-silva',
-  instagramUrl: 'https://instagram.com/valentina.growth',
-  photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=80',
-  address: 'Av. Andrés Bello 2457, Piso 18, Las Condes, Santiago',
-  themeConfig: {
-    themeId: 'solar-sunset',
-    primaryColorOklch: '#ea580c',
-    backgroundColorOklch: '#fafaf9',
-    particleBehavior: 'interactive',
-    particleIntensity: 'prominent',
-    cardFinish: 'luminous-glass',
-    surfaceTexture: 'frosted-prism',
-    coverImageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80',
-    badgeText: '🚀 Growth & Producto',
-    operationalStatus: 'open_now',
-  },
-  bentoBlocks: [
-    {
-      id: 'metric-1',
-      type: 'metric',
-      title: 'Tasa de Conversión Web',
-      subtitle: 'Optimización de funnels B2B & SaaS',
-      metricValue: '+42%',
-      metricDelta: '↑ récord trimestral',
-    },
-    {
-      id: 'project-1',
-      type: 'featured_project',
-      title: 'Portafolio de Casos de Éxito',
-      subtitle: 'Auditorías de producto y UX estratégica',
-      url: 'https://soyindi.cl',
-    },
-  ],
-};
+import { OFFICIAL_DEMO_CARD } from '@/entities/card/themes';
+
+const DEMO_CARD: CardData = OFFICIAL_DEMO_CARD;
 
 export default function HomePage() {
   const { hero, valueProps, products, closing } = LANDING_CONTENT;

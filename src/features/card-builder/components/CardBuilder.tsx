@@ -6,7 +6,7 @@ import { DigitalCard, CardData } from '@/entities/card/components/DigitalCard';
 import { upsertCardAction, checkCardSlugAvailabilityAction, SlugAvailabilityResult } from '@/features/card-builder/actions';
 import { generateBioVariantsAction } from '@/features/card-builder/ai-bio-actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
-import { CARD_DESIGN_PRESETS, CardDesignPreset, INDUSTRY_COVERS_GALLERY } from '@/entities/card/themes';
+import { CARD_DESIGN_PRESETS, CardDesignPreset, INDUSTRY_COVERS_GALLERY, OFFICIAL_DEMO_CARD } from '@/entities/card/themes';
 import { slugifyCardName, generateCardSlug } from '@/entities/card/schemas';
 import { compressImageClient } from '@/shared/lib/imageCompression';
 import { extractPaletteFromImage, ExtractedPalette } from '@/shared/lib/colorExtraction';
@@ -86,7 +86,7 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
   // Inicialización inteligente del slug: derivado del nombre si existe o del default profesional
   const [initialSlug] = useState(() => {
     if (initialData?.slug) return initialData.slug;
-    return generateCardSlug(initialData?.title || 'carlos-mendoza');
+    return generateCardSlug(initialData?.title || OFFICIAL_DEMO_CARD.title);
   });
 
   // Rastrear si el usuario modificó deliberadamente el slug a mano
@@ -101,34 +101,36 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
     suggestions: [],
   });
 
-  // Estado reactivo del formulario
+  // Estado reactivo del formulario sincronizado con la Tarjeta Demostrativa Oficial (INDI 2026)
   const [formData, setFormData] = useState<CardData>({
     slug: initialData?.slug || initialSlug,
-    title: initialData?.title || 'Carlos Mendoza',
-    profession: initialData?.profession || 'Especialista en Marketing Digital',
-    about: initialData?.about || 'Ayudo a marcas y empresas a escalar sus ventas mediante estrategias de adquisición y analítica de datos.',
-    whatsapp: initialData?.whatsapp || '+56987654321',
-    emailContact: initialData?.emailContact || 'carlos@mendoza.com',
-    websiteUrl: initialData?.websiteUrl || 'https://carlosmendoza.com',
-    linkedinUrl: initialData?.linkedinUrl || 'https://linkedin.com/in/carlosmendoza',
-    instagramUrl: initialData?.instagramUrl || 'https://instagram.com/carlosmendoza',
-    photoUrl: initialData?.photoUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
-    address: initialData?.address || 'Av. Providencia 1208, Oficina 702, Santiago, Chile',
+    title: initialData?.title || OFFICIAL_DEMO_CARD.title,
+    profession: initialData?.profession || OFFICIAL_DEMO_CARD.profession,
+    about: initialData?.about ?? OFFICIAL_DEMO_CARD.about,
+    whatsapp: initialData?.whatsapp ?? OFFICIAL_DEMO_CARD.whatsapp,
+    emailContact: initialData?.emailContact ?? OFFICIAL_DEMO_CARD.emailContact,
+    websiteUrl: initialData?.websiteUrl ?? OFFICIAL_DEMO_CARD.websiteUrl,
+    linkedinUrl: initialData?.linkedinUrl ?? OFFICIAL_DEMO_CARD.linkedinUrl,
+    instagramUrl: initialData?.instagramUrl ?? OFFICIAL_DEMO_CARD.instagramUrl,
+    photoUrl: initialData?.photoUrl ?? OFFICIAL_DEMO_CARD.photoUrl,
+    address: initialData?.address ?? OFFICIAL_DEMO_CARD.address,
     themeConfig: {
-      themeId: initialData?.themeConfig?.themeId || 'stellar',
-      primaryColorOklch: initialData?.themeConfig?.primaryColorOklch || '#6366f1',
-      particleBehavior: initialData?.themeConfig?.particleBehavior || 'ambient',
-      particleIntensity: initialData?.themeConfig?.particleIntensity || 'balanced',
-      cardFinish: initialData?.themeConfig?.cardFinish || 'classic',
-      surfaceTexture: initialData?.themeConfig?.surfaceTexture || 'radial-glow',
-      coverImageUrl: initialData?.themeConfig?.coverImageUrl || '',
-      backgroundImageUrl: initialData?.themeConfig?.backgroundImageUrl || '',
+      themeId: initialData?.themeConfig?.themeId || OFFICIAL_DEMO_CARD.themeConfig.themeId,
+      primaryColorOklch: initialData?.themeConfig?.primaryColorOklch || OFFICIAL_DEMO_CARD.themeConfig.primaryColorOklch,
+      particleBehavior: initialData?.themeConfig?.particleBehavior || OFFICIAL_DEMO_CARD.themeConfig.particleBehavior,
+      particleIntensity: initialData?.themeConfig?.particleIntensity || OFFICIAL_DEMO_CARD.themeConfig.particleIntensity,
+      cardFinish: initialData?.themeConfig?.cardFinish || OFFICIAL_DEMO_CARD.themeConfig.cardFinish,
+      surfaceTexture: initialData?.themeConfig?.surfaceTexture || OFFICIAL_DEMO_CARD.themeConfig.surfaceTexture,
+      coverImageUrl: initialData?.themeConfig?.coverImageUrl ?? OFFICIAL_DEMO_CARD.themeConfig.coverImageUrl,
+      backgroundImageUrl: initialData?.themeConfig?.backgroundImageUrl ?? '',
       backgroundType: initialData?.themeConfig?.backgroundType || 'theme',
       backgroundOverlayBlur: initialData?.themeConfig?.backgroundOverlayBlur || 'medium',
       backgroundOverlayOpacity: initialData?.themeConfig?.backgroundOverlayOpacity ?? 0.5,
-      operationalStatus: initialData?.themeConfig?.operationalStatus || 'none',
+      operationalStatus: initialData?.themeConfig?.operationalStatus || OFFICIAL_DEMO_CARD.themeConfig.operationalStatus,
       customStatusText: initialData?.themeConfig?.customStatusText || '',
+      badgeText: initialData?.themeConfig?.badgeText ?? OFFICIAL_DEMO_CARD.themeConfig.badgeText,
     },
+    bentoBlocks: initialData?.bentoBlocks ? [...initialData.bentoBlocks] : [...OFFICIAL_DEMO_CARD.bentoBlocks],
   });
 
   // Efecto debounced (350ms) para comprobar disponibilidad de slug en Turso
@@ -724,7 +726,7 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                     value={formData.title}
                     onChange={(e) => handleChange('title', e.target.value)}
                     className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
-                    placeholder="Ej. Carlos Mendoza"
+                    placeholder="Ej. Valentina Silva"
                   />
                 </div>
                 <div>
@@ -736,7 +738,7 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                     value={formData.profession}
                     onChange={(e) => handleChange('profession', e.target.value)}
                     className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
-                    placeholder="Ej. Arquitecto de Software"
+                    placeholder="Ej. Directora de Growth & Producto"
                   />
                 </div>
               </div>
