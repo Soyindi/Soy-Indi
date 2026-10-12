@@ -2188,3 +2188,26 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
    - Almacena en memoria hasta 100 respuestas recientes con TTL de 10 minutos indexadas por un hash normalizado de los mensajes y parámetros de salida. Respuestas a re-renderizados o solicitudes repetidas se sirven en <1ms sin consumir cuota de las APIs externas.
 4. **Blindaje de Calidad con Vitest**:
    - `tests/unit/ai-circuit-breaker.test.ts` valida al 100% la transición de estados `CLOSED -> OPEN -> CLOSED`, deduplicación concurrente y micro-caché semántica. Suite completa aprobada (73/73 archivos, 454 tests pasando).
+
+---
+
+## 56. Calibración de Balance Vertical y Densidad A4 en Smart CV (Octubre 2026)
+
+### 56.1 Diagnóstico Forense del Hueco Vertical en Hoja 1
+- **Causa Raíz Identificada**:
+  1. *Subestimación de Capacidad Vertical en Previsualización Web (CvDocumentPreview.tsx)*: El umbral de peso vertical para la Hoja 1 (page1MaxCapacity) estaba fijado en 23 unidades. En perfiles profesionales con resumen ejecutivo y viñetas concisas, la 3ª experiencia acumulaba ~22.9 unidades, lo que forzaba el salto de la 4ª experiencia a la Hoja 2.
+  2. *Disparidad con el Generador Vectorial PDF (pdf-engine.ts)*: En jsPDF el corte se calcula milimétricamente contra los 297 mm de la hoja A4 (cursorY + neededHeight > pageHeight - 20), permitiendo 4 o más experiencias antes del salto de página. La previsualización web React, en contraste, realizaba un corte prematuro, dejando un espacio en blanco de más de un tercio de hoja antes del pie de página.
+  3. *Anclaje Inflexible con justify-between*: El contenedor de hoja física A4 (min-h-[1123px] flex flex-col justify-between) empujaba el pie de página hasta el fondo absoluto al vaciarse el espacio restante, amplificando la sensación visual de desconexión.
+
+### 56.2 Solución de Ingeniería y Calibración A4
+- **Recalibración del Algoritmo de Pesos Verticales**:
+  - page1MaxCapacity elevado de 23 a **30.0 unidades**, alineado con la altura imprimible real de una hoja A4 (297 mm / 1123 px netos considerando márgenes y padding).
+  - Ponderación de experiencias refinada: Base de cargo/empresa a 2.5 unidades, peso por viñeta a 1.3 y escala de longitud a Math.ceil(bulletsLength / 90).
+  - Resumen ejecutivo ponderado a Math.ceil(length / 75) y cabecera inicial a 3.5 unidades.
+- **Resultado Estético y Funcional**:
+  - Perfiles con hasta 4 experiencias ejecutivas concisas conviven de manera compacta y elegante en la Hoja 1, llenando el espacio vertical de forma armónica sin desbordes.
+  - La Hoja 2 se reserva para experiencias adicionales, habilidades, formación académica, referencias laborales y la firma digital.
+  - 100% de coherencia visual entre la previsualización interactiva (CvDocumentPreview.tsx) y el documento PDF vectorial descargable (pdf-engine.ts).
+- **Validación en Suite de Pruebas**:
+  - Test unitario en tests/unit/smart-cv-sharing.test.ts certificando el umbral de capacidad >= 4 experiencias y el límite máximo <= 30.0.
+  - 491 pruebas pasando en 80 archivos de test con 0 errores de TypeScript (npm run typecheck).

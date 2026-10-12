@@ -15,30 +15,30 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
   const { content } = cv;
 
   // Estimación de altura y densidad de contenido para distribución armónica A4
-  // Resumen: aprox 1 unidad por cada 70 caracteres
-  const summaryWeight = Math.ceil((content.summary || '').length / 70);
+  // Resumen: aprox 1 unidad por cada 75 caracteres
+  const summaryWeight = Math.ceil((content.summary || '').length / 75);
   
   // Peso por experiencia basado en cantidad y longitud de viñetas
   const expWeights = content.experience.map((exp) => {
     const bulletsCount = exp.bullets?.length || 0;
     const bulletsLength = exp.bullets?.reduce((acc, b) => acc + b.length, 0) || 0;
-    // Base de header/cargo/empresa (3) + peso de viñetas
-    return 3 + bulletsCount * 1.5 + Math.ceil(bulletsLength / 80);
+    // Base de header/cargo/empresa (2.5) + peso de viñetas
+    return 2.5 + bulletsCount * 1.3 + Math.ceil(bulletsLength / 90);
   });
   const totalExpWeight = expWeights.reduce((a, b) => a + b, 0);
 
   // Peso de secciones secundarias
-  const skillsWeight = content.skills && content.skills.length > 0 ? 3 + Math.ceil(content.skills.length / 5) : 0;
-  const eduWeight = content.education && content.education.length > 0 ? 2 + content.education.length * 2 : 0;
-  const refWeight = content.references && content.references.length > 0 ? 2 + content.references.length * 2.5 : 0;
+  const skillsWeight = content.skills && content.skills.length > 0 ? 2.5 + Math.ceil(content.skills.length / 6) : 0;
+  const eduWeight = content.education && content.education.length > 0 ? 2 + content.education.length * 1.8 : 0;
+  const refWeight = content.references && content.references.length > 0 ? 2 + content.references.length * 2.2 : 0;
 
-  // Umbral de capacidad A4 de Hoja 1 (máx ~24 unidades de peso vertical antes de desborde)
-  const page1MaxCapacity = 23;
-  let accumulatedPage1Weight = summaryWeight + 4; // 4 por el header del documento
+  // Umbral de capacidad A4 de Hoja 1 (capacidad real de hoja A4 con márgenes: ~30 unidades de peso)
+  const page1MaxCapacity = 30;
+  let accumulatedPage1Weight = summaryWeight + 3.5; // 3.5 por el header del documento
   let splitExpIndex = 0;
 
   while (splitExpIndex < content.experience.length) {
-    const nextWeight = expWeights[splitExpIndex] || 3;
+    const nextWeight = expWeights[splitExpIndex] || 2.5;
     if (accumulatedPage1Weight + nextWeight <= page1MaxCapacity) {
       accumulatedPage1Weight += nextWeight;
       splitExpIndex++;
@@ -54,7 +54,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
 
   const remainingExperiences = content.experience.slice(splitExpIndex);
   const remainingWeight = 
-    remainingExperiences.reduce((acc, _, i) => acc + (expWeights[splitExpIndex + i] || 3), 0) +
+    remainingExperiences.reduce((acc, _, i) => acc + (expWeights[splitExpIndex + i] || 2.5), 0) +
     skillsWeight +
     eduWeight +
     refWeight;
