@@ -265,3 +265,49 @@ export const rewriteCvSectionSchema = z.object({
 });
 
 export type RewriteCvSectionInput = z.infer<typeof rewriteCvSectionSchema>;
+
+/**
+ * Esquema de solicitud y respuesta para el Comparador de Vacante (Job Match AI)
+ */
+export const jobMatchRequestSchema = z.object({
+  jobDescriptionText: z.string().min(10, 'La descripción de la oferta laboral debe tener al menos 10 caracteres').max(15000, 'Texto demasiado largo'),
+  targetRole: z.string().optional(),
+  cvContent: cvContentSchema,
+  userId: z.string().optional(),
+});
+
+export type JobMatchRequestInput = z.infer<typeof jobMatchRequestSchema>;
+
+export interface JobMatchAnalysisResult {
+  matchScore: number; // 0 a 100
+  matchingKeywords: string[];
+  missingKeywords: string[];
+  criticalRequirements: Array<{
+    requirement: string;
+    status: 'FULFILLED' | 'MISSING' | 'PARTIAL';
+    suggestion: string;
+  }>;
+  tailoredSummaryAdvice: string;
+  highImpactActionAdvice: string[];
+}
+
+/**
+ * Esquema de recomendación predictiva de habilidades según arquetipo y rol objetivo
+ */
+export const skillRecommendationRequestSchema = z.object({
+  targetRole: z.string().min(2, 'Rol objetivo requerido'),
+  currentSkills: z.array(z.string()).default([]),
+});
+
+export type SkillRecommendationRequest = z.infer<typeof skillRecommendationRequestSchema>;
+
+export interface SkillCategoryGroup {
+  category: 'CORE_TECHNICAL' | 'TOOLS_FRAMEWORKS' | 'METHODOLOGIES_GOVERNANCE' | 'SOFT_LEADERSHIP';
+  label: string;
+  skills: Array<{
+    name: string;
+    isCurrent: boolean;
+    popularityScore: number; // 0 a 100
+  }>;
+}
+

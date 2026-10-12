@@ -373,6 +373,13 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 - **Request Coalescing In-Flight**: Las peticiones simultáneas con el mismo contenido comparten la misma promesa HTTP en vuelo, impidiendo duplicar costos y peticiones a los proveedores.
 - **Micro-Caché Semántica en Memoria**: Consultas repetidas dentro de una ventana de 10 minutos se resuelven de inmediato (<1ms) sin consumir saldo ni cuota de las APIs externas.
 
+27. **Gobernanza de Job Match AI & Recomendador Predictivo de Habilidades (Smart CV 2026):**
+- **Job Match AI & Gap Analysis (`JobMatchModal.tsx` & `cv-matching-engine.ts`)**: El usuario puede pegar la descripción textual de una vacante laboral real para auditar en tiempo real su porcentaje de afinidad ATS (0-100%), identificar palabras clave coincidentes y extraer *Missing Keywords*.
+- **Inyección Atómica de Keywords en 1 Clic**: Cada palabra clave ausente detectada en la vacante se presenta como una píldora interactiva que, al pulsarse, se anexa automáticamente a las habilidades de `SmartCvBuilder.tsx` sin fricción manual.
+- **Auditoría de Requisitos Críticos Indispensables**: El motor analiza automáticamente años de experiencia laboral requeridos vs acumulados, grado académico/titulación y dominio de idiomas (inglés), clasificando cada criterio en `FULFILLED`, `PARTIAL` o `MISSING` con recomendaciones de redacción.
+- **Taxonomía Predictiva de Habilidades por Rol (ESCO/O*NET)**: La sección de habilidades expone un explorador inteligente que agrupa destrezas clave por rol y categoría (Técnicas, Metodologías, Herramientas, Soft Skills), permitiendo incorporar competencias de alta demanda con un solo toque.
+- **Inferencia Híbrida Cero Caídas**: El cálculo heurístico determinista entrega resultados instantáneos (<10ms). Si existe disponibilidad en la malla de modelos (NVIDIA NIM / Groq), enriquece los consejos con síntesis ejecutiva personalizada. Blindado por `tests/unit/cv-job-match-and-skills.test.ts`.
+
 ---
 
 

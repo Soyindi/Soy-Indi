@@ -833,3 +833,146 @@ export async function checkCvSlugAvailabilityAction(
     };
   }
 }
+
+/**
+ * Server Action: Análisis de Matching y Brechas frente a Ofertas Laborales (Job Match AI)
+ */
+export async function analyzeJobMatchAction(input: any): Promise<{
+  success: boolean;
+  data?: import('@/entities/cv/schemas').JobMatchAnalysisResult;
+  error?: string;
+}> {
+  try {
+    const { jobMatchRequestSchema } = await import('@/entities/cv/schemas');
+    const parsed = jobMatchRequestSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message || 'Parámetros inválidos para comparar la oferta laboral.',
+      };
+    }
+
+    const { jobDescriptionText, targetRole, cvContent, userId } = parsed.data;
+
+    // Guardrail de Sesión y Entitlements
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const targetUserId = sessionResult.userId;
+
+    if (targetUserId) {
+      const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
+      const entitlement = await assertUserEntitlementAction(targetUserId);
+      if (!entitlement.allowed) {
+        return {
+          success: false,
+          error: entitlement.error || 'Período de prueba o suscripción expirada.',
+        };
+      }
+    }
+
+    // Rate limiting para uso de IA
+    const rateLimitIdentifier = targetUserId || 'anonymous-user';
+    const { checkAiRateLimit } = await import('@/shared/lib/rateLimiter');
+    const rateLimit = await checkAiRateLimit(rateLimitIdentifier);
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: 'Límite de solicitudes de IA alcanzado. Por favor espera unos momentos.',
+      };
+    }
+
+    const { analyzeCvJobMatchDeterministically } = await import('@/features/ai-smart-cv/lib/cv-matching-engine');
+    const deterministicAnalysis = analyzeCvJobMatchDeterministically(
+      jobDescriptionText,
+      cvContent,
+      targetRole || ''
+    );
+
+    // Intentar enriquecer con modelo LLM si hay conectividad
+    try {
+      const systemPrompt = `Eres un Asesor Senior de Selección de Talento y Auditor de ATS.
+Compara la oferta laboral provista con el perfil del candidato.
+Devuelve EXCLUSIVAMENTE un JSON con:
+{
+  "matchScore": number (0-100),
+  "matchingKeywords": string[],
+  "missingKeywords": string[],
+  "tailoredSummaryAdvice": string,
+  "highImpactActionAdvice": string[]
+}`;
+
+      const userPrompt = `OFERTA LABORAL:
+"""${jobDescriptionText.slice(0, 3500)}"""
+
+PERFIL CANDIDATO:
+Rol: ${targetRole || 'Profesional'}
+Resumen: ${cvContent.summary}
+Habilidades: ${cvContent.skills.join(', ')}
+Experiencia: ${cvContent.experience.map((e) => `${e.role} en ${e.company}: ${e.bullets.join(' ')}`).join(' | ').slice(0, 3000)}`;
+
+      const aiRes = await callNvidiaNimChat(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        {
+          model: 'meta/llama-3.2-90b-vision-instruct',
+          temperature: 0.2,
+          maxTokens: 700,
+          responseFormat: { type: 'json_object' },
+        }
+      );
+
+      if (aiRes.success && aiRes.content) {
+        const cleaned = aiRes.content.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const parsedAi = JSON.parse(cleaned);
+
+        return {
+          success: true,
+          data: {
+            matchScore: typeof parsedAi.matchScore === 'number' ? parsedAi.matchScore : deterministicAnalysis.matchScore,
+            matchingKeywords: Array.isArray(parsedAi.matchingKeywords) && parsedAi.matchingKeywords.length > 0 ? parsedAi.matchingKeywords : deterministicAnalysis.matchingKeywords,
+            missingKeywords: Array.isArray(parsedAi.missingKeywords) && parsedAi.missingKeywords.length > 0 ? parsedAi.missingKeywords : deterministicAnalysis.missingKeywords,
+            criticalRequirements: deterministicAnalysis.criticalRequirements,
+            tailoredSummaryAdvice: parsedAi.tailoredSummaryAdvice || deterministicAnalysis.tailoredSummaryAdvice,
+            highImpactActionAdvice: Array.isArray(parsedAi.highImpactActionAdvice) && parsedAi.highImpactActionAdvice.length > 0 ? parsedAi.highImpactActionAdvice : deterministicAnalysis.highImpactActionAdvice,
+          },
+        };
+      }
+    } catch (aiErr) {
+      console.warn('[Job Match AI] Fallback a análisis determinístico:', aiErr);
+    }
+
+    return {
+      success: true,
+      data: deterministicAnalysis,
+    };
+  } catch (err: any) {
+    console.error('Error en analyzeJobMatchAction:', err);
+    return {
+      success: false,
+      error: err.message || 'Error al procesar el análisis de la oferta laboral.',
+    };
+  }
+}
+
+/**
+ * Server Action: Recomendador Predictivo de Habilidades según Rol Objetivo
+ */
+export async function getSkillRecommendationsAction(targetRole: string, currentSkills: string[] = []) {
+  try {
+    const { getRecommendedSkillsForRole } = await import('@/features/ai-smart-cv/lib/cv-matching-engine');
+    const groups = getRecommendedSkillsForRole(targetRole, currentSkills);
+    return {
+      success: true,
+      data: groups,
+    };
+  } catch (err: any) {
+    console.error('Error obteniendo recomendaciones de habilidades:', err);
+    return {
+      success: false,
+      data: [],
+      error: err.message,
+    };
+  }
+}
+

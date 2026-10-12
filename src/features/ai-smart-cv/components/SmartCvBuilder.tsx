@@ -13,12 +13,14 @@ import {
   auditAtsScoreAction, 
   upsertSmartCvAction, 
   checkCvSlugAvailabilityAction,
-  CvSlugAvailabilityResult 
+  CvSlugAvailabilityResult,
+  getSkillRecommendationsAction
 } from '@/features/ai-smart-cv/actions';
 import { CvDocumentPreview } from '@/features/ai-smart-cv/components/CvDocumentPreview';
 import { ImportDocumentModal } from '@/features/ai-smart-cv/components/ImportDocumentModal';
 import { SignatureModal } from '@/features/ai-smart-cv/components/SignatureModal';
 import { InlineAiWriter } from '@/features/ai-smart-cv/components/InlineAiWriter';
+import { JobMatchModal } from '@/features/ai-smart-cv/components/JobMatchModal';
 import { generateAndDownloadCvPdf } from '@/features/ai-smart-cv/lib/pdf-engine';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { 
@@ -48,6 +50,7 @@ import {
   AlertTriangle,
   AlertCircle,
   ArrowRight,
+  Target
 } from 'lucide-react';
 
 export interface SmartCvBuilderProps {
@@ -66,12 +69,17 @@ export function SmartCvBuilder({
   const [isDropzoneProcessing, setIsDropzoneProcessing] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+  const [isJobMatchModalOpen, setIsJobMatchModalOpen] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState(false);
   const [currentCvId, setCurrentCvId] = useState<string | undefined>(initialCvId);
   const [currentScore, setCurrentScore] = useState<number>(initialScore ?? 85);
   const [auditReport, setAuditReport] = useState<AtsAuditResult | null>(null);
+
+  // Estado para sugerencias predictivas de habilidades según el rol objetivo
+  const [skillGroups, setSkillGroups] = useState<Array<import('@/entities/cv/schemas').SkillCategoryGroup>>([]);
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
 
   // Modo de visualización: 'split' (ambos), 'edit' (solo editor), 'preview' (solo documento)
   const [viewMode, setViewMode] = useState<'split' | 'edit' | 'preview'>('split');
@@ -253,6 +261,28 @@ export function SmartCvBuilder({
       }));
     }
   }, [initialCvId, initialData, initialScore]);
+
+  // Sincronizar recomendaciones de habilidades predictivas según el rol objetivo
+  React.useEffect(() => {
+    let isMounted = true;
+    const fetchSkills = async () => {
+      try {
+        const res = await getSkillRecommendationsAction(
+          formData.targetRole || 'Software',
+          formData.content.skills || []
+        );
+        if (isMounted && res.success && res.data) {
+          setSkillGroups(res.data);
+        }
+      } catch (err) {
+        console.warn('Error cargando sugerencias de habilidades:', err);
+      }
+    };
+    fetchSkills();
+    return () => {
+      isMounted = false;
+    };
+  }, [formData.targetRole, formData.content.skills]);
 
   const handleContentChange = (field: string, value: any) => {
     setFormData((prev) => {
@@ -622,6 +652,17 @@ export function SmartCvBuilder({
           <span>{formData.content.signatureUrl ? 'Firma Adjunta' : 'Adjuntar Firma'}</span>
         </button>
 
+        {/* Botón Job Match AI (Comparar Oferta Laboral) */}
+        <button
+          type="button"
+          onClick={() => setIsJobMatchModalOpen(true)}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-semibold shadow-sm transition-all"
+          title="Compara tu currículum contra una oferta laboral real y detecta brechas ATS"
+        >
+          <Target className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Comparar Oferta</span>
+        </button>
+
         {/* Badge Compacto de Score ATS */}
         <button
           type="button"
@@ -722,6 +763,19 @@ export function SmartCvBuilder({
         onClose={() => setIsSignatureModalOpen(false)}
         onSaveSignature={handleSaveSignature}
         currentFullName={formData.content.fullName}
+      />
+
+      {/* Modal de Matching contra Oferta Laboral (Job Match AI) */}
+      <JobMatchModal
+        isOpen={isJobMatchModalOpen}
+        onClose={() => setIsJobMatchModalOpen(false)}
+        cvContent={formData.content}
+        targetRole={formData.targetRole}
+        onApplyKeywordToSkills={(keyword) => {
+          if (!formData.content.skills.includes(keyword)) {
+            handleContentChange('skills', [...formData.content.skills, keyword]);
+          }
+        }}
       />
 
       {/* Lienzo Principal con Filosofía Minimalista */}
@@ -1041,11 +1095,22 @@ export function SmartCvBuilder({
             {/* Sección: Habilidades */}
             <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                  Habilidades & Tecnologías ATS
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                    Habilidades & Tecnologías ATS
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowSkillSuggestions((prev) => !prev)}
+                    className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/25 transition cursor-pointer"
+                  >
+                    <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
+                    <span>{showSkillSuggestions ? 'Ocultar sugerencias' : 'Ver sugerencias por rol'}</span>
+                  </button>
+                </div>
                 <span className="text-[11px] font-mono text-indigo-400">Paso 2 de 4</span>
               </div>
+
               <input
                 type="text"
                 value={formData.content.skills.join(', ')}
@@ -1058,6 +1123,45 @@ export function SmartCvBuilder({
                 className="w-full text-xs text-zinc-200 bg-black/30 rounded-xl px-3 py-2.5 border border-white/5 focus:outline-none focus:border-indigo-400 font-mono"
                 placeholder="TypeScript, React, Turso SQLite, Docker..."
               />
+
+              {/* Panel de Sugerencias Predictivas de Habilidades */}
+              {showSkillSuggestions && skillGroups.length > 0 && (
+                <div className="p-3.5 rounded-xl bg-black/40 border border-indigo-500/20 space-y-3 animate-fade-in">
+                  <span className="text-[10px] font-mono uppercase text-indigo-300 font-bold block">
+                    ⚡ Habilidades recomendadas para &quot;{formData.targetRole}&quot; (Toca para agregar):
+                  </span>
+                  <div className="space-y-2.5">
+                    {skillGroups.map((group) => {
+                      const unselectedSkills = group.skills.filter((s) => !formData.content.skills.includes(s.name));
+                      if (unselectedSkills.length === 0) return null;
+                      return (
+                        <div key={group.category}>
+                          <span className="text-[10px] text-zinc-400 block mb-1">
+                            {group.label}:
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {unselectedSkills.slice(0, 6).map((sk) => (
+                              <button
+                                key={sk.name}
+                                type="button"
+                                onClick={() => {
+                                  if (!formData.content.skills.includes(sk.name)) {
+                                    handleContentChange('skills', [...formData.content.skills, sk.name]);
+                                  }
+                                }}
+                                className="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-white/5 hover:bg-indigo-500/20 text-zinc-300 hover:text-indigo-200 border border-white/10 hover:border-indigo-500/30 transition-all cursor-pointer flex items-center gap-1"
+                              >
+                                <span>+</span>
+                                <span>{sk.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sección: Experiencia Laboral con Inline AI Writer */}
