@@ -36,6 +36,7 @@ import { AuthModal } from '@/features/dashboard/components/AuthModal';
 import { DashboardEmptyState } from '@/features/dashboard/components/DashboardEmptyState';
 import { LogIn, LogOut, Users } from 'lucide-react';
 import { AffiliateDashboardTab } from '@/features/affiliates/components/AffiliateDashboardTab';
+import { ReferralQrModal } from '@/features/affiliates/components/ReferralQrModal';
 import type { AffiliateOverview } from '@/entities/affiliate/schemas';
 
 interface CardItem {
@@ -109,8 +110,16 @@ export function UnifiedDashboardView({
   const [copiedCvSlug, setCopiedCvSlug] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAffiliateQrOpen, setIsAffiliateQrOpen] = useState(false);
   const { data: sessionData } = useSession();
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Generación determinista y canónica del enlace de registro de afiliado
+  const affiliateCode = initialAffiliateOverview?.referralCode || '';
+  const affiliateBaseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : (process.env.NEXT_PUBLIC_APP_URL || 'https://soyindi.cl');
+  const affiliateDirectSignupUrl = `${affiliateBaseUrl}/login?mode=signup&ref=${affiliateCode}`;
 
   // Atajo de teclado accesible global: Ctrl+K o '/' para enfocar buscador
   useEffect(() => {
@@ -239,13 +248,15 @@ export function UnifiedDashboardView({
       href: '/dashboard?tab=affiliates',
       label: 'Compartir Mi Enlace',
       gradient: 'from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/20',
-      icon: <Users className="w-4 h-4" />
+      icon: <Share2 className="w-4 h-4" />,
+      isAction: true
     }
   }[activeTab] || {
     href: '/cards/new',
     label: 'Nueva Tarjeta',
     gradient: 'from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 shadow-cyan-500/20',
-    icon: <QrCode className="w-4 h-4" />
+    icon: <QrCode className="w-4 h-4" />,
+    isAction: false
   };
 
   return (
@@ -256,7 +267,7 @@ export function UnifiedDashboardView({
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
             <span className="text-xs sm:text-sm font-semibold">
-              ¡Tu proyecto se ha publicado con éxito en Turso SQLite!
+              ¡Tu proyecto ya está publicado y disponible en vivo!
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -354,13 +365,24 @@ export function UnifiedDashboardView({
 
         {/* Botón contextual primario en escritorio */}
         <div className="hidden sm:flex items-center gap-2">
-          <Link
-            href={contextualAction.href}
-            className={`min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer`}
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>{contextualAction.label}</span>
-          </Link>
+          {contextualAction.isAction ? (
+            <button
+              type="button"
+              onClick={() => setIsAffiliateQrOpen(true)}
+              className={`min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer`}
+            >
+              <Share2 className="w-4 h-4 stroke-[2.5]" />
+              <span>{contextualAction.label}</span>
+            </button>
+          ) : (
+            <Link
+              href={contextualAction.href}
+              className={`min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer`}
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>{contextualAction.label}</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -913,15 +935,34 @@ export function UnifiedDashboardView({
       {/* Floating Action Bar Móvil (Thumb Zone Ergonómico para móviles) */}
       <div className="fixed bottom-4 inset-x-4 sm:hidden z-30 pointer-events-none">
         <div className="pointer-events-auto max-w-sm mx-auto p-1.5 rounded-2xl glass-panel border border-white/15 shadow-2xl backdrop-blur-2xl">
-          <Link
-            href={contextualAction.href}
-            className={`min-h-[48px] w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg active:scale-[0.98] transition-all`}
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>{contextualAction.label}</span>
-          </Link>
+          {contextualAction.isAction ? (
+            <button
+              type="button"
+              onClick={() => setIsAffiliateQrOpen(true)}
+              className={`min-h-[48px] w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg active:scale-[0.98] transition-all cursor-pointer`}
+            >
+              <Share2 className="w-4 h-4 stroke-[2.5]" />
+              <span>{contextualAction.label}</span>
+            </button>
+          ) : (
+            <Link
+              href={contextualAction.href}
+              className={`min-h-[48px] w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg active:scale-[0.98] transition-all`}
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>{contextualAction.label}</span>
+            </Link>
+          )}
         </div>
       </div>
+
+      {/* Modal de Código QR y Enlace de Afiliado para Compartir Inmediatamente */}
+      <ReferralQrModal
+        isOpen={isAffiliateQrOpen}
+        onClose={() => setIsAffiliateQrOpen(false)}
+        referralCode={affiliateCode}
+        directSignupUrl={affiliateDirectSignupUrl}
+      />
     </div>
   );
 }

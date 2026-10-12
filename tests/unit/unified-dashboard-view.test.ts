@@ -75,17 +75,19 @@ describe('Unified Dashboard Architecture & Data Calculations', () => {
   });
 
   it('asigna el botón contextual correcto y rutas canónicas para cada vertical', () => {
-    const getContextualAction = (activeTab: 'cards' | 'cvs' | 'presentations') => {
+    const getContextualAction = (activeTab: 'cards' | 'cvs' | 'presentations' | 'affiliates') => {
       const map = {
-        cards: { href: '/cards/new', label: 'Nueva Tarjeta' },
-        cvs: { href: '/cv', label: 'Crear o Mejorar CV' },
-        presentations: { href: '/presentations', label: 'Nueva Presentación' },
+        cards: { href: '/cards/new', label: 'Nueva Tarjeta', isAction: false },
+        cvs: { href: '/cv', label: 'Crear o Mejorar CV', isAction: false },
+        presentations: { href: '/presentations', label: 'Nueva Presentación', isAction: false },
+        affiliates: { href: '/dashboard?tab=affiliates', label: 'Compartir Mi Enlace', isAction: true },
       };
       return map[activeTab];
     };
 
-    expect(getContextualAction('cards')).toEqual({ href: '/cards/new', label: 'Nueva Tarjeta' });
-    expect(getContextualAction('cvs')).toEqual({ href: '/cv', label: 'Crear o Mejorar CV' });
-    expect(getContextualAction('presentations')).toEqual({ href: '/presentations', label: 'Nueva Presentación' });
+    expect(getContextualAction('cards')).toEqual({ href: '/cards/new', label: 'Nueva Tarjeta', isAction: false });
+    expect(getContextualAction('cvs')).toEqual({ href: '/cv', label: 'Crear o Mejorar CV', isAction: false });
+    expect(getContextualAction('presentations')).toEqual({ href: '/presentations', label: 'Nueva Presentación', isAction: false });
+    expect(getContextualAction('affiliates')).toEqual({ href: '/dashboard?tab=affiliates', label: 'Compartir Mi Enlace', isAction: true });
   });
 });
