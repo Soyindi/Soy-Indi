@@ -59,7 +59,7 @@ export interface CardData {
     operationalStatus?: 'none' | 'open_now' | 'taking_orders' | 'available_by_appointment' | 'custom';
     customStatusText?: string | null;
   };
-  bentoBlocks?: Array<{
+  bentoBlocks?: ReadonlyArray<{
     id: string;
     type: 'link' | 'metric' | 'featured_project' | 'testimonial';
     title: string;

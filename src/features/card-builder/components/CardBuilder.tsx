@@ -475,7 +475,7 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
             operationalStatus: formData.themeConfig?.operationalStatus || 'none',
             customStatusText: formData.themeConfig?.customStatusText || null,
           },
-          bentoBlocks: formData.bentoBlocks || [],
+          bentoBlocks: formData.bentoBlocks ? [...formData.bentoBlocks] : [],
         },
         cardId
       );

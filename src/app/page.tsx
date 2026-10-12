@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, Check, FileText, Presentation, QrCode, type LucideIcon } from 'lucide-react';
-import { DigitalCard } from '@/entities/card/components/DigitalCard';
+import { DigitalCard, type CardData } from '@/entities/card/components/DigitalCard';
 import { LANDING_CONTENT, type LandingProduct } from '@/entities/landing/schemas';
 import { PricingSection } from '@/features/pricing/components/PricingSection';
 import { FaqAccordion } from '@/features/pricing/components/FaqAccordion';
@@ -168,7 +168,7 @@ const FOOTER_LINKS = [
  * Landing Minimalista INDI 2026 — presupuesto de 5 secciones:
  * Hero (marca + demo) · Por qué INDI · Herramientas · Precios · FAQ (+ cierre).
  */
-const DEMO_CARD = {
+const DEMO_CARD: CardData = {
   slug: 'demo',
   title: 'Valentina Silva',
   profession: 'Directora de Growth & Producto',
@@ -184,18 +184,18 @@ const DEMO_CARD = {
     themeId: 'solar-sunset',
     primaryColorOklch: '#ea580c',
     backgroundColorOklch: '#fafaf9',
-    particleBehavior: 'interactive' as const,
-    particleIntensity: 'prominent' as const,
-    cardFinish: 'luminous-glass' as const,
-    surfaceTexture: 'frosted-prism' as const,
+    particleBehavior: 'interactive',
+    particleIntensity: 'prominent',
+    cardFinish: 'luminous-glass',
+    surfaceTexture: 'frosted-prism',
     coverImageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80',
     badgeText: '🚀 Growth & Producto',
-    operationalStatus: 'open_now' as const,
+    operationalStatus: 'open_now',
   },
   bentoBlocks: [
     {
       id: 'metric-1',
-      type: 'metric' as const,
+      type: 'metric',
       title: 'Tasa de Conversión Web',
       subtitle: 'Optimización de funnels B2B & SaaS',
       metricValue: '+42%',
@@ -203,13 +203,13 @@ const DEMO_CARD = {
     },
     {
       id: 'project-1',
-      type: 'featured_project' as const,
+      type: 'featured_project',
       title: 'Portafolio de Casos de Éxito',
       subtitle: 'Auditorías de producto y UX estratégica',
       url: 'https://soyindi.cl',
     },
   ],
-} as const;
+};
 
 export default function HomePage() {
   const { hero, valueProps, products, closing } = LANDING_CONTENT;
