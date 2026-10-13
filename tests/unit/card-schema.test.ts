@@ -137,5 +137,22 @@ describe('CardFormSchema Validation', () => {
     const invalidResult = cardFormSchema.safeParse(cardWithLongAddress);
     expect(invalidResult.success).toBe(false);
   });
+
+  it('debe permitir tarjetas con bentoBlocks vacíos o ausentes para máxima prolijidad', () => {
+    const cleanCard = {
+      ...validCardData,
+      themeConfig: {
+        ...validCardData.themeConfig,
+        badgeText: null,
+      },
+      bentoBlocks: [],
+    };
+    const result = cardFormSchema.safeParse(cleanCard);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.bentoBlocks).toEqual([]);
+      expect(result.data.themeConfig.badgeText).toBeNull();
+    }
+  });
 });
 

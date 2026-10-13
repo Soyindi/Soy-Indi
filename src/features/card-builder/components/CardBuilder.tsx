@@ -7,7 +7,7 @@ import { upsertCardAction, checkCardSlugAvailabilityAction, SlugAvailabilityResu
 import { generateBioVariantsAction } from '@/features/card-builder/ai-bio-actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { CARD_DESIGN_PRESETS, CardDesignPreset, INDUSTRY_COVERS_GALLERY, OFFICIAL_DEMO_CARD } from '@/entities/card/themes';
-import { slugifyCardName, generateCardSlug } from '@/entities/card/schemas';
+import { slugifyCardName, generateCardSlug, CardBentoBlock } from '@/entities/card/schemas';
 import { compressImageClient } from '@/shared/lib/imageCompression';
 import { extractPaletteFromImage, ExtractedPalette } from '@/shared/lib/colorExtraction';
 import { 
@@ -35,7 +35,11 @@ import {
   Image as ImageIcon,
   Store,
   Clock,
-  Wand2
+  Wand2,
+  Plus,
+  LayoutGrid,
+  TrendingUp,
+  Tag
 } from 'lucide-react';
 
 interface CardBuilderProps {
@@ -127,11 +131,11 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
       backgroundType: initialData?.themeConfig?.backgroundType || 'theme',
       backgroundOverlayBlur: initialData?.themeConfig?.backgroundOverlayBlur || 'medium',
       backgroundOverlayOpacity: initialData?.themeConfig?.backgroundOverlayOpacity ?? 0.5,
-      operationalStatus: initialData?.themeConfig?.operationalStatus || OFFICIAL_DEMO_CARD.themeConfig.operationalStatus,
+      operationalStatus: initialData?.themeConfig?.operationalStatus || 'none',
       customStatusText: initialData?.themeConfig?.customStatusText || '',
-      badgeText: initialData?.themeConfig?.badgeText ?? OFFICIAL_DEMO_CARD.themeConfig.badgeText,
+      badgeText: initialData?.themeConfig?.badgeText ?? '',
     },
-    bentoBlocks: initialData?.bentoBlocks ? [...initialData.bentoBlocks] : [...OFFICIAL_DEMO_CARD.bentoBlocks],
+    bentoBlocks: initialData?.bentoBlocks ? [...initialData.bentoBlocks] : [],
   });
 
   // Efecto debounced (350ms) para comprobar disponibilidad de slug en Turso
@@ -227,6 +231,49 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
         ...prev.themeConfig,
         [field]: value,
       },
+    }));
+  };
+
+  // Manejadores interactivos para Bloques Bento (Vitrina Profesional & Métricas)
+  const handleAddBentoBlock = (type: 'metric' | 'featured_project' | 'link') => {
+    const newId = `bento-${Date.now()}`;
+    const newBlock: CardBentoBlock = 
+      type === 'metric'
+        ? {
+            id: newId,
+            type: 'metric',
+            title: 'Métrica Clave',
+            subtitle: 'Logro o resultado cuantitativo',
+            metricValue: '+100%',
+            metricDelta: '↑ crecimiento',
+          }
+        : {
+            id: newId,
+            type: 'featured_project',
+            title: 'Proyecto Destacado',
+            subtitle: 'Enlace o caso de éxito relevante',
+            url: 'https://',
+          };
+
+    setFormData((prev) => ({
+      ...prev,
+      bentoBlocks: [...(prev.bentoBlocks || []), newBlock],
+    }));
+  };
+
+  const handleUpdateBentoBlock = (id: string, updates: Partial<CardBentoBlock>) => {
+    setFormData((prev) => ({
+      ...prev,
+      bentoBlocks: (prev.bentoBlocks || []).map((block) =>
+        block.id === id ? { ...block, ...updates } : block
+      ),
+    }));
+  };
+
+  const handleRemoveBentoBlock = (id: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      bentoBlocks: (prev.bentoBlocks || []).filter((block) => block.id !== id),
     }));
   };
 
@@ -1029,6 +1076,160 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                   placeholder="https://instagram.com/tu-usuario"
                 />
               </div>
+
+              {/* Vitrina Profesional & Métricas (Bloques Bento) */}
+              <div className="pt-5 border-t border-white/10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-mono font-semibold uppercase text-zinc-300 flex items-center gap-1.5">
+                      <LayoutGrid className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Vitrina Profesional & Métricas (Bento)</span>
+                    </label>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">
+                      Destaca logros cuantitativos (+40%), portafolios o enlaces externos en tu tarjeta.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddBentoBlock('metric')}
+                      className="min-h-[36px] px-2.5 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer"
+                      title="Añadir tarjeta de métrica"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <TrendingUp className="w-3 h-3 text-cyan-400" />
+                      <span>+ Métrica</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddBentoBlock('featured_project')}
+                      className="min-h-[36px] px-2.5 py-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer"
+                      title="Añadir tarjeta de proyecto o enlace"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <Globe className="w-3 h-3 text-indigo-400" />
+                      <span>+ Enlace</span>
+                    </button>
+                  </div>
+                </div>
+
+                {(!formData.bentoBlocks || formData.bentoBlocks.length === 0) ? (
+                  <div className="p-4 rounded-xl border border-dashed border-white/10 text-center bg-white/[0.02]">
+                    <p className="text-xs text-zinc-400">
+                      Sin bloques en la vitrina. Tu tarjeta se mostrará limpia y sin métricas ficticias.
+                    </p>
+                    <span className="text-[10px] text-zinc-500 block mt-1">
+                      Usa los botones superiores si deseas destacar algún logro o portafolio.
+                    </span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {formData.bentoBlocks.map((block, idx) => (
+                      <div
+                        key={block.id || idx}
+                        className="p-3.5 rounded-xl border border-white/10 bg-white/[0.03] space-y-3 relative group"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400 font-bold flex items-center gap-1">
+                            {block.type === 'metric' ? (
+                              <>
+                                <TrendingUp className="w-3 h-3" />
+                                <span>Bloque Métrica #{idx + 1}</span>
+                              </>
+                            ) : (
+                              <>
+                                <Globe className="w-3 h-3 text-indigo-400" />
+                                <span>Bloque Enlace / Proyecto #{idx + 1}</span>
+                              </>
+                            )}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBentoBlock(block.id)}
+                            className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                            title="Eliminar este bloque"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
+                              Título Principal
+                            </label>
+                            <input
+                              type="text"
+                              maxLength={100}
+                              value={block.title}
+                              onChange={(e) => handleUpdateBentoBlock(block.id, { title: e.target.value })}
+                              placeholder="Ej. Tasa de Conversión o Portafolio"
+                              className="w-full rounded-lg bg-black/50 border border-white/10 px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
+                              Subtítulo / Detalle
+                            </label>
+                            <input
+                              type="text"
+                              maxLength={160}
+                              value={block.subtitle || ''}
+                              onChange={(e) => handleUpdateBentoBlock(block.id, { subtitle: e.target.value })}
+                              placeholder="Ej. Optimización de funnels B2B"
+                              className="w-full rounded-lg bg-black/50 border border-white/10 px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400"
+                            />
+                          </div>
+                        </div>
+
+                        {block.type === 'metric' ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                            <div>
+                              <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
+                                Valor de Métrica
+                              </label>
+                              <input
+                                type="text"
+                                maxLength={30}
+                                value={block.metricValue || ''}
+                                onChange={(e) => handleUpdateBentoBlock(block.id, { metricValue: e.target.value })}
+                                placeholder="Ej. +42%, 150+, $2.5M"
+                                className="w-full rounded-lg bg-black/50 border border-white/10 px-3 py-1.5 text-xs text-cyan-300 font-mono font-bold placeholder-zinc-500 focus:outline-none focus:border-cyan-400"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
+                                Indicador / Delta (Opcional)
+                              </label>
+                              <input
+                                type="text"
+                                maxLength={30}
+                                value={block.metricDelta || ''}
+                                onChange={(e) => handleUpdateBentoBlock(block.id, { metricDelta: e.target.value })}
+                                placeholder="Ej. ↑ récord trimestral"
+                                className="w-full rounded-lg bg-black/50 border border-white/10 px-3 py-1.5 text-xs text-emerald-400 font-mono placeholder-zinc-500 focus:outline-none focus:border-emerald-400"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="pt-1">
+                            <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
+                              URL de Destino
+                            </label>
+                            <input
+                              type="url"
+                              value={block.url || ''}
+                              onChange={(e) => handleUpdateBentoBlock(block.id, { url: e.target.value })}
+                              placeholder="https://..."
+                              className="w-full rounded-lg bg-black/50 border border-white/10 px-3 py-1.5 text-xs text-indigo-300 font-mono placeholder-zinc-500 focus:outline-none focus:border-indigo-400"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -1432,6 +1633,40 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                       className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400 transition-colors"
                     />
                   )}
+                </div>
+
+                {/* Insignia Superior / Etiqueta de Especialidad (badgeText) */}
+                <div className="pt-3 border-t border-white/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-mono font-semibold uppercase text-zinc-300 flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Insignia Superior de Especialidad</span>
+                    </label>
+                    <span className="text-[10px] font-mono text-zinc-400">Badge Opcional</span>
+                  </div>
+                  <p className="text-xs text-zinc-400 mb-2.5">
+                    Etiqueta visible en la esquina superior de tu tarjeta. Déjalo en blanco si prefieres una tarjeta minimalista sin insignia.
+                  </p>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      maxLength={40}
+                      value={formData.themeConfig?.badgeText || ''}
+                      onChange={(e) => handleThemeChange('badgeText', e.target.value)}
+                      placeholder="Ej. 🚀 Growth & Producto, ⚖️ Abogado Penalista, ✨ Spa & Estética"
+                      className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400 transition-colors"
+                    />
+                    {formData.themeConfig?.badgeText && (
+                      <button
+                        type="button"
+                        onClick={() => handleThemeChange('badgeText', '')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-400 p-1 text-[11px] font-mono transition-colors"
+                        title="Borrar insignia"
+                      >
+                        Quitar
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 

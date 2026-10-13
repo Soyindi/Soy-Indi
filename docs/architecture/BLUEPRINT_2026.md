@@ -63,6 +63,7 @@ C:\Users\Matías Riquelme\Desktop\Indi\
 - **Sincronización de Reloj Cliente-Servidor en UI**: `TrialCountdownTimer` con alineación al milisegundo exacto del segundo y compensación de desfases mayores a 60 segundos mediante `serverNow`.
 - **Marco de Alta Concurrencia y Capacidad Masiva (10.000+ Usuarios Concurrentes)**:
 - **Resiliencia Móvil & Compatibilidad Universal WebKit/Android (MP4 H.264 First)**: Optimización del orden de fuentes en elementos `<video>` (`<HeroBrandIdentity />`, `<BrandLogo />`), priorizando MP4 H.264 sobre WebM para erradicar bloqueos de carga inicial en Safari iOS y WebView in-app.
+- **Gobernanza de Tarjetas Limpias & Vitrina Interactiva Bento (Zero Phantom Metrics)**: Tarjetas nuevas inicializadas con vitrina limpia (`bentoBlocks: []`, `badgeText: ''`), erradicando métricas ficticias heredadas de la demo. El constructor (`CardBuilder.tsx`) incorpora gestión interactiva de bloques Bento (+ Métrica, + Enlace/Proyecto, Editar y Eliminar) e insignia de especialidad personalizada con touch targets $\ge 44\text{px}$.
 
   - Arquitectura Zero-Binary Persistence en Turso SQLite con almacenamiento de medios pesados en Cloudflare R2 ($0 egress).
   - Gobernanza perimetral con ISR 60s en páginas públicas (`/c/[slug]`, `/p/[slug]`, `/cv/[slug]`) y telemetría desacoplada en segundo plano con `navigator.sendBeacon`.
