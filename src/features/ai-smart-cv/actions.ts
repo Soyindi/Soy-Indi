@@ -622,8 +622,14 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
       };
     }
 
-    // 3. Preparación del Prompt Contextualizado
-    const cleanInput = text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim();
+    // 3. Preparación del Prompt Contextualizado y Sanitización de Privacidad (Ley 21.719)
+    const rawCleanInput = text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim();
+    const { maskSensitiveDataForAi } = await import('@/shared/lib/dataPrivacy');
+    const { sanitizedText: cleanInput } = maskSensitiveDataForAi(rawCleanInput, {
+      maskRut: true,
+      maskPhone: true,
+      maskEmail: false,
+    });
     const roleContext = role ? `Cargo actual: ${role}` : '';
     const companyContext = company ? `Empresa: ${company}` : '';
     const targetRoleContext = targetRole ? `Rol Objetivo del CV: ${targetRole}` : '';

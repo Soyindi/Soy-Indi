@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 
 interface DashboardPageProps {
   searchParams: Promise<{
-    tab?: 'cards' | 'cvs' | 'presentations';
+    tab?: 'cards' | 'cvs' | 'presentations' | 'affiliates' | 'privacy';
     created?: string;
     slug?: string;
   }>;

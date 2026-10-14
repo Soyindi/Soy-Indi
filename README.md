@@ -169,6 +169,14 @@ Cuenta con la matriz comercial **"El Semestre Irresistible"**:
   - **Sincronización y Tolerancia de Reloj en el Cliente**: `TrialCountdownTimer` utiliza ticks alineados al milisegundo exacto del segundo (`1000 - (now % 1000)`) sin deriva acumulada, corrigiendo desfases de reloj de dispositivo mediante `serverNow` (tolerancia 60s).
   - **Blindaje Server-Only de Comisiones**: Módulo `commission-engine.ts` aislado sin `'use server'` para evitar la invocación maliciosa de liquidaciones desde el cliente. Guardrail Anti-IDOR en `attributeReferralAction` limitando la atribución exclusivamente al propio usuario autenticado.
 
+### 10. 🛡️ Gobernanza de Privacidad & Cumplimiento Ley N° 21.719 (Chile)
+- **Privacy-by-Design & Enmascaramiento de Datos para IA (`dataPrivacy.ts`)**: Motor algorítmico que sanitiza y sustituye RUTs chilenos (`[RUT_PROTEGIDO]`) y números telefónicos (`[TELEFONO_PROTEGIDO]`) en textos libres y currículums antes de enviarlos a modelos de lenguaje externos, mitigando riesgos de fuga de datos sensibles y acatando los principios de proporcionalidad y finalidad.
+- **Centro de Privacidad y Derechos ARCO en el Panel (`/dashboard?tab=privacy`)**: Pestaña dedicada con interfaz táctil accesible ($\ge 44\text{px}$) donde cualquier usuario puede ejercer de forma autónoma:
+  - *Derecho de Acceso y Portabilidad*: Descarga instantánea de un archivo JSON estructurado con la totalidad de su información de cuenta, tarjetas, Smart CVs y presentaciones mediante `exportUserDataAction`.
+  - *Derecho al Olvido / Supresión Permanente*: Flujo de eliminación destructiva y anonimización de identidad con confirmación textual estricta (`"ELIMINAR MI CUENTA"`) vía `deleteAndAnonymizeUserAccountAction`.
+- **Inventario Oficial de Subprocesadores (Artículo 15 Ley 21.719)**: Registro canónico transparente que detalla la finalidad, ubicación y estado de contratos de tratamiento de datos (DPA) con proveedores esenciales (Turso, Vercel, Cloudflare, Upstash, Flow.cl, Mercado Pago, Fintoc y Groq).
+- **Adecuación Comercial de Infraestructura**: Supresión de riesgos de corte de servicio mediante migración de Vercel Hobby a Vercel Pro ($20 USD/mes) para habilitar cobros comerciales y soporte de PITR de 10 días en Turso Developer ($4.99 USD/mes).
+
 ---
 
 ## 💎 Modelo Comercial Inteligente & Minimalista

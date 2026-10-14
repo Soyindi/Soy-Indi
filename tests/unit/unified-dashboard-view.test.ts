@@ -75,12 +75,13 @@ describe('Unified Dashboard Architecture & Data Calculations', () => {
   });
 
   it('asigna el botón contextual correcto y rutas canónicas para cada vertical', () => {
-    const getContextualAction = (activeTab: 'cards' | 'cvs' | 'presentations' | 'affiliates') => {
+    const getContextualAction = (activeTab: 'cards' | 'cvs' | 'presentations' | 'affiliates' | 'privacy') => {
       const map = {
         cards: { href: '/cards/new', label: 'Nueva Tarjeta', isAction: false },
         cvs: { href: '/cv', label: 'Crear o Mejorar CV', isAction: false },
         presentations: { href: '/presentations', label: 'Nueva Presentación', isAction: false },
         affiliates: { href: '/dashboard?tab=affiliates', label: 'Compartir Mi Enlace', isAction: true },
+        privacy: { href: '/dashboard?tab=privacy', label: 'Mis Derechos ARCO', isAction: false },
       };
       return map[activeTab];
     };
@@ -89,5 +90,6 @@ describe('Unified Dashboard Architecture & Data Calculations', () => {
     expect(getContextualAction('cvs')).toEqual({ href: '/cv', label: 'Crear o Mejorar CV', isAction: false });
     expect(getContextualAction('presentations')).toEqual({ href: '/presentations', label: 'Nueva Presentación', isAction: false });
     expect(getContextualAction('affiliates')).toEqual({ href: '/dashboard?tab=affiliates', label: 'Compartir Mi Enlace', isAction: true });
+    expect(getContextualAction('privacy')).toEqual({ href: '/dashboard?tab=privacy', label: 'Mis Derechos ARCO', isAction: false });
   });
 });

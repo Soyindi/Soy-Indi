@@ -34,9 +34,10 @@ import { deleteSmartCvAction } from '@/features/ai-smart-cv/actions';
 import { useSession, signOut } from '@/shared/lib/auth-client';
 import { AuthModal } from '@/features/dashboard/components/AuthModal';
 import { DashboardEmptyState } from '@/features/dashboard/components/DashboardEmptyState';
-import { LogIn, LogOut, Users } from 'lucide-react';
+import { LogIn, LogOut, Users, Shield } from 'lucide-react';
 import { AffiliateDashboardTab } from '@/features/affiliates/components/AffiliateDashboardTab';
 import { ReferralQrModal } from '@/features/affiliates/components/ReferralQrModal';
+import { PrivacySettingsTab } from '@/features/privacy/components/PrivacySettingsTab';
 import type { AffiliateOverview } from '@/entities/affiliate/schemas';
 
 interface CardItem {
@@ -80,7 +81,7 @@ interface UnifiedDashboardViewProps {
   initialCvs: CvItem[];
   initialPresentations: PresentationItem[];
   initialAffiliateOverview?: AffiliateOverview | null;
-  initialTab?: 'cards' | 'cvs' | 'presentations' | 'affiliates';
+  initialTab?: 'cards' | 'cvs' | 'presentations' | 'affiliates' | 'privacy';
   justCreatedSlug?: string | null;
 }
 
@@ -92,7 +93,7 @@ export function UnifiedDashboardView({
   initialTab = 'cards',
   justCreatedSlug,
 }: UnifiedDashboardViewProps) {
-  const [activeTab, setActiveTab] = useState<'cards' | 'cvs' | 'presentations' | 'affiliates'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'cards' | 'cvs' | 'presentations' | 'affiliates' | 'privacy'>(initialTab);
 
   // Sincronizar pestaña activa cuando se navega con parámetro ?tab= en la URL
   useEffect(() => {
@@ -225,7 +226,7 @@ export function UnifiedDashboardView({
   };
 
   // Metadatos de la acción contextual activa
-  const contextualAction = {
+  const contextualActionMap: Record<string, { href: string; label: string; gradient: string; icon: React.ReactNode; isAction?: boolean }> = {
     cards: {
       href: '/cards/new',
       label: 'Nueva Tarjeta',
@@ -250,8 +251,17 @@ export function UnifiedDashboardView({
       gradient: 'from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/20',
       icon: <Share2 className="w-4 h-4" />,
       isAction: true
+    },
+    privacy: {
+      href: '/dashboard?tab=privacy',
+      label: 'Mis Derechos ARCO',
+      gradient: 'from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 shadow-cyan-500/20',
+      icon: <Shield className="w-4 h-4" />,
+      isAction: false
     }
-  }[activeTab] || {
+  };
+
+  const contextualAction = contextualActionMap[activeTab] || {
     href: '/cards/new',
     label: 'Nueva Tarjeta',
     gradient: 'from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 shadow-cyan-500/20',
@@ -436,6 +446,18 @@ export function UnifiedDashboardView({
           >
             <Users className={`w-4 h-4 ${activeTab === 'affiliates' ? 'text-emerald-300' : 'text-zinc-400'}`} />
             <span>Afiliados (25% CLP)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('privacy')}
+            className={`min-h-[44px] min-w-[160px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start active:scale-[0.98] ${
+              activeTab === 'privacy'
+                ? 'bg-gradient-to-r from-cyan-500/30 to-blue-500/25 text-white border border-cyan-400/30 shadow-lg shadow-cyan-500/10'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+            }`}
+          >
+            <Shield className={`w-4 h-4 ${activeTab === 'privacy' ? 'text-cyan-300' : 'text-zinc-400'}`} />
+            <span>Privacidad (Ley 21.719)</span>
           </button>
         </div>
 
@@ -929,6 +951,13 @@ export function UnifiedDashboardView({
               Cargando información del programa de afiliados...
             </div>
           )}
+        </div>
+      )}
+
+      {/* ================= PESTAÑA 5: PRIVACIDAD Y DERECHOS ARCO (LEY 21.719) ================= */}
+      {activeTab === 'privacy' && (
+        <div className="space-y-6 sm:space-y-8 animate-fade-in">
+          <PrivacySettingsTab userEmail={sessionData?.user?.email} />
         </div>
       )}
 

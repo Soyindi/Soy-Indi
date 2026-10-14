@@ -12,11 +12,15 @@ describe('Free-Tier Capacity & Resource Footprint Audit', () => {
     const totalUserFootprintBytes = userAccountBytes + cardBytes + cvBytes + presentationBytes;
     expect(totalUserFootprintBytes).toBeLessThan(50 * 1024); // Menor a 50 KB
 
-    // Cálculo de capacidad en Turso Free Tier (9 GB = 9 * 10^9 bytes)
-    const tursoFreeTierBytes = 9 * 1024 * 1024 * 1024;
-    const maxSupportedUsers = Math.floor(tursoFreeTierBytes / totalUserFootprintBytes);
+    // Cálculo de capacidad en Turso Free Tier Actual 2026 (5 GB = 5 * 10^9 bytes)
+    const tursoFreeTierBytes = 5 * 1024 * 1024 * 1024;
+    const maxSupportedUsersFree = Math.floor(tursoFreeTierBytes / totalUserFootprintBytes);
+    expect(maxSupportedUsersFree).toBeGreaterThan(100000); // Supera 100.000 usuarios en Turso Free Tier 2026
 
-    expect(maxSupportedUsers).toBeGreaterThan(150000); // Supera 150.000 usuarios en Turso $0
+    // Cálculo de capacidad en Turso Developer Tier ($4.99/mes, 9 GB)
+    const tursoDeveloperTierBytes = 9 * 1024 * 1024 * 1024;
+    const maxSupportedUsersDev = Math.floor(tursoDeveloperTierBytes / totalUserFootprintBytes);
+    expect(maxSupportedUsersDev).toBeGreaterThan(200000); // Supera 200.000 usuarios en Developer Tier
   });
 
   it('verifica que los límites cuantitativos del plan Starter están acotados y previenen saturación', () => {
