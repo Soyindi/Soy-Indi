@@ -29,11 +29,11 @@ describe('Environment Sentinel (Fail-Fast Env Checker)', () => {
     const mockEnv = {
       BETTER_AUTH_SECRET: 'test-secret-key',
       TURSO_DATABASE_URL: 'libsql://test.io',
-      // MP_ACCESS_TOKEN ausente
+      // MERCADOPAGO_ACCESS_TOKEN ausente
     };
 
     const result = validateEnvironment(mockEnv);
     expect(result.valid).toBe(true);
-    expect(result.warnings.some((w) => w.includes('MP_ACCESS_TOKEN'))).toBe(true);
+    expect(result.warnings.some((w) => w.includes('MERCADOPAGO_ACCESS_TOKEN'))).toBe(true);
   });
 });
