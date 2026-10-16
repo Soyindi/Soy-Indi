@@ -429,6 +429,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 
 ## 📚 Documentación Técnica & Especificaciones de Arquitectura
 
+- **Guía de Despliegue en Producción (Oracle Cloud Always Free + Coolify 100% Gratis)**: [docs/deployment/ORACLE_COOLIFY_DEPLOYMENT_GUIDE.md](docs/deployment/ORACLE_COOLIFY_DEPLOYMENT_GUIDE.md)
 - **Blueprint Maestro de Arquitectura**: [docs/architecture/BLUEPRINT_2026.md](docs/architecture/BLUEPRINT_2026.md)
 - **Protocolo de Orquestación Agéntica**: [AGENTS.md](AGENTS.md)
 - **Protocolo Canónico Prompt-to-Push 2026**: [docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md](docs/specifications/AGENT_ORCHESTRATION_PROMPT_2026.md)

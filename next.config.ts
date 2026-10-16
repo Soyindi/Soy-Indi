@@ -6,6 +6,7 @@ import {
 } from './src/shared/lib/cacheGovernance';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
   images: {
     remotePatterns: [

@@ -16,6 +16,7 @@ INDI nace como la evolución definitiva de la plataforma de identidad digital, s
 6. **Exportación Vectorial Ultra-Ligera:** Motor vectorial cliente optimizado con **jsPDF** (`pdf-engine.ts`), generando PDFs con texto 100% seleccionable para parsers ATS (Workday/Greenhouse), soporte de firma digital y descarga sin latencia de red.
 7. **Experiencia Visual "Wow Factor":** Adopción de Tailwind CSS v4 con espacio de color uniforme **OKLCH**, Glassmorphism 2.0 nativo con gradientes radiales matemáticos y partículas reactivas anti-colisión aceleradas por hardware GPU (`SmartParticles.tsx`).
 8. **IA Asíncrona y Streaming:** Ingesta multimodal con Qwen2.5-VL / Gemini Vision vía OpenRouter y Vercel AI SDK para estructuración semántica STAR/XYZ.
+9. **Soberanía de Despliegue 100% Gratuito y Comercial (Coolify + OCI Always Free):** Soporte oficial para ejecución contenerizada Docker multi-stage (`output: 'standalone'`) en servidores dedicados gratuitos de Oracle Cloud (4 OCPUs ARM, 24 GB RAM) con orquestación PaaS vía Coolify, SSL automático mediante Caddy y cero límites de tiempo o cuotas de créditos serverless.
 
 ---
 
