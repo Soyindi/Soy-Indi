@@ -101,25 +101,30 @@ export function AffiliateEarningsCalculator() {
       {/* Grid de Sliders por Plan */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Starter Card */}
-        <div className="p-4.5 rounded-2xl bg-zinc-900/60 border border-white/10 space-y-3">
+        <div className="p-4.5 rounded-2xl bg-zinc-900/60 border border-emerald-500/20 space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-emerald-400">🟢 Starter</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-emerald-400">🟢 Starter</span>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                  Comunitario
+                </span>
+              </div>
               <p className="text-[11px] text-zinc-400">
-                Cobro: {formatCLP(starterPrice)} {selectedCycle === 'semiannual' ? '/6 meses' : '/mes'}
+                Plan Gratuito • Cuota Pro: {formatCLP(starterPrice)}
               </p>
             </div>
             <div className="text-right">
               <span className="text-xs font-mono font-bold text-emerald-300">
                 +{formatCLP(starterCommission)}
               </span>
-              <p className="text-[10px] text-zinc-500">por usuario</p>
+              <p className="text-[10px] text-zinc-500">en compras Pro/Max</p>
             </div>
           </div>
 
           <div>
             <div className="flex justify-between items-center text-xs mb-1.5">
-              <label htmlFor="affiliate-starter-count" className="text-zinc-300 font-medium">Suscriptores:</label>
+              <label htmlFor="affiliate-starter-count" className="text-zinc-300 font-medium">Referidos que pasan a Pro:</label>
               <span className="font-mono font-bold text-white bg-white/10 px-2 py-0.5 rounded-md">
                 {starterCount}
               </span>
@@ -136,7 +141,7 @@ export function AffiliateEarningsCalculator() {
           </div>
 
           <div className="pt-2 border-t border-white/5 flex justify-between items-baseline text-xs">
-            <span className="text-zinc-400 text-[11px]">Subtotal Starter:</span>
+            <span className="text-zinc-400 text-[11px]">Subtotal Conversión:</span>
             <span className="font-mono font-bold text-white text-sm">
               {formatCLP(totalStarter)}
             </span>

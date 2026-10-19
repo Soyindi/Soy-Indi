@@ -220,24 +220,48 @@ export default async function HomePage() {
           </dl>
         </section>
 
-        {/* 3 · HERRAMIENTAS */}
+        {/* 3 · HERRAMIENTAS ACTIVAS */}
         <section id="soluciones" className="max-w-6xl mx-auto px-6 py-16 scroll-mt-24">
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-8">
-            Tres herramientas, una cuenta.
-          </h2>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+              <span className="text-xs font-mono font-semibold uppercase tracking-widest text-cyan-400 mb-2 block">
+                Herramientas Comunitarias 2026
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                Tu presencia profesional completa.
+              </h2>
+            </div>
+            <p className="text-xs sm:text-sm text-zinc-400 max-w-md">
+              Comienza gratis con tu Tarjeta Digital interactiva y Smart CV adaptado a filtros de reclutamiento ATS.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 flex flex-col gap-4">
             {products.map((product) => {
               const Icon = PRODUCT_ICONS[product.id];
+              const isRoadmap = product.id === 'presentation';
+
               return (
                 <Link
                   key={product.id}
                   href={product.href}
-                  className="group glass-panel rounded-3xl p-6 flex items-start gap-4 hover:border-indigo-400/40 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                  className={`group glass-panel rounded-3xl p-6 flex items-start gap-4 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 ${
+                    isRoadmap
+                      ? 'border-white/5 opacity-80 hover:opacity-100 hover:border-cyan-500/30'
+                      : 'hover:border-indigo-400/40'
+                  }`}
                 >
-                  <Icon className="w-6 h-6 text-cyan-300 shrink-0 mt-1" aria-hidden="true" />
+                  <Icon className={`w-6 h-6 shrink-0 mt-1 ${isRoadmap ? 'text-zinc-400 group-hover:text-cyan-300' : 'text-cyan-300'}`} aria-hidden="true" />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white mb-2">{product.title}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-white">{product.title}</h3>
+                      {isRoadmap && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/10 text-cyan-300 border border-white/10">
+                          Próximamente
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-zinc-400 leading-relaxed">{product.description}</p>
                     <span className="inline-flex items-center gap-2 min-h-[44px] text-sm font-semibold text-cyan-300">
                       {product.cta}

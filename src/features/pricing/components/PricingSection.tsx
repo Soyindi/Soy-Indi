@@ -170,26 +170,44 @@ export function PricingSection({
 
                 {/* Bloque de Precio */}
                 <div className="pb-6 mb-6 border-b border-white/10">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-4xl sm:text-5xl font-black text-white tracking-tight tabular-nums">
-                      ${pricing.priceClp.toLocaleString('es-CL')}
-                    </span>
-                    <span className="text-xs font-mono uppercase text-zinc-400">
-                      CLP / {interval === 'semiannual' ? 'semestre' : 'mes'}
-                    </span>
-                  </div>
+                  {isStarter ? (
+                    <div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight tabular-nums">
+                          $0
+                        </span>
+                        <span className="text-xs font-mono uppercase text-zinc-400">
+                          CLP / de por vida
+                        </span>
+                      </div>
+                      <div className="mt-2 text-xs font-mono text-emerald-300 flex items-center gap-1.5">
+                        <span>Plan Comunitario 100% Gratuito</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-4xl sm:text-5xl font-black text-white tracking-tight tabular-nums">
+                          ${pricing.priceClp.toLocaleString('es-CL')}
+                        </span>
+                        <span className="text-xs font-mono uppercase text-zinc-400">
+                          CLP / {interval === 'semiannual' ? 'semestre' : 'mes'}
+                        </span>
+                      </div>
 
-                  <div className="mt-2 text-xs font-mono text-cyan-300 flex items-center gap-1.5">
-                    <span className="text-zinc-400">Equivale a:</span>
-                    <strong className="text-white font-bold">
-                      ${pricing.monthlyEquivalentClp.toLocaleString('es-CL')} CLP / mes
-                    </strong>
-                    {interval === 'semiannual' && (
-                      <span className="text-zinc-400 text-[11px]">
-                        (${pricing.priceUsd} USD)
-                      </span>
-                    )}
-                  </div>
+                      <div className="mt-2 text-xs font-mono text-cyan-300 flex items-center gap-1.5">
+                        <span className="text-zinc-400">Equivale a:</span>
+                        <strong className="text-white font-bold">
+                          ${pricing.monthlyEquivalentClp.toLocaleString('es-CL')} CLP / mes
+                        </strong>
+                        {interval === 'semiannual' && (
+                          <span className="text-zinc-400 text-[11px]">
+                            (${pricing.priceUsd} USD)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Resumen de Cuotas Clave */}
@@ -197,19 +215,23 @@ export function PricingSection({
                   <div>
                     <span className="block text-zinc-400 font-mono">Tarjetas</span>
                     <strong className="text-white font-semibold capitalize">
-                      {tier.limits.cards === 'unlimited' ? '∞ Ilimitadas' : `${tier.limits.cards} perfiles`}
+                      {tier.limits.cards === 'unlimited' ? '∞ Ilimitadas' : `${tier.limits.cards} ${tier.limits.cards === 1 ? 'perfil' : 'perfiles'}`}
                     </strong>
                   </div>
                   <div className="border-x border-white/10">
                     <span className="block text-zinc-400 font-mono">Smart CV</span>
                     <strong className="text-white font-semibold capitalize">
-                      {tier.limits.cvs === 'unlimited' ? '∞ Ilimitados' : `${tier.limits.cvs} versiones`}
+                      {tier.limits.cvs === 'unlimited' ? '∞ Ilimitados' : `${tier.limits.cvs} ${tier.limits.cvs === 1 ? 'versión' : 'versiones'}`}
                     </strong>
                   </div>
                   <div>
                     <span className="block text-zinc-400 font-mono">Presentar</span>
                     <strong className="text-white font-semibold capitalize">
-                      {tier.limits.presentations === 'unlimited' ? '∞ Ilimitadas' : `${tier.limits.presentations} decks`}
+                      {tier.limits.presentations === 'unlimited'
+                        ? '∞ Ilimitadas'
+                        : tier.limits.presentations === 0
+                        ? 'Lista de Espera'
+                        : `${tier.limits.presentations} decks`}
                     </strong>
                   </div>
                 </div>
