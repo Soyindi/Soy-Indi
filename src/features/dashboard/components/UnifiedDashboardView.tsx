@@ -447,7 +447,7 @@ export function UnifiedDashboardView({
             }`}
           >
             <Users className={`w-4 h-4 ${activeTab === 'affiliates' ? 'text-emerald-300' : 'text-zinc-400'}`} />
-            <span>Afiliados (25% CLP)</span>
+            <span>Referidos & Premios</span>
           </button>
 
           <button

@@ -30,10 +30,10 @@ import {
   Loader2,
   AlertCircle,
   Share2,
-  QrCode
+  QrCode,
+  Gift
 } from 'lucide-react';
 import { ReferralQrModal } from './ReferralQrModal';
-import { AffiliateEarningsCalculator } from './AffiliateEarningsCalculator';
 
 interface AffiliateDashboardTabProps {
   overview: AffiliateOverview;
@@ -176,19 +176,128 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
         <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Gana el 25% de Comisión Recurrente</span>
+            <span>Programa Comunitario de Crecimiento 2026</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
-            Programa de Afiliados y Recompensas INDI
+            Recomienda INDI y Desbloquea Más Herramientas
           </h2>
           <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-            Comparte tu enlace de recomendación. Quienes ingresen obtienen su <strong>Plan Comunitario Gratuito de por vida</strong> (Tarjeta Digital + Smart CV ATS). Por cada 3 colegas que invites desbloqueas capacidad adicional, y cuando se suscriban a los futuros planes Pro o Max, ganas el <strong>25% de comisión en pesos chilenos</strong> ($1.248 a $7.498 CLP por suscripción) depositado directamente en tu banco o CuentaRUT.
+            Tu enlace de invitación otorga el <strong>Plan Comunitario Gratuito de por vida</strong> (Tarjeta Digital + Smart CV ATS) a cada colega que invites. Por cada 3 colegas que se unan a través de tu link, desbloqueas <strong>+1 Tarjeta Digital adicional</strong> para tus propios proyectos, y cuando se lancen las funciones Pro y auspicios, acumularás el <strong>25% de comisión en CLP</strong>.
           </p>
         </div>
       </div>
 
-      {/* Simulador Educativo y Calculadora de Ganancias */}
-      <AffiliateEarningsCalculator />
+      {/* Tarjeta de Progreso de Hitos Comunitarios */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-emerald-500/25 bg-gradient-to-br from-emerald-950/20 via-zinc-950/40 to-teal-950/20 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+              <Gift className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
+                <span>Tus Recompensas Comunitarias</span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/30">
+                  Desbloqueos Activos
+                </span>
+              </h3>
+              <p className="text-xs text-zinc-300">
+                Gana capacidad extra sin costo compartiendo tu link con otros profesionales y emprendedores.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono text-zinc-400">Total invitados:</span>
+            <span className="px-3 py-1 rounded-xl bg-white/10 text-white font-mono font-bold text-sm">
+              {overview.totalReferralsCount}
+            </span>
+          </div>
+        </div>
+
+        {/* Barra y Nivel de Hitos */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Hito 1 */}
+          <div className={`p-4 rounded-2xl border transition-all ${
+            overview.totalReferralsCount >= 3
+              ? 'bg-emerald-500/10 border-emerald-500/40 shadow-lg shadow-emerald-500/5'
+              : 'bg-white/5 border-white/5'
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-mono font-bold text-emerald-400">Nivel 1 • 3 Invitados</span>
+              {overview.totalReferralsCount >= 3 ? (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  ¡Desbloqueado!
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-zinc-400">
+                  Faltan {Math.max(0, 3 - overview.totalReferralsCount)}
+                </span>
+              )}
+            </div>
+            <h4 className="text-sm font-bold text-white mb-1">+1 Tarjeta Digital Extra</h4>
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              Expande tu presencia a 2 tarjetas activas con código QR y enlace independiente.
+            </p>
+          </div>
+
+          {/* Hito 2 */}
+          <div className={`p-4 rounded-2xl border transition-all ${
+            overview.totalReferralsCount >= 6
+              ? 'bg-cyan-500/10 border-cyan-500/40 shadow-lg shadow-cyan-500/5'
+              : 'bg-white/5 border-white/5'
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-mono font-bold text-cyan-400">Nivel 2 • 6 Invitados</span>
+              {overview.totalReferralsCount >= 6 ? (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  ¡Desbloqueado!
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-zinc-400">
+                  Faltan {Math.max(0, 6 - overview.totalReferralsCount)}
+                </span>
+              )}
+            </div>
+            <h4 className="text-sm font-bold text-white mb-1">Insignia VIP & Analítica Prioritaria</h4>
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              Distintivo verificado en tu tarjeta digital y refresco acelerado de estadísticas de visitas.
+            </p>
+          </div>
+
+          {/* Hito 3 */}
+          <div className={`p-4 rounded-2xl border transition-all ${
+            overview.totalReferralsCount >= 10
+              ? 'bg-purple-500/10 border-purple-500/40 shadow-lg shadow-purple-500/5'
+              : 'bg-white/5 border-white/5'
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-mono font-bold text-purple-400">Nivel 3 • 10 Invitados</span>
+              {overview.totalReferralsCount >= 10 ? (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  ¡Desbloqueado!
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-zinc-400">
+                  Faltan {Math.max(0, 10 - overview.totalReferralsCount)}
+                </span>
+              )}
+            </div>
+            <h4 className="text-sm font-bold text-white mb-1">Pase Pro Anticipado & 25%</h4>
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              Acceso beta prioritario a funciones avanzadas y vinculación preferencial de comisiones.
+            </p>
+          </div>
+        </div>
+
+        {/* Resumen del bucle de valor */}
+        <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs text-zinc-300 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span><strong>Bucle de Doble Cara:</strong> Tu invitado recibe el Plan Gratuito de por vida y tú ganas capacidad instantánea.</span>
+          </div>
+          <span className="text-zinc-500 font-mono text-[11px]">Cero costo para ambos</span>
+        </div>
+      </div>
 
       {/* Tarjeta de Enlace Único y Personalización de Código */}
       <div className="glass-panel rounded-2xl p-6 border border-cyan-500/30 bg-cyan-950/20 space-y-4">
