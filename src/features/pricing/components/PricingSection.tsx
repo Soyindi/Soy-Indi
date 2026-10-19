@@ -74,7 +74,7 @@ export function PricingSection({
           </h2>
 
           <p className="text-sm sm:text-base text-zinc-300 leading-relaxed">
-            Empieza hoy con <strong>3 días de prueba gratis</strong>. Luego activa la suite profesional en plan mensual accesible o ahorra hasta <strong>60% con el pago semestral</strong>.
+            Comienza gratis con el <strong>Plan Comunitario Starter</strong>. Para necesidades avanzadas y múltiples perfiles, reserva tu lugar en los <strong>planes Pro y Max</strong> con beneficios preferenciales.
           </p>
         </div>
       )}
@@ -288,11 +288,11 @@ export function PricingSection({
           href={isAuthenticated ? '/start' : '/login?mode=signup&callbackUrl=/start'}
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-cyan-300 hover:text-cyan-200 transition-colors py-2 px-4 rounded-xl hover:bg-white/5"
         >
-          <span>{isAuthenticated ? 'Volver a mi panel de control' : '¿Quieres probar antes? Empieza tu prueba gratuita de 3 días'}</span>
+          <span>{isAuthenticated ? 'Volver a mi panel de control' : '¿Quieres comenzar ya? Activa tu cuenta comunitaria gratuita'}</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
         <p className="text-center text-[11px] text-zinc-400">
-          🔒 Pagos 100% seguros procesados en pesos chilenos (CLP) vía Webpay, tarjetas de débito/crédito y Mercado Pago. Sin permanencia obligatoria.
+          ✨ Plan Comunitario sin tarjeta de crédito. Los planes Pro y Max estarán disponibles próximamente.
         </p>
       </div>
 

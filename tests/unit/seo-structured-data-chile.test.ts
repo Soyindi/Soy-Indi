@@ -27,7 +27,7 @@ describe('Estrategia SEO SaaS INDI Chile 2026: Datos Estructurados & IndexNow (t
     // Validación de preguntas frecuentes con respuestas adaptadas a Chile (ATS y sin app)
     expect(content).toContain('Buk, Laborum y Trabajando');
     expect(content).toContain('vCard 4.0');
-    expect(content).toContain('Cuenta RUT');
+    expect(content).toContain('CuentaRUT');
   });
 
   it('BrandLogo implementa Product-Led Link Building con rel="powered-by" para enlaces al inicio', () => {

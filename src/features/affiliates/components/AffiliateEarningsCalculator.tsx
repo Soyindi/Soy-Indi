@@ -349,11 +349,11 @@ export function AffiliateEarningsCalculator() {
               <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-2">
                 <div className="flex items-center gap-2 text-white font-bold text-xs">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Ejemplo A: Enfoque Mensual Recurrente</span>
+                  <span>Ejemplo A: Recompensas en Comunidad y Plan Pro</span>
                 </div>
                 <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Si recomiendas INDI a <strong>10 colegas</strong> y contratan el <strong>Plan Pro Mensual ($4.990 CLP)</strong>, 
-                  recibes <strong>$12.475 CLP</strong> cada mes mientras mantengan activa su cuenta. Si 5 de ellos eligen el <strong>Plan Starter ($2.500 CLP)</strong>, sumas <strong>$3.125 CLP</strong> adicionales cada 30 días.
+                  El <strong>Plan Starter es gratuito</strong> para la comunidad. Si invitas a <strong>10 colegas</strong> que luego dan el salto al <strong>Plan Pro Mensual ($4.990 CLP)</strong>, 
+                  recibes <strong>$12.475 CLP</strong> cada mes de forma recurrente mientras mantengan activa su cuenta.
                 </p>
               </div>
 

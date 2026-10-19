@@ -27,7 +27,7 @@ describe('TrialBanner Executive Component (WCAG 2.2 AA & Base 8 Grid Standards)'
     expect(src).toContain('INDI Pro Activo');
     expect(src).toContain('Prueba Gratuita');
     expect(src).toContain('¡Último día de prueba!');
-    expect(src).toContain('Prueba Concluida');
+    expect(src).toContain('Plan Comunitario');
   });
 
   it('utilizes high-contrast typography and accessible amber gradient on primary CTA', () => {

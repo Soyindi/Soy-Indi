@@ -4,40 +4,34 @@ import path from 'path';
 import { PRICING_TIERS } from '@/entities/subscription/types';
 
 describe('Auditoría de Contenido y FAQ de Precios Multi-Tier 2026 (tests/unit)', () => {
-  it('FaqAccordion.tsx expone con precisión la estructura de precios de los 3 planes (Starter, Pro, Max) y medios de pago', () => {
+  it('FaqAccordion.tsx expone con precisión la estructura del Plan Comunitario Gratuito y lista de espera Pro/Max', () => {
     const faqPath = path.resolve(
       process.cwd(),
       'src/features/pricing/components/FaqAccordion.tsx'
     );
     const content = fs.readFileSync(faqPath, 'utf-8');
 
-    // Validación de planes y precios en la respuesta
-    expect(content).toContain('Starter por $2.500 CLP/mes');
-    expect(content).toContain('Pro (Recomendado) por $4.990 CLP/mes');
-    expect(content).toContain('Max por $8.990 CLP/mes');
-    expect(content).toContain('$6.000 semestral');
-    expect(content).toContain('$15.000 semestral');
-    expect(content).toContain('$29.990 semestral');
-
-    // Validación de pasarelas de pago locales chilenas
-    expect(content).toContain('Webpay (Flow.cl)');
-    expect(content).toContain('Fintoc');
-    expect(content).toContain('Mercado Pago');
+    // Validación de planes comunitarios y lista de espera en la respuesta
+    expect(content).toContain('Plan Comunitario Gratuito');
+    expect(content).toContain('Plan Starter es 100% gratuito para la comunidad');
+    expect(content).toContain('Pro ($4.990 CLP/mes o $15.000 semestral)');
+    expect(content).toContain('Max ($8.990 CLP/mes o $29.990 semestral)');
+    expect(content).toContain('lista de espera con acceso anticipado');
 
     // Validación de comisiones de afiliados
     expect(content).toContain('25% de comisión en pesos chilenos');
-    expect(content).toContain('desde $625 CLP mensual ($1.500 semestral) en Starter, hasta $2.248 CLP mensual ($7.498 semestral) en Max');
+    expect(content).toContain('Por cada 3 amigos que se sumen');
   });
 
-  it('el esquema JSON-LD de page.tsx expone la información sincronizada de planes y pasarelas', () => {
+  it('el esquema JSON-LD de page.tsx expone la información sincronizada del Plan Comunitario y planes Pro', () => {
     const pagePath = path.resolve(process.cwd(), 'src/app/page.tsx');
     const content = fs.readFileSync(pagePath, 'utf-8');
 
-    expect(content).toContain('Starter por $2.500 CLP al mes');
-    expect(content).toContain('Pro por $4.990 CLP al mes');
-    expect(content).toContain('Max por $8.990 CLP al mes');
-    expect(content).toContain('Flow.cl');
-    expect(content).toContain('Fintoc A2A');
+    expect(content).toContain('Plan Comunitario Gratuito');
+    expect(content).toContain('Plan Starter es 100% gratuito para la comunidad');
+    expect(content).toContain('Pro ($4.990 CLP al mes o $15.000 semestral)');
+    expect(content).toContain('Max ($8.990 CLP al mes o $29.990 semestral)');
+    expect(content).toContain('25% de comisión en los planes avanzados');
   });
 
   it('los precios del catálogo oficial PRICING_TIERS coinciden matemáticamente con los textos de FAQ', () => {

@@ -10,14 +10,14 @@ interface FaqItem {
 
 const FAQ_ITEMS: FaqItem[] = [
   {
-    question: '¿Cómo funcionan los 3 días de prueba gratis?',
+    question: '¿Cómo funciona el Plan Comunitario Gratuito?',
     answer:
-      'Al crear tu cuenta tienes 3 días completos para usar todo gratis, sin ningún compromiso y sin pedirte tarjeta de crédito. Puedes crear tu tarjeta, personalizarla con tus datos, revisar tus métricas de visitas y compartir tu link o tu código QR con tus clientes desde el primer minuto.',
+      'Al crear tu cuenta en INDI accedes de por vida al Plan Comunitario Gratuito, sin costo y sin pedirte tarjeta de crédito. Puedes crear 1 Tarjeta Digital con código QR interactivo y 1 Smart CV en PDF adaptado a filtros ATS, revisar tus métricas de visitas y compartir tu perfil con tus clientes o reclutadores desde el primer minuto.',
   },
   {
-    question: '¿Cuánto cuesta el servicio después de los 3 días?',
+    question: '¿Cuánto cuesta el servicio y qué incluyen los planes Pro y Max?',
     answer:
-      'Dispones de 3 planes adaptados a tu etapa: Starter por $2.500 CLP/mes ($6.000 semestral), Pro (Recomendado) por $4.990 CLP/mes ($15.000 semestral) con analíticas completas y sin límites de visualización, o Max por $8.990 CLP/mes ($29.990 semestral) para volumen ilimitado. En todos los planes semestrales ahorras hasta un 60%.',
+      'El Plan Starter es 100% gratuito para la comunidad. Para profesionales con alto volumen que requieran múltiples tarjetas, analíticas avanzadas y plantillas exclusivas, los planes Pro ($4.990 CLP/mes o $15.000 semestral) y Max ($8.990 CLP/mes o $29.990 semestral) se encuentran actualmente en lista de espera con acceso anticipado.',
   },
   {
     question: '¿Mis clientes necesitan instalar alguna aplicación para ver mi tarjeta?',
@@ -25,9 +25,9 @@ const FAQ_ITEMS: FaqItem[] = [
       'No, para nada. Tu cliente solo escanea tu código QR con la cámara de su celular o toca el enlace que le envíes por WhatsApp, y tu tarjeta se abre al instante en su navegador (funciona perfecto en cualquier iPhone o Android).',
   },
   {
-    question: '¿Qué pasa cuando se terminen mis 3 días de prueba?',
+    question: '¿Tengo algún límite de tiempo en mi Plan Gratuito?',
     answer:
-      'Tu información, tarjetas y currículum quedan resguardados de forma segura en tu cuenta. Para mantener tus enlaces públicos activos y continuar registrando visitas y clics de clientes, puedes activar tu plan Starter desde $2.500 CLP/mes, Pro por $4.990 CLP/mes o Max según tus requerimientos.',
+      'No tienes límite de tiempo. Tu tarjeta digital y tu Smart CV permanecen activos de manera permanente. No cerraremos tu cuenta ni exigiremos cobros sorpresivos para mantener tus enlaces funcionando.',
   },
   {
     question: '¿Cómo sé cuántas personas están viendo mi tarjeta o escribiéndome?',
@@ -40,14 +40,9 @@ const FAQ_ITEMS: FaqItem[] = [
       'No. Tu tarjeta incluye un botón inteligente de "Guardar Contacto". Al presionarlo, el celular de tu cliente descarga tu ficha de contacto completa (con tu nombre, foto, WhatsApp, correo y dirección) y la guarda directamente en su agenda sin tener que tipear nada.',
   },
   {
-    question: '¿Qué medios de pago puedo usar en Chile?',
-    answer:
-      'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o crédito mediante Webpay (Flow.cl), transferencia instantánea Cuenta-a-Cuenta con Fintoc, o Mercado Pago. Para pagos fuera de Chile también se aceptan tarjetas internacionales.',
-  },
-  {
     question: '¿Cómo funciona el programa de recomendación y afiliados?',
     answer:
-      'Todos los miembros de INDI tienen un enlace y código QR de afiliado exclusivo en su panel. Ganas el 25% de comisión en pesos chilenos sobre cada suscripción cobrada: desde $625 CLP mensual ($1.500 semestral) en Starter, hasta $2.248 CLP mensual ($7.498 semestral) en Max. Las comisiones se abonan directamente a tu Cuenta RUT o banco chileno cada 15 días (días 1 y 15 de cada mes).',
+      'Todos los miembros de INDI tienen un enlace y código QR de afiliado exclusivo en su panel. Por cada 3 amigos que se sumen con tu enlace desbloqueas capacidades adicionales (+1 tarjeta), y cuando activemos los planes Pro y Max recibirás el 25% de comisión en pesos chilenos directamente en tu cuenta bancaria o CuentaRUT.',
   },
 ];
 

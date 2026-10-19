@@ -188,8 +188,8 @@ export function ReferralQrModal({
           </button>
         </div>
 
-        <p className="mt-5 text-[10px] text-zinc-500 font-mono">
-          Al escanear, el invitado recibe 3 días gratis y queda vinculado a tu 25% de comisión.
+        <p className="mt-5 text-[10px] text-zinc-400 font-mono">
+          Al escanear, el invitado recibe su Plan Gratuito de por vida y queda vinculado a tus beneficios y comisiones de afiliado.
         </p>
       </div>
     </div>

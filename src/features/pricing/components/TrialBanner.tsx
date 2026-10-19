@@ -237,19 +237,19 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
     >
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-start sm:items-center gap-3">
-          <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-            <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-            <span>Prueba Concluida</span>
+          <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+            <AlertCircle className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Plan Comunitario</span>
           </span>
           <p className="text-xs sm:text-sm text-zinc-200">
-            <strong className="text-white">Tu período de prueba de 3 días ha finalizado.</strong> Activa tu membresía desde $2.500/mes para mantener tus enlaces públicos y métricas activas.
+            <strong className="text-white">Estás en el Plan Comunitario Gratuito.</strong> Crea tu Tarjeta Digital y Smart CV sin costo o revisa la lista de espera de planes avanzados.
           </p>
         </div>
         <Link
           href="/pricing"
-          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm transition-all shadow-md shadow-rose-600/20 cursor-pointer w-full sm:w-auto active:scale-[0.98]"
+          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs sm:text-sm transition-all shadow-md shadow-cyan-600/20 cursor-pointer w-full sm:w-auto active:scale-[0.98]"
         >
-          <span>Activar membresía desde $2.500 / mes</span>
+          <span>Ver Planes Pro & Comunidad</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>

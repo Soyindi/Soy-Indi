@@ -190,7 +190,7 @@ export function MetricsShowcaseSection() {
         {/* CTA integrado con touch target >= 44px */}
         <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-zinc-400 text-center sm:text-left">
-            Empieza a medir tus resultados hoy mismo con los <strong>3 días de prueba gratis</strong>.
+            Empieza a medir tus resultados hoy mismo con tu <strong>Plan Gratuito</strong>.
           </p>
           <Link
             href="/start"

@@ -104,18 +104,18 @@ const HOME_STRUCTURED_DATA = [
     mainEntity: [
       {
         '@type': 'Question',
-        name: '¿Cómo funcionan los 3 días de prueba gratis?',
+        name: '¿Cómo funciona el Plan Comunitario Gratuito?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Al crear tu cuenta tienes 3 días completos para usar todo gratis, sin ningún compromiso y sin pedirte tarjeta de crédito. Puedes crear tu tarjeta, personalizarla con tus datos, revisar tus métricas de visitas y compartir tu link o tu código QR con tus clientes desde el primer minuto.',
+          text: 'Al crear tu cuenta en INDI accedes de por vida al Plan Comunitario Gratuito, sin costo y sin pedirte tarjeta de crédito. Puedes crear 1 Tarjeta Digital con código QR interactivo y 1 Smart CV en PDF adaptado a filtros ATS, revisar tus métricas de visitas y compartir tu perfil con tus clientes o reclutadores desde el primer minuto.',
         },
       },
       {
         '@type': 'Question',
-        name: '¿Cuánto cuesta el servicio después de los 3 días?',
+        name: '¿Cuánto cuesta el servicio y qué incluyen los planes Pro y Max?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Dispones de 3 planes: Starter por $2.500 CLP al mes ($6.000 semestral), Pro por $4.990 CLP al mes ($15.000 semestral) y Max por $8.990 CLP al mes ($29.990 semestral). En planes semestrales ahorras hasta un 60%.',
+          text: 'El Plan Starter es 100% gratuito para la comunidad. Para profesionales con alto volumen que requieran múltiples tarjetas, analíticas avanzadas y plantillas exclusivas, los planes Pro ($4.990 CLP al mes o $15.000 semestral) y Max ($8.990 CLP al mes o $29.990 semestral) se encuentran actualmente en lista de espera con acceso anticipado.',
         },
       },
       {
@@ -136,18 +136,10 @@ const HOME_STRUCTURED_DATA = [
       },
       {
         '@type': 'Question',
-        name: '¿Qué medios de pago puedo usar en Chile?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Puedes pagar de forma rápida y segura con Cuenta RUT, tarjeta de débito o tarjeta de crédito mediante Webpay (Flow.cl), Fintoc A2A y Mercado Pago.',
-        },
-      },
-      {
-        '@type': 'Question',
         name: '¿Cómo funciona el programa de recomendación y afiliados?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Todos los miembros de INDI cuentan con un enlace y código QR de afiliado exclusivo. Ganas el 25% de comisión en pesos chilenos transferido a tu cuenta bancaria cada 15 días.',
+          text: 'Todos los miembros de INDI cuentan con un enlace y código QR de afiliado exclusivo. Por cada 3 colegas desbloqueas capacidades adicionales y recibes el 25% de comisión en los planes avanzados transferido a tu banco o CuentaRUT.',
         },
       },
     ],

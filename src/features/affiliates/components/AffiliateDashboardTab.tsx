@@ -182,8 +182,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
             Programa de Afiliados y Recompensas INDI
           </h2>
           <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-            Comparte tu enlace de recomendación. Cada vez que alguien se suscriba a cualquier plan de INDI (Starter, Pro o Max), 
-            ganas el <strong>25% de comisión en pesos chilenos</strong>: desde <strong>$625 CLP</strong> (Starter mensual) hasta <strong>$7.498 CLP</strong> (Max semestral) por suscripción. Los pagos se transfieren automáticamente a tu cuenta bancaria cada 15 días.
+            Comparte tu enlace de recomendación. Quienes ingresen obtienen su <strong>Plan Comunitario Gratuito de por vida</strong> (Tarjeta Digital + Smart CV ATS). Por cada 3 colegas que invites desbloqueas capacidad adicional, y cuando se suscriban a los futuros planes Pro o Max, ganas el <strong>25% de comisión en pesos chilenos</strong> ($1.248 a $7.498 CLP por suscripción) depositado directamente en tu banco o CuentaRUT.
           </p>
         </div>
       </div>

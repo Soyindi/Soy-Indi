@@ -48,14 +48,14 @@ export function HeroCtaButtons({ className = '' }: HeroCtaButtonsProps) {
         href="/login?mode=signup&callbackUrl=/start"
         className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold text-sm shadow-xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all min-h-[48px]"
       >
-        <span>Probar Gratis por 3 Días</span>
+        <span>Comenzar Gratis (Sin tarjeta)</span>
         <ArrowRight className="w-4 h-4" />
       </Link>
       <Link
         href="/pricing"
         className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass-panel text-zinc-300 hover:text-white font-medium text-sm transition-all min-h-[48px]"
       >
-        <span>Ver Precios ($2.500 al mes)</span>
+        <span>Ver Planes & Comunidad</span>
       </Link>
     </div>
   );

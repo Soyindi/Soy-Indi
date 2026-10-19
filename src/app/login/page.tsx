@@ -86,7 +86,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               🎁 Invitación de @{rawParamRef} activada
             </span>
             <p className="text-[11px] text-zinc-400 mt-0.5">
-              Tu prueba VIP de 3 días con acceso total comenzará automáticamente al registrarte.
+              Tu Plan Comunitario Gratuito de por vida se activará automáticamente al registrarte.
             </p>
           </div>
         )}

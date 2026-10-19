@@ -47,11 +47,11 @@ export function ReferralWelcomeBanner({
                 <span>{inviterText}</span>
               </span>
               <span className="text-xs font-semibold text-white">
-                Acceso VIP Concedido
+                Plan Comunitario Concedido
               </span>
             </div>
             <p className="text-xs text-zinc-300 mt-1 leading-relaxed">
-              Disfruta de <strong className="text-white font-semibold">{daysRemaining} días de prueba gratuita</strong> con acceso ilimitado a Tarjetas Digitales, Smart CV y Presentaciones con IA.
+              Disfruta de tu <strong className="text-white font-semibold">Plan Comunitario Gratuito de por vida</strong> con acceso a Tarjeta Digital interactiva y Smart CV adaptado a filtros ATS.
             </p>
           </div>
         </div>

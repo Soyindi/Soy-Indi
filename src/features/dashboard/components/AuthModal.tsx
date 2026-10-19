@@ -179,8 +179,8 @@ export function AuthModal({
           </h2>
           <p className="text-xs text-zinc-400 mt-1">
             {mode === 'signup'
-              ? 'Comienza tu prueba gratuita de 3 días con acceso total a todas las herramientas.'
-              : 'Accede a tus tarjetas, currículums calibrados y presentaciones.'}
+              ? 'Accede gratis a tu Tarjeta Digital interactiva y Smart CV adaptado a filtros ATS.'
+              : 'Accede a tus tarjetas y currículums profesionales.'}
           </p>
         </div>
 
