@@ -26,10 +26,11 @@
 
 **INDI** es una plataforma diseñada para emprendedores, trabajadores independientes y profesionales que buscan captar más clientes y proyectar una imagen impecable de manera sencilla.
 
-Cuenta con la matriz comercial **"El Semestre Irresistible"**:
-- **Plan Starter 🟢**: $2.500 CLP/mes o $6.000 CLP/semestre ($1.000 CLP/mes, 60% OFF, sin marca de agua desde el día 1).
-- **Plan Pro 🔵 (Recomendado)**: $4.990 CLP/mes o $15.000 CLP/semestre ($2.500 CLP/mes, 50% OFF, dominio y enlaces personalizados).
-- **Plan Max 🟣**: $8.990 CLP/mes o $29.990 CLP/semestre (~$4.990 CLP/mes, 44% OFF, volumen ilimitado y multi-organización).
+### 🌟 Fase Comunitaria 2026 (Free & Limited • Vercel-Ready):
+- **Plan Starter (Comunitario Gratuito) 🟢**: **$0 CLP / mes de por vida**. Incluye 1 Tarjeta Digital viva con enlace único y código QR, 1 Smart CV en PDF vectorial ATS, botón de WhatsApp directo y programa oficial de afiliados.
+- **Enfoque de Producto Core**: Máxima concentración en **Tarjeta Digital + Smart CV (ATS)**, erradicando la sobrecarga cognitiva y optimizando la latencia perimetral en <50ms.
+- **Programa de Afiliados con Incentivo Mutuo (25% CLP)**: Los miembros comparten su código QR exclusivo; acumulan beneficios inmediatos de producto (desbloqueo de tarjetas adicionales) y comisiones monetarias sobre futuras compras y patrocinios.
+- **Planes Pro 🔵 y Max 🟣 en Lista de Espera**: Disponibles para suscripción corporativa y herramientas avanzadas.
 
 ---
 

@@ -10,9 +10,9 @@ describe('Subscription & Entitlements Logic', () => {
     expect(PRICING_TIERS.starter.semiannual.priceClp).toBe(6000);
     expect(PRICING_TIERS.starter.semiannual.discountPercentage).toBe(60);
     expect(PRICING_TIERS.starter.semiannual.monthlyEquivalentClp).toBe(1000);
-    expect(PRICING_TIERS.starter.limits.cards).toBe(3);
+    expect(PRICING_TIERS.starter.limits.cards).toBe(1);
     expect(PRICING_TIERS.starter.limits.cvs).toBe(1);
-    expect(PRICING_TIERS.starter.limits.presentations).toBe(2);
+    expect(PRICING_TIERS.starter.limits.presentations).toBe(0);
     expect(PRICING_TIERS.starter.limits.hasWatermark).toBe(false);
 
     // 2. Pro (Recomendado)

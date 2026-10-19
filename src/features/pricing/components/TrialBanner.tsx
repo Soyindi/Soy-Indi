@@ -117,7 +117,50 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
   }
 
   // 3. Si está en período de prueba (3 días)
+  // 3. Si está en Plan Comunitario Gratuito (o prueba)
   if (entitlement.status === 'TRIAL') {
+    const isPermanentFree = entitlement.tier === 'starter' || entitlement.expiresAt === null;
+
+    if (isPermanentFree) {
+      return (
+        <aside
+          aria-label="Estado del plan comunitario gratuito"
+          className="w-full backdrop-blur-md border-b px-4 sm:px-6 py-2.5 bg-zinc-950/85 border-cyan-500/20 text-zinc-100 transition-all"
+        >
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span>Plan Gratuito Activo</span>
+              </span>
+
+              <p className="text-xs sm:text-sm text-zinc-300">
+                <strong className="text-white">1 Tarjeta Digital + 1 Smart CV incluidos.</strong>
+                <span className="hidden md:inline ml-1 text-zinc-400">Invita a 3 amigos y desbloquea +1 tarjeta extra.</span>
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dashboard?tab=affiliates"
+                className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400 hover:text-emerald-300 text-xs font-semibold border border-white/10 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Invitar y Desbloquear (25%)</span>
+              </Link>
+              <Link
+                href="/pricing"
+                className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 hover:from-indigo-500/30 hover:to-cyan-500/30 text-cyan-300 text-xs font-semibold border border-cyan-500/30 transition-all"
+              >
+                <span>Ver Planes Pro</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </aside>
+      );
+    }
+
     const isUrgent = entitlement.daysRemaining <= 1;
 
     return (
@@ -162,10 +205,10 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
             {/* Mensaje descriptivo con contraste WCAG AAA */}
             <div className="text-xs sm:text-sm text-zinc-300">
               <span className="font-semibold text-white">
-                {isUrgent ? 'Tu prueba finaliza hoy.' : 'Acceso completo ilimitado.'}
+                {isUrgent ? 'Tu prueba finaliza hoy.' : 'Acceso completo.'}
               </span>
               <span className="ml-1.5 hidden lg:inline text-zinc-300">
-                Tarjetas Digitales, Métricas, Smart CV y Presentaciones.
+                Tarjetas Digitales y Smart CV ATS.
               </span>
             </div>
           </div>
@@ -177,7 +220,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
               className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-bold text-xs sm:text-sm transition-all shadow-md shadow-amber-500/15 hover:shadow-amber-500/25 cursor-pointer w-full md:w-auto active:scale-[0.98]"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Suscríbete desde $2.500 / mes</span>
+              <span>Planes Pro & Lista de Espera</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

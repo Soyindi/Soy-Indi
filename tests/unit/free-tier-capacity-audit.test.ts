@@ -25,9 +25,9 @@ describe('Free-Tier Capacity & Resource Footprint Audit', () => {
 
   it('verifica que los límites cuantitativos del plan Starter están acotados y previenen saturación', () => {
     const starterLimits = PRICING_TIERS.starter.limits;
-    expect(starterLimits.cards).toBe(3);
+    expect(starterLimits.cards).toBe(1);
     expect(starterLimits.cvs).toBe(1);
-    expect(starterLimits.presentations).toBe(2);
+    expect(starterLimits.presentations).toBe(0);
     expect(starterLimits.hasWatermark).toBe(false);
   });
 

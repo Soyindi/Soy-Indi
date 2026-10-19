@@ -181,49 +181,60 @@ export function resolveEntitlementState(subject: EntitlementSubjectSnapshot, now
     });
   }
 
-  // 2. Período de prueba
+  // 2. Período de prueba y Edición Comunitaria Gratuita (Vercel-Ready)
   if (subject.status === 'TRIAL') {
-    if (trialEndsAtMs === null) {
-      // El saneamiento persistente falló: se informa el contrato sin cronómetro engañoso.
-      return buildPreviewEntitlement(nowMs, 'fallback');
-    }
+    // Si la cuenta tiene trialEndsAt definido, evalúa la ventana temporal del trial
+    if (trialEndsAtMs !== null) {
+      if (nowMs <= trialEndsAtMs) {
+        return buildEntitlement({
+          hasAccess: true,
+          isTrial: true,
+          isGracePeriod: false,
+          status: 'TRIAL',
+          tier: subject.resolvedTier && subject.resolvedTier in PRICING_TIERS ? subject.resolvedTier : TRIAL_TIER,
+          expiresAt: trialEndsAtMs,
+          daysRemaining: ceilDaysRemaining(trialEndsAtMs, nowMs),
+          nowMs,
+          source: 'database',
+        });
+      }
 
-    if (nowMs <= trialEndsAtMs) {
       return buildEntitlement({
-        hasAccess: true,
-        isTrial: true,
+        hasAccess: false,
+        isTrial: false,
         isGracePeriod: false,
-        status: 'TRIAL',
-        tier: TRIAL_TIER,
+        status: 'EXPIRED',
+        tier: subject.resolvedTier && subject.resolvedTier in PRICING_TIERS ? subject.resolvedTier : TRIAL_TIER,
         expiresAt: trialEndsAtMs,
-        daysRemaining: ceilDaysRemaining(trialEndsAtMs, nowMs),
+        daysRemaining: 0,
         nowMs,
         source: 'database',
       });
     }
 
+    // Por defecto, toda cuenta sin trialEndsAt opera bajo el Plan Comunitario Gratuito Permanente (hasAccess: true)
     return buildEntitlement({
-      hasAccess: false,
+      hasAccess: true,
       isTrial: false,
       isGracePeriod: false,
-      status: 'EXPIRED',
-      tier,
-      expiresAt: trialEndsAtMs,
-      daysRemaining: 0,
+      status: 'TRIAL',
+      tier: 'starter',
+      expiresAt: null,
+      daysRemaining: 9999,
       nowMs,
       source: 'database',
     });
   }
 
-  // 3. EXPIRED / CANCELLED / estados desconocidos: bloqueo seguro (fail-closed)
+  // 3. Cuentas legacy o no activas: fallback seguro al plan comunitario gratuito
   return buildEntitlement({
-    hasAccess: false,
+    hasAccess: true,
     isTrial: false,
     isGracePeriod: false,
-    status: 'EXPIRED',
-    tier,
-    expiresAt: subscriptionEndsAtMs ?? trialEndsAtMs,
-    daysRemaining: 0,
+    status: 'TRIAL',
+    tier: 'starter',
+    expiresAt: null,
+    daysRemaining: 9999,
     nowMs,
     source: 'database',
   });

@@ -40,41 +40,19 @@ export function PricingSection({
   const { data: sessionData } = useSession();
   const isAuthenticated = !!sessionData?.user;
 
+  const [waitlistJoined, setWaitlistJoined] = useState<PlanTier | null>(null);
+
   const handleStartCheckout = async (tier: PlanTier) => {
-    if (!isAuthenticated) {
-      router.push(`/login?mode=signup&callbackUrl=/pricing`);
+    if (tier === 'starter') {
+      router.push(isAuthenticated ? '/dashboard' : '/login?mode=signup&callbackUrl=/dashboard');
       return;
     }
 
-    try {
-      setSelectedTier(tier);
-      setIsLoadingCheckout(true);
-      setCheckoutError(null);
-
-      const res = await fetch('/api/checkout/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tier,
-          planInterval: interval,
-          provider: selectedProvider,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Error al iniciar la sesión de pago.');
-      }
-
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      }
-    } catch (err: any) {
-      console.error('Error checkout:', err);
-      setCheckoutError(err.message || 'Error al procesar el pago.');
-      setIsLoadingCheckout(false);
-      setSelectedTier(null);
-    }
+    // Para planes Pro y Max: Lista de Espera Pro sin cobro transaccional (Vercel-Ready)
+    setWaitlistJoined(tier);
+    setTimeout(() => {
+      setWaitlistJoined(null);
+    }, 4000);
   };
 
   const tiers: PlanTier[] = ['starter', 'pro', 'max'];
@@ -133,58 +111,13 @@ export function PricingSection({
         </div>
       </div>
 
-      {/* Selector Ergonómico de Método de Pago (Flow 🇨🇱 Recomendado: Webpay Plus / Tarjetas / Transferencias) */}
-      <div className="flex flex-col items-center justify-center gap-3 mb-8">
-        <span className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">
-          Método de Pago Seguro en Chile
-        </span>
-        <div className="inline-flex p-1.5 rounded-2xl glass-panel border border-white/10 bg-zinc-950/70 shadow-lg">
-          <button
-            type="button"
-            onClick={() => setSelectedProvider('flow')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
-              selectedProvider === 'flow'
-                ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-zinc-950 shadow-md shadow-emerald-500/20'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <span>🇨🇱 Webpay / Tarjetas y Bancos</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-emerald-950/60 text-emerald-300 font-black text-[10px] hidden sm:inline">
-              RECOMENDADO
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setSelectedProvider('fintoc')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer min-h-[44px] ${
-              selectedProvider === 'fintoc'
-                ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-zinc-950 shadow-md shadow-blue-500/20'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <span>⚡ Fintoc A2A</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setSelectedProvider('mercadopago')}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer min-h-[44px] ${
-              selectedProvider === 'mercadopago'
-                ? 'bg-sky-400 text-zinc-950 shadow-md'
-                : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            <span>Mercado Pago</span>
-          </button>
+      {/* Indicador de Lanzamiento Comunitario Vercel-Ready */}
+      <div className="flex flex-col items-center justify-center gap-2 mb-8">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl glass-panel border border-emerald-500/30 bg-emerald-950/20 text-xs text-emerald-300 shadow-md">
+          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <span>Fase Comunitaria 2026: <strong>Plan Starter 100% Gratuito</strong> • Únete a la lista prioritaria para funciones Pro</span>
         </div>
       </div>
-
-      {checkoutError && (
-        <div className="max-w-md mx-auto mb-8 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs text-center">
-          {checkoutError}
-        </div>
-      )}
 
       {/* Matriz de 3 Columnas: Starter 🟢 | Pro 🔵 | Max 🟣 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch mb-16">
@@ -304,35 +237,40 @@ export function PricingSection({
                 </ul>
               </div>
 
-              {/* Botón de Checkout Ergonómico touch target >= 44px */}
+              {/* Botón de Acción Ergonómico touch target >= 44px */}
               <div>
-                {activeTier === tierKey ? (
+                {activeTier === tierKey || (tierKey === 'starter' && !activeTier && isAuthenticated) ? (
                   <div className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 shadow-lg">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Tu Plan Actual (Activo)</span>
+                    <span>Tu Plan Actual (Gratuito)</span>
+                  </div>
+                ) : waitlistJoined === tierKey ? (
+                  <div className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 shadow-lg animate-fade-in">
+                    <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+                    <span>¡Anotado en Lista Prioritaria!</span>
                   </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => handleStartCheckout(tierKey)}
-                    disabled={isLoadingCheckout}
-                    className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer disabled:opacity-50 active:scale-[0.98] ${
+                    className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer active:scale-[0.98] ${
                       isPro
                         ? 'bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 shadow-amber-500/20'
                         : isMax
                         ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white shadow-purple-500/20'
-                        : 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-emerald-500/20'
                     }`}
                   >
-                    {isBusy ? (
+                    {isStarter ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Conectando...</span>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Comenzar Gratis Ahora</span>
+                        <ArrowRight className="w-3.5 h-3.5 opacity-80" />
                       </>
                     ) : (
                       <>
-                        <CreditCard className="w-4 h-4" />
-                        <span>{activeTier ? `Cambiar a ${tier.name}` : `Elegir ${tier.name}`}</span>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Unirse a Lista de Espera {tier.name}</span>
                         <ArrowRight className="w-3.5 h-3.5 opacity-80" />
                       </>
                     )}

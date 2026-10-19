@@ -47,7 +47,7 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
     {
       title: 'Herramientas de Negocio',
       href: '#soluciones',
-      description: 'Tarjetas con QR, Currículum en PDF y Presentaciones',
+      description: 'Tarjetas con QR y Smart CV en PDF ATS',
       icon: Layers,
     },
     {
@@ -57,15 +57,15 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
       icon: Sparkles,
     },
     {
-      title: 'Precios',
+      title: 'Planes & Comunidad',
       href: '#precios',
-      description: '3 días gratis · Planes desde $2.500/mes (Starter, Pro, Max)',
+      description: 'Plan Comunitario Gratuito · 1 Tarjeta + 1 Smart CV de por vida',
       icon: Tag,
     },
     {
       title: 'Preguntas Frecuentes',
       href: '#faq',
-      description: 'Formas de pago, Cuenta RUT y cómo funciona',
+      description: 'Cómo funciona el plan gratuito, referidos y código QR',
       icon: FileText,
     },
   ];
@@ -74,7 +74,7 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
     {
       title: 'Mi Panel de Control',
       href: '/dashboard',
-      description: 'Gestiona tarjetas, CVs y presentaciones en un solo lugar',
+      description: 'Gestiona tu tarjeta digital, Smart CV y enlaces de referido',
       icon: Layers,
     },
     {
@@ -90,15 +90,9 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
       icon: FileText,
     },
     {
-      title: 'Presentaciones 16:9',
-      href: '/presentations',
-      description: 'Diapositivas cinematográficas con asistencia de IA',
-      icon: MonitorPlay,
-    },
-    {
-      title: 'Programa de Afiliados',
+      title: 'Programa de Afiliados (25%)',
       href: '/dashboard?tab=affiliates',
-      description: 'Gana 25% de comisión en pesos chilenos y genera tu QR',
+      description: 'Comparte tu QR de referido y acumula beneficios de red',
       icon: Sparkles,
     },
   ];

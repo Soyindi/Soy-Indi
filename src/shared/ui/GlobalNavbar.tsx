@@ -51,9 +51,6 @@ export function GlobalNavbar({ className = '', socials }: GlobalNavbarProps) {
               <Link href="/cv" className="hover:text-white transition-colors">
                 Smart CV
               </Link>
-              <Link href="/presentations" className="hover:text-white transition-colors">
-                Presentaciones
-              </Link>
               <Link href="/pricing" className="hover:text-white transition-colors">
                 Planes
               </Link>

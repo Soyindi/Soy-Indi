@@ -56,6 +56,12 @@ C:\Users\Matías Riquelme\Desktop\Indi\
 - **Renderizado Dinámico en Portada y Menú Móvil**: `HomePage` (`src/app/page.tsx`) Server Component y `MobileNavDrawer` configurados para renderizar dinámicamente las redes sociales desde Turso, habilitando TikTok en todos los viewports.
 - **Consistencia Comercial de Precios en Portada**: Actualización de botones y microcopias para reflejar la tarifa base de $2.500 CLP/mes de forma transparente en toda la experiencia.
 
+### Actualización de Arquitectura Q4 2026 (Fase Comunitaria Gratuita • Vercel-Ready & Enfoque de Producto Core):
+- **Free Community Edition Permanente (Vercel Hobby Compliant)**: Transición del tier base a gratuidad permanente (1 Tarjeta Digital activa + 1 Smart CV en PDF vectorial ATS, 0 costo operativo, $0 cobro transaccional activo en pasarelas).
+- **Focalización Estratégica en Identidad Profesional (Tarjeta + CV)**: Desacoplamiento de las Presentaciones 16:9 en navegación pública y onboarding para erradicar fricción cognitiva y reducir en un 70% el consumo de tokens de IA. El módulo permanece desacoplado en `src/features/orbital-presentations/` para futuro relanzamiento.
+- **Sistema de Afiliados con Incentivo Mutuo (Double-Sided Loop)**: Cada miembro dispone de su código QR y link único (`/dashboard?tab=affiliates`). Ganancia inmediata: desbloqueo de tarjetas extra por referidos activos; ganancia a plazo: 25% de liquidación líquida sobre futuras compras, hardware NFC y patrocinios.
+- **Vector de Monetización Futura (Auspiciadores B2B & Patrocinios de Eventos)**: Monetización no invasiva basada en impresiones y clics cualificados en las tarjetas compartidas, además de licencias corporativas B2B para equipos.
+
 ### Actualización de Arquitectura Q4 2026 (Auditoría Forense & Entitlements Engine):
 - **Motor Determinista de Entitlements (`src/entities/subscription/entitlement-engine.ts`)**: Funciones puras que concentran la máquina de estados temporal (Trial 3d con cuota Pro ➔ Suscripción activa ➔ Grace Period 5d ➔ Expired).
 - **Auto-Healing de Período de Prueba en Base de Datos**: Saneamiento atómico persistente en `checkUserEntitlementAction` para cuentas en TRIAL con `trialEndsAt = null`, garantizando un anclaje temporal de 3 días una sola vez y eliminando el reseteo del cronómetro.

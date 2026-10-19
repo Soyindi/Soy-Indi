@@ -424,17 +424,19 @@ export function UnifiedDashboardView({
             <span>Smart CVs ({cvsList.length})</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('presentations')}
-            className={`min-h-[44px] min-w-[160px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start active:scale-[0.98] ${
-              activeTab === 'presentations'
-                ? 'bg-gradient-to-r from-amber-500/30 to-orange-500/25 text-white border border-amber-400/30 shadow-lg shadow-amber-500/10'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
-            }`}
-          >
-            <MonitorPlay className={`w-4 h-4 ${activeTab === 'presentations' ? 'text-amber-300' : 'text-zinc-400'}`} />
-            <span>Presentaciones ({presentationsList.length})</span>
-          </button>
+          {presentationsList.length > 0 && (
+            <button
+              onClick={() => setActiveTab('presentations')}
+              className={`min-h-[44px] min-w-[160px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start active:scale-[0.98] ${
+                activeTab === 'presentations'
+                  ? 'bg-gradient-to-r from-amber-500/30 to-orange-500/25 text-white border border-amber-400/30 shadow-lg shadow-amber-500/10'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+              }`}
+            >
+              <MonitorPlay className={`w-4 h-4 ${activeTab === 'presentations' ? 'text-amber-300' : 'text-zinc-400'}`} />
+              <span>Presentaciones ({presentationsList.length})</span>
+            </button>
+          )}
 
           <button
             onClick={() => setActiveTab('affiliates')}

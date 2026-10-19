@@ -63,23 +63,6 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
       iconColor: 'text-emerald-400',
       highlights: ['Auditoría algorítmica ATS (0 a 100)', 'Plantilla imprimible A4', 'Sugerencias de impacto laboral'],
     },
-    {
-      id: 'presentation',
-      title: 'Elaborar Presentación Cinemática',
-      badge: 'Para Pitches & Clientes',
-      badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-      timeEstimate: '3 minutos',
-      description:
-        'Diapositivas orbitales en formato 16:9 con efectos visuales y generación estructurada por Inteligencia Artificial.',
-      href: '/presentations',
-      ctaText: 'Crear Presentación',
-      gradient: 'from-amber-500/20 via-orange-500/10 to-transparent',
-      borderColor: 'hover:border-amber-500/50',
-      buttonBg: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/20',
-      icon: MonitorPlay,
-      iconColor: 'text-amber-400',
-      highlights: ['Generador de diapositivas con IA', 'Temas oscuros inmersivos 16:9', 'Proyección fluida en pantalla'],
-    },
   ];
 
   return (
@@ -118,12 +101,12 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
           ¿Por dónde te gustaría comenzar hoy?
         </h1>
         <p className="text-xs sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-          Elige tu primer proyecto para configurarlo en minutos. Recuerda que tu membresía Todo-en-Uno te da acceso sin límites a las 3 herramientas.
+          Elige tu primer proyecto para configurarlo en minutos. Tu Plan Comunitario Gratuito te da acceso a Tarjetas Digitales y Smart CV sin costo.
         </p>
       </div>
 
-      {/* Grid de Selección: Horizontal Scroll en Móvil (Snap-X) + 3 Columnas en Escritorio */}
-      <div className="flex md:grid md:grid-cols-3 gap-5 sm:gap-6 overflow-x-auto pb-6 md:pb-0 scrollbar-none snap-x snap-mandatory mb-8 sm:mb-12 -mx-4 px-4 sm:mx-0 sm:px-0">
+      {/* Grid de Selección: Horizontal Scroll en Móvil (Snap-X) + 2 Columnas en Escritorio */}
+      <div className="flex md:grid md:grid-cols-2 max-w-4xl mx-auto gap-5 sm:gap-6 overflow-x-auto pb-6 md:pb-0 scrollbar-none snap-x snap-mandatory mb-8 sm:mb-12 -mx-4 px-4 sm:mx-0 sm:px-0">
         {options.map((opt) => {
           const Icon = opt.icon;
           return (
