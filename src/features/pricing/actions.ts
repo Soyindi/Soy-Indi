@@ -152,10 +152,31 @@ export async function assertQuotaAvailableAction(
     };
   }
 
-  const limit = entitlement.limits[resource];
-  if (limit === 'unlimited') {
+  const baseLimit = entitlement.limits[resource];
+  if (baseLimit === 'unlimited') {
     return { allowed: true, currentCount: 0, maxLimit: 'unlimited' };
   }
+
+  // Bonus cuantitativo por referidos activos en la comunidad (Recompensa Comunitaria 2026):
+  // - +1 Tarjeta Digital por cada 3 colegas referidos confirmados
+  // - +1 Smart CV por cada 5 colegas referidos confirmados
+  let bonusQuota = 0;
+  try {
+    const referredUsers = await db.query.user.findMany({
+      where: eq(user.referredBy, userId),
+      columns: { id: true },
+    });
+    const totalReferred = Array.isArray(referredUsers) ? referredUsers.length : 0;
+    if (resource === 'cards') {
+      bonusQuota = Math.floor(totalReferred / 3);
+    } else if (resource === 'cvs') {
+      bonusQuota = Math.floor(totalReferred / 5);
+    }
+  } catch {
+    bonusQuota = 0;
+  }
+
+  const effectiveLimit = (baseLimit as number) + bonusQuota;
 
   let currentCount = 0;
   try {
@@ -182,24 +203,28 @@ export async function assertQuotaAvailableAction(
     currentCount = 0;
   }
 
-  if (currentCount >= limit) {
+  if (currentCount >= effectiveLimit) {
     const resourceNames: Record<ResourceQuotaType, string> = {
       cards: 'tarjetas digitales',
       cvs: 'versiones de Smart CV',
       presentations: 'presentaciones 16:9',
     };
+    const referralHint = resource === 'cards'
+      ? ' Invita a 3 amigos con tu enlace para desbloquear +1 tarjeta extra automáticamente.'
+      : ' Invita a colegas con tu enlace para desbloquear capacidades adicionales.';
+
     return {
       allowed: false,
       currentCount,
-      maxLimit: limit,
-      error: `Has alcanzado el límite máximo de ${limit} ${resourceNames[resource]} de tu ${PRICING_TIERS[entitlement.tier].name}. Actualiza a un plan superior para crear más.`,
+      maxLimit: effectiveLimit,
+      error: `Has alcanzado el límite máximo de ${effectiveLimit} ${resourceNames[resource]} de tu membresía comunitaria.${referralHint}`,
     };
   }
 
   return {
     allowed: true,
     currentCount,
-    maxLimit: limit,
+    maxLimit: effectiveLimit,
   };
 }
 
