@@ -15,23 +15,19 @@ import {
 } from '../actions';
 import { 
   Users, 
-  DollarSign, 
-  Calendar, 
   Check, 
   Building2, 
-  CreditCard, 
-  Clock, 
   ShieldCheck, 
   Sparkles,
-  ArrowRight,
-  TrendingUp,
   FileCheck,
   Edit3,
   Loader2,
   AlertCircle,
   Share2,
   QrCode,
-  Gift
+  Gift,
+  Award,
+  FileText
 } from 'lucide-react';
 import { ReferralQrModal } from './ReferralQrModal';
 
@@ -68,6 +64,19 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://soyindi.cl');
   const directSignupUrl = `${baseUrl}/login?mode=signup&ref=${currentCode}`;
+
+  const extraCardsUnlocked = Math.floor(overview.totalReferralsCount / 3);
+  const extraCvsUnlocked = Math.floor(overview.totalReferralsCount / 5);
+  const nextCardProgress = 3 - (overview.totalReferralsCount % 3);
+
+  const ambassadorRank = 
+    overview.totalReferralsCount >= 10 
+      ? { title: 'Embajador Oro', color: 'text-amber-400 bg-amber-500/20 border-amber-500/30' }
+      : overview.totalReferralsCount >= 6
+      ? { title: 'Embajador Plata', color: 'text-cyan-300 bg-cyan-500/20 border-cyan-500/30' }
+      : overview.totalReferralsCount >= 3
+      ? { title: 'Miembro Activo', color: 'text-emerald-300 bg-emerald-500/20 border-emerald-500/30' }
+      : { title: 'Miembro Inicial', color: 'text-zinc-400 bg-white/10 border-white/10' };
 
   const handleCopyDirect = () => {
     navigator.clipboard.writeText(directSignupUrl);
@@ -160,14 +169,6 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
     }
   };
 
-  const formatCLP = (amount: number) => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header explicativo */}
@@ -182,7 +183,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
             Recomienda INDI y Desbloquea Más Herramientas
           </h2>
           <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-            Tu enlace de invitación otorga el <strong>Plan Comunitario Gratuito de por vida</strong> (Tarjeta Digital + Smart CV ATS) a cada colega que invites. Por cada 3 colegas que se unan a través de tu link, desbloqueas <strong>+1 Tarjeta Digital adicional</strong> para tus propios proyectos, y cuando se lancen las funciones Pro y auspicios, acumularás el <strong>25% de comisión en CLP</strong>.
+            Tu enlace de invitación otorga el <strong>Plan Comunitario Gratuito de por vida</strong> (Tarjeta Digital + Smart CV ATS) a cada colega que invites. Por cada 3 colegas que se unan con tu link, desbloqueas automáticamente <strong>+1 Tarjeta Digital extra</strong>, y por cada 5 colegas desbloqueas <strong>+1 Smart CV adicional</strong> para potenciar tu presencia profesional sin costo.
           </p>
         </div>
       </div>
@@ -282,9 +283,9 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
                 </span>
               )}
             </div>
-            <h4 className="text-sm font-bold text-white mb-1">Pase Pro Anticipado & 25%</h4>
+            <h4 className="text-sm font-bold text-white mb-1">Embajador Comunitario & Cupos Ilimitados</h4>
             <p className="text-[11px] text-zinc-400 leading-relaxed">
-              Acceso beta prioritario a funciones avanzadas y vinculación preferencial de comisiones.
+              Distintivo dorado de Embajador oficial, soporte preferente y capacidad ilimitada para tus proyectos.
             </p>
           </div>
         </div>
@@ -447,70 +448,83 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
         )}
       </div>
 
-      {/* Métricas Principales en Tiempo Real */}
+      {/* Métricas Principales de Crecimiento Comunitario */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="glass-panel rounded-2xl p-5 border border-white/5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-mono text-zinc-400 uppercase">Registros Totales</span>
+            <span className="text-xs font-mono text-zinc-400 uppercase">Colegas en tu Red</span>
             <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
               <Users className="w-4 h-4" />
             </div>
           </div>
           <p className="text-2xl font-black text-white">{overview.totalReferralsCount}</p>
-          <span className="text-[11px] text-zinc-500">{overview.trialReferralsCount} en prueba gratuita</span>
+          <span className="text-[11px] text-zinc-400">En Plan Comunitario Gratuito</span>
         </div>
 
         <div className="glass-panel rounded-2xl p-5 border border-emerald-500/20 bg-emerald-950/10">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-mono text-emerald-400 uppercase font-semibold">Convertidos a Pro</span>
+            <span className="text-xs font-mono text-emerald-400 uppercase font-semibold">Tarjetas Extra</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center">
-              <Sparkles className="w-4 h-4" />
+              <QrCode className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-black text-emerald-400">{overview.proReferralsCount}</p>
+            <p className="text-2xl font-black text-emerald-400">+{extraCardsUnlocked}</p>
             <span className="text-xs font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full">
-              {overview.conversionRate}% conv.
+              {1 + extraCardsUnlocked} total
             </span>
           </div>
-          <span className="text-[11px] text-zinc-400">Suscriptores activos pagando</span>
+          <span className="text-[11px] text-zinc-400">+1 por cada 3 colegas</span>
+        </div>
+
+        <div className="glass-panel rounded-2xl p-5 border border-cyan-500/20 bg-cyan-950/10">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-mono text-cyan-400 uppercase font-semibold">Smart CVs Extra</span>
+            <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+              <FileText className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <p className="text-2xl font-black text-cyan-400">+{extraCvsUnlocked}</p>
+            <span className="text-xs font-bold text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded-full">
+              {1 + extraCvsUnlocked} total
+            </span>
+          </div>
+          <span className="text-[11px] text-zinc-400">+1 por cada 5 colegas</span>
         </div>
 
         <div className="glass-panel rounded-2xl p-5 border border-white/5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-mono text-zinc-400 uppercase">Por Cobrar (Líquido)</span>
+            <span className="text-xs font-mono text-zinc-400 uppercase">Próximo Hito</span>
+            <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
+              <Sparkles className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-xl font-bold text-white">
+            {overview.totalReferralsCount >= 10 ? '¡Meta Máxima!' : `Faltan ${nextCardProgress}`}
+          </p>
+          <span className="text-[11px] text-zinc-400">
+            {overview.totalReferralsCount >= 10 ? 'Cupos ilimitados activos' : `Para tarjeta #${2 + extraCardsUnlocked}`}
+          </span>
+        </div>
+
+        <div className="glass-panel rounded-2xl p-5 border border-white/5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-mono text-zinc-400 uppercase">Nivel Comunitario</span>
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
+              <Award className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl font-black text-amber-400">{formatCLP(overview.pendingBalanceClp)}</p>
-          <span className="text-[11px] text-amber-300/80">Líquido quincenal (Día 1 y 15)</span>
-        </div>
-
-        <div className="glass-panel rounded-2xl p-5 border border-white/5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-mono text-zinc-400 uppercase">Total Pagado</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
+          <div className="mt-1">
+            <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border ${ambassadorRank.color}`}>
+              {ambassadorRank.title}
+            </span>
           </div>
-          <p className="text-2xl font-black text-emerald-400">{formatCLP(overview.paidBalanceClp)}</p>
-          <span className="text-[11px] text-zinc-500">Transferido históricamente</span>
-        </div>
-
-        <div className="glass-panel rounded-2xl p-5 border border-white/5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-mono text-zinc-400 uppercase">Próximo Pago</span>
-            <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
-              <Calendar className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-sm font-bold text-white mt-1">{overview.nextPayoutDate}</p>
-          <span className="text-[11px] text-zinc-500">Ciclo quincenal (Día 1 y 15)</span>
+          <span className="text-[11px] text-zinc-500 mt-2 block">Crecimiento orgánico</span>
         </div>
       </div>
 
-      {/* Formulario de Datos Bancarios */}
+      {/* Formulario de Datos Bancarios para Convenios y Auspicios */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 glass-panel rounded-3xl p-6 sm:p-8 border border-white/10">
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
@@ -519,10 +533,10 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-bold text-white">
-                Cuenta Bancaria de Abono Quincenal
+                Datos de Transferencia Bancaria (Auspicios y Convenios)
               </h3>
               <p className="text-xs text-zinc-400">
-                Los días 1 y 15 de cada mes transferiremos tus comisiones a estos datos.
+                Registra tu cuenta de forma segura para futuros convenios institucionales, patrocinios y alianzas de embajador.
               </p>
             </div>
           </div>
@@ -537,7 +551,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
             {saveSuccess && (
               <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2">
                 <Check className="w-4 h-4" />
-                <span>Datos bancarios guardados exitosamente.</span>
+                <span>Datos bancarios guardados exitosamente para futuros convenios.</span>
               </div>
             )}
 
@@ -627,59 +641,53 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
                 disabled={isSaving}
                 className="min-h-[44px] px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-zinc-950 font-bold text-xs sm:text-sm transition-all shadow-md shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
               >
-                {isSaving ? 'Guardando...' : 'Guardar Cuenta para Transferencias'}
+                {isSaving ? 'Guardando...' : 'Guardar Cuenta para Convenios'}
               </button>
             </div>
           </form>
         </div>
 
-        {/* Historial o Información de Política */}
+        {/* Gobernanza de Beneficios Comunitarios */}
         <div className="space-y-4">
           <div className="glass-panel rounded-3xl p-6 border border-white/10 text-xs text-zinc-300 leading-relaxed space-y-3">
             <div className="flex items-center gap-2 text-white font-bold text-sm">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Reglas de Liquidación</span>
+              <span>Gobernanza del Programa</span>
             </div>
-            <ul className="space-y-2 list-disc list-inside text-zinc-400 text-[11px]">
-              <li>Los cortes se ejecutan los días 1 y 15 de cada mes.</li>
-              <li>Comisión del 25% garantizada por cada pago aprobado en Mercado Pago.</li>
-              <li>Abono directo a Cuenta RUT o cualquier cuenta bancaria en Chile.</li>
-              <li>Sujeto a emisión de Boleta de Honorarios con retención legal SII (15,25% según Ley N° 21.133).</li>
-              <li>Sin costo ni comisión oculta por transferencia.</li>
+            <ul className="space-y-2 text-zinc-400 text-[11px]">
+              <li className="flex items-start gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Plan 100% Gratuito:</strong> Ni tú ni tus invitados pagan nada por usar INDI.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Cupos Permanentes:</strong> Las tarjetas y CVs extra que desbloquees se mantienen para siempre en tu cuenta.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Alianzas Futuras:</strong> Tus datos bancarios se mantendrán cifrados y listos para cuando se activen fondos de creadores o auspicios regionales.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Privacidad Garantizada:</strong> Cumplimiento estricto de la Ley N° 21.719 de Protección de Datos Personales en Chile.</span>
+              </li>
             </ul>
           </div>
 
           <div className="glass-panel rounded-3xl p-6 border border-white/10">
             <h4 className="text-xs font-mono uppercase text-zinc-400 font-semibold mb-3 flex items-center gap-1.5">
               <FileCheck className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Últimos Movimientos</span>
+              <span>Estado del Programa</span>
             </h4>
 
-            {overview.recentCommissions.length === 0 ? (
-              <p className="text-xs text-zinc-500 italic py-4 text-center">
-                Aún no registras comisiones. ¡Comparte tu link para empezar!
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/5 text-xs text-zinc-400 space-y-2">
+              <p className="text-white font-medium">
+                🎯 {overview.totalReferralsCount} {overview.totalReferralsCount === 1 ? 'colega conectado' : 'colegas conectados'}
               </p>
-            ) : (
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {overview.recentCommissions.map((c) => (
-                  <div key={c.id} className="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between text-xs">
-                    <div>
-                      <p className="font-bold text-white">{formatCLP(c.amountClp)}</p>
-                      <span className="text-[10px] text-zinc-400">
-                        {c.createdAt.toLocaleDateString('es-CL')}
-                      </span>
-                    </div>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      c.status === 'paid'
-                        ? 'bg-emerald-500/20 text-emerald-300'
-                        : 'bg-amber-500/20 text-amber-300'
-                    }`}>
-                      {c.status === 'paid' ? 'Pagado' : 'Por Liquidar'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
+                Tus beneficios comunitarios se aplican instantáneamente en tus límites de creación de Tarjetas y Currículums ATS.
+              </p>
+            </div>
           </div>
         </div>
       </div>

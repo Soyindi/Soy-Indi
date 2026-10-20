@@ -369,7 +369,7 @@ export function UnifiedDashboardView({
             Panel de Control General
           </h1>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-2xl">
-            Administra tus tarjetas digitales, currículums calibrados con ATS y presentaciones cinemáticas en un solo lugar.
+            Administra tus tarjetas digitales y currículums calibrados con ATS en un solo lugar.
           </p>
         </div>
 
@@ -470,7 +470,15 @@ export function UnifiedDashboardView({
             <input
               ref={searchInputRef}
               type="text"
-              placeholder={`Buscar en ${activeTab === 'cards' ? 'tarjetas' : activeTab === 'cvs' ? 'currículums' : 'presentaciones'}...`}
+              placeholder={
+                activeTab === 'cards'
+                  ? 'Buscar en tarjetas...'
+                  : activeTab === 'cvs'
+                  ? 'Buscar en currículums...'
+                  : activeTab === 'presentations'
+                  ? 'Buscar en presentaciones...'
+                  : 'Buscar en el panel...'
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none w-full"
