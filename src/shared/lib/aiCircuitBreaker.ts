@@ -15,6 +15,8 @@
  * ============================================================================
  */
 
+import { getUpstashRedis } from './rateLimiter';
+
 export interface CircuitState {
   failures: number;
   lastFailureTime: number;
@@ -28,7 +30,7 @@ const CIRCUIT_CONFIG = {
   CACHE_TTL_MS: 10 * 60 * 1000, // 10 minutos de vigencia para prompts idénticos
 };
 
-// Estado en memoria de los circuitos por proveedor
+// Estado en memoria de los circuitos por proveedor (fallback local y sincronización ultra-rápida)
 const providerCircuits: Record<string, CircuitState> = {
   groq: { failures: 0, lastFailureTime: 0, isOpen: false },
   nvidia: { failures: 0, lastFailureTime: 0, isOpen: false },
@@ -48,7 +50,7 @@ interface CacheEntry {
 const responseCache = new Map<string, CacheEntry>();
 
 /**
- * Evalúa si un proveedor está disponible según el Circuit Breaker
+ * Evalúa síncronamente si un proveedor está disponible según el Circuit Breaker local
  */
 export function isProviderAvailable(provider: 'groq' | 'nvidia' | 'gemini' | 'openrouter'): boolean {
   const circuit = providerCircuits[provider];
@@ -67,7 +69,38 @@ export function isProviderAvailable(provider: 'groq' | 'nvidia' | 'gemini' | 'op
 }
 
 /**
- * Registra un éxito en el proveedor y resetea el contador de fallas
+ * Evalúa asíncronamente con estado distribuido en Upstash Redis (Serverless/Edge)
+ */
+export async function isProviderAvailableAsync(provider: 'groq' | 'nvidia' | 'gemini' | 'openrouter'): Promise<boolean> {
+  const redis = getUpstashRedis();
+  if (!redis) {
+    return isProviderAvailable(provider);
+  }
+
+  try {
+    const isOpen = await redis.get<boolean>(`indi:circuit:${provider}:is_open`);
+    if (isOpen) {
+      providerCircuits[provider].isOpen = true;
+      return false;
+    }
+
+    if (providerCircuits[provider].isOpen) {
+      const elapsed = Date.now() - providerCircuits[provider].lastFailureTime;
+      if (elapsed > CIRCUIT_CONFIG.RESET_TIMEOUT_MS) {
+        return true;
+      }
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.warn('[CircuitBreaker Redis Warning] Fallback a memoria local:', err);
+    return isProviderAvailable(provider);
+  }
+}
+
+/**
+ * Registra un éxito en el proveedor y resetea el contador de fallas (local + Redis)
  */
 export function recordProviderSuccess(provider: 'groq' | 'nvidia' | 'gemini' | 'openrouter'): void {
   const circuit = providerCircuits[provider];
@@ -75,10 +108,16 @@ export function recordProviderSuccess(provider: 'groq' | 'nvidia' | 'gemini' | '
     circuit.failures = 0;
     circuit.isOpen = false;
   }
+
+  const redis = getUpstashRedis();
+  if (redis) {
+    redis.del(`indi:circuit:${provider}:is_open`).catch(() => {});
+    redis.del(`indi:circuit:${provider}:failures`).catch(() => {});
+  }
 }
 
 /**
- * Registra una falla o timeout en el proveedor e incrementa el contador
+ * Registra una falla o timeout en el proveedor e incrementa el contador (local + Redis)
  */
 export function recordProviderFailure(provider: 'groq' | 'nvidia' | 'gemini' | 'openrouter'): void {
   const circuit = providerCircuits[provider];
@@ -89,6 +128,18 @@ export function recordProviderFailure(provider: 'groq' | 'nvidia' | 'gemini' | '
       circuit.isOpen = true;
       console.warn(`[AI Circuit Breaker] ⚠️ Circuito ABIERTO para "${provider}". Aislado por ${CIRCUIT_CONFIG.RESET_TIMEOUT_MS / 1000}s.`);
     }
+  }
+
+  const redis = getUpstashRedis();
+  if (redis) {
+    redis.incr(`indi:circuit:${provider}:failures`).then(async (fails) => {
+      if (fails >= CIRCUIT_CONFIG.FAILURE_THRESHOLD) {
+        await redis.set(`indi:circuit:${provider}:is_open`, true, { ex: Math.floor(CIRCUIT_CONFIG.RESET_TIMEOUT_MS / 1000) });
+        console.warn(`[AI Circuit Breaker Redis] ⚠️ Circuito ABIERTO en Redis para "${provider}".`);
+      }
+    }).catch((err) => {
+      console.warn('[CircuitBreaker Redis Warning]:', err);
+    });
   }
 }
 
@@ -117,11 +168,32 @@ export function getCachedResponse(key: string): { content: string; modelUsed: st
 }
 
 /**
- * Guarda una respuesta exitosa en micro-caché
+ * Obtiene una respuesta en micro-caché semántica distribuida (Redis + Memoria)
+ */
+export async function getCachedResponseAsync(key: string): Promise<{ content: string; modelUsed: string } | null> {
+  const local = getCachedResponse(key);
+  if (local) return local;
+
+  const redis = getUpstashRedis();
+  if (!redis) return null;
+
+  try {
+    const cached = await redis.get<{ content: string; modelUsed: string }>(`indi:cache:ai:${key.slice(0, 80)}`);
+    if (cached && cached.content) {
+      setCachedResponse(key, cached.content, cached.modelUsed);
+      return { content: cached.content, modelUsed: `${cached.modelUsed} (redis-cache)` };
+    }
+  } catch (err) {
+    console.warn('[Cache Redis Warning]:', err);
+  }
+  return null;
+}
+
+/**
+ * Guarda una respuesta exitosa en micro-caché (local + Redis distribuido)
  */
 export function setCachedResponse(key: string, content: string, modelUsed: string): void {
   if (responseCache.size >= CIRCUIT_CONFIG.CACHE_MAX_ENTRIES) {
-    // Eliminar el primer elemento más antiguo
     const firstKey = responseCache.keys().next().value;
     if (firstKey) responseCache.delete(firstKey);
   }
@@ -131,6 +203,11 @@ export function setCachedResponse(key: string, content: string, modelUsed: strin
     modelUsed,
     timestamp: Date.now(),
   });
+
+  const redis = getUpstashRedis();
+  if (redis) {
+    redis.set(`indi:cache:ai:${key.slice(0, 80)}`, { content, modelUsed }, { ex: 3600 }).catch(() => {});
+  }
 }
 
 /**

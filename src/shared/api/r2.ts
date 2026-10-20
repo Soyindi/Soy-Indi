@@ -64,3 +64,47 @@ export async function uploadObjectToR2(params: UploadToR2Params): Promise<Upload
     sizeBytes: params.buffer.byteLength,
   };
 }
+
+export interface PresignedUploadUrlParams {
+  key: string;
+  contentType: string;
+  expiresInSeconds?: number;
+}
+
+export interface PresignedUploadUrlResult {
+  uploadUrl: string;
+  publicUrl: string;
+  key: string;
+}
+
+/**
+ * Genera una URL prefirmada PUT para subida directa desde el navegador a Cloudflare R2 sin proxy
+ */
+export async function getPresignedR2UploadUrl(params: PresignedUploadUrlParams): Promise<PresignedUploadUrlResult> {
+  if (!isR2Configured()) {
+    throw new Error('Cloudflare R2 no está configurado en variables de entorno');
+  }
+
+  const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+  const cleanKey = params.key.replace(/^\/+/, '');
+
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: cleanKey,
+    ContentType: params.contentType,
+    CacheControl: 'public, max-age=31536000, immutable',
+  });
+
+  const uploadUrl = await getSignedUrl(r2Client, command, {
+    expiresIn: params.expiresInSeconds || 300,
+  });
+
+  const cleanDomain = publicDomain.replace(/\/+$/, '');
+  const publicUrl = `${cleanDomain}/${cleanKey}`;
+
+  return {
+    uploadUrl,
+    publicUrl,
+    key: cleanKey,
+  };
+}

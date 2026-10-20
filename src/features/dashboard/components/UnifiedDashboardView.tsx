@@ -39,6 +39,7 @@ import { AffiliateDashboardTab } from '@/features/affiliates/components/Affiliat
 import { ReferralQrModal } from '@/features/affiliates/components/ReferralQrModal';
 import { PrivacySettingsTab } from '@/features/privacy/components/PrivacySettingsTab';
 import { ArcoRightsModal } from '@/features/privacy/components/ArcoRightsModal';
+import { CardLeadsTab } from '@/features/dashboard/components/CardLeadsTab';
 import type { AffiliateOverview } from '@/entities/affiliate/schemas';
 
 interface CardItem {
@@ -82,7 +83,7 @@ interface UnifiedDashboardViewProps {
   initialCvs: CvItem[];
   initialPresentations: PresentationItem[];
   initialAffiliateOverview?: AffiliateOverview | null;
-  initialTab?: 'cards' | 'cvs' | 'presentations' | 'affiliates' | 'privacy';
+  initialTab?: 'cards' | 'cvs' | 'leads' | 'presentations' | 'affiliates' | 'privacy';
   justCreatedSlug?: string | null;
 }
 
@@ -94,7 +95,7 @@ export function UnifiedDashboardView({
   initialTab = 'cards',
   justCreatedSlug,
 }: UnifiedDashboardViewProps) {
-  const [activeTab, setActiveTab] = useState<'cards' | 'cvs' | 'presentations' | 'affiliates' | 'privacy'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'cards' | 'cvs' | 'leads' | 'presentations' | 'affiliates' | 'privacy'>(initialTab);
 
   // Sincronizar pestaña activa cuando se navega con parámetro ?tab= en la URL
   useEffect(() => {
@@ -240,6 +241,12 @@ export function UnifiedDashboardView({
       label: 'Crear o Mejorar CV',
       gradient: 'from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/20',
       icon: <FileText className="w-4 h-4" />
+    },
+    leads: {
+      href: '/cards/new',
+      label: 'Compartir Mi Tarjeta',
+      gradient: 'from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/20',
+      icon: <Sparkles className="w-4 h-4" />
     },
     presentations: {
       href: '/presentations',
@@ -432,6 +439,18 @@ export function UnifiedDashboardView({
           >
             <FileText className={`w-4 h-4 ${activeTab === 'cvs' ? 'text-emerald-300' : 'text-zinc-400'}`} />
             <span>Smart CVs ({cvsList.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('leads')}
+            className={`min-h-[44px] min-w-[145px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start active:scale-[0.98] ${
+              activeTab === 'leads'
+                ? 'bg-gradient-to-r from-emerald-500/30 to-teal-500/25 text-white border border-emerald-400/30 shadow-lg shadow-emerald-500/10'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+            }`}
+          >
+            <Users className={`w-4 h-4 ${activeTab === 'leads' ? 'text-emerald-300' : 'text-zinc-400'}`} />
+            <span>Mis Contactos</span>
           </button>
 
           {presentationsList.length > 0 && (
@@ -958,6 +977,13 @@ export function UnifiedDashboardView({
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ================= PESTAÑA: CONTACTOS CAPTADOS (MINI-CRM) ================= */}
+      {activeTab === 'leads' && (
+        <div className="space-y-6 sm:space-y-8 animate-fade-in">
+          <CardLeadsTab />
         </div>
       )}
 

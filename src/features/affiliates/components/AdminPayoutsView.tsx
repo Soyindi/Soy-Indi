@@ -5,6 +5,7 @@ import { AdminAffiliatePayoutItem, AdminReferralAuditItem } from '@/entities/aff
 import { BrandSocialLinks } from '@/entities/brand/socials';
 import { AdminBrandSocialsManager } from '@/features/brand/components/AdminBrandSocialsManager';
 import { markAffiliateCommissionsAsPaidAction, getAdminDashboardDataAction } from '../actions';
+import { exportTefPayrollAction } from '../payout-actions';
 import { 
   Users, 
   DollarSign, 
@@ -20,7 +21,9 @@ import {
   Clock,
   ArrowUpRight,
   RefreshCw,
-  Share2
+  Share2,
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface AdminDashboardViewProps {
@@ -43,8 +46,39 @@ export function AdminPayoutsView({
   const [auditStatusFilter, setAuditStatusFilter] = useState<'all' | 'ACTIVE' | 'TRIAL'>('all');
   const [pendingConfirmPayout, setPendingConfirmPayout] = useState<AdminAffiliatePayoutItem | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExportingTef, setIsExportingTef] = useState(false);
+  const [tefMessage, setTefMessage] = useState<string | null>(null);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date());
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
+  const handleExportTef = async () => {
+    try {
+      setIsExportingTef(true);
+      setTefMessage(null);
+      const res = await exportTefPayrollAction();
+      if (!res.success || !res.payroll) {
+        setTefMessage(res.error || 'No se pudo generar la nómina TEF.');
+        return;
+      }
+
+      const blob = new Blob([res.payroll.csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `nomina-tef-indi-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTefMessage(
+        `Nómina TEF descargada con éxito: ${res.payroll.recordCount} transferencias (${formatCLP(res.payroll.totalNetClp)} líquido, retención SII 15,25%: ${formatCLP(res.payroll.totalWithholdingClp)}).`
+      );
+    } catch (err: any) {
+      setTefMessage(err?.message || 'Error al descargar archivo TEF.');
+    } finally {
+      setIsExportingTef(false);
+    }
+  };
 
   const formatCLP = (amount: number) => {
     return new Intl.NumberFormat('es-CL', {
@@ -447,6 +481,46 @@ export function AdminPayoutsView({
             <span className="text-xs text-zinc-400 font-mono">
               Día 1 y 15 de cada mes
             </span>
+          </div>
+
+          {/* Banner de Nómina TEF & Retención Tributaria SII */}
+          <div className="glass-panel rounded-2xl p-4 sm:p-5 border border-cyan-500/20 bg-gradient-to-r from-cyan-950/30 via-slate-900/40 to-slate-950/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="w-4 h-4 text-cyan-400" />
+                <h4 className="text-sm font-bold text-white">Nómina Bancaria TEF (Bancos Chilenos)</h4>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-cyan-500/20 text-cyan-300">
+                  Estándar SBIF / CMF
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400 max-w-xl">
+                Exporta el archivo en lote compatible con Banco de Chile, Santander, BCI y BancoEstado con cálculo de retención del 15,25% (SII Ley de Honorarios 2026).
+              </p>
+              {tefMessage && (
+                <p className="text-xs font-semibold text-emerald-400 mt-2">
+                  ✓ {tefMessage}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleExportTef}
+              disabled={isExportingTef || filteredPayouts.length === 0}
+              className="min-h-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 active:scale-95 transition disabled:opacity-50 cursor-pointer shrink-0"
+            >
+              {isExportingTef ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Generando Nómina...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Descargar Nómina TEF (CSV)</span>
+                </>
+              )}
+            </button>
           </div>
 
           {filteredPayouts.length === 0 ? (

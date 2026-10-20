@@ -21,6 +21,7 @@ import { trackCardEventAction } from '@/features/card-builder/analytics-actions'
 import { trackResourceView } from '@/shared/lib/telemetryClient';
 import { WebShareModal } from '@/shared/ui/WebShareModal';
 import { getWhatsAppDigits, normalizeChileanPhone } from '@/shared/lib/phone';
+import { ExchangeContactModal } from '@/features/card-builder/components/ExchangeContactModal';
 
 // Importar QRCode dinámicamente para SSR seguro
 const QRCodeSVG = dynamic(
@@ -29,6 +30,7 @@ const QRCodeSVG = dynamic(
 );
 
 export interface CardData {
+  id?: string;
   title: string;
   profession: string;
   about?: string | null;
@@ -80,6 +82,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const [copied, setCopied] = useState(false);
   const [vcardSaved, setVcardSaved] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
 
   // Telemetría pasiva desacoplada del render SSR
   useEffect(() => {
@@ -484,6 +487,19 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             )}
           </button>
 
+          {/* Botón Intercambiar Contacto (Mini-CRM Bidireccional) */}
+          <button
+            onClick={() => setIsExchangeModalOpen(true)}
+            className={`w-full min-h-[46px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold border transition-all active:scale-[0.98] ${
+              isLightMode
+                ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 border-emerald-500/30 shadow-xs'
+                : 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/30'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Intercambiar Contacto</span>
+          </button>
+
           {whatsappUrl && (
             <a
               href={whatsappUrl}
@@ -649,6 +665,44 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           </div>
         )}
 
+        {/* Acceso a Billeteras Digitales Nativas (Apple & Google Wallet Offline) */}
+        <div className="relative z-10 flex items-center justify-center gap-2 mb-6">
+          <a
+            href={`/api/wallet/apple/${card.slug}`}
+            download={`${card.slug}-pass.json`}
+            className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-[0.98] ${
+              isLightMode
+                ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200 shadow-xs'
+                : 'glass-pill text-zinc-300 hover:text-white border-white/10'
+            }`}
+            title="Guardar en Apple Wallet (Acceso con doble clic sin internet)"
+          >
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">
+              <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.04-7.69-7.84-12-14.4-6.19-9.5-10.96-20.19-14.31-32.06-3.35-11.88-5.03-23.23-5.03-34.05 0-14.16 3.52-25.96 10.55-35.41 7.03-9.45 15.89-14.28 26.58-14.5 4.9.12 10.4 1.34 16.5 3.66 6.09 2.32 10.14 3.53 12.14 3.64 1.78-.11 5.92-1.37 12.42-3.79 6.5-2.41 12.01-3.6 16.53-3.56 12.03.74 21.64 5.37 28.84 13.88-10.5 6.35-15.65 15.22-15.43 26.6.22 8.94 3.63 16.42 10.22 22.44 6.59 6.02 14.52 9.53 23.79 10.53-2.16 6.54-4.79 13.06-7.89 19.57zM119.22 31.81c0-7.04 2.55-13.79 7.66-20.25 5.11-6.46 11.53-10.74 19.26-12.83.33 1.33.5 2.56.5 3.69 0 7.27-2.67 14.21-8.01 20.82-5.34 6.61-11.83 10.66-19.46 12.15-.1-.78-.16-1.97-.16-3.58z"/>
+            </svg>
+            <span>Apple Wallet</span>
+          </a>
+          <a
+            href={`/api/wallet/google/${card.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-[0.98] ${
+              isLightMode
+                ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200 shadow-xs'
+                : 'glass-pill text-zinc-300 hover:text-white border-white/10'
+            }`}
+            title="Guardar en Google Wallet"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+            </svg>
+            <span>Google Wallet</span>
+          </a>
+        </div>
+
         {/* Redes Sociales y Enlaces Externos con Touch Target ergonómico >= 44x44px */}
         <div className={`relative z-10 flex items-center justify-center gap-3 mb-6 pt-4 border-t ${
           isLightMode ? 'border-slate-200' : 'border-white/5'
@@ -783,6 +837,14 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         onShareTracked={() => {
           trackCardEventAction({ slug: card.slug, eventType: 'share' }).catch(() => {});
         }}
+      />
+
+      {/* Modal para Intercambio Bidireccional de Contactos */}
+      <ExchangeContactModal
+        cardId={card.id || 'demo'}
+        cardTitle={card.title}
+        isOpen={isExchangeModalOpen}
+        onClose={() => setIsExchangeModalOpen(false)}
       />
     </SmartParticles>
   );

@@ -23,10 +23,12 @@ interface NvidiaNimOptions {
 
 import {
   isProviderAvailable,
+  isProviderAvailableAsync,
   recordProviderSuccess,
   recordProviderFailure,
   generateRequestKey,
   getCachedResponse,
+  getCachedResponseAsync,
   setCachedResponse,
   withInFlightCoalescing,
 } from '@/shared/lib/aiCircuitBreaker';
@@ -35,9 +37,9 @@ export async function callNvidiaNimChat(
   messages: NvidiaChatMessage[],
   options: NvidiaNimOptions = {}
 ): Promise<{ success: boolean; content?: string; error?: string; modelUsed?: string }> {
-  // 0. Micro-Caché Semántica: Retornar de inmediato (<1ms) si el prompt exacto ya fue resuelto
+  // 0. Micro-Caché Semántica Distribuida (Redis + Memoria LRU): Retornar de inmediato si ya fue resuelto
   const requestKey = generateRequestKey(messages, options);
-  const cached = getCachedResponse(requestKey);
+  const cached = (await getCachedResponseAsync(requestKey)) || getCachedResponse(requestKey);
   if (cached) {
     return {
       success: true,
@@ -62,7 +64,7 @@ export async function callNvidiaNimChat(
 
     // 1. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 200ms con Qwen 3.8 27B)
     // Protegido por Circuit Breaker: si Groq está saturado (429/500), se salta instantáneamente a NVIDIA
-    if (groqApiKey && isProviderAvailable('groq')) {
+    if (groqApiKey && (await isProviderAvailableAsync('groq'))) {
       try {
         const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
@@ -104,7 +106,7 @@ export async function callNvidiaNimChat(
     }
 
     // 2. NVIDIA NIM Frontier Models (Fallback activo o cuando no se dispone de Groq)
-    if (nvidiaApiKey && isProviderAvailable('nvidia')) {
+    if (nvidiaApiKey && (await isProviderAvailableAsync('nvidia'))) {
       for (const targetModel of candidateModels) {
         try {
           const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -154,7 +156,7 @@ export async function callNvidiaNimChat(
     }
 
     // 3. Failover a Google Gemini 2.0 Flash (Latencia <800ms, Context Caching & JSON Mode)
-    if (geminiApiKey && isProviderAvailable('gemini')) {
+    if (geminiApiKey && (await isProviderAvailableAsync('gemini'))) {
       try {
         const systemMsg = messages.find((m) => m.role === 'system')?.content || '';
         const userMsgs = messages.filter((m) => m.role !== 'system');
@@ -201,7 +203,7 @@ export async function callNvidiaNimChat(
     }
 
     // 4. Failover a OpenRouter
-    if (openRouterApiKey && isProviderAvailable('openrouter')) {
+    if (openRouterApiKey && (await isProviderAvailableAsync('openrouter'))) {
       try {
         const openRouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',

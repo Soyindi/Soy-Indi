@@ -2250,5 +2250,41 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 - **Selector Ergonómico (CvTemplateSelector.tsx)**: Dropdown accesible en el header del editor (Touch Targets >= 44px) con vista previa de gradientes y selección en 1 clic.
 
 ### 57.4 Blindaje de Calidad
-- 8 pruebas unitarias aprobadas en 	ests/unit/cv-schema.test.ts validando los 4 templates y su esquema Zod.
+- 8 pruebas unitarias aprobadas en tests/unit/cv-schema.test.ts validando los 4 templates y su esquema Zod.
 - Suite global aprobada con 506 pruebas en 82 archivos de test y 0 errores de TypeScript (`npm run typecheck`).
+
+---
+
+## 🏛️ FASE 58: Resiliencia Distribuida, Captura Bidireccional de Leads, Pases Nativos y Nómina TEF (2026)
+
+### 58.1 Circuit Breaker Distribuido y Caché Semántica en Upstash Redis
+- **Estado de Salud de Proveedores Compartido (`src/shared/lib/aiCircuitBreaker.ts`)**: Reemplaza el aislamiento de memoria volátil de funciones serverless aisladas persistiendo fallos y timestamps en Redis (`indi:circuit:{provider}:failures` e `indi:circuit:{provider}:last_failure`).
+- **Degradación Elegante & In-Memory Fallback**: Si las variables de Upstash Redis no están configuradas o el servicio no responde, el Circuit Breaker recurre transparentemente a un mapa en memoria local sin interrumpir la inferencia.
+- **Caché Semántica de Inferencia**: Almacenamiento perimetral con TTL de 24h para respuestas idempotentes de IA (`indi:cache:ai:...`).
+
+### 58.2 Carga Directa a Cloudflare R2 con Presigned URLs (Zero Server Proxy)
+- **Protocolo S3 Compatible (`@aws-sdk/s3-request-presigner`)**: Generación de URLs pre-firmadas PUT con TTL de 15 minutos en `getPresignedAvatarUploadUrlAction` (`src/features/card-builder/storage-actions.ts`).
+- **Descarga de Ancho de Banda Serverless**: Los archivos WebP de avatares y fondos viajan directamente desde el cliente hacia Cloudflare R2 ($0 egress), erradicando payloads binarios a través de Next.js API Routes.
+- **Fallback Automático Local**: Si R2 no está activo, el cliente conmuta de forma silenciosa al pipeline de compresión y persistencia local en SQLite.
+
+### 58.3 Captura Bidireccional de Contactos (Lead Capture & Mini-CRM)
+- **Tabla Relacional `card_leads`**: Almacena de forma normalizada prospectos con campos `id`, `cardId`, `userId`, `name`, `email`, `phone`, `notes` y `createdAt`, indexada por `cardId` y `userId`. Migración `0007_legal_sway.sql`.
+- **Modal de Contacto Accesible (`ExchangeContactModal.tsx`)**: Diálogo glassmorphic con vibración háptica (`navigator.vibrate`), validación Zod y touch targets >= 44px montado en `/c/[slug]`.
+- **Pestaña Mini-CRM en Dashboard (`CardLeadsTab.tsx`)**: Pestaña dedicada (`/dashboard?tab=leads`) con buscador reactivo, botón de WhatsApp directo en 1 toque (`https://wa.me/...`), borrado seguro con confirmación y exportación a CSV corporativo.
+
+### 58.4 Pases Nativos para Apple Wallet y Google Wallet
+- **Generador de Pases Apple (`applePassGenerator.ts`)**: Estructura `pass.json` oficial con especificación `PKBarcodeFormatQR` codificando `https://soyindi.cl/c/{slug}`.
+- **Rutas Públicas de Pases**:
+  - `/api/wallet/apple/[slug]`: Emisión del manifest JSON para Apple Wallet.
+  - `/api/wallet/google/[slug]`: Redirección y generación de pase para Google Wallet.
+- **Acceso Offline desde Pantalla de Bloqueo**: Permite al profesional exhibir su código QR de contacto sin requerir conexión a internet activa ni abrir el navegador.
+
+### 58.5 Nómina Masiva TEF SBIF & Liquidación de Afiliados
+- **Formato Bancario SBIF Oficial (`tefPayrollGenerator.ts`)**: Genera nóminas estándar para Banco de Chile, Banco Santander, BCI y BancoEstado con código de institución SBIF y tipos de cuenta normalizados (Corriente, Vista/RUT, Ahorro).
+- **Retención Legal SII 15,25% (Ley 21.133)**: Cálculo del monto bruto, retención tributaria y monto líquido transferible.
+- **Exportación en 1 Clic en `/admin`**: Generación de archivo CSV y adaptador para transferencias automatizadas mediante Fintoc A2A.
+
+### 58.6 Blindaje de Calidad y Suite E2E Playwright
+- **517 Pruebas Unitarias al 100% de Aprobación**: 85 archivos de test en Vitest ejecutados en ~10s.
+- **Playwright E2E (`playwright.config.ts`)**: Configuración multi-dispositivo (Chromium, Pixel 5 Mobile Chrome, iPhone 12 Mobile Safari) para validar el flujo completo de captura de prospectos y pases digitales.
+- **0 Errores de Tipado**: Verificación estricta mediante `tsc --noEmit`.

@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-506_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-517_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -58,6 +58,9 @@
 - **Copywriting Persuasivo Contextual (AIDA, Hook-Story-Offer, Curiosity Gap)**: Redacción inteligente con UTMs canónicos y atribución de afiliados integrada en un clic.
 - **Cabeceras Públicas Adaptativas & Logotipo Horizontal Cinemático**: Las vistas públicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`) incorporan el lockup horizontal con micro-video loop oficial (`<BrandLogo variant="horizontal" size="sm" />`), aportando legibilidad corporativa, integración con la acción contextual del visitante y touch targets $\ge 44\text{px}$.
 - **Telemetría Atómica en Turso**: Registro granular de eventos (`view`, `contact_save`, `whatsapp_click`, `share`, `qr_scan`) y Tasa de Conversión en tiempo real.
+- **Captura Bidireccional de Contactos (Lead Capture)**: Modal accesible *"Intercambiar Contacto"* en `/c/[slug]` (`<ExchangeContactModal />`) con haptic feedback (`navigator.vibrate`), sanitización Zod y persistencia segura en `card_leads` para networking bidireccional instantáneo.
+- **Pases Nativos Digital Wallets (Apple Wallet & Google Wallet)**: Exportación directa de pases para Apple Wallet (`.pkpass` manifest en `/api/wallet/apple/[slug]`) y Google Wallet (`/api/wallet/google/[slug]`) con código QR offline escaneable desde la pantalla de bloqueo o Apple Watch.
+- **Carga Directa a Cloudflare R2 con Presigned URLs**: Protocolo S3 compatible con `@aws-sdk/s3-request-presigner` (`getPresignedAvatarUploadUrlAction`) que sube avatares y portadas directamente desde el navegador hacia Cloudflare R2 ($0 Egress), con fallback automático a SQLite local para resiliencia offline.
 
 
 ### 2. 📄 Smart CV ATS Optimizer & Living Digital Resume
@@ -118,6 +121,7 @@
 - **Ergonomía Móvil Thumb Zone & Floating Action Bar**: En dispositivos móviles ($\le 640\text{px}$), ancla una barra inferior flotante con touch target $\ge 48\text{px}$ para crear recursos con una sola mano.
 - **Métricas Atómicas Adaptativas**: Monitoreo de Visitas Edge, clicks en WhatsApp, vCard descargadas y Tasa de Conversión (%) con protección anti-división por cero y feedback orientativo en cuentas nuevas.
 - **Navegación Bidireccional Contextual & Branding Oficial (`AppEditorHeader`)**: Cabecera universal enriquecida con el Isotipo Oficial INDI en video loop, breadcrumb contextual (`Panel > Entidad`) y botón ergonómico *"← Volver al Panel"* ($\ge 44\text{px}$) que devuelve al usuario a su pestaña correspondiente (`?tab=cvs`, `?tab=presentations` o `?tab=cards`).
+- **Mini-CRM de Contactos Recibidos (`/dashboard?tab=leads`)**: Gestión centralizada de prospectos capturados con filtros reactivos, botón One-Tap para WhatsApp directo (`https://wa.me/...`), llamada telefónica, eliminación segura y exportación a archivo CSV compatible con CRM corporativos.
 
 ### 5. 🧭 Navegación Global Reactiva & Scroll Fluido
 - **Barra Sticky Glassmorphic (`GlobalNavbar.tsx`)**: Fijada al tope con `backdrop-blur-xl bg-zinc-950/80` y enlaces directos al panel (`/dashboard`), editores de producto o anclas contextuales de la landing page.
@@ -146,7 +150,7 @@
 - **Generador y Descarga de Código QR de Afiliado (`ReferralQrModal`)**: Modal interactivo accesible que permite a los afiliados generar y descargar instantáneamente su código QR en formato PNG de alta resolución (1024x1024 px con contraste óptico blanco universal) para eventos presenciales, afiches y presentaciones, integrando el enlace directo de alta conversión.
 - **Analíticas de Conversión Pro en Vivo**: Desglose transparente en el panel de afiliados: usuarios en prueba (`TRIAL`), convertidos a Plan Pro (`ACTIVE`), tasa de conversión (%) y saldo acumulado por pagar.
 - **Experiencia de Bienvenida Contextual (`ReferralWelcomeBanner`)**: Detección del referente y despliegue de badge visual de confirmación de acceso VIP en el Onboarding Hub (`/start`) y formulario de registro (`/login`).
-- **Abono Quincenal a Cuentas Chilenas & Retención SII (Ley 21.133)**: Módulo de datos bancarios para transferencia directa a Cuenta RUT, Cuenta Vista, Corriente o Ahorro en los principales bancos de Chile, con validador de RUT algoritmo Módulo 11 y cálculo automático del monto bruto requerido en Boleta de Honorarios considerando la retención legal del 15,25% (2026) ante el SII.
+- **Abono Quincenal a Cuentas Chilenas, Retención SII (15,25%) & Nómina TEF SBIF**: Módulo de datos bancarios para transferencia directa a Cuenta RUT, Cuenta Vista, Corriente o Ahorro en los principales bancos de Chile, con validador de RUT Módulo 11 y exportador masivo en formato bancario oficial TEF (Banco de Chile, Santander, BCI, BancoEstado) y adaptador programático Fintoc.
 - **Seguridad Criptográfica, Anti-Replay & Anti-Gaming**: Verificación de firmas HMAC-SHA256 (`x-signature`) con ventana de tolerancia temporal (5 min) anti-replay attacks en webhooks de Mercado Pago, heurística anti-auto-referidos con normalización de correos (`+alias` y puntos en Gmail) y reversión atómica de comisiones ante reembolsos/contracargos.
 - **Panel de Administración (`/admin`)**: Vista consolidada con tres pestañas especializadas:
   1. *Auditoría de Referidos*: Monitoreo en tiempo real de usuarios referidos (`TRIAL` y `ACTIVE`), tasas de conversión y anfitrión asociado.
@@ -419,7 +423,8 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
-- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (506 pruebas en 82 suites al 100% PASS).
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (517 pruebas en 85 suites al 100% PASS).
+- `npm run test:e2e`: Ejecuta las pruebas End-to-End con Playwright en Chromium, Mobile Chrome y Mobile Safari.
 - `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
 - `npm run db:generate`: Genera archivos de migración SQL basados en el esquema de Drizzle.
 - `npm run db:migrate`: Aplica las migraciones declarativas sobre la base de datos Turso LibSQL (Local o Nube).

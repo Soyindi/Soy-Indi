@@ -145,6 +145,25 @@ export const cardEvents = sqliteTable('card_events', {
   index('card_events_created_idx').on(table.createdAt),
 ]);
 
+export const cardLeads = sqliteTable('card_leads', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  cardId: text('card_id').references(() => cards.id, { onDelete: 'cascade' }).notNull(),
+  ownerUserId: text('owner_user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  phone: text('phone'),
+  email: text('email'),
+  company: text('company'),
+  note: text('note'),
+  ipHash: text('ip_hash'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+}, (table) => [
+  index('card_leads_card_id_idx').on(table.cardId),
+  index('card_leads_owner_user_id_idx').on(table.ownerUserId),
+  index('card_leads_created_at_idx').on(table.createdAt),
+]);
+
 // ============================================================================
 // 3. CURRÍCULUMS INTELIGENTES (SMART CVS)
 // ============================================================================
@@ -338,12 +357,24 @@ export const cardsRelations = relations(cards, ({ one, many }) => ({
     references: [user.id],
   }),
   events: many(cardEvents),
+  leads: many(cardLeads),
 }));
 
 export const cardEventsRelations = relations(cardEvents, ({ one }) => ({
   card: one(cards, {
     fields: [cardEvents.cardId],
     references: [cards.id],
+  }),
+}));
+
+export const cardLeadsRelations = relations(cardLeads, ({ one }) => ({
+  card: one(cards, {
+    fields: [cardLeads.cardId],
+    references: [cards.id],
+  }),
+  owner: one(user, {
+    fields: [cardLeads.ownerUserId],
+    references: [user.id],
   }),
 }));
 

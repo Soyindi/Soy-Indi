@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { DigitalCard, CardData } from '@/entities/card/components/DigitalCard';
 import { upsertCardAction, checkCardSlugAvailabilityAction, SlugAvailabilityResult } from '@/features/card-builder/actions';
 import { generateBioVariantsAction } from '@/features/card-builder/ai-bio-actions';
+import { getPresignedAvatarUploadUrlAction } from '@/features/card-builder/storage-actions';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { CARD_DESIGN_PRESETS, CardDesignPreset, INDUSTRY_COVERS_GALLERY, OFFICIAL_DEMO_CARD } from '@/entities/card/themes';
 import { slugifyCardName, generateCardSlug, CardBentoBlock } from '@/entities/card/schemas';
@@ -322,26 +323,45 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
       // Extracción adaptativa instantánea desde el archivo comprimido local
       triggerAdaptiveColorExtraction(result.file, 'Foto de Perfil');
 
-      // Intentar subir a Cloudflare R2 vía streaming multipart
+      // Subida Directa a Cloudflare R2 vía Presigned URL (cero proxy intermedio)
       let finalPhotoUrl = result.dataUrl;
       try {
-        const formData = new FormData();
-        formData.append('file', result.file);
-        formData.append('category', 'avatars');
-
-        const uploadRes = await fetch('/api/upload/image', {
-          method: 'POST',
-          body: formData,
+        const presignedRes = await getPresignedAvatarUploadUrlAction({
+          filename: file.name,
+          contentType: 'image/webp',
+          sizeBytes: result.compressedSize,
         });
 
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          if (uploadData.success && uploadData.url) {
-            finalPhotoUrl = uploadData.url;
+        if (presignedRes.success && presignedRes.uploadUrl && presignedRes.publicUrl) {
+          const putRes = await fetch(presignedRes.uploadUrl, {
+            method: 'PUT',
+            body: result.file,
+            headers: {
+              'Content-Type': 'image/webp',
+            },
+          });
+          if (putRes.ok) {
+            finalPhotoUrl = presignedRes.publicUrl;
+          }
+        } else {
+          const formData = new FormData();
+          formData.append('file', result.file);
+          formData.append('category', 'avatars');
+
+          const uploadRes = await fetch('/api/upload/image', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            if (uploadData.success && uploadData.url) {
+              finalPhotoUrl = uploadData.url;
+            }
           }
         }
       } catch (uploadErr) {
-        console.warn('Fallback a almacenamiento local tras error en upload:', uploadErr);
+        console.warn('Fallback a almacenamiento WebP local tras error en upload:', uploadErr);
       }
 
       handleChange('photoUrl', finalPhotoUrl);
@@ -383,19 +403,38 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
 
       let finalUrl = result.dataUrl;
       try {
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', result.file);
-        uploadFormData.append('category', 'covers');
-
-        const uploadRes = await fetch('/api/upload/image', {
-          method: 'POST',
-          body: uploadFormData,
+        const presignedRes = await getPresignedAvatarUploadUrlAction({
+          filename: file.name,
+          contentType: 'image/webp',
+          sizeBytes: result.compressedSize,
         });
 
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          if (uploadData.success && uploadData.url) {
-            finalUrl = uploadData.url;
+        if (presignedRes.success && presignedRes.uploadUrl && presignedRes.publicUrl) {
+          const putRes = await fetch(presignedRes.uploadUrl, {
+            method: 'PUT',
+            body: result.file,
+            headers: {
+              'Content-Type': 'image/webp',
+            },
+          });
+          if (putRes.ok) {
+            finalUrl = presignedRes.publicUrl;
+          }
+        } else {
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', result.file);
+          uploadFormData.append('category', 'covers');
+
+          const uploadRes = await fetch('/api/upload/image', {
+            method: 'POST',
+            body: uploadFormData,
+          });
+
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            if (uploadData.success && uploadData.url) {
+              finalUrl = uploadData.url;
+            }
           }
         }
       } catch (uploadErr) {

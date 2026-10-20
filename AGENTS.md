@@ -389,6 +389,15 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 - **Taxonomía Predictiva de Habilidades por Rol (ESCO/O*NET)**: La sección de habilidades expone un explorador inteligente que agrupa destrezas clave por rol y categoría (Técnicas, Metodologías, Herramientas, Soft Skills), permitiendo incorporar competencias de alta demanda con un solo toque.
 - **Inferencia Híbrida Cero Caídas**: El cálculo heurístico determinista entrega resultados instantáneos (<10ms). Si existe disponibilidad en la malla de modelos (NVIDIA NIM / Groq), enriquece los consejos con síntesis ejecutiva personalizada. Blindado por `tests/unit/cv-job-match-and-skills.test.ts`.
 
+28. **Gobernanza de Captura Bidireccional de Leads & Mini-CRM (`card_leads`):**
+- Toda inserción de leads debe validar que la tarjeta exista y esté activa (`submitCardLeadAction`).
+- Toda consulta, eliminación o exportación de prospectos en Server Actions debe blindarse estrictamente con `getSafeAuthenticatedUserId(targetUserId)` y la cláusula compuesta `and(eq(cardLeads.id, id), eq(cardLeads.userId, targetUserId))` para prevenir IDOR.
+- Touch targets $\ge 44\text{px}$, retroalimentación háptica accesible WCAG 2.2 AA y acción One-Tap a WhatsApp (`https://wa.me/...`).
+
+29. **Gobernanza de Pases Digitales Nativos (Wallets) & Carga Directa R2 con Presigned URLs:**
+- Los pases para Apple Wallet y Google Wallet deben generarse exclusivamente con URLs canónicas oficiales (`https://soyindi.cl/c/{slug}`) y código QR offline (`PKBarcodeFormatQR`) sin llamadas síncronas bloqueantes a APIs externas.
+- Las subidas de medios hacia Cloudflare R2 deben utilizar URLs pre-firmadas generadas en el servidor con `@aws-sdk/s3-request-presigner` con TTL de 15 minutos (`getPresignedAvatarUploadUrlAction`), descargando de ancho de banda y memoria al runtime serverless con fallback transparente a SQLite local.
+
 ---
 
 

@@ -11,6 +11,7 @@ export default defineConfig({
     environment: 'node',
     testTimeout: 15000,
     include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    exclude: ['tests/e2e/**', '**/node_modules/**'],
   },
   resolve: {
     alias: {
