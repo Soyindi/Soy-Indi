@@ -186,6 +186,11 @@ export function PricingSection({
                     </div>
                   ) : (
                     <div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/10 text-cyan-300 border border-white/10">
+                          Fase Lista de Espera
+                        </span>
+                      </div>
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-4xl sm:text-5xl font-black text-white tracking-tight tabular-nums">
                           ${pricing.priceClp.toLocaleString('es-CL')}
@@ -196,15 +201,13 @@ export function PricingSection({
                       </div>
 
                       <div className="mt-2 text-xs font-mono text-cyan-300 flex items-center gap-1.5">
-                        <span className="text-zinc-400">Equivale a:</span>
+                        <span className="text-zinc-400">Proyección:</span>
                         <strong className="text-white font-bold">
                           ${pricing.monthlyEquivalentClp.toLocaleString('es-CL')} CLP / mes
                         </strong>
-                        {interval === 'semiannual' && (
-                          <span className="text-zinc-400 text-[11px]">
-                            (${pricing.priceUsd} USD)
-                          </span>
-                        )}
+                        <span className="text-zinc-400 text-[11px]">
+                          (Sin cobro hoy)
+                        </span>
                       </div>
                     </div>
                   )}

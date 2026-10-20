@@ -90,9 +90,9 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
       icon: FileText,
     },
     {
-      title: 'Programa de Afiliados (25%)',
+      title: 'Programa de Referidos & Premios',
       href: '/dashboard?tab=affiliates',
-      description: 'Comparte tu QR de referido y acumula beneficios de red',
+      description: 'Comparte tu link con colegas y desbloquea tarjetas y beneficios',
       icon: Sparkles,
     },
   ];

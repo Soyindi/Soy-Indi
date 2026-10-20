@@ -146,7 +146,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
                 className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400 hover:text-emerald-300 text-xs font-semibold border border-white/10 transition-colors"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Invitar y Desbloquear (25%)</span>
+                <span>Invitar Colegas (Premios)</span>
               </Link>
               <Link
                 href="/pricing"

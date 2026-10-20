@@ -52,11 +52,11 @@ export function GlobalNavbar({ className = '', socials }: GlobalNavbarProps) {
                 Smart CV
               </Link>
               <Link href="/pricing" className="hover:text-white transition-colors">
-                Planes
+                Comunidad & Planes
               </Link>
               <Link href="/dashboard?tab=affiliates" className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Afiliados (25%)</span>
+                <span>Referidos & Premios</span>
               </Link>
             </>
           ) : (
