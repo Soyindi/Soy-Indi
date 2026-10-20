@@ -46,4 +46,17 @@ describe('Captura Bidireccional de Leads (Mini-CRM)', () => {
     expect(res.success).toBe(false);
     expect(res.error).toContain('La tarjeta no existe o se encuentra inactiva');
   });
+
+  it('permite el intercambio de contacto en modo demo sin errores', async () => {
+    const res = await submitCardLeadAction({
+      cardId: 'demo',
+      name: 'Gabriel Oyarzun',
+      phone: '+56939540674',
+      email: 'gabrieloyarzun1509@gmail.com',
+      note: 'Contacto de prueba',
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.leadId).toBeDefined();
+  });
 });

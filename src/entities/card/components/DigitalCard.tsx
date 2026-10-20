@@ -22,6 +22,7 @@ import { trackResourceView } from '@/shared/lib/telemetryClient';
 import { WebShareModal } from '@/shared/ui/WebShareModal';
 import { getWhatsAppDigits, normalizeChileanPhone } from '@/shared/lib/phone';
 import { ExchangeContactModal } from '@/features/card-builder/components/ExchangeContactModal';
+import { WalletPassModal } from '@/features/card-builder/components/WalletPassModal';
 
 // Importar QRCode dinámicamente para SSR seguro
 const QRCodeSVG = dynamic(
@@ -83,6 +84,20 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const [vcardSaved, setVcardSaved] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [walletInitialTab, setWalletInitialTab] = useState<'apple' | 'google'>('apple');
+
+  // Detectar parámetro ?wallet=apple o ?wallet=google para abrir modal automáticamente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const walletParam = params.get('wallet');
+      if (walletParam === 'apple' || walletParam === 'google') {
+        setWalletInitialTab(walletParam);
+        setIsWalletModalOpen(true);
+      }
+    }
+  }, []);
 
   // Telemetría pasiva desacoplada del render SSR
   useEffect(() => {
@@ -667,10 +682,13 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
         {/* Acceso a Billeteras Digitales Nativas (Apple & Google Wallet Offline) */}
         <div className="relative z-10 flex items-center justify-center gap-2 mb-6">
-          <a
-            href={`/api/wallet/apple/${card.slug}`}
-            download={`${card.slug}-pass.json`}
-            className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-[0.98] ${
+          <button
+            type="button"
+            onClick={() => {
+              setWalletInitialTab('apple');
+              setIsWalletModalOpen(true);
+            }}
+            className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-[0.98] cursor-pointer ${
               isLightMode
                 ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200 shadow-xs'
                 : 'glass-pill text-zinc-300 hover:text-white border-white/10'
@@ -681,12 +699,14 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.04-7.69-7.84-12-14.4-6.19-9.5-10.96-20.19-14.31-32.06-3.35-11.88-5.03-23.23-5.03-34.05 0-14.16 3.52-25.96 10.55-35.41 7.03-9.45 15.89-14.28 26.58-14.5 4.9.12 10.4 1.34 16.5 3.66 6.09 2.32 10.14 3.53 12.14 3.64 1.78-.11 5.92-1.37 12.42-3.79 6.5-2.41 12.01-3.6 16.53-3.56 12.03.74 21.64 5.37 28.84 13.88-10.5 6.35-15.65 15.22-15.43 26.6.22 8.94 3.63 16.42 10.22 22.44 6.59 6.02 14.52 9.53 23.79 10.53-2.16 6.54-4.79 13.06-7.89 19.57zM119.22 31.81c0-7.04 2.55-13.79 7.66-20.25 5.11-6.46 11.53-10.74 19.26-12.83.33 1.33.5 2.56.5 3.69 0 7.27-2.67 14.21-8.01 20.82-5.34 6.61-11.83 10.66-19.46 12.15-.1-.78-.16-1.97-.16-3.58z"/>
             </svg>
             <span>Apple Wallet</span>
-          </a>
-          <a
-            href={`/api/wallet/google/${card.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-[0.98] ${
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setWalletInitialTab('google');
+              setIsWalletModalOpen(true);
+            }}
+            className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-[0.98] cursor-pointer ${
               isLightMode
                 ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200 shadow-xs'
                 : 'glass-pill text-zinc-300 hover:text-white border-white/10'
@@ -700,7 +720,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
             </svg>
             <span>Google Wallet</span>
-          </a>
+          </button>
         </div>
 
         {/* Redes Sociales y Enlaces Externos con Touch Target ergonómico >= 44x44px */}
@@ -841,10 +861,29 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
 
       {/* Modal para Intercambio Bidireccional de Contactos */}
       <ExchangeContactModal
-        cardId={card.id || 'demo'}
+        cardId={card.id || card.slug || 'demo'}
         cardTitle={card.title}
         isOpen={isExchangeModalOpen}
         onClose={() => setIsExchangeModalOpen(false)}
+      />
+
+      {/* Modal para Billetera Digital & Acceso Rápido Offline (Apple & Google Wallet) */}
+      <WalletPassModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        initialTab={walletInitialTab}
+        card={{
+          slug: card.slug,
+          title: card.title,
+          profession: card.profession,
+          about: card.about,
+          photoUrl: card.photoUrl,
+          phone: card.phone,
+          whatsapp: card.whatsapp,
+          emailContact: card.emailContact,
+          websiteUrl: card.websiteUrl,
+          address: card.address,
+        }}
       />
     </SmartParticles>
   );

@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, or, desc } from 'drizzle-orm';
 import { db } from '@/shared/api/db';
 import { cardLeads, cards } from '@/entities/schema';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
@@ -46,9 +46,17 @@ export async function submitCardLeadAction(
 
     const { cardId, name, phone, email, company, note } = parseResult.data;
 
-    // Obtener el propietario de la tarjeta
+    // Manejo especial de tarjeta demo para pruebas y previsualizaciones
+    if (cardId === 'demo') {
+      return {
+        success: true,
+        leadId: 'demo-lead-' + Date.now(),
+      };
+    }
+
+    // Obtener el propietario de la tarjeta con búsqueda dual resiliente (por ID o por Slug)
     const cardRecord = await db.query.cards.findFirst({
-      where: eq(cards.id, cardId),
+      where: or(eq(cards.id, cardId), eq(cards.slug, cardId)),
       columns: {
         id: true,
         userId: true,
@@ -67,7 +75,7 @@ export async function submitCardLeadAction(
 
     await db.insert(cardLeads).values({
       id: newLeadId,
-      cardId,
+      cardId: cardRecord.id,
       ownerUserId: cardRecord.userId,
       name,
       phone: phone?.trim() || null,
@@ -85,7 +93,7 @@ export async function submitCardLeadAction(
     console.error('[submitCardLeadAction Error]:', error);
     return {
       success: false,
-      error: 'No se pudo guardar la información de contacto en este momento',
+      error: error?.message || 'No se pudo guardar la información de contacto en este momento',
     };
   }
 }

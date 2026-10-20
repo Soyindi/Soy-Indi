@@ -35,17 +35,24 @@ export async function GET(
       address: cardData.address,
     });
 
-    // En producción con certificados configurados, aquí se firma el .pkpass binario.
-    // En ausencia de certificado Apple Developer, se emite el payload estructurado con cabecera de compatibilidad.
-    return new NextResponse(JSON.stringify(passJson, null, 2), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="${cardData.slug}-pass.json"`,
-        'X-Apple-Pass-Type': 'generic',
-        'Cache-Control': 'public, max-age=60, s-maxage=300',
-      },
-    });
+    const format = request.nextUrl.searchParams.get('format');
+    const acceptHeader = request.headers.get('accept') || '';
+
+    // Si es una petición de API o formato JSON explícito, retornamos el passJson estructurado
+    if (format === 'json' || acceptHeader.includes('application/json')) {
+      return new NextResponse(JSON.stringify(passJson, null, 2), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Disposition': `attachment; filename="${cardData.slug}-pass.json"`,
+          'X-Apple-Pass-Type': 'generic',
+          'Cache-Control': 'public, max-age=60, s-maxage=300',
+        },
+      });
+    }
+
+    // Por defecto en navegador, redirige al perfil interactivo con el modal de Apple Wallet activo
+    return NextResponse.redirect(`https://soyindi.cl/c/${cardData.slug}?wallet=apple`, { status: 307 });
   } catch (error: any) {
     console.error('[Apple Wallet Route Error]:', error);
     return NextResponse.json(

@@ -25,11 +25,9 @@ export async function GET(
       return NextResponse.json({ error: 'Tarjeta no encontrada' }, { status: 404 });
     }
 
-    // Google Wallet Generic Pass Deep Link
-    const cardUrl = `https://soyindi.cl/c/${cardData.slug}`;
-    const googleWalletUrl = `https://pay.google.com/gp/v/save?origin=${encodeURIComponent(cardUrl)}`;
-
-    return NextResponse.redirect(googleWalletUrl, { status: 307 });
+    // Redirige al perfil con el modal de Google Wallet y acceso offline activo
+    const redirectUrl = `https://soyindi.cl/c/${cardData.slug}?wallet=google`;
+    return NextResponse.redirect(redirectUrl, { status: 307 });
   } catch (error: any) {
     console.error('[Google Wallet Route Error]:', error);
     return NextResponse.json(

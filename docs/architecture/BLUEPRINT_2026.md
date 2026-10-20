@@ -2268,16 +2268,20 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 - **Fallback Automático Local**: Si R2 no está activo, el cliente conmuta de forma silenciosa al pipeline de compresión y persistencia local en SQLite.
 
 ### 58.3 Captura Bidireccional de Contactos (Lead Capture & Mini-CRM)
-- **Tabla Relacional `card_leads`**: Almacena de forma normalizada prospectos con campos `id`, `cardId`, `userId`, `name`, `email`, `phone`, `notes` y `createdAt`, indexada por `cardId` y `userId`. Migración `0007_legal_sway.sql`.
+- **Tabla Relacional `card_leads`**: Almacena de forma normalizada prospectos con campos `id`, `cardId`, `userId`, `name`, `email`, `phone`, `notes` y `createdAt`, indexada por `cardId` y `userId`.
+- **Resolución de Migraciones Turso Cloud**: Saneamiento de `__drizzle_migrations` permitiendo la aplicación atómica de `0007_legal_sway.sql` en producción.
+- **Búsqueda Resiliente Dual en Server Action (`submitCardLeadAction`)**: Admite tanto el UUID inmutable (`cards.id`) como el slug público (`cards.slug`), resolviendo de forma atómica el identificador de tarjeta y propietario, con manejo seguro de modo demostración (`cardId === 'demo'`).
 - **Modal de Contacto Accesible (`ExchangeContactModal.tsx`)**: Diálogo glassmorphic con vibración háptica (`navigator.vibrate`), validación Zod y touch targets >= 44px montado en `/c/[slug]`.
 - **Pestaña Mini-CRM en Dashboard (`CardLeadsTab.tsx`)**: Pestaña dedicada (`/dashboard?tab=leads`) con buscador reactivo, botón de WhatsApp directo en 1 toque (`https://wa.me/...`), borrado seguro con confirmación y exportación a CSV corporativo.
 
-### 58.4 Pases Nativos para Apple Wallet y Google Wallet
-- **Generador de Pases Apple (`applePassGenerator.ts`)**: Estructura `pass.json` oficial con especificación `PKBarcodeFormatQR` codificando `https://soyindi.cl/c/{slug}`.
-- **Rutas Públicas de Pases**:
-  - `/api/wallet/apple/[slug]`: Emisión del manifest JSON para Apple Wallet.
-  - `/api/wallet/google/[slug]`: Redirección y generación de pase para Google Wallet.
-- **Acceso Offline desde Pantalla de Bloqueo**: Permite al profesional exhibir su código QR de contacto sin requerir conexión a internet activa ni abrir el navegador.
+### 58.4 Billeteras Digitales Nativas & Acceso Rápido Offline (Apple & Google Wallet)
+- **Modal Especializado de Pases (`WalletPassModal.tsx`)**: Interfaz bimodal accesible que despliega la tarjeta de pase en alta fidelidad con código QR offline escaneable sin conexión.
+- **Guardado en Contactos del Teléfono (vCard 4.0 con Foto HD)**: Integración con `downloadVCardWithPhoto` para persistencia en Apple Contacts y Google Contacts con foto de perfil para llamadas a pantalla completa.
+- **Generador de Tarjeta de Pantalla de Bloqueo / Galería**: Motor client-side con HTML5 Canvas que exporta un pase 9:16 (1080x1920) listo para fijar como fondo de pantalla o widget de fotos.
+- **Guía Asistida de Instalación 1-Toque**: Instrucciones nativas ilustradas para iOS Safari ("Añadir a pantalla de inicio") y Android Chrome ("Añadir a pantalla principal").
+- **Rutas Públicas de Pases Adaptativas**:
+  - `/api/wallet/apple/[slug]`: Redirección en navegador hacia `/c/[slug]?wallet=apple` y soporte de `?format=json` para clientes API.
+  - `/api/wallet/google/[slug]`: Redirección hacia `/c/[slug]?wallet=google`.
 
 ### 58.5 Nómina Masiva TEF SBIF & Liquidación de Afiliados
 - **Formato Bancario SBIF Oficial (`tefPayrollGenerator.ts`)**: Genera nóminas estándar para Banco de Chile, Banco Santander, BCI y BancoEstado con código de institución SBIF y tipos de cuenta normalizados (Corriente, Vista/RUT, Ahorro).
@@ -2285,6 +2289,6 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 - **Exportación en 1 Clic en `/admin`**: Generación de archivo CSV y adaptador para transferencias automatizadas mediante Fintoc A2A.
 
 ### 58.6 Blindaje de Calidad y Suite E2E Playwright
-- **517 Pruebas Unitarias al 100% de Aprobación**: 85 archivos de test en Vitest ejecutados en ~10s.
+- **518 Pruebas Unitarias al 100% de Aprobación**: 85 archivos de test en Vitest ejecutados en ~9s.
 - **Playwright E2E (`playwright.config.ts`)**: Configuración multi-dispositivo (Chromium, Pixel 5 Mobile Chrome, iPhone 12 Mobile Safari) para validar el flujo completo de captura de prospectos y pases digitales.
 - **0 Errores de Tipado**: Verificación estricta mediante `tsc --noEmit`.
