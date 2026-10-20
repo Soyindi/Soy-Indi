@@ -209,7 +209,7 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 527 tests pasando al 100% en 86 suites)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 528 tests pasando al 100% en 86 suites)
 │   ├── digital-wallets-deep-research.test.ts # Especificación y contratos de firma criptográfica Apple Wallet y Google Wallet
 │   ├── seo-structured-data-chile.test.ts # Datos estructurados Schema.org CLP, Product-Led Link Building e IndexNow
 │   ├── google-chile-seo-research-prompt.test.ts # Especificación y contratos del prompt Deep Research para Google Chile #1

@@ -2327,11 +2327,11 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 - **Especificación JSON Estandarizada**: `docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_NATIVE_DIGITAL_WALLETS_APPLE_GOOGLE_2026.json` (5 pilares de investigación: PassKit PKCS#7, Google Wallet JWT RS256, Serverless Signing vs Terceros, Fallbacks Híbridos y Hoja de Ruta).
 - **Prompt Ejecutivo en Markdown**: `docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_NATIVE_DIGITAL_WALLETS_APPLE_GOOGLE_2026.md` estructurado en 6 ejes estratégicos con directrices de grado industrial para arquitectos de software.
 
-### 59.5 Experiencia de Usuario & Fallbacks Garantizados en `<WalletPassModal />`
-- **Descarga Directa de Archivo Nativo**: Botones de acción directa para descargar `.pkpass` o abrir el flujo de Google Wallet.
-- **Banner Informativo de Transparencia**: Explicación clara al usuario sobre la necesidad de certificación oficial de Apple y Google para la adición en 1 toque directo a la app Cartera.
-- **Soluciones 100% Operativas sin Conexión**: Guardado en contactos con foto HD (vCard 4.0 / RFC 6350) y descarga de tarjeta gráfica 9:16 (1080x1920) generada por Canvas HTML5 para pantalla de bloqueo.
+### 59.5 Experiencia de Usuario & iPhone Zero-Error en `<WalletPassModal />`
+- **Botón Nativo Oficial Google Wallet**: Integración del botón destacado con isotipo multicolor de Google enlazando directamente al Route Handler `/api/wallet/google/${card.slug}?action=save` con redirección 307 al JWT firmado con RS256.
+- **iPhone Zero-Error UX**: Supresión automática del enlace `.pkpass` no firmado para evitar el error *"El pase no es válido"* en iOS Safari. En su lugar, se priorizan las tres soluciones 100% nativas y operativas para iPhone: Guardar en Contactos con Foto HD (vCard 4.0), Descargar Tarjeta 9:16 para Pantalla de Bloqueo y Guía de Safari para Añadir a Pantalla de Inicio.
+- **Renderizado Condicional de Apple Wallet**: El botón `.pkpass` solo se renderiza si `hasAppleCertificates` es verdadero (cuando se carguen los certificados de Apple Developer en variables de entorno).
 
 ### 59.6 Blindaje de Calidad
-- **527 Pruebas Unitarias al 100% de Aprobación**: 86 archivos de test en Vitest aprobados en ~8.9s (incluyendo `tests/unit/digital-wallets-deep-research.test.ts`).
+- **528 Pruebas Unitarias al 100% de Aprobación**: 86 archivos de test en Vitest aprobados en ~8.8s (incluyendo `tests/unit/digital-wallets-deep-research.test.ts`).
 - **0 Errores de Tipado**: Verificación estricta mediante `tsc --noEmit`.

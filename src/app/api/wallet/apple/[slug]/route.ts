@@ -56,8 +56,8 @@ export async function GET(
       });
     }
 
-    // 2. Si se solicita descarga directa o los certificados están configurados en producción
-    const shouldStreamPkPass = download === '1' || download === 'pkpass' || isApplePassSigningConfigured();
+    // 2. Si los certificados oficiales están configurados o se solicita explícitamente formato binario para pruebas
+    const shouldStreamPkPass = isApplePassSigningConfigured() || download === 'pkpass';
 
     if (shouldStreamPkPass) {
       const passBundleResult = await buildApplePassBundle(passInput);

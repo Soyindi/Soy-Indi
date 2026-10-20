@@ -135,7 +135,7 @@ describe('Gemini Deep Research: Native Digital Wallets Specification & Signing E
       expect(obj.barcode.value).toBe('https://soyindi.cl/c/matias-tech');
     });
 
-    it('debe retornar un resultado informativo y seguro cuando no hay Service Account en entorno', () => {
+    it('debe generar una URL de guardado de Google Wallet firmada con RS256 cuando hay credenciales', () => {
       const input = {
         slug: 'demo',
         title: 'Demo INDI',
@@ -143,9 +143,32 @@ describe('Gemini Deep Research: Native Digital Wallets Specification & Signing E
       };
 
       const result = buildGoogleWalletSaveUrl(input);
-      expect(result.success).toBe(false);
-      expect(result.saveUrl).toBeNull();
-      expect(result.guidance).toContain('Credenciales de Google Wallet no configuradas');
+      if (isGoogleWalletSigningConfigured()) {
+        expect(result.success).toBe(true);
+        expect(result.isSigned).toBe(true);
+        expect(result.saveUrl).toContain('https://pay.google.com/gp/v/save/');
+        expect(result.jwt).toBeDefined();
+      } else {
+        expect(result.success).toBe(false);
+        expect(result.saveUrl).toBeNull();
+      }
+    });
+
+    it('debe retornar un resultado informativo y seguro cuando faltan credenciales', () => {
+      const oldIssuer = process.env.GOOGLE_WALLET_ISSUER_ID;
+      try {
+        delete process.env.GOOGLE_WALLET_ISSUER_ID;
+        const result = buildGoogleWalletSaveUrl({
+          slug: 'demo',
+          title: 'Demo INDI',
+          profession: 'Identidad Digital',
+        });
+        expect(result.success).toBe(false);
+        expect(result.saveUrl).toBeNull();
+        expect(result.guidance).toContain('Credenciales de Google Wallet no configuradas');
+      } finally {
+        if (oldIssuer) process.env.GOOGLE_WALLET_ISSUER_ID = oldIssuer;
+      }
     });
 
     it('debe verificar la presencia de credenciales de Google Wallet como booleano', () => {
