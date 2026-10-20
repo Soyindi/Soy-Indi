@@ -116,7 +116,7 @@ export async function assertUserEntitlementAction(userId?: string): Promise<{
       allowed: false,
       entitlement,
       error:
-        'Tu período de prueba ha finalizado. Suscríbete a un plan de INDI para continuar creando y editando tus recursos profesionales.',
+        'Tu período de prueba ha finalizado. Invita a colegas con tu enlace personal o accede a la Membresía Comunitaria para continuar creando y editando tus recursos profesionales.',
     };
   }
 
@@ -148,7 +148,7 @@ export async function assertQuotaAvailableAction(
       allowed: false,
       currentCount: 0,
       maxLimit: entitlement.limits[resource],
-      error: 'Tu período de prueba o suscripción ha expirado.',
+      error: 'Tu período de prueba o membresía comunitaria ha expirado.',
     };
   }
 

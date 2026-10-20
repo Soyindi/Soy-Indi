@@ -56,7 +56,7 @@ export async function upsertCardAction(
     const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
     const entitlementCheck = await assertUserEntitlementAction(targetUserId);
     if (!entitlementCheck.allowed) {
-      return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere suscripción activa.' };
+      return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere membresía comunitaria activa.' };
     }
 
     if (cardId) {

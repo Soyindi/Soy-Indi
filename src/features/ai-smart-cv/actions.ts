@@ -310,7 +310,7 @@ export async function upsertSmartCvAction(
     const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
     const entitlementCheck = await assertUserEntitlementAction(targetUserId);
     if (!entitlementCheck.allowed) {
-      return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere suscripción activa.' };
+      return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere membresía comunitaria activa.' };
     }
 
     // Calcular score ATS actualizado
@@ -605,7 +605,7 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
         return {
           success: false,
           suggestions: [],
-          error: entitlement.error || 'Período de prueba o suscripción expirada.',
+          error: entitlement.error || 'Período de prueba o membresía comunitaria inactiva.',
         };
       }
     }
@@ -870,7 +870,7 @@ export async function analyzeJobMatchAction(input: any): Promise<{
       if (!entitlement.allowed) {
         return {
           success: false,
-          error: entitlement.error || 'Período de prueba o suscripción expirada.',
+          error: entitlement.error || 'Período de prueba o membresía comunitaria inactiva.',
         };
       }
     }

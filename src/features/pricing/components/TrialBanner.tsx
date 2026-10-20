@@ -73,7 +73,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
                 : 'text-emerald-300 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30'
             }`}
           >
-            <span>{isUrgentRenewal ? 'Renovar o ampliar plan' : 'Gestionar suscripción'}</span>
+            <span>{isUrgentRenewal ? 'Renovar membresía' : 'Gestionar Membresía'}</span>
             <ArrowRight className="w-3.5 h-3.5 opacity-70" />
           </Link>
         </div>
@@ -108,7 +108,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
             href="/pricing"
             className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-zinc-950 bg-amber-400 hover:bg-amber-300 border border-amber-500/50 shadow-md shadow-amber-500/20 transition-all cursor-pointer w-full sm:w-auto"
           >
-            <span>Renovar suscripción</span>
+            <span>Membresía Comunitaria</span>
             <ArrowRight className="w-3.5 h-3.5 opacity-80" />
           </Link>
         </div>

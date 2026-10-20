@@ -1163,7 +1163,7 @@ export async function refineSlideWithAiAction(
       if (!entitlement.allowed) {
         return {
           success: false,
-          error: entitlement.error || 'Período de prueba o suscripción expirada.',
+          error: entitlement.error || 'Período de prueba o membresía comunitaria inactiva.',
         };
       }
     }
@@ -1449,7 +1449,7 @@ export async function upsertPresentationAction(
     const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
     const entitlementCheck = await assertUserEntitlementAction(targetUserId);
     if (!entitlementCheck.allowed) {
-      return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere suscripción activa.' };
+      return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere membresía comunitaria activa.' };
     }
 
     // Resolver slug canónico
