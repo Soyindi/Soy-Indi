@@ -3,20 +3,15 @@
 import React, { useState } from 'react';
 import { 
   AffiliateOverview, 
-  CHILEAN_BANKS, 
-  ACCOUNT_TYPES, 
-  formatChileanRut,
   formatReferralCode
 } from '@/entities/affiliate/schemas';
 import { 
-  saveAffiliateBankAccountAction, 
   checkReferralCodeAvailabilityAction,
   updateReferralCodeAction 
 } from '../actions';
 import { 
   Users, 
   Check, 
-  Building2, 
   ShieldCheck, 
   Sparkles,
   FileCheck,
@@ -38,15 +33,6 @@ interface AffiliateDashboardTabProps {
 
 export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboardTabProps) {
   const [copiedDirect, setCopiedDirect] = useState(false);
-  const [bankName, setBankName] = useState(overview.bankAccount?.bankName || CHILEAN_BANKS[0]);
-  const [accountType, setAccountType] = useState(overview.bankAccount?.accountType || ACCOUNT_TYPES[0]);
-  const [accountNumber, setAccountNumber] = useState(overview.bankAccount?.accountNumber || '');
-  const [rut, setRut] = useState(overview.bankAccount?.rut || '');
-  const [holderName, setHolderName] = useState(overview.bankAccount?.holderName || '');
-  
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Estado para Personalización del Código de Referido
   const [currentCode, setCurrentCode] = useState(overview.referralCode);
@@ -136,36 +122,6 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
       alert(err.message || 'Error inesperado.');
     } finally {
       setIsSavingCode(false);
-    }
-  };
-
-
-  const handleSaveBank = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    setErrorMessage(null);
-    setSaveSuccess(false);
-
-    try {
-      const res = await saveAffiliateBankAccountAction({
-        bankName: bankName as any,
-        accountType: accountType as any,
-        accountNumber,
-        rut,
-        holderName,
-      });
-
-      if (!res.success) {
-        setErrorMessage(res.error || 'Error al guardar los datos bancarios.');
-      } else {
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-        if (onRefresh) onRefresh();
-      }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Error inesperado al conectar.');
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -524,148 +480,85 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
         </div>
       </div>
 
-      {/* Formulario de Datos Bancarios para Convenios y Auspicios */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 glass-panel rounded-3xl p-6 sm:p-8 border border-white/10">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
-              <Building2 className="w-5 h-5" />
+      {/* Guía Visual: Cómo Funciona el Bucle Comunitario */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
+          <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+              <Gift className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-bold text-white">
-                Datos de Transferencia Bancaria (Auspicios y Convenios)
+                Cómo Creces con la Comunidad INDI
               </h3>
               <p className="text-xs text-zinc-400">
-                Registra tu cuenta de forma segura para futuros convenios institucionales, patrocinios y alianzas de embajador.
+                Un modelo 100% colaborativo donde compartir herramientas profesionales te premia con mayor capacidad.
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleSaveBank} className="space-y-4">
-            {errorMessage && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
-                {errorMessage}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+              <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-300 font-mono text-xs font-bold flex items-center justify-center">
+                1
               </div>
-            )}
-
-            {saveSuccess && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2">
-                <Check className="w-4 h-4" />
-                <span>Datos bancarios guardados exitosamente para futuros convenios.</span>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1.5">
-                  Institución Bancaria
-                </label>
-                <select
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value as any)}
-                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-500"
-                >
-                  {CHILEAN_BANKS.map((b) => (
-                    <option key={b} value={b} className="bg-zinc-900 text-white">
-                      {b}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1.5">
-                  Tipo de Cuenta
-                </label>
-                <select
-                  value={accountType}
-                  onChange={(e) => setAccountType(e.target.value as any)}
-                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-500"
-                >
-                  {ACCOUNT_TYPES.map((t) => (
-                    <option key={t} value={t} className="bg-zinc-900 text-white">
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Comparte tu Enlace</h4>
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
+                Envía tu link o muestra tu código QR a colegas, clientes y emprendedores de tu red.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1.5">
-                  Número de Cuenta
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ej: 12345678"
-                  value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value)}
-                  required
-                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs sm:text-sm placeholder-zinc-600 focus:outline-none focus:border-cyan-500"
-                />
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold flex items-center justify-center">
+                2
               </div>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Ellos Crean Gratis</h4>
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
+                Obtienen su Tarjeta Digital y Smart CV ATS sin costo, sin tarjetas de crédito ni suscripciones.
+              </p>
+            </div>
 
-              <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1.5">
-                  RUT del Titular (con guión)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ej: 12.345.678-9"
-                  value={rut}
-                  onChange={(e) => setRut(formatChileanRut(e.target.value))}
-                  required
-                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs sm:text-sm placeholder-zinc-600 focus:outline-none focus:border-cyan-500 font-mono"
-                />
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
+              <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-mono text-xs font-bold flex items-center justify-center">
+                3
+              </div>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Desbloqueas Capacidad</h4>
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
+                Tus cupos se expanden automáticamente (+1 tarjeta cada 3 colegas, +1 CV cada 5 colegas).
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-emerald-400 shrink-0" />
+              <div className="text-xs">
+                <p className="text-white font-bold">Cero solicitud de datos bancarios o tarjetas</p>
+                <p className="text-zinc-400 text-[11px]">INDI es 100% gratuito. No te pediremos cuentas bancarias, cobros ni datos financieros.</p>
               </div>
             </div>
-
-            <div>
-              <label className="block text-xs font-mono text-zinc-400 mb-1.5">
-                Nombre Completo del Titular
-              </label>
-              <input
-                type="text"
-                placeholder="Ej: Juan Pérez Morales"
-                value={holderName}
-                onChange={(e) => setHolderName(e.target.value)}
-                required
-                className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs sm:text-sm placeholder-zinc-600 focus:outline-none focus:border-cyan-500"
-              />
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="min-h-[44px] px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-zinc-950 font-bold text-xs sm:text-sm transition-all shadow-md shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
-              >
-                {isSaving ? 'Guardando...' : 'Guardar Cuenta para Convenios'}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
 
-        {/* Gobernanza de Beneficios Comunitarios */}
+        {/* Compromiso de Gobernanza y Privacidad */}
         <div className="space-y-4">
           <div className="glass-panel rounded-3xl p-6 border border-white/10 text-xs text-zinc-300 leading-relaxed space-y-3">
             <div className="flex items-center gap-2 text-white font-bold text-sm">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Gobernanza del Programa</span>
             </div>
-            <ul className="space-y-2 text-zinc-400 text-[11px]">
+            <ul className="space-y-2.5 text-zinc-400 text-[11px]">
               <li className="flex items-start gap-2">
                 <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Plan 100% Gratuito:</strong> Ni tú ni tus invitados pagan nada por usar INDI.</span>
+                <span><strong>Plan 100% Gratuito:</strong> Ni tú ni tus invitados pagan nada por utilizar las herramientas de INDI.</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Cupos Permanentes:</strong> Las tarjetas y CVs extra que desbloquees se mantienen para siempre en tu cuenta.</span>
+                <span><strong>Cupos Permanentes:</strong> Las tarjetas y CVs extra que desbloquees se mantienen vinculados a tu cuenta de por vida.</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Alianzas Futuras:</strong> Tus datos bancarios se mantendrán cifrados y listos para cuando se activen fondos de creadores o auspicios regionales.</span>
+                <span><strong>Cero Fricción Financiera:</strong> Sin datos bancarios, sin pasarelas de pago y sin letra chica.</span>
               </li>
               <li className="flex items-start gap-2">
                 <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
@@ -677,15 +570,15 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
           <div className="glass-panel rounded-3xl p-6 border border-white/10">
             <h4 className="text-xs font-mono uppercase text-zinc-400 font-semibold mb-3 flex items-center gap-1.5">
               <FileCheck className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Estado del Programa</span>
+              <span>Estado de tu Red</span>
             </h4>
 
-            <div className="p-3 rounded-2xl bg-white/5 border border-white/5 text-xs text-zinc-400 space-y-2">
+            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/5 text-xs text-zinc-400 space-y-2">
               <p className="text-white font-medium">
                 🎯 {overview.totalReferralsCount} {overview.totalReferralsCount === 1 ? 'colega conectado' : 'colegas conectados'}
               </p>
               <p className="text-[11px] text-zinc-400 leading-relaxed">
-                Tus beneficios comunitarios se aplican instantáneamente en tus límites de creación de Tarjetas y Currículums ATS.
+                Tus beneficios comunitarios se reflejan de inmediato al crear o editar tus Tarjetas Digitales y Currículums ATS.
               </p>
             </div>
           </div>
