@@ -1,9 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { PRICING_TIERS, PlanInterval, PlanTier } from '@/entities/subscription/types';
 import { useSession } from '@/shared/lib/auth-client';
 import { 
   Sparkles, 
@@ -14,345 +12,229 @@ import {
   CreditCard,
   Layers,
   FileText,
-  Presentation,
-  Loader2,
-  CheckCircle2,
-  Star
+  Users,
+  QrCode,
+  Share2,
+  CheckCircle2
 } from 'lucide-react';
+import { PlanTier } from '@/entities/subscription/types';
 
 interface PricingSectionProps {
   showTitle?: boolean;
   activeTier?: PlanTier | null;
-  activePlanInterval?: PlanInterval | null;
 }
 
 export function PricingSection({ 
   showTitle = true,
   activeTier = null,
-  activePlanInterval = null,
 }: PricingSectionProps) {
-  const router = useRouter();
-  const [interval, setInterval] = useState<PlanInterval>(activePlanInterval || 'monthly');
-  const [selectedTier, setSelectedTier] = useState<PlanTier | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState<'flow' | 'fintoc' | 'webpay' | 'mercadopago'>('flow');
-  const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const { data: sessionData } = useSession();
   const isAuthenticated = !!sessionData?.user;
 
-  const [waitlistJoined, setWaitlistJoined] = useState<PlanTier | null>(null);
-
-  const handleStartCheckout = async (tier: PlanTier) => {
-    if (tier === 'starter') {
-      router.push(isAuthenticated ? '/dashboard' : '/login?mode=signup&callbackUrl=/dashboard');
-      return;
-    }
-
-    // Para planes Pro y Max: Lista de Espera Pro sin cobro transaccional (Vercel-Ready)
-    setWaitlistJoined(tier);
-    setTimeout(() => {
-      setWaitlistJoined(null);
-    }, 4000);
-  };
-
-  const tiers: PlanTier[] = ['starter', 'pro', 'max'];
+  const targetHref = isAuthenticated ? '/dashboard' : '/login?mode=signup&callbackUrl=/dashboard';
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
       {showTitle && (
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill text-xs font-semibold text-cyan-400 mb-4 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-pill text-xs font-semibold text-emerald-400 mb-4 animate-fade-in border border-emerald-500/20 bg-emerald-950/20">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Matriz de Planes • El Semestre Irresistible</span>
+            <span>Membresía Comunitaria • Acceso 100% Gratuito</span>
           </div>
 
-          <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
-            Escoge el Plan Perfecto.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-300 to-teal-300">
-              Multiplica tu Presencia.
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
+            Tu Presencia Profesional.{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-cyan-300 to-indigo-300">
+              Sin Costo. De por Vida.
             </span>
           </h2>
 
           <p className="text-sm sm:text-base text-zinc-300 leading-relaxed">
-            Comienza gratis con el <strong>Plan Comunitario Starter</strong>. Para necesidades avanzadas y múltiples perfiles, reserva tu lugar en los <strong>planes Pro y Max</strong> con beneficios preferenciales.
+            Sin suscripciones forzadas, sin pedirte tarjeta de crédito y sin letras chicas. Obtén tu identidad digital completa lista para compartir hoy mismo.
           </p>
         </div>
       )}
 
-      {/* Switch Selector: Mensual vs Semestral */}
-      <div className="flex items-center justify-center mb-12">
-        <div className="p-1.5 rounded-2xl glass-panel flex items-center gap-2 border border-white/10 relative">
-          <button
-            type="button"
-            onClick={() => setInterval('monthly')}
-            className={`min-h-[44px] min-w-[44px] relative z-10 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-              interval === 'monthly'
-                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Pago Mensual
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setInterval('semiannual')}
-            className={`min-h-[44px] min-w-[44px] relative z-10 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
-              interval === 'semiannual'
-                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <span>Pago Semestral</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-zinc-950 font-black text-[10px] tracking-tight">
-              HASTA 60% OFF 🔥
-            </span>
-          </button>
+      {/* Tarjeta Principal Destacada: Bento Panel Membresía Comunitaria */}
+      <div className="relative rounded-3xl p-8 sm:p-12 glass-panel border border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 via-zinc-950/90 to-zinc-950/95 shadow-2xl shadow-emerald-950/40 mb-12">
+        {/* Badge Flotante Superior */}
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+          <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-black tracking-wide bg-gradient-to-r from-emerald-400 to-cyan-400 text-zinc-950 shadow-md">
+            <ShieldCheck className="w-4 h-4 fill-current" />
+            MEMBRESÍA ACTIVA PARA LA COMUNIDAD
+          </span>
         </div>
-      </div>
 
-      {/* Indicador de Lanzamiento Comunitario Vercel-Ready */}
-      <div className="flex flex-col items-center justify-center gap-2 mb-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl glass-panel border border-emerald-500/30 bg-emerald-950/20 text-xs text-emerald-300 shadow-md">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Fase Comunitaria 2026: <strong>Plan Starter 100% Gratuito</strong> • Únete a la lista prioritaria para funciones Pro</span>
-        </div>
-      </div>
-
-      {/* Matriz de 3 Columnas: Starter 🟢 | Pro 🔵 | Max 🟣 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch mb-16">
-        {tiers.map((tierKey) => {
-          const tier = PRICING_TIERS[tierKey];
-          const pricing = tier[interval];
-          const isPro = tierKey === 'pro';
-          const isMax = tierKey === 'max';
-          const isStarter = tierKey === 'starter';
-          const isBusy = isLoadingCheckout && selectedTier === tierKey;
-
-          return (
-            <div
-              key={tierKey}
-              className={`relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all ${
-                isPro
-                  ? 'glass-panel border-2 border-indigo-500/60 shadow-2xl shadow-indigo-500/20 bg-zinc-950/90 scale-[1.02] z-10'
-                  : 'glass-panel border border-white/10 bg-zinc-950/60 hover:border-white/20'
-              }`}
-            >
-              {/* Badge superior para plan Pro */}
-              {isPro && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-black tracking-wide bg-gradient-to-r from-indigo-500 to-cyan-400 text-zinc-950 shadow-md">
-                    <Star className="w-3.5 h-3.5 fill-current" />
-                    RECOMENDADO • MÁS POPULAR
-                  </span>
-                </div>
-              )}
-
-              {/* Encabezado del Plan */}
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-xs font-mono font-bold tracking-wider uppercase text-zinc-400">
-                    {tier.badge}
-                  </span>
-                  {pricing.discountPercentage && (
-                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                      {pricing.discountPercentage}% de ahorro 🔥
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-2xl font-black text-white tracking-tight mb-1">
-                  {tier.name}
-                </h3>
-                <p className="text-xs text-zinc-300 min-h-[36px] leading-relaxed mb-6">
-                  {tier.tagline}
-                </p>
-
-                {/* Bloque de Precio */}
-                <div className="pb-6 mb-6 border-b border-white/10">
-                  {isStarter ? (
-                    <div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl sm:text-5xl font-black text-emerald-400 tracking-tight tabular-nums">
-                          $0
-                        </span>
-                        <span className="text-xs font-mono uppercase text-zinc-400">
-                          CLP / de por vida
-                        </span>
-                      </div>
-                      <div className="mt-2 text-xs font-mono text-emerald-300 flex items-center gap-1.5">
-                        <span>Plan Comunitario 100% Gratuito</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/10 text-cyan-300 border border-white/10">
-                          Fase Lista de Espera
-                        </span>
-                      </div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-4xl sm:text-5xl font-black text-white tracking-tight tabular-nums">
-                          ${pricing.priceClp.toLocaleString('es-CL')}
-                        </span>
-                        <span className="text-xs font-mono uppercase text-zinc-400">
-                          CLP / {interval === 'semiannual' ? 'semestre' : 'mes'}
-                        </span>
-                      </div>
-
-                      <div className="mt-2 text-xs font-mono text-cyan-300 flex items-center gap-1.5">
-                        <span className="text-zinc-400">Proyección:</span>
-                        <strong className="text-white font-bold">
-                          ${pricing.monthlyEquivalentClp.toLocaleString('es-CL')} CLP / mes
-                        </strong>
-                        <span className="text-zinc-400 text-[11px]">
-                          (Sin cobro hoy)
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Resumen de Cuotas Clave */}
-                <div className="grid grid-cols-3 gap-2 mb-6 p-3 rounded-2xl bg-white/5 border border-white/5 text-center text-[11px]">
-                  <div>
-                    <span className="block text-zinc-400 font-mono">Tarjetas</span>
-                    <strong className="text-white font-semibold capitalize">
-                      {tier.limits.cards === 'unlimited' ? '∞ Ilimitadas' : `${tier.limits.cards} ${tier.limits.cards === 1 ? 'perfil' : 'perfiles'}`}
-                    </strong>
-                  </div>
-                  <div className="border-x border-white/10">
-                    <span className="block text-zinc-400 font-mono">Smart CV</span>
-                    <strong className="text-white font-semibold capitalize">
-                      {tier.limits.cvs === 'unlimited' ? '∞ Ilimitados' : `${tier.limits.cvs} ${tier.limits.cvs === 1 ? 'versión' : 'versiones'}`}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="block text-zinc-400 font-mono">Presentar</span>
-                    <strong className="text-white font-semibold capitalize">
-                      {tier.limits.presentations === 'unlimited'
-                        ? '∞ Ilimitadas'
-                        : tier.limits.presentations === 0
-                        ? 'Lista de Espera'
-                        : `${tier.limits.presentations} decks`}
-                    </strong>
-                  </div>
-                </div>
-
-                {/* Lista de Features */}
-                <ul className="space-y-3 mb-8">
-                  {tier.features.map((feat, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-300">
-                      <div
-                        className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                          isPro
-                            ? 'bg-cyan-500/20 text-cyan-300'
-                            : isMax
-                            ? 'bg-purple-500/20 text-purple-300'
-                            : 'bg-emerald-500/20 text-emerald-300'
-                        }`}
-                      >
-                        <Check className="w-3 h-3 stroke-[3]" />
-                      </div>
-                      <span className={feat.highlight ? 'font-bold text-white' : 'text-zinc-300'}>
-                        {feat.text}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          {/* Columna Izquierda: Oferta y Promesa de Valor */}
+          <div className="lg:col-span-7 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-xs font-mono font-bold tracking-wider uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg">
+                  PLAN COMUNITARIO OFICIAL
+                </span>
+                <span className="text-xs text-zinc-400 font-mono">
+                  0 CLP de por vida
+                </span>
               </div>
 
-              {/* Botón de Acción Ergonómico touch target >= 44px */}
-              <div>
-                {activeTier === tierKey || (tierKey === 'starter' && !activeTier && isAuthenticated) ? (
-                  <div className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 shadow-lg">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Tu Plan Actual (Gratuito)</span>
+              <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-3">
+                Todo lo esencial para conectar con clientes y reclutadores
+              </h3>
+
+              <p className="text-sm text-zinc-300 leading-relaxed mb-6">
+                Construido para profesionales, consultores, emprendedores y técnicos en Chile que necesitan una presencia impecable, sin burocracia ni barreras económicas.
+              </p>
+
+              {/* Lista de Capacidades Clave */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-8">
+                <div className="flex items-start gap-2.5 text-xs text-zinc-200">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                ) : waitlistJoined === tierKey ? (
-                  <div className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 shadow-lg animate-fade-in">
-                    <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                    <span>¡Anotado en Lista Prioritaria!</span>
+                  <span><strong>1 Tarjeta Digital</strong> con link único y QR oficial</span>
+                </div>
+
+                <div className="flex items-start gap-2.5 text-xs text-zinc-200">
+                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleStartCheckout(tierKey)}
-                    className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer active:scale-[0.98] ${
-                      isPro
-                        ? 'bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 shadow-amber-500/20'
-                        : isMax
-                        ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white shadow-purple-500/20'
-                        : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-emerald-500/20'
-                    }`}
-                  >
-                    {isStarter ? (
-                      <>
-                        <Sparkles className="w-4 h-4" />
-                        <span>Comenzar Gratis Ahora</span>
-                        <ArrowRight className="w-3.5 h-3.5 opacity-80" />
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4" />
-                        <span>Unirse a Lista de Espera {tier.name}</span>
-                        <ArrowRight className="w-3.5 h-3.5 opacity-80" />
-                      </>
-                    )}
-                  </button>
-                )}
+                  <span><strong>1 Smart CV ATS</strong> en PDF vectorial A4</span>
+                </div>
+
+                <div className="flex items-start gap-2.5 text-xs text-zinc-200">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                  <span><strong>Botón WhatsApp directo</strong> y contacto vCard 4.0</span>
+                </div>
+
+                <div className="flex items-start gap-2.5 text-xs text-zinc-200">
+                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                  <span><strong>Métricas en tiempo real</strong> de visitas y clics</span>
+                </div>
+
+                <div className="flex items-start gap-2.5 text-xs text-zinc-200">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                  <span><strong>Cero marcas de agua</strong> invasivas ni publicidad</span>
+                </div>
+
+                <div className="flex items-start gap-2.5 text-xs text-zinc-200">
+                  <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                  <span><strong>Programa de Comunidad</strong> (+1 tarjeta cada 3 amigos)</span>
+                </div>
               </div>
             </div>
-          );
-        })}
+
+            {/* CTA Principal de Conversión */}
+            <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <Link
+                href={targetHref}
+                className="min-h-[48px] inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-sm bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-zinc-950 hover:brightness-110 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer active:scale-[0.98]"
+              >
+                <Sparkles className="w-4 h-4 text-zinc-950" />
+                <span>{isAuthenticated ? 'Ir a mi Panel de Control' : 'Comenzar Gratis (Sin Tarjeta)'}</span>
+                <ArrowRight className="w-4 h-4 text-zinc-950" />
+              </Link>
+
+              <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <CreditCard className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>No pedimos tarjeta. Listo en 2 minutos.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Columna Derecha: Tarjetas Visuales de las 2 Herramientas */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
+            {/* Box 1: Tarjeta Digital */}
+            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-emerald-500/30 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <QrCode className="w-4 h-4" />
+                  </div>
+                  <h4 className="text-sm font-bold text-white">Tarjeta Digital Móvil</h4>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-bold">
+                  INCLUIDO
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Tu perfil con botón directo a WhatsApp, ficha de contacto para guardar en la agenda del celular y código QR para eventos o reuniones presenciales.
+              </p>
+            </div>
+
+            {/* Box 2: Smart CV ATS */}
+            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <h4 className="text-sm font-bold text-white">Smart CV ATS</h4>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 font-bold">
+                  INCLUIDO
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Currículum estructurado para pasar filtros de reclutamiento (Buk, Trabajando, Laborum) y descargable en PDF A4 vectorial de alta definición.
+              </p>
+            </div>
+
+            {/* Box 3: Beneficio por Referidos */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/30 to-purple-950/30 border border-indigo-500/20 text-xs text-zinc-300 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center shrink-0">
+                <Users className="w-4 h-4" />
+              </div>
+              <div>
+                <strong className="text-white block font-semibold">¿Necesitas más tarjetas?</strong>
+                <span className="text-zinc-400">Invita a 3 amigos con tu enlace personal y desbloquea +1 tarjeta extra automáticamente.</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Botón Secundario de Prueba Gratuita y Garantía */}
-      <div className="max-w-2xl mx-auto text-center space-y-3 mb-16">
-        <Link
-          href={isAuthenticated ? '/start' : '/login?mode=signup&callbackUrl=/start'}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-cyan-300 hover:text-cyan-200 transition-colors py-2 px-4 rounded-xl hover:bg-white/5"
-        >
-          <span>{isAuthenticated ? 'Volver a mi panel de control' : '¿Quieres comenzar ya? Activa tu cuenta comunitaria gratuita'}</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-        <p className="text-center text-[11px] text-zinc-400">
-          ✨ Plan Comunitario sin tarjeta de crédito. Los planes Pro y Max estarán disponibles próximamente.
-        </p>
-      </div>
-
-      {/* Tres Pilares Incluidos con Iconos */}
+      {/* Tres Pilares de Confianza */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto text-left">
         <div className="p-5 rounded-2xl glass-panel border border-white/5">
-          <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
-            <Layers className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
+            <ShieldCheck className="w-5 h-5" />
           </div>
-          <h4 className="text-sm font-bold text-white mb-1">Tarjetas con Código QR</h4>
-          <p className="text-xs text-zinc-400">
-            Botón directo a WhatsApp, enlace personalizado y visualización rápida en celulares sin apps adicionales.
+          <h4 className="text-sm font-bold text-white mb-1">Sin Expiración Oculta</h4>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            Tu tarjeta y currículum no caducarán a los pocos días. Tu enlace público permanece activo para tus clientes.
           </p>
         </div>
 
         <div className="p-5 rounded-2xl glass-panel border border-white/5">
           <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-3">
-            <FileText className="w-5 h-5" />
+            <Zap className="w-5 h-5" />
           </div>
-          <h4 className="text-sm font-bold text-white mb-1">Currículum Fácil en PDF</h4>
-          <p className="text-xs text-zinc-400">
-            Formato A4 internacional para postulaciones laborales con consejos automáticos de compatibilidad ATS.
+          <h4 className="text-sm font-bold text-white mb-1">Cero Fricción al Compartir</h4>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            Tus clientes no tienen que descargar apps ni registrarse para abrir tu tarjeta o guardar tu contacto.
           </p>
         </div>
 
         <div className="p-5 rounded-2xl glass-panel border border-white/5">
-          <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center mb-3">
-            <Presentation className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
+            <Share2 className="w-5 h-5" />
           </div>
-          <h4 className="text-sm font-bold text-white mb-1">Presentaciones Orbitales</h4>
-          <p className="text-xs text-zinc-400">
-            Diapositivas 16:9 con copiloto IA para proyectar propuestas y cotizaciones con impacto visual.
+          <h4 className="text-sm font-bold text-white mb-1">Crece con la Comunidad</h4>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            Comparte tu código de invitación para ampliar tu cuota y ganar reconocimiento como miembro pionero.
           </p>
         </div>
       </div>
     </div>
   );
 }
+
