@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-471_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-506_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -383,8 +383,8 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 | `NVIDIA_API_KEY` | Clave de API de NVIDIA NIM para inferencia de IA | `nvapi-...` |
 | `MERCADOPAGO_ACCESS_TOKEN` | Token de acceso de producción de Mercado Pago | `APP_USR-...` |
 | `MERCADOPAGO_PUBLIC_KEY` | Clave pública de Mercado Pago | `APP_USR-...` |
-| `MERCADOPAGO_CLIENT_ID` | Client ID de la integración de Mercado Pago | `7318955796450757` |
-| `MERCADOPAGO_CLIENT_SECRET` | Client Secret de la integración de Mercado Pago | `uKLwObXXrKbfcQOh...` |
+| `MERCADOPAGO_CLIENT_ID` | Client ID de la integración de Mercado Pago | `your_mercadopago_client_id` |
+| `MERCADOPAGO_CLIENT_SECRET` | Client Secret de la integración de Mercado Pago | `your_mercadopago_client_secret` |
 
 ### 2. Configurar Webhook IPN en Mercado Pago Developers
 1. Ve a tu aplicación en [Mercado Pago Developers](https://www.mercadopago.cl/developers/panel/app).
@@ -419,7 +419,7 @@ En la sección **Project Settings > Environment Variables** de tu proyecto en Ve
 - `npm run dev`: Inicia el servidor de desarrollo local con Turbopack en el puerto 3000.
 - `npm run build`: Compila la aplicación para producción verificando tipos TypeScript estrictos.
 - `npm run start`: Inicia el servidor de producción.
-- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (322 pruebas en 51 suites al 100% PASS).
+- `npm test`: Ejecuta la suite de pruebas unitarias con Vitest (506 pruebas en 82 suites al 100% PASS).
 - `npm run typecheck`: Valida el tipado estricto de TypeScript en todo el proyecto (`tsc --noEmit`).
 - `npm run db:generate`: Genera archivos de migración SQL basados en el esquema de Drizzle.
 - `npm run db:migrate`: Aplica las migraciones declarativas sobre la base de datos Turso LibSQL (Local o Nube).

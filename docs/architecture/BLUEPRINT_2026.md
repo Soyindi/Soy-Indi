@@ -127,8 +127,8 @@ C:\Users\Matías Riquelme\Desktop\Indi\
 ## 4. Stack Tecnológico Definitivo (100% Free-Tier & Zero Cold-Starts)
 
 ### 4.1 Núcleo de Aplicación
-- **Next.js 15.4+ (App Router):** Soporte nativo para React 19, Server Actions, Partial Prerendering (PPR) y streaming vía `<Suspense>`.
-- **TypeScript 5.9+:** Tipado estricto, sin tolerar `any`, con validación estricta de esquemas de datos vía **Zod 3.24+**.
+- **Next.js 16.3+ (Turbopack / App Router):** Soporte nativo para React 19, Server Actions tipadas, Partial Prerendering (PPR) y streaming perimetral vía `<Suspense>`.
+- **TypeScript 6.0+:** Tipado estricto, sin tolerar `any`, con validación estricta de contratos de datos vía **Zod 4+**.
 - **Gestor de Paquetes:** `pnpm` o `npm` con directivas de motor precisas (`node >= 20.18.0`).
 
 ### 4.1.1 Gobernanza de Cuotas Cuantitativas por Plan SaaS (2026)
@@ -162,7 +162,7 @@ Para garantizar el cumplimiento de las normativas de protección al consumidor (
 
 ### 4.6 Sistema Visual y Vanguardia de Diseño
 - **Tailwind CSS v4:** Motor unificado mediante la directiva `@theme`. Espacio de color **OKLCH** para uniformidad lumínica perceptual.
-- **Three.js & React Three Fiber (R3F):** Sombreadores WebGL de refracción física (*Glassmorphism 2.0* con `MeshPhysicalMaterial`) que responden a la orientación y movimiento del cursor.
+- **SmartParticles v3.0 & OKLCH GPU Engine:** Sistema de partículas volumétricas y refracción física (*Glassmorphism 2.0*) implementado íntegramente con CSS moderno y aceleración por hardware (`will-change: transform, opacity`), eliminando la sobrecarga de 600KB de librerías WebGL pesadas.
 - **Framer Motion:** Coreografía de micro-animaciones, interpolación de layout (`layoutId`) y resortes físicos.
 
 ### 4.7 Motor de IA y Streaming
@@ -171,7 +171,7 @@ Para garantizar el cumplimiento de las normativas de protección al consumidor (
 - **Prompt Caching (`cache_control: { type: 'ephemeral' }`):** Ahorro superior al 90% en costos de tokens.
 
 ### 4.8 Exportación Serverless y Observabilidad
-- **Typst (WASM):** Generación de PDFs profesionales en 20-40ms sin dependencias nativas de navegadores Chromium.
+- **Motor Vectorial jsPDF Client-Side (DIN EN ISO 216):** Generación vectorial instantánea A4 en el navegador con soporte nativo para análisis ATS (Dual-Target), cálculo dinámico de saltos de página y trazabilidad textual completa sin requerir descargas pesadas de binarios WASM (~13MB).
 - **Sentry (`onRequestError` en Next.js 15):** Captura proactiva de errores y tracing.
 
 ---
@@ -2251,4 +2251,4 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 
 ### 57.4 Blindaje de Calidad
 - 8 pruebas unitarias aprobadas en 	ests/unit/cv-schema.test.ts validando los 4 templates y su esquema Zod.
-- Suite global aprobada con 493 pruebas en 80 archivos de test y 0 errores de TypeScript (pm run typecheck).
+- Suite global aprobada con 506 pruebas en 82 archivos de test y 0 errores de TypeScript (`npm run typecheck`).
