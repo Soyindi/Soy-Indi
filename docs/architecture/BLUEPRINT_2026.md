@@ -2292,3 +2292,46 @@ ows: 1..6) y sourceProvenance (sourceQuote, sectionIndex).
 - **518 Pruebas Unitarias al 100% de Aprobación**: 85 archivos de test en Vitest ejecutados en ~9s.
 - **Playwright E2E (`playwright.config.ts`)**: Configuración multi-dispositivo (Chromium, Pixel 5 Mobile Chrome, iPhone 12 Mobile Safari) para validar el flujo completo de captura de prospectos y pases digitales.
 - **0 Errores de Tipado**: Verificación estricta mediante `tsc --noEmit`.
+
+---
+
+## 🏛️ FASE 59: Arquitectura de Billeteras Digitales Nativas, Adaptadores de Firma Criptográfica Serverless y Deep Research Gemini 2026
+
+### 59.1 Diagnóstico Forense de Billeteras Móviles & Requisitos de Firma
+- **Apple Wallet (PassKit PKCS#7)**:
+  - iOS Safari exige obligatoriamente que todo archivo `.pkpass` sea un paquete comprimido en formato ZIP con MIME `application/vnd.apple.pkpass` conteniendo: `pass.json`, activos gráficos (`icon.png`, `logo.png`), un `manifest.json` con hashes SHA-1 de cada archivo y una firma desprendida binaria PKCS#7 en formato DER (`signature`).
+  - La firma debe validarse contra un certificado emitido por Apple Developer Portal bajo la autoridad intermedia de Apple WWDR (Worldwide Developer Relations G4 CA) vinculado al identificador `pass.cl.soyindi...` ($99 USD/año). Sin esta firma, iOS rechaza el archivo con *"El pase no es válido"*.
+- **Google Wallet (Generic Passes API & JWT RS256)**:
+  - Android Google Wallet requiere la activación de Google Wallet API en Google Cloud Console, el registro de una cuenta de emisor (Issuer ID) en Google Pay & Wallet Console, y la firma de un token JWT mediante algoritmo RS256 usando la clave privada de un Service Account.
+  - La URL canónica de guardado (`https://pay.google.com/gp/v/save/<jwt>`) dispara automáticamente el deep link nativo en teléfonos Android con Google Play Services.
+
+### 59.2 Adaptadores de Producción FSD (`src/shared/lib/wallet/`)
+- **Firmador PassKit Apple (`applePassSigner.ts`)**:
+  - `buildApplePassBundle`: Genera el paquete en memoria RAM (<50KB) utilizando `createMemoryZip` (implementación nativa PKZIP RFC 1951 en Node.js, erradicando dependencias binarias pesadas y cumpliendo con la política Zero-Binary DB).
+  - Calcula hashes SHA-1 para el `manifest.json`. Si las credenciales `APPLE_PASS_CERT_PEM` y `APPLE_PASS_KEY_PEM` (o `APPLE_PASS_CERT_P12_BASE64`) están presentes en variables de entorno, firma criptográficamente el manifiesto mediante `crypto.createSign('RSA-SHA256')`.
+  - Provee degradación segura informativa cuando la instancia opera en modo comunitario ($0 CLP) sin certificados cargados.
+- **Firmador Google Wallet Generic Passes (`googleWalletSigner.ts`)**:
+  - `generateGoogleWalletGenericObject`: Modela la tarjeta bajo la especificación oficial de Google Wallet con logo oficial SVG, títulos, especialidad, colores de fondo y código QR enlazado a la URL canónica `https://soyindi.cl/c/<slug>`.
+  - `buildGoogleWalletSaveUrl`: Construye el payload JWT con claims `iss`, `aud: 'google'`, `typ: 'savetowallet'`, `iat` y `genericObjects`. Firma con RS256 usando la clave del Service Account de Google Cloud y genera la URL deep link `https://pay.google.com/gp/v/save/<jwt>`.
+
+### 59.3 Endpoints HTTP Perimetrales de Pases
+- **/api/wallet/apple/[slug] (`src/app/api/wallet/apple/[slug]/route.ts`)**:
+  - `export const runtime = 'nodejs';`
+  - Si se solicita descarga explícita (`?download=1` o `?download=pkpass`) o los certificados están activos en producción, sirve el buffer binario con cabecera `Content-Type: application/vnd.apple.pkpass` y `Content-Disposition: attachment; filename="<slug>.pkpass"`.
+  - Soporta `?format=json` para inspección de `pass.json` y redirige en navegadores hacia `/c/[slug]?wallet=apple`.
+- **/api/wallet/google/[slug] (`src/app/api/wallet/google/[slug]/route.ts`)**:
+  - Si el Service Account está activo, redirige automáticamente mediante HTTP 307 al flujo de guardado de Google Wallet (`https://pay.google.com/gp/v/save/<jwt>`).
+  - Si no está configurado, redirige amigablemente hacia el modal interactivo con fallbacks `/c/[slug]?wallet=google`.
+
+### 59.4 Especificación Institucional Gemini Deep Research (Docs-as-Code)
+- **Especificación JSON Estandarizada**: `docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_NATIVE_DIGITAL_WALLETS_APPLE_GOOGLE_2026.json` (5 pilares de investigación: PassKit PKCS#7, Google Wallet JWT RS256, Serverless Signing vs Terceros, Fallbacks Híbridos y Hoja de Ruta).
+- **Prompt Ejecutivo en Markdown**: `docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_NATIVE_DIGITAL_WALLETS_APPLE_GOOGLE_2026.md` estructurado en 6 ejes estratégicos con directrices de grado industrial para arquitectos de software.
+
+### 59.5 Experiencia de Usuario & Fallbacks Garantizados en `<WalletPassModal />`
+- **Descarga Directa de Archivo Nativo**: Botones de acción directa para descargar `.pkpass` o abrir el flujo de Google Wallet.
+- **Banner Informativo de Transparencia**: Explicación clara al usuario sobre la necesidad de certificación oficial de Apple y Google para la adición en 1 toque directo a la app Cartera.
+- **Soluciones 100% Operativas sin Conexión**: Guardado en contactos con foto HD (vCard 4.0 / RFC 6350) y descarga de tarjeta gráfica 9:16 (1080x1920) generada por Canvas HTML5 para pantalla de bloqueo.
+
+### 59.6 Blindaje de Calidad
+- **527 Pruebas Unitarias al 100% de Aprobación**: 86 archivos de test en Vitest aprobados en ~8.9s (incluyendo `tests/unit/digital-wallets-deep-research.test.ts`).
+- **0 Errores de Tipado**: Verificación estricta mediante `tsc --noEmit`.

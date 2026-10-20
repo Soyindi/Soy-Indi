@@ -340,6 +340,35 @@ export function WalletPassModal({
                 )}
               </button>
 
+              {/* Botón 3: Enlace Directo a Archivo Nativo de Cartera */}
+              {activeTab === 'apple' ? (
+                <a
+                  href={`/api/wallet/apple/${card.slug}?download=1`}
+                  download={`${card.slug}.pkpass`}
+                  className="w-full min-h-[42px] flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-white/10 text-zinc-300 hover:text-white rounded-xl text-[11px] font-medium transition-colors"
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Descargar Archivo Nativo Apple Wallet (.pkpass)</span>
+                </a>
+              ) : (
+                <a
+                  href={`/api/wallet/google/${card.slug}?action=save`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full min-h-[42px] flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-white/10 text-zinc-300 hover:text-white rounded-xl text-[11px] font-medium transition-colors"
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Abrir Flujo de Google Wallet</span>
+                </a>
+              )}
+
+              {/* Nota Informativa sobre Certificación Oficial */}
+              <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-left">
+                <p className="text-[10px] text-amber-200/90 leading-relaxed">
+                  <strong>ℹ️ Nota de Billetera Digital:</strong> Para añadir automáticamente a la aplicación nativa en 1 toque, Apple y Google exigen certificados de desarrollador oficiales ($99 USD/año en Apple y Service Account en Google). Si no están configurados en tu instancia, el contacto vCard y la tarjeta de bloqueo son 100% compatibles y funcionan sin conexión.
+                </p>
+              </div>
+
               {/* Instrucciones de Acceso Rápido según el Sistema Operativo */}
               <div className="p-3.5 bg-white/[0.03] rounded-xl border border-white/10 text-left space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-zinc-200">

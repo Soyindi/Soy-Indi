@@ -59,7 +59,8 @@
 - **Cabeceras Públicas Adaptativas & Logotipo Horizontal Cinemático**: Las vistas públicas (`/c/[slug]`, `/cv/[slug]`, `/p/[slug]`) incorporan el lockup horizontal con micro-video loop oficial (`<BrandLogo variant="horizontal" size="sm" />`), aportando legibilidad corporativa, integración con la acción contextual del visitante y touch targets $\ge 44\text{px}$.
 - **Telemetría Atómica en Turso**: Registro granular de eventos (`view`, `contact_save`, `whatsapp_click`, `share`, `qr_scan`) y Tasa de Conversión en tiempo real.
 - **Captura Bidireccional de Contactos (Lead Capture)**: Modal accesible *"Intercambiar Contacto"* en `/c/[slug]` (`<ExchangeContactModal />`) con haptic feedback (`navigator.vibrate`), sanitización Zod y persistencia segura en `card_leads` para networking bidireccional instantáneo.
-- **Pases Nativos Digital Wallets (Apple Wallet & Google Wallet)**: Exportación directa de pases para Apple Wallet (`.pkpass` manifest en `/api/wallet/apple/[slug]`) y Google Wallet (`/api/wallet/google/[slug]`) con código QR offline escaneable desde la pantalla de bloqueo o Apple Watch.
+- **Pases Nativos Digital Wallets (Apple Wallet & Google Wallet)**: Arquitectura de emisión criptográfica dual con adaptadores de firma en `src/shared/lib/wallet/` (`applePassSigner.ts` para PassKit PKCS#7 y `googleWalletSigner.ts` para Generic Passes RS256 JWT). Incluye exportación directa de pases para Apple Wallet (`.pkpass` manifest en `/api/wallet/apple/[slug]`) y Google Wallet (`/api/wallet/google/[slug]`), con modal interactivo Glassmorphism 2.0 (`<WalletPassModal />`), código QR offline escaneable desde pantalla de bloqueo o Apple Watch, descarga de vCard 4.0 con foto HD y wallpaper 9:16 (1080x1920) para bloqueo.
+- **Deep Research Ecosistema Wallets 2026**: Especificación estandarizada en `docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_NATIVE_DIGITAL_WALLETS_APPLE_GOOGLE_2026.json` y `.md` para la auditoría y despliegue de infraestructura de firma con cero costo y soporte para certificados oficiales.
 - **Carga Directa a Cloudflare R2 con Presigned URLs**: Protocolo S3 compatible con `@aws-sdk/s3-request-presigner` (`getPresignedAvatarUploadUrlAction`) que sube avatares y portadas directamente desde el navegador hacia Cloudflare R2 ($0 Egress), con fallback automático a SQLite local para resiliencia offline.
 
 
@@ -208,7 +209,8 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 352 tests pasando al 100% en 56 suites)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 527 tests pasando al 100% en 86 suites)
+│   ├── digital-wallets-deep-research.test.ts # Especificación y contratos de firma criptográfica Apple Wallet y Google Wallet
 │   ├── seo-structured-data-chile.test.ts # Datos estructurados Schema.org CLP, Product-Led Link Building e IndexNow
 │   ├── google-chile-seo-research-prompt.test.ts # Especificación y contratos del prompt Deep Research para Google Chile #1
 │   ├── entitlements.test.ts     # Matriz de planes, cuotas de recursos (assertQuotaAvailableAction) y tiempo determinista

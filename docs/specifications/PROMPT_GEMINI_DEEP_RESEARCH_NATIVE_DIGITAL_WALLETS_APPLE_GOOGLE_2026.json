@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "title": "Deep Research Prompt: Native Digital Wallets Architecture (Apple Wallet & Google Wallet) 2026",
+    "version": "1.0.0",
+    "platform": "INDI (https://soyindi.cl)",
+    "target_model": "Gemini 2.5 / Gemini Deep Research / Advanced",
+    "date": "2026-10-20",
+    "runtime_stack": {
+      "framework": "Next.js 16 (App Router) + React 19",
+      "styling": "Tailwind CSS v4 + OKLCH Color Space",
+      "persistence": "Turso (LibSQL Serverless SQLite) + Drizzle ORM",
+      "auth": "Better-Auth + Google OAuth + HttpOnly Sessions",
+      "architecture": "Feature-Sliced Design (FSD: app -> features -> entities -> shared)",
+      "target_wallets": ["Apple Wallet (PassKit PKCS#7)", "Google Wallet (Generic Passes API + RS256 JWT)"]
+    },
+    "business_model": {
+      "platform_type": "Identity & Professional Networking SaaS",
+      "currency": "CLP (Pesos Chilenos)",
+      "pricing_tiers": {
+        "starter": { "monthly_clp": 2500, "semiannual_clp": 6000 },
+        "pro": { "monthly_clp": 4990, "semiannual_clp": 15000 },
+        "max": { "monthly_clp": 8990, "semiannual_clp": 29990 }
+      },
+      "wallet_objective": "1-Tap native pass installation into iOS Apple Wallet and Android Google Wallet with zero-friction offline QR scanning, NFC/beacon readiness, and dynamic push update capabilities"
+    }
+  },
+  "execution_directives": {
+    "role": "Principal Mobile Architect, Staff Security Engineer & Head of Distributed Systems",
+    "target_jurisdiction": "Global (iOS PassKit & Android Google Pay Ecosystems)",
+    "temperature": 0.2,
+    "rigor_level": "Industrial-Grade Deep Research (Zero hand-waving, cryptographic precision, concrete code contracts)",
+    "mandatory_deliverables": [
+      "Diagnóstico forense y requerimientos de seguridad criptográfica de Apple Wallet (PassKit, WWDR G4, PKCS#7, manifest.json SHA-1, zip compression).",
+      "Arquitectura de integración de Google Wallet Generic Passes (Google Cloud Service Accounts, RS256 JWT signing, Issuer Console, save-to-wallet URLs).",
+      "Benchmark de estrategias de firma: Serverless Edge (Vercel Edge vs Node.js runtime) vs Microservicio dedicado vs Servicios de Terceros (PassKit, Pass2U, WalletPasses).",
+      "Análisis de costos y viabilidad para SaaS bootstrapping ($0 CLP / Community Tier vs $99 USD/año Apple Developer Account + Google Cloud).",
+      "Estrategia de fallback elegante para usuarios sin certificados (vCard 4.0 con foto incrustada, tarjeta gráfica HD 9:16 para pantalla de bloqueo, PWA Web Clip).",
+      "Contratos de arquitectura tipados en TypeScript con Zod y adaptadores listos para producción."
+    ]
+  },
+  "research_pillars": [
+    {
+      "pillar_id": "pillar_1_apple_passkit_cryptography",
+      "title": "Criptografía y Estándar PassKit de Apple Wallet",
+      "key_questions": [
+        "¿Cuáles son los componentes exactos de un archivo .pkpass válido y por qué iOS Safari rechaza archivos sin firma PKCS#7?",
+        "¿Cómo se configura el certificado Pass Type ID en el Apple Developer Portal y cómo se exporta a formato PEM / P12?",
+        "¿Cuál es el rol del certificado intermedio Apple Worldwide Developer Relations (WWDR G4) en la cadena de confianza?",
+        "¿Cómo se genera el manifest.json con hashes SHA-1 y la firma desprendida PKCS#7 (detached signature) en Node.js sin depender de binarios nativos de OpenSSL?",
+        "¿Qué opciones existen para empaquetar el archivo ZIP .pkpass en memoria dentro de un entorno serverless (Vercel) respetando los límites de tiempo de ejecución?"
+      ]
+    },
+    {
+      "pillar_id": "pillar_2_google_wallet_jwt_flow",
+      "title": "Arquitectura Google Wallet Generic Passes & JWT",
+      "key_questions": [
+        "¿Cómo se habilita y configura el Google Wallet API en Google Cloud Console y la cuenta de emisor (Issuer ID)?",
+        "¿Cuál es la estructura requerida para la 'Generic Class' y el 'Generic Object' en una tarjeta de presentación digital?",
+        "¿Cómo se firma el JWT con algoritmo RS256 utilizando la clave privada del Service Account de Google Cloud?",
+        "¿Cómo opera la redirección a 'https://pay.google.com/gp/v/save/<jwt>' en navegadores móviles Android y cómo se gestiona el deep link a la aplicación nativa Google Wallet?",
+        "¿Cuáles son las restricciones de Google Wallet respecto a URLs de logotipos, imágenes de fondo y políticas de privacidad?"
+      ]
+    },
+    {
+      "pillar_id": "pillar_3_serverless_signing_vs_third_party",
+      "title": "Arquitectura de Firma Serverless vs Pasarelas de Terceros",
+      "key_questions": [
+        "¿Es viable y seguro ejecutar la firma PKCS#7 de Apple Wallet directamente en Server Actions / Route Handlers de Next.js en Vercel?",
+        "¿Cómo deben almacenarse las claves privadas y certificados sensibles (P12 en base64, contraseñas, Google Service Account JSON) en variables de entorno?",
+        "¿Qué plataformas de terceros existen (ej. PassKit API, Pass2U, WalletPasses, MakePass) y cuál es su estructura de costos y confiabilidad para un SaaS de identidad digital?",
+        "¿Cuáles son los riesgos de latencia y disponibilidad al firmar pases on-the-fly frente a pre-generación o almacenamiento en Cloudflare R2?"
+      ]
+    },
+    {
+      "pillar_id": "pillar_4_hybrid_ux_and_community_fallback",
+      "title": "Estrategia Híbrida y Fallbacks de Alta Conversión",
+      "key_questions": [
+        "¿Cómo perciben los usuarios profesionales la diferencia entre guardar en la app Cartera nativa vs guardar en Contactos con foto (vCard 4.0)?",
+        "¿Cómo optimizar la generación de tarjetas gráficas 9:16 (1080x1920) para fondo de pantalla / galería como alternativa offline universal?",
+        "¿Qué copy y micro-interacciones reducen la confusión del usuario cuando los certificados nativos no están configurados?",
+        "¿Cómo implementar notificaciones push para actualizar el pase de Apple Wallet cuando el usuario modifica su tarjeta en INDI?"
+      ]
+    },
+    {
+      "pillar_id": "pillar_5_implementation_roadmap",
+      "title": "Hoja de Ruta de Implementación en INDI 2026",
+      "key_questions": [
+        "¿Cuál es el diseño óptimo de módulos FSD en 'src/shared/lib/wallet/' para desacoplar generadores de pases, firmadores criptográficos y endpoints HTTP?",
+        "¿Qué variables de entorno mínimas deben declararse en el archivo .env.local y Vercel?",
+        "¿Cómo diseñar las suites de pruebas unitarias para validar pases firmados y no firmados sin exponer secretos criptográficos reales?"
+      ]
+    }
+  ],
+  "expected_outputs": {
+    "forensic_report": "Diagnóstico de seguridad y requerimientos de plataformas Apple y Google.",
+    "signing_adapters": "Adaptadores en TypeScript para Apple PassKit PKCS#7 y Google Wallet RS256 JWT.",
+    "pricing_and_cost_matrix": "Desglose financiero de costos fijos y variables ($0 CLP Community vs Producción Corporativa).",
+    "fallback_architecture": "Flujo de contingencia con vCard 4.0 con foto HD y Wallpaper 9:16 con QR.",
+    "security_guidelines": "Protocolo de almacenamiento y rotación de certificados criptográficos en Vercel."
+  }
+}

@@ -4,6 +4,9 @@ import { cards } from '@/entities/schema';
 import { eq } from 'drizzle-orm';
 import { OFFICIAL_DEMO_CARD } from '@/entities/card/themes';
 import { generateApplePassJson } from '@/shared/lib/wallet/applePassGenerator';
+import { buildApplePassBundle, isApplePassSigningConfigured } from '@/shared/lib/wallet/applePassSigner';
+
+export const runtime = 'nodejs';
 
 export async function GET(
   request: NextRequest,
@@ -26,20 +29,22 @@ export async function GET(
       return NextResponse.json({ error: 'Tarjeta no encontrada' }, { status: 404 });
     }
 
-    const passJson = generateApplePassJson({
+    const passInput = {
       slug: cardData.slug,
       title: cardData.title,
       profession: cardData.profession,
       phone: cardData.phone || cardData.whatsapp,
       email: cardData.emailContact,
       address: cardData.address,
-    });
+    };
 
     const format = request.nextUrl.searchParams.get('format');
+    const download = request.nextUrl.searchParams.get('download');
     const acceptHeader = request.headers.get('accept') || '';
 
-    // Si es una petición de API o formato JSON explícito, retornamos el passJson estructurado
+    // 1. Si es formato JSON explícito, retornamos la especificación pass.json
     if (format === 'json' || acceptHeader.includes('application/json')) {
+      const passJson = generateApplePassJson(passInput);
       return new NextResponse(JSON.stringify(passJson, null, 2), {
         status: 200,
         headers: {
@@ -51,7 +56,26 @@ export async function GET(
       });
     }
 
-    // Por defecto en navegador, redirige al perfil interactivo con el modal de Apple Wallet activo
+    // 2. Si se solicita descarga directa o los certificados están configurados en producción
+    const shouldStreamPkPass = download === '1' || download === 'pkpass' || isApplePassSigningConfigured();
+
+    if (shouldStreamPkPass) {
+      const passBundleResult = await buildApplePassBundle(passInput);
+
+      if (passBundleResult.success && passBundleResult.buffer) {
+        return new NextResponse(new Uint8Array(passBundleResult.buffer), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/vnd.apple.pkpass',
+            'Content-Disposition': `attachment; filename="${cardData.slug}.pkpass"`,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'X-PassKit-Signed': passBundleResult.isSigned ? 'true' : 'false',
+          },
+        });
+      }
+    }
+
+    // 3. Por defecto en navegador móvil, redirige al perfil con el modal interactivo de Apple Wallet
     return NextResponse.redirect(`https://soyindi.cl/c/${cardData.slug}?wallet=apple`, { status: 307 });
   } catch (error: any) {
     console.error('[Apple Wallet Route Error]:', error);

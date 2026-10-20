@@ -155,6 +155,12 @@ src/
    - **In-Memory Fallback Sentinel**: Ante el límite diario de Upstash Redis (10k comandos/día), el sistema conmuta automáticamente a memoria local LRU sin interrupciones.
    - **Detalle de Auditoría**: Especificado en `docs/architecture/FREE_TIER_CAPACITY_AUDIT_2026.md`.
 
+25. **Gobernanza de Billeteras Digitales Nativas (Apple Wallet & Google Wallet 2026):**
+   - **Firma Criptográfica Obligatoria para App Nativa**: En iOS (Apple Wallet) es mandatorio que el pase `.pkpass` esté empaquetado en ZIP con MIME `application/vnd.apple.pkpass` e incluya la firma desprendida PKCS#7 en formato DER certificada por Apple Developer ($99 USD/año). En Android (Google Wallet) se requiere un Service Account de Google Cloud con clave privada RSA para firmar un JWT con RS256 asociado al Issuer ID oficial.
+   - **Empaquetado Zero-Binary en Memoria**: El empaquetado de `.pkpass` en `src/shared/lib/wallet/applePassSigner.ts` utiliza `createMemoryZip` en RAM pura (<50KB), sin escribir archivos temporales en disco del servidor.
+   - **Fallbacks Garantizados de Alta Conversión**: Cuando la instancia opera en modo comunitario ($0 CLP) sin certificados cargados, `<WalletPassModal />` despliega enlaces de descarga directos y provee dos soluciones 100% funcionales sin conexión: Guardar en Contactos con Foto HD (vCard 4.0 / RFC 6350) y Descargar Tarjeta para Pantalla de Bloqueo (Canvas HTML5 9:16 en 1080x1920 con QR de alta densidad).
+   - **Marco de Deep Research con Gemini**: La plataforma estandariza la especificación formal de investigación profunda en `docs/specifications/PROMPT_GEMINI_DEEP_RESEARCH_NATIVE_DIGITAL_WALLETS_APPLE_GOOGLE_2026.json` y `.md` para la auditoría y despliegue corporativo.
+
 
 
 ---
