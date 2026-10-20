@@ -38,6 +38,7 @@ import { LogIn, LogOut, Users, Shield } from 'lucide-react';
 import { AffiliateDashboardTab } from '@/features/affiliates/components/AffiliateDashboardTab';
 import { ReferralQrModal } from '@/features/affiliates/components/ReferralQrModal';
 import { PrivacySettingsTab } from '@/features/privacy/components/PrivacySettingsTab';
+import { ArcoRightsModal } from '@/features/privacy/components/ArcoRightsModal';
 import type { AffiliateOverview } from '@/entities/affiliate/schemas';
 
 interface CardItem {
@@ -112,6 +113,7 @@ export function UnifiedDashboardView({
   const [isPending, startTransition] = useTransition();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAffiliateQrOpen, setIsAffiliateQrOpen] = useState(false);
+  const [isArcoModalOpen, setIsArcoModalOpen] = useState(false);
   const { data: sessionData } = useSession();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -226,7 +228,7 @@ export function UnifiedDashboardView({
   };
 
   // Metadatos de la acción contextual activa
-  const contextualActionMap: Record<string, { href: string; label: string; gradient: string; icon: React.ReactNode; isAction?: boolean }> = {
+  const contextualActionMap: Record<string, { href: string; label: string; gradient: string; icon: React.ReactNode; isAction?: boolean; actionKey?: string }> = {
     cards: {
       href: '/cards/new',
       label: 'Nueva Tarjeta',
@@ -249,15 +251,17 @@ export function UnifiedDashboardView({
       href: '/dashboard?tab=affiliates',
       label: 'Compartir Mi Enlace',
       gradient: 'from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/20',
-      icon: <Share2 className="w-4 h-4" />,
-      isAction: true
+      icon: <Share2 className="w-4 h-4 stroke-[2.5]" />,
+      isAction: true,
+      actionKey: 'affiliate-qr'
     },
     privacy: {
       href: '/dashboard?tab=privacy',
       label: 'Mis Derechos ARCO',
       gradient: 'from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 shadow-cyan-500/20',
-      icon: <Shield className="w-4 h-4" />,
-      isAction: false
+      icon: <Shield className="w-4 h-4 stroke-[2.5]" />,
+      isAction: true,
+      actionKey: 'arco-modal'
     }
   };
 
@@ -378,10 +382,16 @@ export function UnifiedDashboardView({
           {contextualAction.isAction ? (
             <button
               type="button"
-              onClick={() => setIsAffiliateQrOpen(true)}
+              onClick={() => {
+                if (contextualAction.actionKey === 'arco-modal') {
+                  setIsArcoModalOpen(true);
+                } else {
+                  setIsAffiliateQrOpen(true);
+                }
+              }}
               className={`min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer`}
             >
-              <Share2 className="w-4 h-4 stroke-[2.5]" />
+              {contextualAction.icon}
               <span>{contextualAction.label}</span>
             </button>
           ) : (
@@ -967,7 +977,10 @@ export function UnifiedDashboardView({
       {/* ================= PESTAÑA 5: PRIVACIDAD Y DERECHOS ARCO (LEY 21.719) ================= */}
       {activeTab === 'privacy' && (
         <div className="space-y-6 sm:space-y-8 animate-fade-in">
-          <PrivacySettingsTab userEmail={sessionData?.user?.email} />
+          <PrivacySettingsTab 
+            userEmail={sessionData?.user?.email} 
+            onOpenArcoModal={() => setIsArcoModalOpen(true)} 
+          />
         </div>
       )}
 
@@ -977,10 +990,16 @@ export function UnifiedDashboardView({
           {contextualAction.isAction ? (
             <button
               type="button"
-              onClick={() => setIsAffiliateQrOpen(true)}
+              onClick={() => {
+                if (contextualAction.actionKey === 'arco-modal') {
+                  setIsArcoModalOpen(true);
+                } else {
+                  setIsAffiliateQrOpen(true);
+                }
+              }}
               className={`min-h-[48px] w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r ${contextualAction.gradient} text-white font-bold text-xs shadow-lg active:scale-[0.98] transition-all cursor-pointer`}
             >
-              <Share2 className="w-4 h-4 stroke-[2.5]" />
+              {contextualAction.icon}
               <span>{contextualAction.label}</span>
             </button>
           ) : (
@@ -1001,6 +1020,13 @@ export function UnifiedDashboardView({
         onClose={() => setIsAffiliateQrOpen(false)}
         referralCode={affiliateCode}
         directSignupUrl={affiliateDirectSignupUrl}
+      />
+
+      {/* Modal de Derechos ARCO (Ley N° 21.719) */}
+      <ArcoRightsModal
+        isOpen={isArcoModalOpen}
+        onClose={() => setIsArcoModalOpen(false)}
+        userEmail={sessionData?.user?.email}
       />
     </div>
   );

@@ -7,9 +7,10 @@ import { ShieldCheck, Download, Trash2, AlertTriangle, ExternalLink, CheckCircle
 
 interface PrivacySettingsTabProps {
   userEmail?: string;
+  onOpenArcoModal?: () => void;
 }
 
-export function PrivacySettingsTab({ userEmail }: PrivacySettingsTabProps) {
+export function PrivacySettingsTab({ userEmail, onOpenArcoModal }: PrivacySettingsTabProps) {
   const [isPendingExport, startExportTransition] = useTransition();
   const [isPendingDelete, startDeleteTransition] = useTransition();
   const [exportMessage, setExportMessage] = useState<string | null>(null);
@@ -55,24 +56,37 @@ export function PrivacySettingsTab({ userEmail }: PrivacySettingsTabProps) {
     <div className="space-y-8 animate-fade-in text-white">
       {/* Cabecera Informativa Normativa */}
       <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/60 border border-white/10 backdrop-blur-xl relative overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Privacidad de Datos y Derechos ARCO
-              </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Ley N° 21.719
-              </span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+              <ShieldCheck className="w-6 h-6" />
             </div>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-2xl leading-relaxed">
-              En INDI garantizamos el pleno ejercicio de tus derechos de Acceso, Rectificación, Cancelación,
-              Oposición y Portabilidad bajo los más altos estándares de privacidad por diseño.
-            </p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Privacidad de Datos y Derechos ARCO
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Ley N° 21.719
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+                En INDI garantizamos el pleno ejercicio de tus derechos de Acceso, Rectificación, Cancelación,
+                Oposición y Portabilidad bajo los más altos estándares de privacidad por diseño.
+              </p>
+            </div>
           </div>
+
+          {onOpenArcoModal && (
+            <button
+              type="button"
+              onClick={onOpenArcoModal}
+              className="min-h-[40px] px-4 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 self-start sm:self-center"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Ver Guía ARCO Completa</span>
+            </button>
+          )}
         </div>
       </div>
 
