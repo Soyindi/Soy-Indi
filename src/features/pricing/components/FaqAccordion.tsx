@@ -15,9 +15,9 @@ const FAQ_ITEMS: FaqItem[] = [
       'Al crear tu cuenta en INDI accedes de por vida al Plan Comunitario Gratuito, sin costo y sin pedirte tarjeta de crédito. Puedes crear 1 Tarjeta Digital con código QR interactivo y 1 Smart CV en PDF adaptado a filtros ATS, revisar tus métricas de visitas y compartir tu perfil con tus clientes o reclutadores desde el primer minuto.',
   },
   {
-    question: '¿Cuánto cuesta el servicio y qué incluyen los planes Pro y Max?',
+    question: '¿Cuánto cuesta el servicio y qué herramientas incluye?',
     answer:
-      'El Plan Starter es 100% gratuito para la comunidad. Para profesionales con alto volumen que requieran múltiples tarjetas, analíticas avanzadas y plantillas exclusivas, los planes Pro ($4.990 CLP/mes o $15.000 semestral) y Max ($8.990 CLP/mes o $29.990 semestral) se encuentran actualmente en lista de espera con acceso anticipado.',
+      'El servicio es 100% gratuito para toda la comunidad. Incluye 1 Tarjeta Digital interactiva con código QR y botón a WhatsApp, y 1 Smart CV en PDF adaptado a filtros ATS, con métricas en tiempo real. No requerimos tarjeta de crédito ni cobros ocultos.',
   },
   {
     question: '¿Mis clientes necesitan instalar alguna aplicación para ver mi tarjeta?',
@@ -40,9 +40,9 @@ const FAQ_ITEMS: FaqItem[] = [
       'No. Tu tarjeta incluye un botón inteligente de "Guardar Contacto". Al presionarlo, el celular de tu cliente descarga tu ficha de contacto completa (con tu nombre, foto, WhatsApp, correo y dirección) y la guarda directamente en su agenda sin tener que tipear nada.',
   },
   {
-    question: '¿Cómo funciona el programa de recomendación y afiliados?',
+    question: '¿Cómo funciona el programa de recomendación y comunidad?',
     answer:
-      'Todos los miembros de INDI tienen un enlace y código QR de afiliado exclusivo en su panel. Por cada 3 amigos que se sumen con tu enlace desbloqueas capacidades adicionales (+1 tarjeta), y cuando activemos los planes Pro y Max recibirás el 25% de comisión en pesos chilenos directamente en tu cuenta bancaria o CuentaRUT.',
+      'Todos los miembros de INDI tienen un enlace y código QR de invitación exclusivo en su panel. Por cada 3 amigos o colegas que se sumen con tu enlace desbloqueas capacidades adicionales (+1 tarjeta extra de forma automática).',
   },
 ];
 

@@ -61,7 +61,7 @@ export const LANDING_CONTENT: LandingContent = landingContentSchema.parse({
     { title: 'Siempre actualizada', description: 'Cambia tu foto, número u ofertas en segundos, sin reimprimir papel.' },
     { title: 'WhatsApp en un toque', description: 'Tu cliente presiona un botón y abre la conversación contigo de inmediato.' },
     { title: 'Métricas en tiempo real', description: 'Descubre cuántas personas vieron tu tarjeta y cuántas guardaron tu contacto.' },
-    { title: 'Más barata que el papel', description: 'Plan Gratuito de inicio y planes avanzados desde $2.500 al mes frente al papel.' },
+    { title: 'Cero gasto en papel', description: 'Acceso 100% gratuito sin costos de impresión, ecológico y siempre en tu celular.' },
   ],
   products: [
     {

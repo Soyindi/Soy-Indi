@@ -4,37 +4,35 @@ import path from 'path';
 import { PRICING_TIERS } from '@/entities/subscription/types';
 
 describe('Auditoría de Contenido y FAQ de Precios Multi-Tier 2026 (tests/unit)', () => {
-  it('FaqAccordion.tsx expone con precisión la estructura del Plan Comunitario Gratuito y lista de espera Pro/Max', () => {
+  it('FaqAccordion.tsx expone con precisión la estructura del Plan Comunitario Gratuito', () => {
     const faqPath = path.resolve(
       process.cwd(),
       'src/features/pricing/components/FaqAccordion.tsx'
     );
     const content = fs.readFileSync(faqPath, 'utf-8');
 
-    // Validación de planes comunitarios y lista de espera en la respuesta
+    // Validación de plan comunitario gratuito en la respuesta
     expect(content).toContain('Plan Comunitario Gratuito');
-    expect(content).toContain('Plan Starter es 100% gratuito para la comunidad');
-    expect(content).toContain('Pro ($4.990 CLP/mes o $15.000 semestral)');
-    expect(content).toContain('Max ($8.990 CLP/mes o $29.990 semestral)');
-    expect(content).toContain('lista de espera con acceso anticipado');
+    expect(content).toContain('100% gratuito para toda la comunidad');
+    expect(content).toContain('1 Tarjeta Digital interactiva con código QR');
+    expect(content).toContain('1 Smart CV en PDF adaptado a filtros ATS');
 
-    // Validación de comisiones de afiliados
-    expect(content).toContain('25% de comisión en pesos chilenos');
-    expect(content).toContain('Por cada 3 amigos que se sumen');
+    // Validación de incentivos comunitarios
+    expect(content).toContain('Por cada 3 amigos o colegas que se sumen');
+    expect(content).toContain('+1 tarjeta extra de forma automática');
   });
 
-  it('el esquema JSON-LD de page.tsx expone la información sincronizada del Plan Comunitario y planes Pro', () => {
+  it('el esquema JSON-LD de page.tsx expone la información sincronizada del Plan Comunitario', () => {
     const pagePath = path.resolve(process.cwd(), 'src/app/page.tsx');
     const content = fs.readFileSync(pagePath, 'utf-8');
 
     expect(content).toContain('Plan Comunitario Gratuito');
-    expect(content).toContain('Plan Starter es 100% gratuito para la comunidad');
-    expect(content).toContain('Pro ($4.990 CLP al mes o $15.000 semestral)');
-    expect(content).toContain('Max ($8.990 CLP al mes o $29.990 semestral)');
-    expect(content).toContain('25% de comisión en los planes avanzados');
+    expect(content).toContain('100% gratuito para la comunidad');
+    expect(content).toContain('Membresía Comunitaria');
+    expect(content).toContain('Por cada 3 colegas que se sumen con tu enlace');
   });
 
-  it('los precios del catálogo oficial PRICING_TIERS coinciden matemáticamente con los textos de FAQ', () => {
+  it('los precios del catálogo oficial PRICING_TIERS coinciden matemáticamente con los contratos internos', () => {
     expect(PRICING_TIERS.starter.monthly.priceClp).toBe(2500);
     expect(PRICING_TIERS.starter.semiannual.priceClp).toBe(6000);
 
@@ -48,16 +46,17 @@ describe('Auditoría de Contenido y FAQ de Precios Multi-Tier 2026 (tests/unit)'
     const minCommission = Math.round(PRICING_TIERS.starter.monthly.priceClp * 0.25);
     const maxCommission = Math.round(PRICING_TIERS.max.semiannual.priceClp * 0.25);
     expect(minCommission).toBe(625);
-    expect(maxCommission).toBe(7498); // o Math.floor(29990 * 0.25) = 7497.5
+    expect(maxCommission).toBe(7498);
   });
 
-  it('TrialBanner.tsx y MobileNavDrawer.tsx reflejan la oferta comunitaria y planes Pro', () => {
+  it('TrialBanner.tsx y MobileNavDrawer.tsx reflejan la oferta comunitaria sin fricción', () => {
     const bannerPath = path.resolve(
       process.cwd(),
       'src/features/pricing/components/TrialBanner.tsx'
     );
     const bannerContent = fs.readFileSync(bannerPath, 'utf-8');
-    expect(bannerContent).toContain('Planes Pro');
+    expect(bannerContent).toContain('Plan Comunitario');
+    expect(bannerContent).toContain('Membresía Comunitaria');
 
     const drawerPath = path.resolve(
       process.cwd(),

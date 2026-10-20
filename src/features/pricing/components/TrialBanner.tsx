@@ -129,13 +129,13 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
         >
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                <span>Plan Gratuito Activo</span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Plan Comunitario Activo</span>
               </span>
 
               <p className="text-xs sm:text-sm text-zinc-300">
-                <strong className="text-white">1 Tarjeta Digital + 1 Smart CV incluidos.</strong>
+                <strong className="text-white">1 Tarjeta Digital + 1 Smart CV incluidos de por vida.</strong>
                 <span className="hidden md:inline ml-1 text-zinc-400">Invita a 3 amigos y desbloquea +1 tarjeta extra.</span>
               </p>
             </div>
@@ -150,9 +150,9 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
               </Link>
               <Link
                 href="/pricing"
-                className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 hover:from-indigo-500/30 hover:to-cyan-500/30 text-cyan-300 text-xs font-semibold border border-cyan-500/30 transition-all"
+                className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 text-cyan-300 text-xs font-semibold border border-cyan-500/30 transition-all"
               >
-                <span>Ver Planes Pro</span>
+                <span>Membresía Comunitaria</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -208,7 +208,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
                 {isUrgent ? 'Tu prueba finaliza hoy.' : 'Acceso completo.'}
               </span>
               <span className="ml-1.5 hidden lg:inline text-zinc-300">
-                Tarjetas Digitales y Smart CV ATS.
+                Tarjetas Digitales y Smart CV ATS sin costo.
               </span>
             </div>
           </div>
@@ -216,11 +216,18 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
           {/* CTA Ergonómico touch target >= 44px */}
           <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
             <Link
+              href="/dashboard?tab=affiliates"
+              className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400 hover:text-emerald-300 text-xs font-semibold border border-white/10 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Invitar Amigos</span>
+            </Link>
+            <Link
               href="/pricing"
               className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-bold text-xs sm:text-sm transition-all shadow-md shadow-amber-500/15 hover:shadow-amber-500/25 cursor-pointer w-full md:w-auto active:scale-[0.98]"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Planes Pro & Lista de Espera</span>
+              <span>Membresía Comunitaria</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -229,29 +236,38 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
     );
   }
 
-  // 3. Si expiró el período de prueba
+  // 4. Default / Plan Comunitario Permanente
   return (
     <aside
-      aria-label="Período de prueba finalizado"
-      className="w-full bg-zinc-950/90 backdrop-blur-md border-b border-rose-500/30 px-4 sm:px-6 py-3.5 transition-all text-zinc-100"
+      aria-label="Estado del plan comunitario gratuito"
+      className="w-full bg-zinc-950/90 backdrop-blur-md border-b border-cyan-500/20 px-4 sm:px-6 py-3 transition-all text-zinc-100"
     >
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-start sm:items-center gap-3">
-          <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-            <AlertCircle className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             <span>Plan Comunitario</span>
           </span>
           <p className="text-xs sm:text-sm text-zinc-200">
-            <strong className="text-white">Estás en el Plan Comunitario Gratuito.</strong> Crea tu Tarjeta Digital y Smart CV sin costo o revisa la lista de espera de planes avanzados.
+            <strong className="text-white">Estás en el Plan Comunitario Gratuito.</strong> Tu Tarjeta Digital y Smart CV son 100% gratuitos y permanentes.
           </p>
         </div>
-        <Link
-          href="/pricing"
-          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs sm:text-sm transition-all shadow-md shadow-cyan-600/20 cursor-pointer w-full sm:w-auto active:scale-[0.98]"
-        >
-          <span>Ver Planes Pro & Comunidad</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Link
+            href="/dashboard?tab=affiliates"
+            className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400 hover:text-emerald-300 text-xs font-semibold border border-white/10 transition-colors"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Invitar Colegas (+1 Tarjeta)</span>
+          </Link>
+          <Link
+            href="/pricing"
+            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-500/40 text-cyan-200 font-semibold text-xs sm:text-sm transition-all shadow-md shadow-cyan-600/10 cursor-pointer active:scale-[0.98]"
+          >
+            <span>Membresía</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
     </aside>
   );

@@ -5,8 +5,8 @@ import { ArrowLeft, Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Precios & Membresía | INDI — Plataforma SaaS 2026',
-  description: 'Plan Comunitario Gratuito para profesionales. Crea tu Tarjeta Digital y Smart CV ATS sin costo y accede a la lista de espera de planes avanzados.',
+  title: 'Membresía Comunitaria Gratuita | INDI — Plataforma 2026',
+  description: 'Plan Comunitario Gratuito para profesionales. Crea tu Tarjeta Digital y Smart CV ATS sin costo y de por vida.',
 };
 
 import { checkUserEntitlementAction } from '@/features/pricing/actions';
@@ -42,7 +42,7 @@ export default async function PricingPage() {
             Preguntas Frecuentes
           </h3>
           <p className="text-xs sm:text-sm text-zinc-400 mt-2">
-            Todo lo que necesitas saber sobre el Plan Gratuito, la comunidad y los futuros planes Pro.
+            Todo lo que necesitas saber sobre el Plan Comunitario Gratuito y las herramientas incluidas.
           </p>
         </div>
 

@@ -87,7 +87,7 @@ const HOME_STRUCTURED_DATA = [
       {
         '@type': 'ListItem',
         position: 2,
-        name: 'Planes y Precios',
+        name: 'Membresía Comunitaria',
         item: 'https://soyindi.cl/pricing',
       },
       {
@@ -107,15 +107,15 @@ const HOME_STRUCTURED_DATA = [
         name: '¿Cómo funciona el Plan Comunitario Gratuito?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Al crear tu cuenta en INDI accedes de por vida al Plan Comunitario Gratuito, sin costo y sin pedirte tarjeta de crédito. Puedes crear 1 Tarjeta Digital con código QR interactivo y 1 Smart CV en PDF adaptado a filtros ATS, revisar tus métricas de visitas y compartir tu perfil con tus clientes o reclutadores desde el primer minuto.',
+          text: 'Al crear tu cuenta en INDI accedes de por vida al Plan Comunitario Gratuito, sin costo y sin pedirte tarjeta de crédito ni CuentaRUT. Puedes crear 1 Tarjeta Digital con código QR interactivo y 1 Smart CV en PDF adaptado a filtros ATS, revisar tus métricas de visitas y compartir tu perfil con tus clientes o reclutadores desde el primer minuto.',
         },
       },
       {
         '@type': 'Question',
-        name: '¿Cuánto cuesta el servicio y qué incluyen los planes Pro y Max?',
+        name: '¿Cuánto cuesta el servicio y qué herramientas incluye?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'El Plan Starter es 100% gratuito para la comunidad. Para profesionales con alto volumen que requieran múltiples tarjetas, analíticas avanzadas y plantillas exclusivas, los planes Pro ($4.990 CLP al mes o $15.000 semestral) y Max ($8.990 CLP al mes o $29.990 semestral) se encuentran actualmente en lista de espera con acceso anticipado.',
+          text: 'El servicio es 100% gratuito para la comunidad. Incluye 1 Tarjeta Digital interactiva con código QR y botón WhatsApp, y 1 Smart CV en PDF adaptado a filtros ATS, con métricas en tiempo real. No requerimos tarjeta de crédito ni cobros ocultos.',
         },
       },
       {
@@ -136,10 +136,10 @@ const HOME_STRUCTURED_DATA = [
       },
       {
         '@type': 'Question',
-        name: '¿Cómo funciona el programa de recomendación y afiliados?',
+        name: '¿Cómo funciona el programa de recomendación y comunidad?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Todos los miembros de INDI cuentan con un enlace y código QR de afiliado exclusivo. Por cada 3 colegas desbloqueas capacidades adicionales y recibes el 25% de comisión en los planes avanzados transferido a tu banco o CuentaRUT.',
+          text: 'Todos los miembros de INDI cuentan con un enlace y código QR de invitación exclusivo. Por cada 3 colegas que se sumen con tu enlace desbloqueas capacidades adicionales (+1 tarjeta digital extra) de manera automática.',
         },
       },
     ],
@@ -156,8 +156,8 @@ const FOOTER_LINKS = [
   { href: '/cards', label: 'Tarjetas' },
   { href: '/cv', label: 'Currículum' },
   { href: '/presentations', label: 'Presentaciones' },
-  { href: '/pricing', label: 'Precios' },
-  { href: '/dashboard?tab=affiliates', label: 'Afiliados (25% CLP)' },
+  { href: '/pricing', label: 'Membresía' },
+  { href: '/dashboard?tab=affiliates', label: 'Referidos & Premios' },
 ];
 
 /**

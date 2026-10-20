@@ -34,12 +34,13 @@ describe('Brand Social Networks & Pricing Copy Consistency (INDI 2026)', () => {
     expect(parseRes.success).toBe(true);
   });
 
-  it('asegura que el copy de la landing no contenga la referencia desfasada a $1.000 al mes en comparativa', () => {
+  it('asegura que el copy de la landing destaque el valor ecológico y gratuito frente al papel sin mención a costos de pago', () => {
     const paperVsDigital = LANDING_CONTENT.valueProps.find(
-      (v) => v.title === 'Más barata que el papel'
+      (v) => v.title === 'Cero gasto en papel'
     );
     expect(paperVsDigital).toBeDefined();
-    expect(paperVsDigital?.description).toContain('$2.500 al mes');
+    expect(paperVsDigital?.description).toContain('Acceso 100% gratuito');
     expect(paperVsDigital?.description).not.toContain('$1.000 al mes');
+    expect(paperVsDigital?.description).not.toContain('$2.500 al mes');
   });
 });
