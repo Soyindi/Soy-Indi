@@ -202,12 +202,14 @@ export async function buildApplePassBundle(input: ApplePassInput): Promise<Apple
       'base64'
     );
 
+    const brandLogo = (() => { try { const p = require('path').resolve(process.cwd(), 'public/brand/indi-logo-1024.png'); return require('fs').existsSync(p) ? require('fs').readFileSync(p) : minimalPng; } catch { return minimalPng; } })();
+
     const passFiles: Record<string, Buffer> = {
       'pass.json': passJsonBuf,
-      'icon.png': minimalPng,
-      'icon@2x.png': minimalPng,
-      'logo.png': minimalPng,
-      'logo@2x.png': minimalPng,
+      'icon.png': brandLogo,
+      'icon@2x.png': brandLogo,
+      'logo.png': brandLogo,
+      'logo@2x.png': brandLogo,
     };
 
     const manifest: Record<string, string> = {};

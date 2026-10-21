@@ -66,7 +66,7 @@ export function generateGoogleWalletGenericObject(input: GoogleWalletInput, issu
     classId: classId,
     logo: {
       sourceUri: {
-        uri: 'https://soyindi.cl/icon.svg',
+        uri: 'https://soyindi.cl/brand/indi-logo-1024.png',
       },
       contentDescription: {
         defaultValue: {

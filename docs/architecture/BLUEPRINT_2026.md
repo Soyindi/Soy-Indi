@@ -445,3 +445,8 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
 - Ventana de amortiguación de 60 segundos con lock `SET NX EX 60` o umbral de 25 visitas, ejecutando el volcado consolidado en background con `after()` de Next.js 16 hacia Turso LibSQL (`db.batch`).
 
 ---
+
+
+## 9.6 Calibración de Activos de Identidad en Billeteras Digitales (SOP-126)
+- **Google Wallet Generic Passes**: El logotipo del pase se resuelve mediante el activo canónico rasterizado 1:1 https://soyindi.cl/brand/indi-logo-1024.png (1024x1024 px), erradicando distorsiones o fallos de escala producidos por renderizado de SVGs con media queries dinámicas.
+- **Apple Wallet PassKit**: Enlaces a buffers reales de marca para icon.png, icon@2x.png, logo.png y logo@2x.png garantizando nitidez sin interpolación de píxeles vacíos en el header de iOS.
