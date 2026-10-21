@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-518_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-529_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -181,7 +181,7 @@
   - *Derecho de Acceso y Portabilidad*: Descarga instantánea de un archivo JSON estructurado con la totalidad de su información de cuenta, tarjetas, Smart CVs y presentaciones mediante `exportUserDataAction`.
   - *Derecho al Olvido / Supresión Permanente*: Flujo de eliminación destructiva y anonimización de identidad con confirmación textual estricta (`"ELIMINAR MI CUENTA"`) vía `deleteAndAnonymizeUserAccountAction`.
 - **Inventario Oficial de Subprocesadores (Artículo 15 Ley 21.719)**: Registro canónico transparente que detalla la finalidad, ubicación y estado de contratos de tratamiento de datos (DPA) con proveedores esenciales (Turso, Vercel, Cloudflare, Upstash, Flow.cl, Mercado Pago, Fintoc y Groq).
-- **Adecuación Comercial de Infraestructura**: Supresión de riesgos de corte de servicio mediante migración de Vercel Hobby a Vercel Pro ($20 USD/mes) para habilitar cobros comerciales y soporte de PITR de 10 días en Turso Developer ($4.99 USD/mes).
+- **Gobernanza de Infraestructura por Etapas**: Operación oficial en Etapa 1 bajo **Vercel Hobby (100% Free-Tier, $0 cobros comerciales)** + Turso LibSQL Cloud Serverless + Cloudflare R2 + Upstash Redis. La transición a **Vercel Pro ($20 USD/mes)** se activará en la Etapa 2 con los primeros 20-30 clientes de pago.
 
 ---
 
@@ -209,7 +209,7 @@ INDI/
 │   ├── architecture/            # Blueprints de arquitectura (BLUEPRINT_2026.md)
 │   ├── specifications/          # Especificaciones de ingeniería (SMART_CV_ENGINE.md)
 │   └── archive/                 # RFCs y propuestas históricas archivadas
-├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 528 tests pasando al 100% en 86 suites)
+├── tests/unit/                  # Suite de pruebas unitarias (Vitest - 529 tests pasando al 100% en 87 suites)
 │   ├── digital-wallets-deep-research.test.ts # Especificación y contratos de firma criptográfica Apple Wallet y Google Wallet
 │   ├── seo-structured-data-chile.test.ts # Datos estructurados Schema.org CLP, Product-Led Link Building e IndexNow
 │   ├── google-chile-seo-research-prompt.test.ts # Especificación y contratos del prompt Deep Research para Google Chile #1

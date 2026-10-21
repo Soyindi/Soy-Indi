@@ -446,4 +446,27 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
 3. **Flujo de Publicación Automatizada**: El agente debe cerrar cada tarea ejecutando `git add`, `git commit` semántico y `git push origin <branch>` de manera autónoma, validando que el repositorio quede en estado limpio.
 4. **Reporte Ejecutivo de Entrega**: Toda interacción concluye con un desglose estructurado de cambios, estado de calidad y hash del commit publicado.
 
+---
 
+## 🛡️ 9. Nuevos Protocolos de Resiliencia e Inviolabilidad Criptográfica (SOP-124 & SOP-125)
+
+### SOP-124: Inviolabilidad de Contenedor PKCS#7 en Apple Wallet (PassKit)
+1. **Obligatoriedad de Contenedor CMS / PKCS#7 Detached en formato DER:**
+   - Todo paquete `.pkpass` generado para Apple Wallet en iOS debe compilar un archivo binario `signature` que consista en una estructura ASN.1 CMS (PKCS#7) detached en codificación DER.
+   - Queda estrictamente prohibido generar firmas raw RSA (PKCS#1) sobre el hash del manifiesto mediante `crypto.createSign('RSA-SHA256')` plano, dado que iOS Safari rechazará el pase con error *"El pase no es válido"*.
+2. **Cadena Intermedia y Certificados:**
+   - La estructura PKCS#7 debe incorporar tanto el certificado firmante Pass Type ID (`pass.cl.soyindi...`) como el certificado intermedio Apple WWDR (Worldwide Developer Relations G4 CA).
+   - El empaquetado debe realizarse mediante `node-forge` (`forge.pkcs7.createSignedData()`) sin dependencias nativas C++.
+3. **Degradación Segura (iPhone Zero-Error):**
+   - Si no se configuran las variables `APPLE_PASS_CERT_PEM` y `APPLE_PASS_KEY_PEM`, `hasAppleCertificates` debe ocultar condicionalmente el botón `.pkpass` en clientes Safari iOS, desplegando alternativas nativas de alta fidelidad: vCard 4.0 enriquecido con foto HD, pase 9:16 para fondo de pantalla y Google Wallet.
+
+---
+
+### SOP-125: Protección de Límites de Escritura en Telemetría de Alta Frecuencia (Hybrid Piggyback Flush)
+1. **Desacoplamiento Estricto de Escritura Relacional:**
+   - Queda prohibido ejecutar escrituras directas y bloqueantes a la base de datos relacional Turso LibSQL (`UPDATE cards`, `INSERT INTO card_events`) en cada invocación de telemetría pasiva (`/api/telemetry/view`) bajo condiciones de tráfico viral.
+2. **Buffer Atómico en Redis y Ventana Temporal:**
+   - Con Upstash Redis activo, cada visita incrementará el buffer atómico con `HINCRBY`.
+   - El drenaje hacia Turso se coordinará mediante una ventana temporal de 60 segundos (`SET NX EX 60`) o cuando el acumulador supere las 25 visitas concurrentes.
+3. **Ejecución Asíncrona en Background:**
+   - El volcado hacia la base de datos debe ejecutarse en segundo plano utilizando la función nativa `after()` de Next.js 16 / Edge Runtime (`waitUntil`), garantizando tiempos de respuesta HTTP 200/204 en $< 20\text{ms}$ para el cliente.
