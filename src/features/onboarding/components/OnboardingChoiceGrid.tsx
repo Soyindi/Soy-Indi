@@ -106,13 +106,13 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
       </div>
 
       {/* Grid de Selección: Horizontal Scroll en Móvil (Snap-X) + 2 Columnas en Escritorio */}
-      <div className="w-full max-w-4xl mx-auto flex md:grid md:grid-cols-2 justify-center gap-5 sm:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-none snap-x snap-mandatory mb-6 sm:mb-10 px-1">
+      <div className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 justify-center gap-5 sm:gap-6 w-full mb-6 sm:mb-10">
         {options.map((opt) => {
           const Icon = opt.icon;
           return (
             <div
               key={opt.id}
-              className={`w-full min-w-[85vw] sm:min-w-[340px] md:min-w-0 snap-center group relative glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 ${opt.borderColor} transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col justify-between overflow-hidden`}
+              className={`w-full group relative glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 ${opt.borderColor} transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col justify-between overflow-hidden`}
             >
               {/* Iluminación de fondo en hover */}
               <div
