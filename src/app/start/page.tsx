@@ -2,7 +2,6 @@ import React from 'react';
 import Link from 'next/link';
 import { checkUserEntitlementAction } from '@/features/pricing/actions';
 import { OnboardingChoiceGrid } from '@/features/onboarding/components/OnboardingChoiceGrid';
-import { SmartParticles } from '@/features/visual-effects/SmartParticles';
 import { BrandLogo } from '@/shared/ui/BrandLogo';
 
 export const dynamic = 'force-dynamic';
@@ -54,10 +53,11 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-zinc-950 flex flex-col justify-between py-12">
-      {/* Luces volumétricas */}
-      <div className="absolute top-[-10%] left-[20%] w-[550px] h-[550px] rounded-full bg-indigo-600/15 blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[20%] w-[500px] h-[500px] rounded-full bg-cyan-500/10 blur-[140px] pointer-events-none" />
+    <div className="min-h-screen relative overflow-hidden bg-zinc-950 flex flex-col justify-between py-8 sm:py-12">
+      {/* Atmósfera viva SmartParticles y auras volumétricas OKLCH */}
+      
+      <div className="absolute top-[-15%] left-[25%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-indigo-600/20 via-sky-500/15 to-transparent blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[20%] w-[550px] h-[550px] rounded-full bg-gradient-to-tl from-emerald-500/15 via-teal-500/10 to-transparent blur-[150px] pointer-events-none" />
 
       {/* Barra de Marca Minimalista con Retícula Base 8 */}
       <header className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 mb-8 flex items-center justify-between">
@@ -75,7 +75,7 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
 
           <Link
             href="/dashboard"
-            className="text-xs text-zinc-200 hover:text-white font-semibold transition min-h-[44px] px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
+            className="text-xs text-zinc-200 hover:text-white font-semibold transition min-h-[44px] px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 flex items-center gap-1.5 shadow-sm active:scale-[0.98] backdrop-blur-md"
           >
             <span>Ir a Mi Panel</span>
           </Link>
@@ -92,7 +92,7 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
       </main>
 
       {/* Pie de página sutil */}
-      <footer className="relative z-10 w-full max-w-6xl mx-auto px-6 mt-12 text-center text-xs text-zinc-600 font-mono">
+      <footer className="relative z-10 w-full max-w-6xl mx-auto px-6 mt-12 text-center text-xs text-zinc-500 font-mono tracking-tight">
         INDI Platform • Arquitectura Serverless Turso + Cloudflare Edge • 2026
       </footer>
     </div>

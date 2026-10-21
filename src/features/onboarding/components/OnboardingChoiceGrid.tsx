@@ -41,7 +41,7 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
       ctaText: 'Diseñar mi Tarjeta',
       gradient: 'from-indigo-500/20 via-cyan-500/10 to-transparent',
       borderColor: 'hover:border-indigo-500/50',
-      buttonBg: 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-indigo-500/20',
+      buttonBg: 'bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-400 text-zinc-950 font-bold shadow-lg shadow-indigo-500/25 hover:shadow-cyan-400/40 hover:brightness-110 active:scale-[0.98] transition-all',
       icon: QrCode,
       iconColor: 'text-cyan-400',
       highlights: ['Código QR listo para imprimir', 'Enlace directo a WhatsApp', 'Analíticas de visitas y clicks'],
@@ -58,7 +58,7 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
       ctaText: 'Abrir Creador de CV',
       gradient: 'from-emerald-500/20 via-teal-500/10 to-transparent',
       borderColor: 'hover:border-emerald-500/50',
-      buttonBg: 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/20',
+      buttonBg: 'bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-zinc-950 font-bold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-400/40 hover:brightness-110 active:scale-[0.98] transition-all',
       icon: FileText,
       iconColor: 'text-emerald-400',
       highlights: ['Auditoría algorítmica ATS (0 a 100)', 'Plantilla imprimible A4', 'Sugerencias de impacto laboral'],
@@ -91,16 +91,16 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
             <span>Período de Gracia: {daysRemaining} Días para renovar tu membresía</span>
           </div>
         ) : (
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-emerald-500/30 text-xs font-semibold text-emerald-300 mb-4 shadow-lg shadow-emerald-500/10 bg-emerald-950/30">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-emerald-500/30 text-xs font-semibold text-emerald-300 mb-5 shadow-lg shadow-emerald-500/10 bg-emerald-950/40 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-spin-slow" />
             <span>Membresía Comunitaria: Prueba Gratuita Activada de por Vida</span>
           </div>
         )}
 
-        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-3 sm:mb-4">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-3 sm:mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white via-zinc-100 to-zinc-400">
           ¿Por dónde te gustaría comenzar hoy?
         </h1>
-        <p className="text-xs sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm sm:text-base text-zinc-300/90 max-w-2xl mx-auto leading-relaxed font-normal">
           Elige tu primer proyecto para configurarlo en minutos. Tu Plan Comunitario Gratuito te da acceso a Tarjetas Digitales y Smart CV sin costo.
         </p>
       </div>
@@ -112,7 +112,7 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
           return (
             <div
               key={opt.id}
-              className={`min-w-[85vw] sm:min-w-[340px] md:min-w-0 snap-center group relative glass-panel rounded-3xl p-6 sm:p-7 border border-white/10 ${opt.borderColor} transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between overflow-hidden shadow-xl`}
+              className={`min-w-[85vw] sm:min-w-[340px] md:min-w-0 snap-center group relative glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 ${opt.borderColor} transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col justify-between overflow-hidden`}
             >
               {/* Iluminación de fondo en hover */}
               <div
@@ -159,7 +159,7 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
               <div className="relative z-10 pt-2">
                 <Link
                   href={opt.href}
-                  className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider ${opt.buttonBg} hover:opacity-95 shadow-lg active:scale-[0.98] transition-all group-hover:gap-3 cursor-pointer`}
+                  className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm tracking-wide ${opt.buttonBg} hover:opacity-95 shadow-lg active:scale-[0.98] transition-all group-hover:gap-3 cursor-pointer`}
                 >
                   <span>{opt.ctaText}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -177,7 +177,7 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
         </p>
         <Link
           href="/dashboard"
-          className="min-h-[44px] inline-flex items-center justify-center gap-2 text-xs font-semibold text-zinc-200 hover:text-white px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all shadow-sm active:scale-[0.98]"
+          className="min-h-[44px] inline-flex items-center justify-center gap-2 text-xs font-semibold text-zinc-200 hover:text-white px-5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all shadow-sm active:scale-[0.98] text-zinc-300 hover:text-white"
         >
           <span>Ir directamente al Panel General (Dashboard)</span>
           <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />

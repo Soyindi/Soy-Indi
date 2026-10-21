@@ -416,7 +416,7 @@ export function UnifiedDashboardView({
       {/* Barra de Herramientas Unificada (Selector de Pestañas + Buscador Contextual) */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-6 sm:mb-8">
         {/* Selector de Pestañas Unificado con snap horizontal (Glassmorphism 2.0) */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-zinc-900/60 border border-white/10 backdrop-blur-xl shadow-xl overflow-x-auto scrollbar-none snap-x">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-zinc-900/80 border border-white/10 backdrop-blur-2xl shadow-2xl overflow-x-auto scrollbar-none snap-x">
           <button
             onClick={() => setActiveTab('cards')}
             className={`min-h-[44px] min-w-[130px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start active:scale-[0.98] ${
@@ -482,7 +482,7 @@ export function UnifiedDashboardView({
 
         {/* Buscador inteligente integrado con atajo de teclado */}
         <div className="relative flex-1 max-w-md">
-          <div className="flex items-center gap-2.5 glass-panel rounded-2xl px-3.5 py-2.5 border border-white/10 focus-within:border-cyan-500/50 transition-colors">
+          <div className="flex items-center gap-2.5 glass-panel rounded-2xl px-3.5 py-2.5 border border-white/10 focus-within:border-cyan-400/60 focus-within:ring-2 focus-within:ring-cyan-500/20 transition-all">
             <Search className="w-4 h-4 text-zinc-400 shrink-0" />
             <input
               ref={searchInputRef}
