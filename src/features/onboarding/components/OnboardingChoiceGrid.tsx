@@ -66,7 +66,7 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center">
       {/* Banner de Invitación de Referido si aplica */}
       {referralPartner?.valid && (
         <ReferralWelcomeBanner
@@ -77,7 +77,7 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
       )}
 
       {/* Banner de Estado VIP de Bienvenida */}
-      <div className="mb-8 sm:mb-12 text-center">
+      <div className="mb-6 sm:mb-10 text-center flex flex-col items-center max-w-2xl mx-auto">
         {isSubscribed ? (
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-emerald-500/30 text-xs font-semibold text-emerald-300 mb-4 shadow-lg shadow-emerald-500/10">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -106,13 +106,13 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
       </div>
 
       {/* Grid de Selección: Horizontal Scroll en Móvil (Snap-X) + 2 Columnas en Escritorio */}
-      <div className="flex md:grid md:grid-cols-2 max-w-4xl mx-auto gap-5 sm:gap-6 overflow-x-auto pb-6 md:pb-0 scrollbar-none snap-x snap-mandatory mb-8 sm:mb-12 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="w-full max-w-4xl mx-auto flex md:grid md:grid-cols-2 justify-center gap-5 sm:gap-6 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-none snap-x snap-mandatory mb-6 sm:mb-10 px-1">
         {options.map((opt) => {
           const Icon = opt.icon;
           return (
             <div
               key={opt.id}
-              className={`min-w-[85vw] sm:min-w-[340px] md:min-w-0 snap-center group relative glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 ${opt.borderColor} transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col justify-between overflow-hidden`}
+              className={`w-full min-w-[85vw] sm:min-w-[340px] md:min-w-0 snap-center group relative glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 ${opt.borderColor} transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col justify-between overflow-hidden`}
             >
               {/* Iluminación de fondo en hover */}
               <div
@@ -171,7 +171,7 @@ export function OnboardingChoiceGrid({ daysRemaining, referralPartner, entitleme
       </div>
 
       {/* Navegación Rápida Alternativa (Válvula de Escape Rápida) */}
-      <div className="text-center pt-6 border-t border-white/5 max-w-xl mx-auto">
+      <div className="w-full text-center pt-6 border-t border-white/5 max-w-xl mx-auto flex flex-col items-center justify-center">
         <p className="text-xs text-zinc-400 mb-3">
           ¿Ya conoces la suite o deseas revisar tus proyectos existentes?
         </p>

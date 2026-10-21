@@ -53,14 +53,14 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-zinc-950 flex flex-col justify-between py-8 sm:py-12">
+    <div className="min-h-screen relative overflow-hidden bg-zinc-950 flex flex-col justify-between py-6 sm:py-8">
       {/* Atmósfera viva SmartParticles y auras volumétricas OKLCH */}
       
       <div className="absolute top-[-15%] left-[25%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-indigo-600/20 via-sky-500/15 to-transparent blur-[160px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[20%] w-[550px] h-[550px] rounded-full bg-gradient-to-tl from-emerald-500/15 via-teal-500/10 to-transparent blur-[150px] pointer-events-none" />
 
       {/* Barra de Marca Minimalista con Retícula Base 8 */}
-      <header className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 mb-8 flex items-center justify-between">
+      <header className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 mb-4 sm:mb-6 flex items-center justify-between">
         <Link href="/" title="Ir a la portada de INDI" className="flex items-center gap-2 group">
           <BrandLogo size="md" showText={false} />
         </Link>
@@ -83,7 +83,7 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
       </header>
 
       {/* Contenido Principal con el Grid */}
-      <main className="relative z-10 flex-1 flex items-center">
+      <main className="relative z-10 flex-1 w-full flex items-center justify-center my-auto py-4 sm:py-8">
         <OnboardingChoiceGrid
           daysRemaining={entitlement.daysRemaining}
           referralPartner={referralPartner}
@@ -92,7 +92,7 @@ export default async function OnboardingStartPage({ searchParams }: OnboardingSt
       </main>
 
       {/* Pie de página sutil */}
-      <footer className="relative z-10 w-full max-w-6xl mx-auto px-6 mt-12 text-center text-xs text-zinc-500 font-mono tracking-tight">
+      <footer className="relative z-10 w-full max-w-5xl mx-auto px-6 mt-6 sm:mt-8 text-center text-xs text-zinc-600 font-mono tracking-tight">
         INDI Platform • Arquitectura Serverless Turso + Cloudflare Edge • 2026
       </footer>
     </div>
