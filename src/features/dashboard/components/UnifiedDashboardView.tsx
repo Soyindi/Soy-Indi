@@ -441,18 +441,6 @@ export function UnifiedDashboardView({
             <span>Smart CVs ({cvsList.length})</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('leads')}
-            className={`min-h-[44px] min-w-[145px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start active:scale-[0.98] ${
-              activeTab === 'leads'
-                ? 'bg-gradient-to-r from-emerald-500/30 to-teal-500/25 text-white border border-emerald-400/30 shadow-lg shadow-emerald-500/10'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
-            }`}
-          >
-            <Users className={`w-4 h-4 ${activeTab === 'leads' ? 'text-emerald-300' : 'text-zinc-400'}`} />
-            <span>Mis Contactos</span>
-          </button>
-
           {presentationsList.length > 0 && (
             <button
               onClick={() => setActiveTab('presentations')}
