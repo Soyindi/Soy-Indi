@@ -889,12 +889,12 @@ export function SmartCvBuilder({
                   </div>
                 </div>
 
-                <div className={`flex items-center rounded-xl bg-black/50 border px-3.5 py-2.5 text-sm transition-colors ${
+                <div className={`flex items-center rounded-xl bg-black/50 border px-3 sm:px-3.5 py-2.5 text-sm transition-colors overflow-hidden ${
                   !slugAvailability.available && !isCheckingSlug
                     ? 'border-amber-500/50 focus-within:border-amber-500'
                     : 'border-white/10 focus-within:border-cyan-400/80'
                 }`}>
-                  <span className="text-zinc-500 font-mono select-none text-xs sm:text-sm">soyindi.cl/cv/</span>
+                  <span className="text-zinc-500 font-mono select-none text-[11px] xs:text-xs sm:text-sm shrink-0"><span className="hidden xs:inline">soyindi.cl/cv/</span><span className="xs:hidden">/cv/</span></span>
                   <input
                     type="text"
                     value={formData.slug || ''}
@@ -914,17 +914,17 @@ export function SmartCvBuilder({
                     ) : slugAvailability.status === 'available' ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                         <Check className="w-2.5 h-2.5" />
-                        <span>Disponible</span>
+                        <span className="hidden sm:inline">Disponible</span><span className="sm:hidden text-[9.5px]">OK</span>
                       </span>
                     ) : slugAvailability.status === 'reserved' ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
                         <AlertCircle className="w-2.5 h-2.5" />
-                        <span>Reservado</span>
+                        <span className="hidden sm:inline">Reservado</span><span className="sm:hidden text-[9.5px]">Reservado</span>
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
                         <AlertTriangle className="w-2.5 h-2.5" />
-                        <span>En uso</span>
+                        <span className="hidden sm:inline">En uso</span><span className="sm:hidden text-[9.5px]">Ocupado</span>
                       </span>
                     )}
                   </div>

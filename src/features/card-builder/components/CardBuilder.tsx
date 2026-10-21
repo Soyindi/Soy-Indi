@@ -729,17 +729,17 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                   </div>
                 </div>
 
-                <div className={`flex items-center rounded-2xl bg-zinc-950/80 border px-4 py-3 text-sm shadow-inner transition-all ${
+                <div className={`flex items-center rounded-2xl bg-zinc-950/80 border px-3 sm:px-4 py-2.5 sm:py-3 text-sm shadow-inner transition-all overflow-hidden ${
                   !slugAvailability.available && !isCheckingSlug
                     ? 'border-amber-500/50 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-400/20'
                     : 'border-white/15 focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-400/20'
                 }`}>
-                  <span className="text-zinc-400 font-mono select-none text-xs sm:text-sm font-semibold">soyindi.cl/c/</span>
+                  <span className="text-zinc-400 font-mono select-none text-[11px] xs:text-xs sm:text-sm font-semibold shrink-0"><span className="hidden xs:inline">soyindi.cl/c/</span><span className="xs:hidden">/c/</span></span>
                   <input
                     type="text"
                     value={formData.slug}
                     onChange={(e) => handleSlugChange(e.target.value)}
-                    className="flex-1 bg-transparent text-white font-mono text-xs sm:text-sm font-semibold tracking-wide focus:outline-none pl-1"
+                    className="min-w-0 flex-1 bg-transparent text-white font-mono text-xs sm:text-sm font-semibold tracking-wide focus:outline-none px-1.5"
                     placeholder="tu-nombre"
                     spellCheck={false}
                   />
@@ -754,17 +754,17 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
                     ) : slugAvailability.status === 'available' ? (
                       <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-xs">
                         <Check className="w-3 h-3 text-emerald-400 stroke-[3]" />
-                        <span>Disponible</span>
+                        <span className="hidden sm:inline">Disponible</span><span className="sm:hidden text-[9.5px]">OK</span>
                       </span>
                     ) : slugAvailability.status === 'reserved' ? (
                       <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-xs">
                         <AlertCircle className="w-3 h-3 text-rose-400" />
-                        <span>Reservado</span>
+                        <span className="hidden sm:inline">Reservado</span><span className="sm:hidden text-[9.5px]">Reservado</span>
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-xs">
                         <AlertTriangle className="w-3 h-3 text-amber-400" />
-                        <span>En uso</span>
+                        <span className="hidden sm:inline">En uso</span><span className="sm:hidden text-[9.5px]">Ocupado</span>
                       </span>
                     )}
                   </div>
