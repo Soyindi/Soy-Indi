@@ -502,19 +502,6 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             )}
           </button>
 
-          {/* Botón Intercambiar Contacto (Mini-CRM Bidireccional) */}
-          <button
-            onClick={() => setIsExchangeModalOpen(true)}
-            className={`w-full min-h-[46px] inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold border transition-all active:scale-[0.98] ${
-              isLightMode
-                ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 border-emerald-500/30 shadow-xs'
-                : 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/30'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Intercambiar Contacto</span>
-          </button>
-
           {whatsappUrl && (
             <a
               href={whatsappUrl}
@@ -857,14 +844,6 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         onShareTracked={() => {
           trackCardEventAction({ slug: card.slug, eventType: 'share' }).catch(() => {});
         }}
-      />
-
-      {/* Modal para Intercambio Bidireccional de Contactos */}
-      <ExchangeContactModal
-        cardId={card.id || card.slug || 'demo'}
-        cardTitle={card.title}
-        isOpen={isExchangeModalOpen}
-        onClose={() => setIsExchangeModalOpen(false)}
       />
 
       {/* Modal para Billetera Digital & Acceso Rápido Offline (Apple & Google Wallet) */}
