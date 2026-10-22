@@ -231,12 +231,9 @@ export default async function HomePage() {
           <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center text-center">
             <HeroBrandIdentity />
 
-            {/* Pill Interactivo de Estatus de Ecosistema */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-400/25 backdrop-blur-md text-xs font-mono font-semibold text-cyan-300 shadow-[0_0_20px_-3px_rgba(34,211,238,0.3)] mb-6 transition-all hover:border-cyan-400/50 hover:scale-[1.02]">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-              </span>
+            {/* Pill de Ecosistema Profesional (Sin confusión de sesión activa) */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-400/25 backdrop-blur-md text-xs font-mono font-semibold text-cyan-300 shadow-[0_0_20px_-3px_rgba(34,211,238,0.3)] mb-6 transition-all hover:border-cyan-400/50 hover:scale-[1.02]">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-300" aria-hidden="true" />
               <span className="tracking-widest uppercase">{hero.eyebrow}</span>
             </div>
 

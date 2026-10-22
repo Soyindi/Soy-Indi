@@ -63,12 +63,6 @@ export function HeroBrandIdentity({ className = '' }: HeroBrandIdentityProps) {
             />
           </div>
         </div>
-
-        {/* Reflejo fotónico superior sutil */}
-        <div
-          className="absolute inset-x-4 top-1 h-[1px] bg-gradient-to-r from-transparent via-cyan-200/50 to-transparent pointer-events-none"
-          aria-hidden="true"
-        />
       </div>
     </div>
   );

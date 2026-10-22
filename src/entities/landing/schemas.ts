@@ -50,7 +50,7 @@ export const formatClp = (value: number): string => `$${value.toLocaleString('es
 export const LANDING_CONTENT: LandingContent = landingContentSchema.parse({
   sections: ['inicio', 'comparativa', 'soluciones', 'precios', 'faq'],
   hero: {
-    eyebrow: 'Identidad profesional · Plan Gratuito',
+    eyebrow: 'Plataforma de Identidad Profesional',
     title: 'Tu negocio completo',
     highlight: 'en un solo link.',
     subtitle:
