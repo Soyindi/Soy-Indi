@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-533_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-535_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -79,8 +79,8 @@
 - **Purga de Marcadores de Salto de Página & Integridad de Logros**: Motor de limpieza que detecta y purga de forma transparente delimitadores de salto de página (`--- PÁGINA SIGUIENTE ---`) tanto en el parser determinista como en el auditor, impidiendo que artefactos de maquetación se filtren como viñetas de experiencia.
 - **Preservación de Guiones en Certificaciones & Proyectos Autodidactas**: Parser resiliente que preserva guiones intra-palabra en títulos técnicos y certificaciones clínicas (`Formación en WISC-V`, `Modelo RNR`), extrayendo limpiamente proyectos independientes y de desarrollo tecnológico sin truncamientos.
 - **Inferencia Resiliente Multi-Proveedor (NVIDIA NIM 90B/11B + Groq LPU Engine <200ms)**: Orquestador tolerante a fallos (`callNvidiaNimChat`) con fallback en cascada ante modelos descontinuados (EOL): NVIDIA NIM (LLaMA 3.2 90B/11B) ➔ Groq LPU Ultra-Low Latency (Qwen 3.8 27B / GPT-OSS 120B en <200ms) ➔ Gemini 2.0 Flash ➔ OpenRouter ➔ Parser Heurístico Determinista local, garantizando 100% de disponibilidad.
-- **Auditoría Algorítmica (0 a 100)**: Evalúa estructura, densidad de palabras clave, impacto de métricas y longitud para superar filtros de software de Recursos Humanos (ATS).
-- **Feedback Accionable & Mitigación de Alucinaciones**: Detección de logros sin números (`needs_metric`) según estándares Google XYZ y requerimientos de transparencia de la EU AI Act.
+- **Auditoría Algorítmica Multi-Industria (0 a 100) & Panel Diagnóstico en Vivo**: Evalúa estructura, densidad de palabras clave contextualizadas por industria (Software, Frontend, Datos, Marketing, Dirección/Management, Salud/Clínica, Finanzas/Legal, Operaciones/Ingeniería y Educación), impacto de métricas y completitud de contacto para superar filtros de software de Recursos Humanos (ATS), desplegando un reporte interactivo en vivo (`auditReport`) con inyección de keywords en 1 clic.
+- **Sincronización Reactiva de Métricas STAR & Mitigación de Alucinaciones**: Sincronización bidireccional en vivo entre `bullets` y `detailedBullets` (`hasQuantitativeMetric`) con indicadores por cargo (*Métricas STAR OK* / *sin métrica*) y aislamiento estricto de datos personales de demostración para cuentas nuevas.
 
 ### 3. 📽️ Orbital Presentations Pro (16:9)
 - **Persistencia Independiente & Zero Template Shadowing**: Precedencia estricta de base de datos en `/p/[slug]`. Las presentaciones personalizadas de los usuarios tienen prioridad absoluta sobre los templates estáticos por defecto.

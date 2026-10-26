@@ -14,8 +14,15 @@ import {
   generateCvSlugAlternatives,
   rewriteCvSectionSchema,
   RewriteCvSectionInput,
+  skillRecommendationRequestSchema,
+  cvIdLookupSchema,
+  cvSlugLookupSchema,
 } from '@/entities/cv/schemas';
 import { parseCvDocumentMultimodal, parseCredentialDocumentMultimodal } from '@/features/ai-smart-cv/lib/multimodal-parser';
+import {
+  getRecommendedSkillsForRole,
+  hasQuantitativeMetric,
+} from '@/features/ai-smart-cv/lib/cv-matching-engine';
 import {
   validateFileSignature,
   assertZeroBinaryPersistence,
@@ -173,101 +180,198 @@ export async function parseCredentialDocumentAction(
  */
 export async function auditAtsScoreAction(
   cvData: CVFormValues
-): Promise<{ success: boolean; data: AtsAuditResult }> {
-  const role = cvData.targetRole.toLowerCase();
-  const fullText = `
-    ${cvData.content.summary} 
-    ${cvData.content.skills.join(' ')} 
-    ${cvData.content.experience.map((e) => `${e.role} ${e.company} ${e.bullets.join(' ')}`).join(' ')}
-  `.toLowerCase();
+): Promise<{ success: boolean; data: AtsAuditResult; error?: string }> {
+  try {
+    const parsed = cvFormSchema.safeParse(cvData);
+    const safeCv: CVFormValues = parsed.success
+      ? parsed.data
+      : {
+          title: cvData?.title || 'CV Profesional',
+          targetRole: cvData?.targetRole || 'Profesional',
+          templateId: cvData?.templateId || 'executive-modern',
+          isPublic: cvData?.isPublic ?? true,
+          slug: cvData?.slug,
+          content: {
+            fullName: cvData?.content?.fullName || '',
+            email: cvData?.content?.email || '',
+            phone: cvData?.content?.phone || '',
+            location: cvData?.content?.location || '',
+            summary: cvData?.content?.summary || '',
+            skills: Array.isArray(cvData?.content?.skills) ? cvData.content.skills : [],
+            experience: Array.isArray(cvData?.content?.experience) ? cvData.content.experience : [],
+            education: Array.isArray(cvData?.content?.education) ? cvData.content.education : [],
+            references: Array.isArray(cvData?.content?.references) ? cvData.content.references : [],
+            credentials: Array.isArray(cvData?.content?.credentials) ? cvData.content.credentials : [],
+            signatureType: cvData?.content?.signatureType || 'NONE',
+            signatureUrl: cvData?.content?.signatureUrl || '',
+            signatureDate: cvData?.content?.signatureDate || '',
+          },
+        };
 
-  // Diccionario contextual de palabras clave de alto impacto
-  const keywordDict: Record<string, string[]> = {
-    software: ['typescript', 'react', 'next.js', 'api', 'sql', 'arquitectura', 'ci/cd', 'docker', 'git', 'testing'],
-    frontend: ['react', 'next.js', 'typescript', 'tailwind', 'css', 'ui/ux', 'rendimiento', 'accesibilidad', 'web vitals'],
-    marketing: ['roi', 'adquisición', 'campañas', 'analítica', 'conversión', 'seo', 'sem', 'funnel', 'kpis', 'growth'],
-    datos: ['python', 'sql', 'etl', 'dashboard', 'power bi', 'modelado', 'analítica', 'machine learning', 'kpis'],
-    management: ['liderazgo', 'presupuesto', 'okrs', 'kpis', 'estrategia', 'gestión', 'scrum', 'agile', 'roadmap'],
-  };
+    const role = (safeCv.targetRole || '').toLowerCase();
+    const fullText = `
+      ${safeCv.content.summary} 
+      ${safeCv.content.skills.join(' ')} 
+      ${safeCv.content.experience.map((e) => `${e.role} ${e.company} ${(e.bullets || []).join(' ')}`).join(' ')}
+      ${safeCv.content.education.map((ed) => `${ed.degree} ${ed.institution}`).join(' ')}
+    `.toLowerCase();
 
-  // Buscar categoría coincidente o palabras universales
-  let expectedKeywords = ['kpis', 'liderazgo', 'estrategia', 'optimización', 'proyectos', 'impacto', 'resultados'];
-  for (const [key, words] of Object.entries(keywordDict)) {
-    if (role.includes(key)) {
-      expectedKeywords = [...words];
-      break;
-    }
-  }
+    // Diccionario contextual de palabras clave de alto impacto multi-industria
+    const keywordDict: Record<string, string[]> = {
+      software: ['typescript', 'react', 'next.js', 'api', 'sql', 'arquitectura', 'ci/cd', 'docker', 'git', 'testing'],
+      frontend: ['react', 'next.js', 'typescript', 'tailwind', 'css', 'ui/ux', 'rendimiento', 'accesibilidad', 'web vitals'],
+      marketing: ['roi', 'adquisición', 'campañas', 'analítica', 'conversión', 'seo', 'sem', 'funnel', 'kpis', 'growth'],
+      datos: ['python', 'sql', 'etl', 'dashboard', 'power bi', 'modelado', 'analítica', 'machine learning', 'kpis'],
+      management: ['liderazgo', 'presupuesto', 'okrs', 'kpis', 'estrategia', 'gestión', 'scrum', 'agile', 'roadmap'],
+      salud: ['evaluación', 'clínic', 'diagnóstic', 'intervención', 'pacientes', 'tratamiento', 'ética', 'atención', 'salud'],
+      finanzas: ['financiero', 'presupuesto', 'auditoría', 'ifrs', 'tributari', 'compliance', 'control', 'contable', 'riesgo'],
+      operaciones: ['operaciones', 'logística', 'mantenimiento', 'calidad', 'seguridad', 'procesos', 'lean', 'mejora continua'],
+      educacion: ['docencia', 'curricular', 'evaluación', 'aprendizaje', 'pedagógic', 'aula', 'formación', 'investigación'],
+    };
 
-  const matches: string[] = [];
-  const missing: string[] = [];
-
-  expectedKeywords.forEach((kw) => {
-    if (fullText.includes(kw.toLowerCase())) {
-      matches.push(kw);
+    // Buscar categoría coincidente o derivar desde taxonomía de rol
+    let expectedKeywords = ['kpis', 'liderazgo', 'estrategia', 'optimización', 'proyectos', 'impacto', 'resultados'];
+    if (role.includes('front') || role.includes('ui') || role.includes('web')) {
+      expectedKeywords = keywordDict.frontend;
+    } else if (role.includes('software') || role.includes('dev') || role.includes('arquitect') || role.includes('full stack') || role.includes('backend')) {
+      expectedKeywords = keywordDict.software;
+    } else if (role.includes('market') || role.includes('growth') || role.includes('ventas') || role.includes('comercial')) {
+      expectedKeywords = keywordDict.marketing;
+    } else if (role.includes('data') || role.includes('datos') || role.includes('analyt') || role.includes('bi')) {
+      expectedKeywords = keywordDict.datos;
+    } else if (role.includes('gerente') || role.includes('director') || role.includes('lead') || role.includes('jefe') || role.includes('manager')) {
+      expectedKeywords = keywordDict.management;
+    } else if (role.includes('psic') || role.includes('médic') || role.includes('medic') || role.includes('salud') || role.includes('enferm') || role.includes('clínic') || role.includes('clinic') || role.includes('terap')) {
+      expectedKeywords = keywordDict.salud;
+    } else if (role.includes('finan') || role.includes('contad') || role.includes('auditor') || role.includes('abogad') || role.includes('legal')) {
+      expectedKeywords = keywordDict.finanzas;
+    } else if (role.includes('operacion') || role.includes('logíst') || role.includes('industrial') || role.includes('prevenci')) {
+      expectedKeywords = keywordDict.operaciones;
+    } else if (role.includes('docen') || role.includes('profes') || role.includes('educa') || role.includes('pedagog')) {
+      expectedKeywords = keywordDict.educacion;
     } else {
-      missing.push(kw);
+      for (const [key, words] of Object.entries(keywordDict)) {
+        if (role.includes(key)) {
+          expectedKeywords = [...words];
+          break;
+        }
+      }
     }
-  });
 
-  // Cálculo heurístico de puntuación ATS (0 a 100)
-  let score = 50; // Base por estructura
-  if (cvData.content.summary.length > 50) score += 10;
-  if (cvData.content.experience.length >= 2) score += 15;
-  if (cvData.content.skills.length >= 5) score += 10;
-  score += Math.min(15, matches.length * 3);
+    const matches: string[] = [];
+    const missing: string[] = [];
 
-  // Bonus por credenciales verificadas
-  if (cvData.content.credentials && cvData.content.credentials.length > 0) {
-    score = Math.min(100, score + 8);
-  }
-
-  const strengths: string[] = [];
-  const improvements: string[] = [];
-  const hallucinationWarnings: string[] = [];
-
-  // Chequeo de viñetas con falta de métricas
-  let missingMetricCount = 0;
-  cvData.content.experience.forEach((exp) => {
-    exp.detailedBullets?.forEach((b) => {
-      if (b.needs_metric) missingMetricCount++;
+    expectedKeywords.forEach((kw) => {
+      if (fullText.includes(kw.toLowerCase())) {
+        matches.push(kw);
+      } else {
+        missing.push(kw);
+      }
     });
-  });
 
-  if (missingMetricCount > 0) {
-    hallucinationWarnings.push(
-      `Detectamos ${missingMetricCount} logro(s) sin métrica cuantificable. Agrega números concretos (%, $ o personas) para aumentar el impacto.`
-    );
+    // Evaluación dinámica de métricas cuantitativas en viñetas (sincronizando bullets y detailedBullets)
+    let missingMetricCount = 0;
+    let quantifiedBulletsCount = 0;
+
+    safeCv.content.experience.forEach((exp) => {
+      const activeBullets =
+        Array.isArray(exp.bullets) && exp.bullets.length > 0
+          ? exp.bullets
+          : (exp.detailedBullets || []).map((b) => b.text);
+
+      activeBullets.forEach((bulletText, idx) => {
+        const detailedFlag = exp.detailedBullets?.[idx]?.needs_metric;
+        const hasMetricInText = hasQuantitativeMetric(bulletText);
+        // Si el texto actual ya contiene una métrica cuantitativa real, se considera cuantificado
+        // aunque detailedBullets tuviera un flag antiguo; si no tiene métrica en texto o fue marcado explícitamente sin métrica:
+        if (hasMetricInText && detailedFlag !== true) {
+          quantifiedBulletsCount++;
+        } else if (hasMetricInText && detailedFlag === true) {
+          // Si el texto tiene métrica pero el test unitario o el parser forzó needs_metric=true explícitamente en un texto sin números:
+          quantifiedBulletsCount++;
+        } else {
+          missingMetricCount++;
+        }
+      });
+    });
+
+    // Cálculo heurístico calibrado de puntuación ATS (0 a 100)
+    let score = 45; // Base por estructura limpia A4
+    if (safeCv.content.summary.trim().length >= 50) score += 10;
+    if (safeCv.content.experience.length >= 1) score += 10;
+    if (safeCv.content.experience.length >= 2) score += 5;
+    if (safeCv.content.education.length >= 1) score += 5;
+    if (safeCv.content.skills.length >= 5) score += 10;
+    score += Math.min(15, matches.length * 3);
+
+    // Bonus por logros cuantificados con métricas reales
+    if (quantifiedBulletsCount > 0 && missingMetricCount === 0) {
+      score = Math.min(100, score + 6);
+    }
+
+    // Bonus por credenciales verificadas
+    if (safeCv.content.credentials && safeCv.content.credentials.length > 0) {
+      score = Math.min(100, score + 8);
+    }
+
+    const strengths: string[] = [];
+    const improvements: string[] = [];
+    const hallucinationWarnings: string[] = [];
+
+    if (missingMetricCount > 0) {
+      hallucinationWarnings.push(
+        `Detectamos ${missingMetricCount} logro(s) sin métrica cuantificable. Agrega números concretos (%, $ o personas) para aumentar el impacto.`
+      );
+    }
+
+    if (matches.length >= 3) {
+      strengths.push(`Excelente densidad de palabras clave técnicas para el rol de ${safeCv.targetRole}.`);
+    } else if (missing.length > 0) {
+      improvements.push(`Incluye términos clave como "${missing.slice(0, 3).join(', ')}" para superar filtros ATS.`);
+    }
+
+    if (safeCv.content.experience.some((e) => (e.bullets || []).length >= 2)) {
+      strengths.push('Uso de viñetas claras con estructura STAR/Google XYZ.');
+    } else {
+      improvements.push('Agrega al menos 2 logros cuantificables (%, números, métricas) en tu experiencia principal.');
+    }
+
+    if (!safeCv.content.email || !safeCv.content.phone) {
+      improvements.push('Completa tu correo electrónico y teléfono de contacto directo para los reclutadores.');
+    }
+
+    if (safeCv.content.credentials && safeCv.content.credentials.length > 0) {
+      strengths.push(`${safeCv.content.credentials.length} título(s) o certificación(es) validada(s) documentalmente.`);
+    }
+
+    return {
+      success: true,
+      data: {
+        score: Math.min(100, Math.max(20, score)),
+        strengths,
+        improvements,
+        keywordMatches: matches,
+        missingKeywords: missing,
+        hallucinationWarnings,
+        apcaContrastPass: true,
+      },
+    };
+  } catch (err: any) {
+    console.error('Error en auditAtsScoreAction:', err);
+    return {
+      success: false,
+      error: err?.message || 'Error al auditar el currículum.',
+      data: {
+        score: 50,
+        strengths: [],
+        improvements: ['Verifica que todos los campos obligatorios del CV estén completos.'],
+        keywordMatches: [],
+        missingKeywords: [],
+        hallucinationWarnings: [],
+        apcaContrastPass: true,
+      },
+    };
   }
-
-  if (matches.length >= 4) {
-    strengths.push(`Excelente densidad de palabras clave técnicas para el rol de ${cvData.targetRole}.`);
-  } else {
-    improvements.push(`Incluye términos clave como "${missing.slice(0, 3).join(', ')}" para superar filtros ATS.`);
-  }
-
-  if (cvData.content.experience.some((e) => e.bullets.length >= 2)) {
-    strengths.push('Uso de viñetas claras con estructura STAR/Google XYZ.');
-  } else {
-    improvements.push('Agrega logros cuantificables (%, números, métricas) en cada experiencia.');
-  }
-
-  if (cvData.content.credentials && cvData.content.credentials.length > 0) {
-    strengths.push(`${cvData.content.credentials.length} título(s) o certificación(es) validada(s) documentalmente.`);
-  }
-
-  return {
-    success: true,
-    data: {
-      score: Math.min(100, Math.max(20, score)),
-      strengths,
-      improvements,
-      keywordMatches: matches,
-      missingKeywords: missing,
-      hallucinationWarnings,
-      apcaContrastPass: true,
-    },
-  };
 }
 
 /**
@@ -445,14 +549,19 @@ export async function upsertSmartCvAction(
  */
 export async function getSmartCvByIdAction(cvId: string, userId?: string) {
   try {
-    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const parsed = cvIdLookupSchema.safeParse({ cvId, userId });
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Identificador de CV inválido.' };
+    }
+
+    const sessionResult = await getSafeAuthenticatedUserId(parsed.data.userId);
     if (!sessionResult.userId) {
       return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
     }
     const targetUserId = sessionResult.userId;
 
     const cv = await db.query.smartCvs.findFirst({
-      where: and(eq(smartCvs.id, cvId), eq(smartCvs.userId, targetUserId)),
+      where: and(eq(smartCvs.id, parsed.data.cvId), eq(smartCvs.userId, targetUserId)),
     });
 
     if (!cv) {
@@ -486,8 +595,13 @@ export async function getSmartCvByIdAction(cvId: string, userId?: string) {
  */
 export async function getPublicSmartCvAction(slug: string) {
   try {
+    const parsed = cvSlugLookupSchema.safeParse({ slug });
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Enlace de currículum inválido' };
+    }
+
     const cv = await db.query.smartCvs.findFirst({
-      where: eq(smartCvs.slug, slug),
+      where: eq(smartCvs.slug, parsed.data.slug.toLowerCase()),
     });
 
     if (!cv || !cv.isPublic) {
@@ -506,10 +620,15 @@ export async function getPublicSmartCvAction(slug: string) {
  */
 export async function incrementCvViewsAction(cvId: string) {
   try {
+    const parsed = cvIdLookupSchema.safeParse({ cvId });
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Identificador inválido' };
+    }
+
     await db
       .update(smartCvs)
       .set({ viewsCount: sql`${smartCvs.viewsCount} + 1` })
-      .where(eq(smartCvs.id, cvId));
+      .where(eq(smartCvs.id, parsed.data.cvId));
     return { success: true };
   } catch (err: any) {
     console.error('Error incrementando vistas de CV:', err);
@@ -544,7 +663,12 @@ export async function getUserSmartCvsAction(userId?: string) {
  */
 export async function deleteSmartCvAction(cvId: string, userId?: string) {
   try {
-    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const parsed = cvIdLookupSchema.safeParse({ cvId, userId });
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Identificador de CV inválido.' };
+    }
+
+    const sessionResult = await getSafeAuthenticatedUserId(parsed.data.userId);
     if (!sessionResult.userId) {
       return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
     }
@@ -552,7 +676,7 @@ export async function deleteSmartCvAction(cvId: string, userId?: string) {
 
     await db
       .delete(smartCvs)
-      .where(and(eq(smartCvs.id, cvId), eq(smartCvs.userId, targetUserId)));
+      .where(and(eq(smartCvs.id, parsed.data.cvId), eq(smartCvs.userId, targetUserId)));
 
     revalidatePath('/cv');
     revalidatePath('/dashboard');
@@ -966,8 +1090,19 @@ Experiencia: ${cvContent.experience.map((e) => `${e.role} en ${e.company}: ${e.b
  */
 export async function getSkillRecommendationsAction(targetRole: string, currentSkills: string[] = []) {
   try {
-    const { getRecommendedSkillsForRole } = await import('@/features/ai-smart-cv/lib/cv-matching-engine');
-    const groups = getRecommendedSkillsForRole(targetRole, currentSkills);
+    const parsed = skillRecommendationRequestSchema.safeParse({
+      targetRole: targetRole || 'Profesional',
+      currentSkills: Array.isArray(currentSkills) ? currentSkills : [],
+    });
+    if (!parsed.success) {
+      return {
+        success: false,
+        data: [],
+        error: parsed.error.issues[0]?.message || 'Rol objetivo inválido.',
+      };
+    }
+
+    const groups = getRecommendedSkillsForRole(parsed.data.targetRole, parsed.data.currentSkills);
     return {
       success: true,
       data: groups,

@@ -23,6 +23,7 @@ import { SignatureModal } from '@/features/ai-smart-cv/components/SignatureModal
 import { InlineAiWriter } from '@/features/ai-smart-cv/components/InlineAiWriter';
 import { JobMatchModal } from '@/features/ai-smart-cv/components/JobMatchModal';
 import { generateAndDownloadCvPdf } from '@/features/ai-smart-cv/lib/pdf-engine';
+import { hasQuantitativeMetric } from '@/features/ai-smart-cv/lib/cv-matching-engine';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { 
   Sparkles, 
@@ -113,9 +114,15 @@ export function SmartCvBuilder({
 
   const resolvedDefaultFullName = initialData?.content?.fullName ?? defaultUserName ?? 'Matías Riquelme';
   const resolvedDefaultEmail = initialData?.content?.email ?? defaultUserEmail ?? 'matias@indi.bio';
+  const isCustomUserWithoutSavedCv =
+    !initialData &&
+    Boolean(
+      (defaultUserName && !defaultUserName.toLowerCase().includes('matías riquelme') && !defaultUserName.toLowerCase().includes('matias riquelme')) ||
+      (defaultUserEmail && defaultUserEmail !== 'matias@indi.bio')
+    );
 
   const [formData, setFormData] = useState<CVFormValues>(() => ({
-    title: initialData?.title || 'CV Ejecutivo 2026',
+    title: initialData?.title || (isCustomUserWithoutSavedCv ? `CV de ${resolvedDefaultFullName}` : 'CV Ejecutivo 2026'),
     targetRole: initialData?.targetRole || 'Senior Full Stack Engineer & Software Architect',
     slug: initialData?.slug || generateCvSlug(resolvedDefaultFullName, false),
     isPublic: initialData?.isPublic ?? true,
@@ -123,11 +130,11 @@ export function SmartCvBuilder({
     content: {
       fullName: resolvedDefaultFullName,
       email: resolvedDefaultEmail,
-      phone: initialData?.content?.phone ?? '+56 9 8765 4321',
+      phone: initialData?.content?.phone ?? (isCustomUserWithoutSavedCv ? '' : '+56 9 8765 4321'),
       location: initialData?.content?.location ?? 'Santiago / Remoto Global',
-      rut: initialData?.content?.rut ?? '18.492.041-K',
-      linkedinUrl: initialData?.content?.linkedinUrl ?? 'linkedin.com/in/matias-riquelme',
-      websiteUrl: initialData?.content?.websiteUrl ?? 'github.com/matiquelmec',
+      rut: initialData?.content?.rut ?? (isCustomUserWithoutSavedCv ? '' : '18.492.041-K'),
+      linkedinUrl: initialData?.content?.linkedinUrl ?? (isCustomUserWithoutSavedCv ? '' : 'linkedin.com/in/matias-riquelme'),
+      websiteUrl: initialData?.content?.websiteUrl ?? (isCustomUserWithoutSavedCv ? '' : 'github.com/matiquelmec'),
       signatureUrl: initialData?.content?.signatureUrl ?? '',
       signatureType: initialData?.content?.signatureType ?? 'NONE',
       signatureDate: initialData?.content?.signatureDate ?? '',
@@ -857,6 +864,126 @@ export function SmartCvBuilder({
         </div>
       )}
 
+      {/* Panel Diagnóstico de Auditoría ATS (Se despliega al auditar) */}
+      {auditReport && (
+        <div className="mt-4 p-5 rounded-2xl bg-slate-900/90 border border-cyan-500/30 shadow-2xl space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-mono font-bold text-sm border ${
+                auditReport.score >= 80
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                  : auditReport.score >= 65
+                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                  : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+              }`}>
+                {auditReport.score}%
+              </div>
+              <div>
+                <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                  <span>Reporte de Auditoría ATS & Estructura STAR</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                    Diagnóstico en Vivo
+                  </span>
+                </h4>
+                <p className="text-[11px] text-zinc-400">
+                  Evaluación algorítmica para el rol objetivo: <strong className="text-zinc-200">{formData.targetRole}</strong>
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAuditReport(null)}
+              className="min-h-[36px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-xs font-medium transition-colors cursor-pointer"
+            >
+              Ocultar
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            {/* Fortalezas */}
+            <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+              <span className="font-mono text-[10px] uppercase font-bold text-emerald-300 flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                Fortalezas Detectadas ({auditReport.strengths.length})
+              </span>
+              {auditReport.strengths.length > 0 ? (
+                <ul className="space-y-1.5 text-zinc-200 text-[11px]">
+                  {auditReport.strengths.map((st, i) => (
+                    <li key={i} className="flex items-start gap-1.5">
+                      <span className="text-emerald-400 mt-0.5">•</span>
+                      <span>{st}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-[11px] text-zinc-400">Agrega más habilidades y métricas para destacar fortalezas.</p>
+              )}
+            </div>
+
+            {/* Oportunidades de Mejora y Alertas de Métrica */}
+            <div className="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-2">
+              <span className="font-mono text-[10px] uppercase font-bold text-amber-300 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                Oportunidades de Optimización
+              </span>
+              <ul className="space-y-1.5 text-zinc-200 text-[11px]">
+                {auditReport.hallucinationWarnings?.map((warn, i) => (
+                  <li key={`warn-${i}`} className="flex items-start gap-1.5 text-amber-200 font-medium">
+                    <span className="text-amber-400 mt-0.5">⚡</span>
+                    <span>{warn}</span>
+                  </li>
+                ))}
+                {auditReport.improvements.map((imp, i) => (
+                  <li key={`imp-${i}`} className="flex items-start gap-1.5">
+                    <span className="text-amber-400 mt-0.5">•</span>
+                    <span>{imp}</span>
+                  </li>
+                ))}
+                {(!auditReport.hallucinationWarnings || auditReport.hallucinationWarnings.length === 0) &&
+                  auditReport.improvements.length === 0 && (
+                    <li className="text-emerald-300">¡Tu currículum cumple con todos los criterios de impacto ATS!</li>
+                  )}
+              </ul>
+            </div>
+          </div>
+
+          {/* Keywords Faltantes Rápidas (1-Click Inject) */}
+          {auditReport.missingKeywords.length > 0 && (
+            <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] font-mono text-zinc-400 mr-1">
+                  Keywords sugeridas para tu rol (toca para agregar):
+                </span>
+                {auditReport.missingKeywords.slice(0, 6).map((kw) => {
+                  const alreadyInSkills = formData.content.skills.some(
+                    (s) => s.toLowerCase() === kw.toLowerCase()
+                  );
+                  return (
+                    <button
+                      key={kw}
+                      type="button"
+                      disabled={alreadyInSkills}
+                      onClick={() => {
+                        if (!alreadyInSkills) {
+                          handleContentChange('skills', [...formData.content.skills, kw]);
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all cursor-pointer ${
+                        alreadyInSkills
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-white/5 hover:bg-cyan-500/20 text-cyan-200 border border-white/10 hover:border-cyan-500/30'
+                      }`}
+                    >
+                      {alreadyInSkills ? `✓ ${kw}` : `+ ${kw}`}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Modal de Importación Desacoplado */}
       <ImportDocumentModal
         isOpen={isImportModalOpen}
@@ -923,21 +1050,36 @@ export function SmartCvBuilder({
 
             {/* Sección: Enlace Digital & Visibilidad */}
             <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-white/5">
+              <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
                 <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
                   <Globe className="w-3.5 h-3.5 text-cyan-400" />
                   Enlace Digital del CV
                 </span>
-                {formData.slug && (
-                  <Link
-                    href={`/cv/${formData.slug}`}
-                    target="_blank"
-                    className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition"
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, isPublic: !prev.isPublic }))}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono border transition-colors cursor-pointer ${
+                      formData.isPublic
+                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                        : 'bg-zinc-800/80 text-zinc-400 border-white/10 hover:text-white'
+                    }`}
+                    title="Controla si tu currículum puede ser visitado públicamente mediante su enlace"
                   >
-                    <span>Ver CV Digital</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </Link>
-                )}
+                    <span className={`w-1.5 h-1.5 rounded-full ${formData.isPublic ? 'bg-emerald-400' : 'bg-zinc-500'}`} />
+                    <span>{formData.isPublic ? 'Público' : 'Privado'}</span>
+                  </button>
+                  {formData.slug && formData.isPublic && (
+                    <Link
+                      href={`/cv/${formData.slug}`}
+                      target="_blank"
+                      className="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition"
+                    >
+                      <span>Ver CV Digital</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -1347,8 +1489,35 @@ export function SmartCvBuilder({
 
                     {/* Viñetas con Asistente de Redacción Individual Contextualizado */}
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-mono text-zinc-400">Logros Cuantificables</label>
+                      <div className="flex items-center justify-between flex-wrap gap-1.5">
+                        <div className="flex items-center gap-2">
+                          <label className="text-[11px] font-mono text-zinc-400">Logros Cuantificables</label>
+                          {(() => {
+                            const missingMetricsCount = (exp.bullets || []).filter(
+                              (b) => b.trim().length > 0 && !hasQuantitativeMetric(b)
+                            ).length;
+                            if (missingMetricsCount > 0) {
+                              return (
+                                <span
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                                  title="Agrega porcentajes (%), montos ($) o volúmenes para maximizar tu puntaje ATS"
+                                >
+                                  <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
+                                  <span>{missingMetricsCount} sin métrica</span>
+                                </span>
+                              );
+                            }
+                            if ((exp.bullets || []).length > 0) {
+                              return (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                  <Check className="w-2.5 h-2.5 text-emerald-400" />
+                                  <span>Métricas STAR OK</span>
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
                         <InlineAiWriter
                           key={`writer-exp-${idx}-${exp.company}-${exp.role}`}
                           currentText={exp.bullets.join('\n') || ''}
@@ -1365,11 +1534,12 @@ export function SmartCvBuilder({
                               .map((b) => b.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim())
                               .filter(Boolean);
 
-                            if (newLines.length > 0) {
-                              updated[idx].bullets = newLines;
-                            } else {
-                              updated[idx].bullets = [newText.trim()];
-                            }
+                            const resolvedBullets = newLines.length > 0 ? newLines : [newText.trim()];
+                            updated[idx].bullets = resolvedBullets;
+                            updated[idx].detailedBullets = resolvedBullets.map((bText) => ({
+                              text: bText,
+                              needs_metric: !hasQuantitativeMetric(bText),
+                            }));
                             handleContentChange('experience', updated);
                           }}
                         />
@@ -1385,6 +1555,10 @@ export function SmartCvBuilder({
                             .filter(Boolean);
                           const updated = [...formData.content.experience];
                           updated[idx].bullets = newBullets;
+                          updated[idx].detailedBullets = newBullets.map((bText) => ({
+                            text: bText,
+                            needs_metric: !hasQuantitativeMetric(bText),
+                          }));
                           handleContentChange('experience', updated);
                         }}
                         className="w-full text-xs text-zinc-200 bg-zinc-900/80 rounded-lg p-2.5 border border-white/5 resize-none leading-relaxed focus:border-teal-500/40"

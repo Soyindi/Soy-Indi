@@ -313,10 +313,46 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
             )}
           </div>
 
-          {/* Pie de Página de Hoja 1 */}
-          <div className="pt-4 border-t border-zinc-200 mt-6 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-            <span>INDI Smart CV • Estándar ATS Grado Empresarial</span>
-            <span>Página 1 {needsTwoPages ? 'de 2' : 'de 1'}</span>
+          {/* Pie de Página de Hoja 1 (Con Firma Digital si es documento de 1 sola página) */}
+          <div className="pt-4 border-t border-zinc-200 mt-6">
+            {!needsTwoPages && content.signatureUrl && (
+              <div className="flex items-end justify-between pb-4 mb-4 border-b border-zinc-100">
+                <div className="text-[11px] text-zinc-500 space-y-0.5">
+                  <p className="font-semibold text-zinc-800">
+                    {content.fullName} • Perfil Profesional
+                  </p>
+                  <p className="text-[10px] text-zinc-400">
+                    Validado en plataforma INDI • Estándar ATS 2026
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center min-w-[200px]">
+                  <img
+                    src={content.signatureUrl}
+                    alt={`Firma de ${content.fullName}`}
+                    className="max-h-16 max-w-[220px] object-contain mb-1"
+                  />
+                  <div className="w-full border-t border-zinc-800 pt-1.5 text-center">
+                    <span className="text-[11px] font-bold text-zinc-950 block leading-tight">
+                      {content.fullName}
+                    </span>
+                    {content.rut && (
+                      <span className="text-[10px] font-mono text-zinc-700 block leading-tight font-medium">
+                        RUT: {content.rut}
+                      </span>
+                    )}
+                    <span className="text-[9px] text-zinc-400 tracking-wider uppercase font-mono block mt-0.5">
+                      {content.signatureDate || 'Firma Profesional'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+              <span>INDI Smart CV • Estándar ATS Grado Empresarial</span>
+              <span>Página 1 {needsTwoPages ? 'de 2' : 'de 1'}</span>
+            </div>
           </div>
         </div>
       </div>

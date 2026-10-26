@@ -61,7 +61,40 @@ const ROLE_SKILL_TAXONOMY: Record<string, {
     methodologies: ['Consentimiento Informado', 'Ética Profesional y Confidencialidad', 'Terapia Basada en Evidencia', 'Interconsulta Médica'],
     softLeadership: ['Contención Emocional', 'Escucha Activa', 'Alianza Terapéutica', 'Pensamiento Clínico Riguroso'],
   },
+  finance_legal: {
+    coreTechnical: ['Análisis Financiero Corporativo', 'Cumplimiento Normativo (Compliance)', 'Auditoría Tributaria y Contable', 'Gestión de Contratos y Litigios'],
+    toolsFrameworks: ['SAP ERP', 'IFRS / NIIF', 'Excel Financiero Avanzado', 'Power BI Financiero', 'Sistemas SII / Previred'],
+    methodologies: ['Control Presupuestario', 'Due Diligence Legal y Financiero', 'Gobierno Corporativo', 'Evaluación de Riesgo Crediticio'],
+    softLeadership: ['Negociación de Alto Nivel', 'Rigor Analítico', 'Ética Fiduciaria', 'Asesoría a Directorio'],
+  },
+  operations_engineering: {
+    coreTechnical: ['Optimización de Cadena de Suministro', 'Gestión de Mantenimiento Confiable', 'Seguridad Industrial y Prevención', 'Planificación de Operaciones'],
+    toolsFrameworks: ['SAP MM/PM', 'AutoCAD / BIM', 'MS Project / Primavera', 'ERP Logístico', 'ISO 9001 / ISO 45001'],
+    methodologies: ['Lean Six Sigma', 'Mejora Continua (Kaizen)', 'Gestión de Inventarios (JIT)', 'Control de Calidad Total'],
+    softLeadership: ['Supervisión en Terreno', 'Coordinación de Contratistas', 'Toma de Decisiones bajo Presión'],
+  },
+  education: {
+    coreTechnical: ['Diseño Curricular e Instruccional', 'Evaluación de Aprendizajes', 'Innovación Pedagógica', 'Investigación Académica'],
+    toolsFrameworks: ['LMS (Moodle / Canvas)', 'Herramientas EdTech', 'Google Workspace for Education', 'APA 7ma Edición'],
+    methodologies: ['Aprendizaje Basado en Proyectos (ABP)', 'Educación Inclusiva (DUA / PIE)', 'Convivencia Escolar', 'Tutoría Académica'],
+    softLeadership: ['Comunicación Pedagógica', 'Liderazgo en Aula', 'Trabajo Colaborativo con Familias'],
+  },
 };
+
+/**
+ * Expresión regular canónica para verificar si una viñeta contiene una métrica cuantitativa verificable
+ * (porcentajes, montos, multiplicadores o volúmenes con unidades operativas).
+ */
+export const QUANTITATIVE_METRIC_REGEX =
+  /\b(?:\d+(?:[.,]\d+)?\s?(?:%|k|m|mm|ms|s|x|veces|horas|días|dias|semanas|meses|años|anos|personas|usuarios|pacientes|clientes|estudiantes|alumnos|proyectos|equipos|casos|informes|consultas|millones|miles|puntos|uf|usd|clp)\b|\$\s?\d+|\b\d{2,}\b)/i;
+
+/**
+ * Evalúa si un texto de logro laboral contiene al menos una métrica cuantitativa verificable.
+ */
+export function hasQuantitativeMetric(bulletText: string): boolean {
+  if (!bulletText) return false;
+  return QUANTITATIVE_METRIC_REGEX.test(bulletText);
+}
 
 /**
  * Obtiene recomendaciones predictivas de habilidades categorizadas según el rol y las habilidades actuales
@@ -75,16 +108,22 @@ export function getRecommendedSkillsForRole(
 
   // 1. Determinar el perfil más cercano
   let matchedKey = 'software';
-  if (normalizedRole.includes('front') || normalizedRole.includes('ui') || normalizedRole.includes('web')) {
+  if (normalizedRole.includes('front') || normalizedRole.includes('ui') || normalizedRole.includes('web') || normalizedRole.includes('ux') || normalizedRole.includes('diseñ')) {
     matchedKey = 'frontend';
-  } else if (normalizedRole.includes('market') || normalizedRole.includes('growth') || normalizedRole.includes('ventas') || normalizedRole.includes('comercial')) {
+  } else if (normalizedRole.includes('market') || normalizedRole.includes('growth') || normalizedRole.includes('ventas') || normalizedRole.includes('comercial') || normalizedRole.includes('publicidad')) {
     matchedKey = 'marketing';
-  } else if (normalizedRole.includes('data') || normalizedRole.includes('datos') || normalizedRole.includes('analyt') || normalizedRole.includes('ia') || normalizedRole.includes('ai')) {
+  } else if (normalizedRole.includes('data') || normalizedRole.includes('datos') || normalizedRole.includes('analyt') || normalizedRole.includes('ia') || normalizedRole.includes('ai') || normalizedRole.includes('bi')) {
     matchedKey = 'data';
-  } else if (normalizedRole.includes('gerente') || normalizedRole.includes('director') || normalizedRole.includes('lead') || normalizedRole.includes('jefe') || normalizedRole.includes('product') || normalizedRole.includes('manager')) {
+  } else if (normalizedRole.includes('gerente') || normalizedRole.includes('director') || normalizedRole.includes('lead') || normalizedRole.includes('jefe') || normalizedRole.includes('product') || normalizedRole.includes('manager') || normalizedRole.includes('ceo') || normalizedRole.includes('coordina')) {
     matchedKey = 'management';
-  } else if (normalizedRole.includes('psic') || normalizedRole.includes('médic') || normalizedRole.includes('medic') || normalizedRole.includes('salud') || normalizedRole.includes('nutri') || normalizedRole.includes('enferm')) {
+  } else if (normalizedRole.includes('psic') || normalizedRole.includes('médic') || normalizedRole.includes('medic') || normalizedRole.includes('salud') || normalizedRole.includes('nutri') || normalizedRole.includes('enferm') || normalizedRole.includes('kinesi') || normalizedRole.includes('terap') || normalizedRole.includes('clínic') || normalizedRole.includes('clinic')) {
     matchedKey = 'health';
+  } else if (normalizedRole.includes('finan') || normalizedRole.includes('contad') || normalizedRole.includes('auditor') || normalizedRole.includes('abogad') || normalizedRole.includes('legal') || normalizedRole.includes('jurídic') || normalizedRole.includes('tribut')) {
+    matchedKey = 'finance_legal';
+  } else if (normalizedRole.includes('operacion') || normalizedRole.includes('logíst') || normalizedRole.includes('logist') || normalizedRole.includes('industrial') || normalizedRole.includes('prevenci') || normalizedRole.includes('obras') || normalizedRole.includes('construcc') || normalizedRole.includes('manteni')) {
+    matchedKey = 'operations_engineering';
+  } else if (normalizedRole.includes('docen') || normalizedRole.includes('profes') || normalizedRole.includes('educa') || normalizedRole.includes('pedagog') || normalizedRole.includes('académic')) {
+    matchedKey = 'education';
   }
 
   const taxonomy = ROLE_SKILL_TAXONOMY[matchedKey] || ROLE_SKILL_TAXONOMY.software;

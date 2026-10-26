@@ -311,3 +311,20 @@ export interface SkillCategoryGroup {
   }>;
 }
 
+/**
+ * Esquemas de validación Zod para parámetros de Server Actions de Smart CV
+ */
+export const cvIdLookupSchema = z.object({
+  cvId: z.string().trim().min(1, 'El identificador del CV es requerido').max(128, 'Identificador inválido'),
+  userId: z.string().trim().optional(),
+});
+
+export const cvSlugLookupSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .min(1, 'El enlace personalizado (slug) es requerido')
+    .max(80, 'El enlace personalizado es demasiado largo'),
+});
+
+

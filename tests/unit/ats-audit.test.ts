@@ -93,4 +93,61 @@ describe('ATS Score & Audit Engine', () => {
     expect(result.data.missingKeywords.length).toBeGreaterThan(0);
     expect(result.data.score).toBeLessThan(70);
   });
+
+  it('debe reconocer métricas cuantitativas agregadas dinámicamente en bullets aunque detailedBullets tuviera needs_metric=true', async () => {
+    const cvWithUpdatedBulletMetrics: CVFormValues = {
+      ...baseCv,
+      content: {
+        ...baseCv.content,
+        experience: [
+          {
+            company: 'Cloud Corp',
+            role: 'Tech Lead',
+            period: '2022 - Presente',
+            bullets: [
+              'Optimicé la arquitectura reduciendo la latencia en un 45% para 50k usuarios.',
+            ],
+            // Simulando que detailedBullets quedó desactualizado antes de la edición
+            detailedBullets: [
+              { text: 'Optimicé la arquitectura del servidor.', needs_metric: true },
+            ],
+          },
+        ],
+      },
+    };
+
+    const result = await auditAtsScoreAction(cvWithUpdatedBulletMetrics);
+    expect(result.success).toBe(true);
+    expect(result.data.hallucinationWarnings?.length ?? 0).toBe(0);
+  });
+
+  it('debe evaluar correctamente roles clínicos y de salud con su propia taxonomía ATS', async () => {
+    const clinicalCv: CVFormValues = {
+      ...baseCv,
+      targetRole: 'Psicólogo Clínico Especialista',
+      content: {
+        ...baseCv.content,
+        summary: 'Psicólogo clínico con enfoque en evaluación diagnóstica, intervención clínica y atención de pacientes bajo normas de ética y salud.',
+        skills: ['Evaluación Diagnóstica', 'Intervención Clínica', 'Tratamiento', 'Salud Mental', 'Ética Profesional'],
+        experience: [
+          {
+            company: 'Hospital Clínico',
+            role: 'Psicólogo Clínico',
+            period: '2021 - Presente',
+            bullets: [
+              'Realicé evaluación diagnóstica y seguimiento a más de 120 pacientes anuales.',
+              'Implementé protocolos de intervención clínica aumentando el alta terapéutica en 35%.',
+            ],
+            detailedBullets: [],
+          },
+        ],
+      },
+    };
+
+    const result = await auditAtsScoreAction(clinicalCv);
+    expect(result.success).toBe(true);
+    expect(result.data.score).toBeGreaterThanOrEqual(80);
+    expect(result.data.keywordMatches).toContain('clínic');
+    expect(result.data.keywordMatches).toContain('pacientes');
+  });
 });

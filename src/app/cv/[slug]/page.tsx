@@ -6,6 +6,7 @@ import { smartCvs } from '@/entities/schema';
 import { eq, sql } from 'drizzle-orm';
 import { CVFormValues } from '@/entities/cv/schemas';
 import { PublicCvViewer } from '@/features/ai-smart-cv/components/PublicCvViewer';
+import { getAppBaseUrl, buildCanonicalUrl } from '@/entities/brand/domain';
 import { Sparkles, ArrowLeft, FileText } from 'lucide-react';
 import { JsonLd } from '@/shared/ui/JsonLd';
 
@@ -35,18 +36,20 @@ export async function generateMetadata({ params }: PublicCvPageProps): Promise<M
     const content = cv.content as any;
     const name = content?.fullName || cv.title;
     const role = cv.targetRole;
-    const ogImageUrl = `https://soyindi.cl/api/og?type=cv&title=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}&about=${encodeURIComponent('Currículum profesional ATS verificado en el Edge.')}&verified=1`;
+    const baseUrl = getAppBaseUrl();
+    const canonicalCvUrl = buildCanonicalUrl(`/cv/${slug}`);
+    const ogImageUrl = `${baseUrl}/api/og?type=cv&title=${encodeURIComponent(name)}&role=${encodeURIComponent(role)}&about=${encodeURIComponent('Currículum profesional ATS verificado en el Edge.')}&verified=1`;
 
     return {
       title: `${name} • ${role} | Smart CV`,
       description: `Revisa la trayectoria profesional y credenciales verificables de ${name} (${role}) en INDI. Descarga su CV en PDF vectorial ATS.`,
       alternates: {
-        canonical: `https://soyindi.cl/cv/${slug}`,
+        canonical: canonicalCvUrl,
       },
       openGraph: {
         title: `${name} • ${role} | Smart CV`,
         description: `Revisa la trayectoria profesional de ${name} (${role}) en INDI. Descarga su CV vectorial ATS.`,
-        url: `https://soyindi.cl/cv/${slug}`,
+        url: canonicalCvUrl,
         siteName: 'INDI Smart CV',
         type: 'profile',
         images: [
@@ -99,13 +102,22 @@ export default async function PublicCvPage({ params }: PublicCvPageProps) {
         <p className="text-sm text-zinc-400 max-w-md mb-8 leading-relaxed">
           El currículum con el enlace &quot;{slug}&quot; no se encuentra disponible públicamente en este momento o su autor lo ha configurado como privado.
         </p>
-        <Link
-          href="/"
-          className="min-h-[44px] inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/20 hover:opacity-95 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Volver al Inicio de INDI</span>
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Link
+            href="/login?mode=signup&callbackUrl=/cv"
+            className="min-h-[44px] inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/20 hover:opacity-95 transition"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Crear mi Smart CV Gratis</span>
+          </Link>
+          <Link
+            href="/"
+            className="min-h-[44px] inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 font-semibold text-xs transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Volver al Inicio</span>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -120,6 +132,7 @@ export default async function PublicCvPage({ params }: PublicCvPageProps) {
   };
 
   const candidateName = (cvRecord.content as any)?.fullName || cvRecord.title;
+  const canonicalCvUrl = buildCanonicalUrl(`/cv/${slug}`);
 
   const cvJsonLd = {
     '@context': 'https://schema.org',
@@ -128,13 +141,13 @@ export default async function PublicCvPage({ params }: PublicCvPageProps) {
       '@type': 'Person',
       name: candidateName,
       jobTitle: cvRecord.targetRole,
-      url: `https://soyindi.cl/cv/${slug}`,
+      url: canonicalCvUrl,
     },
     hasPart: {
       '@type': 'DigitalDocument',
       name: `Currículum Profesional de ${candidateName}`,
       encodingFormat: 'application/pdf',
-      url: `https://soyindi.cl/cv/${slug}`,
+      url: canonicalCvUrl,
     },
   };
 
