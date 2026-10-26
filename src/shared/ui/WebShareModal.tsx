@@ -16,7 +16,6 @@ import {
   Share2,
   MessageCircle,
   ExternalLink,
-  Sparkles,
 } from 'lucide-react';
 
 function LinkedInIcon({ className }: { className?: string }) {
@@ -55,8 +54,9 @@ export function WebShareModal({
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
 
-  // URLs canónicas para cada canal
-  const [tone, setTone] = useState<'networking' | 'business' | 'minimal'>('networking');
+  const pathPrefix =
+    entityType === 'card' ? '/c/' : entityType === 'cv' ? '/cv/' : '/p/';
+  const cleanDisplayUrl = `soyindi.cl${pathPrefix}${slug}`;
 
   const defaultUrl = buildCanonicalShareUrl({
     entityType,
@@ -98,7 +98,7 @@ export function WebShareModal({
     title,
     role,
     url: defaultUrl,
-    tone,
+    tone: 'minimal',
   });
 
   useEffect(() => {
@@ -107,11 +107,10 @@ export function WebShareModal({
     }
   }, []);
 
-  // Retroalimentación háptica y bloqueo de scroll
   useEffect(() => {
     if (isOpen) {
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate?.([15, 30, 15]);
+        navigator.vibrate?.(15);
       }
       document.body.style.overflow = 'hidden';
     } else {
@@ -122,7 +121,6 @@ export function WebShareModal({
     };
   }, [isOpen]);
 
-  // Cerrar con Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -137,7 +135,7 @@ export function WebShareModal({
 
   const triggerHaptics = () => {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate?.(20);
+      navigator.vibrate?.(15);
     }
   };
 
@@ -149,7 +147,7 @@ export function WebShareModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      // Fallback
+      // Fallback silencioso
     }
   };
 
@@ -181,6 +179,7 @@ export function WebShareModal({
       title,
       role,
       url: whatsappUrl,
+      tone: 'minimal',
     }).fullMessage;
     window.open(buildWhatsAppShareUrl(textWithUrl), '_blank', 'noopener,noreferrer');
   };
@@ -194,214 +193,114 @@ export function WebShareModal({
   const handleTwitter = () => {
     triggerHaptics();
     onShareTracked?.('twitter');
-    const tweetText = `${shareCopy.headline}`;
-    window.open(buildTwitterShareUrl(tweetText, twitterUrl), '_blank', 'noopener,noreferrer');
+    window.open(buildTwitterShareUrl(shareCopy.headline, twitterUrl), '_blank', 'noopener,noreferrer');
   };
-
-  // Badge contextual para preview
-  const badgeLabel =
-    entityType === 'card'
-      ? 'Tarjeta Digital'
-      : entityType === 'cv'
-        ? 'Smart CV ATS'
-        : 'Presentación 16:9';
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Compartir perfil digital"
+      aria-label="Compartir"
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="relative w-full sm:max-w-lg bg-zinc-950/95 border border-zinc-800/80 rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl shadow-indigo-950/40 text-white overflow-hidden max-h-[90vh] flex flex-col"
+        className="relative w-full sm:max-w-sm bg-zinc-950/95 border border-zinc-800/80 rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl text-white overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Cabecera del Modal */}
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-800/60">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-              <Share2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold tracking-tight text-white">Compartir Perfil</h3>
-              <p className="text-xs text-zinc-400">Social Graph & Enlace Oficial</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-            aria-label="Cerrar ventana"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Contenido con Scroll si es necesario */}
-        <div className="py-5 space-y-5 overflow-y-auto pr-1">
-          {/* Vista Previa de la Tarjeta Social (Safe Zone 1:1 Preview) */}
-          <div className="p-4 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 flex items-center gap-4">
-            <div className="relative w-16 h-16 rounded-2xl bg-indigo-600/30 border border-indigo-500/40 flex-shrink-0 flex items-center justify-center overflow-hidden">
+        {/* Cabecera Minimalista con Identidad Compacta */}
+        <div className="flex items-center justify-between gap-3 pb-4 border-b border-zinc-800/60">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="relative w-11 h-11 rounded-2xl bg-indigo-600/25 border border-indigo-500/30 flex-shrink-0 flex items-center justify-center overflow-hidden">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photoUrl} alt={title} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-xl font-extrabold text-indigo-300">
+                <span className="text-sm font-bold text-indigo-300">
                   {title.slice(0, 2).toUpperCase()}
                 </span>
               )}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-[10px] font-semibold tracking-wider text-indigo-300 uppercase mb-1">
-                <Sparkles className="w-2.5 h-2.5" />
-                <span>{badgeLabel}</span>
-              </div>
-              <h4 className="text-sm font-bold text-white truncate">{title}</h4>
-              <p className="text-xs text-zinc-400 truncate">{role || 'Identidad Oficial INDI'}</p>
-              <p className="text-[11px] text-zinc-500 truncate mt-0.5">soyindi.cl</p>
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-white truncate">{title}</h3>
+              <p className="text-xs text-zinc-400 truncate">{role || cleanDisplayUrl}</p>
             </div>
           </div>
-
-          {/* Selector de Tono del Mensaje */}
-          {entityType === 'card' && (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                  Estilo de Mensaje
-                </span>
-                <span className="text-[11px] text-zinc-500">Formato WhatsApp</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptics();
-                    setTone('networking');
-                  }}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all ${
-                    tone === 'networking'
-                      ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 shadow-sm shadow-indigo-500/20'
-                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  🤝 Networking
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptics();
-                    setTone('business');
-                  }}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all ${
-                    tone === 'business'
-                      ? 'bg-emerald-600/20 border-emerald-500 text-emerald-300 shadow-sm shadow-emerald-500/20'
-                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  💼 Comercial
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    triggerHaptics();
-                    setTone('minimal');
-                  }}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all ${
-                    tone === 'minimal'
-                      ? 'bg-cyan-600/20 border-cyan-500 text-cyan-300 shadow-sm shadow-cyan-500/20'
-                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  ⚡ Directo
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Botón Primario: Web Share API si está disponible */}
-          {canNativeShare && (
-            <button
-              onClick={handleNativeShare}
-              className="w-full min-h-[48px] py-3.5 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25 transition-all"
-            >
-              <Share2 className="w-5 h-5" />
-              <span>Abrir menú de compartir del teléfono</span>
-            </button>
-          )}
-
-          {/* Accesos Directos a Canales Sociales */}
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 block mb-3">
-              Enviar por canal directo
-            </span>
-            <div className="grid grid-cols-3 gap-3">
-              {/* WhatsApp */}
-              <button
-                onClick={handleWhatsApp}
-                className="min-h-[52px] p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40 hover:bg-emerald-900/40 active:scale-[0.98] text-emerald-300 font-medium flex flex-col items-center justify-center gap-1.5 transition-all group"
-              >
-                <MessageCircle className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-semibold">WhatsApp</span>
-              </button>
-
-              {/* LinkedIn */}
-              <button
-                onClick={handleLinkedIn}
-                className="min-h-[52px] p-3 rounded-xl bg-blue-950/30 border border-blue-800/40 hover:bg-blue-900/40 active:scale-[0.98] text-blue-300 font-medium flex flex-col items-center justify-center gap-1.5 transition-all group"
-              >
-                <LinkedInIcon className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-semibold">LinkedIn</span>
-              </button>
-
-              {/* Twitter / X */}
-              <button
-                onClick={handleTwitter}
-                className="min-h-[52px] p-3 rounded-xl bg-zinc-900 border border-zinc-700/60 hover:bg-zinc-800 active:scale-[0.98] text-zinc-200 font-medium flex flex-col items-center justify-center gap-1.5 transition-all group"
-              >
-                <ExternalLink className="w-5 h-5 text-zinc-300 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-semibold">X / Twitter</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Copiar Enlace Directo */}
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 block mb-2">
-              Enlace directo canónico
-            </span>
-            <div className="flex items-center gap-2 p-1.5 pl-3.5 bg-zinc-900/90 border border-zinc-800 rounded-xl">
-              <span className="text-xs text-zinc-300 font-mono truncate flex-1">{copyUrl}</span>
-              <button
-                onClick={handleCopy}
-                className={`min-h-[44px] px-4 py-2 rounded-lg font-medium text-xs flex items-center gap-2 transition-all ${
-                  copied
-                    ? 'bg-emerald-600 text-white font-bold'
-                    : 'bg-zinc-800 hover:bg-zinc-700 text-white'
-                }`}
-                aria-label="Copiar enlace al portapapeles"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>¡Copiado!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    <span>Copiar</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-xl bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            aria-label="Cerrar"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Footer Informativo */}
-        <div className="pt-3 border-t border-zinc-900 text-center">
-          <p className="text-[11px] text-zinc-500">
-            Optimizada con <strong className="text-zinc-400 font-semibold">Zona Segura 1:1</strong> para previsualizaciones impecables.
-          </p>
+        <div className="pt-5 space-y-3">
+          {/* 1. Acción Principal: Copiar Enlace Limpio en 1 Toque */}
+          <div className="flex items-center gap-2 p-1.5 pl-3.5 bg-zinc-900/90 border border-zinc-800 rounded-2xl">
+            <span className="text-xs text-zinc-300 font-mono truncate flex-1">
+              {cleanDisplayUrl}
+            </span>
+            <button
+              onClick={handleCopy}
+              className={`min-h-[44px] px-4 py-2 rounded-xl font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                copied
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+              }`}
+              aria-label="Copiar enlace"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>¡Copiado!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copiar</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* 2. Botón Destacado: Enviar por WhatsApp */}
+          <button
+            onClick={handleWhatsApp}
+            className="w-full min-h-[48px] py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>Enviar por WhatsApp</span>
+          </button>
+
+          {/* 3. Canales Rápidos Secundarios */}
+          <div className={`grid ${canNativeShare ? 'grid-cols-3' : 'grid-cols-2'} gap-2 pt-1`}>
+            <button
+              onClick={handleLinkedIn}
+              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 active:scale-[0.98] text-zinc-300 hover:text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <LinkedInIcon className="w-3.5 h-3.5 text-blue-400" />
+              <span>LinkedIn</span>
+            </button>
+
+            <button
+              onClick={handleTwitter}
+              className="min-h-[44px] px-3 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 active:scale-[0.98] text-zinc-300 hover:text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+              <span>X</span>
+            </button>
+
+            {canNativeShare && (
+              <button
+                onClick={handleNativeShare}
+                className="min-h-[44px] px-3 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 active:scale-[0.98] text-zinc-300 hover:text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Más...</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

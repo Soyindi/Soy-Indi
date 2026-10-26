@@ -155,4 +155,48 @@ describe('Motor Visual Open Graph y Módulo de Compartir (INDI 2026)', () => {
       expect(mockOgImage.height).toBe(630);
     });
   });
+
+  describe('Diseño Minimalista en DigitalCard, WalletPassModal y WebShareModal', () => {
+    it('DigitalCard elimina el badge técnico de material, Apple Wallet y líneas dobles vacías', async () => {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
+      const cardCode = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/entities/card/components/DigitalCard.tsx'),
+        'utf-8'
+      );
+
+      expect(cardCode).not.toContain('activeFinish.tagLabel');
+      expect(cardCode).not.toContain('<span>Apple Wallet</span>');
+      expect(cardCode).toContain('<span>Google Wallet</span>');
+      expect(cardCode).toContain('hasSocialLinks && (');
+    });
+
+    it('WalletPassModal se enfoca exclusivamente en el pase de Google Wallet y QR sin acciones redundantes', async () => {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
+      const walletModalCode = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/features/card-builder/components/WalletPassModal.tsx'),
+        'utf-8'
+      );
+
+      expect(walletModalCode).toContain('Añadir a Google Wallet');
+      expect(walletModalCode).not.toContain('iPhone / Apple');
+      expect(walletModalCode).not.toContain('Fondo de Bloqueo');
+    });
+
+    it('WebShareModal ofrece una experiencia minimalista en 3 bloques sin selectores ni tecnicismos', async () => {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
+      const shareModalCode = fs.readFileSync(
+        path.resolve(process.cwd(), 'src/shared/ui/WebShareModal.tsx'),
+        'utf-8'
+      );
+
+      expect(shareModalCode).toContain('cleanDisplayUrl');
+      expect(shareModalCode).toContain('Enviar por WhatsApp');
+      expect(shareModalCode).not.toContain('Estilo de Mensaje');
+      expect(shareModalCode).not.toContain('Enlace directo canónico');
+      expect(shareModalCode).not.toContain('Social Graph & Enlace Oficial');
+    });
+  });
 });

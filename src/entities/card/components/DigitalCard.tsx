@@ -20,7 +20,7 @@ import { getAccessibleTextColor } from '@/shared/lib/colorContrast';
 import { trackCardEventAction } from '@/features/card-builder/analytics-actions';
 import { trackResourceView } from '@/shared/lib/telemetryClient';
 import { WebShareModal } from '@/shared/ui/WebShareModal';
-import { getWhatsAppDigits, normalizeChileanPhone } from '@/shared/lib/phone';
+import { getWhatsAppDigits } from '@/shared/lib/phone';
 import { WalletPassModal } from '@/features/card-builder/components/WalletPassModal';
 
 // Importar QRCode dinámicamente para SSR seguro
@@ -92,15 +92,13 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const [vcardSaved, setVcardSaved] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [walletInitialTab, setWalletInitialTab] = useState<'apple' | 'google'>('apple');
 
-  // Detectar parámetro ?wallet=apple o ?wallet=google para abrir modal automáticamente
+  // Detectar parámetro ?wallet=google para abrir modal automáticamente
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const walletParam = params.get('wallet');
-      if (walletParam === 'apple' || walletParam === 'google') {
-        setWalletInitialTab(walletParam);
+      if (walletParam === 'google' || walletParam === 'apple') {
         setIsWalletModalOpen(true);
       }
     }
@@ -283,6 +281,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   };
 
   const statusDisplay = getOperationalStatusDisplay();
+  const hasSocialLinks = Boolean(card.websiteUrl || card.linkedinUrl || card.instagramUrl);
 
   return (
     <SmartParticles
@@ -385,29 +384,19 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           </div>
         )}
 
-        {/* Badge Superior Contextual o Indicador de Acabado */}
-        <div className="relative z-10 flex items-center justify-between gap-2 mb-3">
-          <span 
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase border shadow-sm backdrop-blur-md ${activeFinish.tagColor}`}
-            style={{ borderColor: `${primaryColor}66` }}
-          >
-            <Sparkles className="w-2.5 h-2.5" style={{ color: primaryColor }} />
-            <span>{activeFinish.tagLabel}</span>
-          </span>
-
-          <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            {card.themeConfig?.badgeText && (
-              <span 
-                className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase border shadow-sm backdrop-blur-md ${
-                  isLightMode ? 'bg-black/5 text-slate-800 border-slate-300' : 'bg-white/10 text-white'
-                }`}
-                style={{ borderColor: `${primaryColor}55`, color: primaryColor }}
-              >
-                <span>{card.themeConfig.badgeText}</span>
-              </span>
-            )}
+        {/* Badge Superior Contextual Personalizado (Solo si fue definido por el usuario) */}
+        {card.themeConfig?.badgeText && (
+          <div className="relative z-10 flex items-center justify-center mb-3">
+            <span 
+              className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase border shadow-sm backdrop-blur-md ${
+                isLightMode ? 'bg-black/5 text-slate-800 border-slate-300' : 'bg-white/10 text-white'
+              }`}
+              style={{ borderColor: `${primaryColor}55`, color: primaryColor }}
+            >
+              <span>{card.themeConfig.badgeText}</span>
+            </span>
           </div>
-        </div>
+        )}
 
         {/* Header de la Tarjeta */}
         <div className="relative z-10 flex flex-col items-center text-center">
@@ -677,40 +666,19 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           );
         })()}
 
-        {/* Acceso a Billeteras Digitales Nativas (Apple & Google Wallet Offline) */}
-        <div className="relative z-10 flex items-center justify-center gap-2 mb-6">
+        {/* Acceso Minimalista a Google Wallet */}
+        <div className="relative z-10 mb-5">
           <button
             type="button"
-            onClick={() => {
-              setWalletInitialTab('apple');
-              setIsWalletModalOpen(true);
-            }}
-            className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-[0.98] cursor-pointer ${
+            onClick={() => setIsWalletModalOpen(true)}
+            className={`w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium border transition-all active:scale-[0.98] cursor-pointer ${
               isLightMode
-                ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200 shadow-xs'
-                : 'glass-pill text-zinc-300 hover:text-white border-white/10'
-            }`}
-            title="Guardar en Apple Wallet (Acceso con doble clic sin internet)"
-          >
-            <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">
-              <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.04-7.69-7.84-12-14.4-6.19-9.5-10.96-20.19-14.31-32.06-3.35-11.88-5.03-23.23-5.03-34.05 0-14.16 3.52-25.96 10.55-35.41 7.03-9.45 15.89-14.28 26.58-14.5 4.9.12 10.4 1.34 16.5 3.66 6.09 2.32 10.14 3.53 12.14 3.64 1.78-.11 5.92-1.37 12.42-3.79 6.5-2.41 12.01-3.6 16.53-3.56 12.03.74 21.64 5.37 28.84 13.88-10.5 6.35-15.65 15.22-15.43 26.6.22 8.94 3.63 16.42 10.22 22.44 6.59 6.02 14.52 9.53 23.79 10.53-2.16 6.54-4.79 13.06-7.89 19.57zM119.22 31.81c0-7.04 2.55-13.79 7.66-20.25 5.11-6.46 11.53-10.74 19.26-12.83.33 1.33.5 2.56.5 3.69 0 7.27-2.67 14.21-8.01 20.82-5.34 6.61-11.83 10.66-19.46 12.15-.1-.78-.16-1.97-.16-3.58z"/>
-            </svg>
-            <span>Apple Wallet</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setWalletInitialTab('google');
-              setIsWalletModalOpen(true);
-            }}
-            className={`flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border transition-all active:scale-[0.98] cursor-pointer ${
-              isLightMode
-                ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200 shadow-xs'
+                ? 'bg-slate-100 hover:bg-slate-200/80 text-slate-800 border-slate-200 shadow-xs'
                 : 'glass-pill text-zinc-300 hover:text-white border-white/10'
             }`}
             title="Guardar en Google Wallet"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
@@ -721,62 +689,64 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         </div>
 
         {/* Redes Sociales y Enlaces Externos con Touch Target ergonómico >= 44x44px */}
-        <div className={`relative z-10 flex items-center justify-center gap-3 mb-6 pt-4 border-t ${
-          isLightMode ? 'border-slate-200' : 'border-white/5'
-        }`}>
-          {card.websiteUrl && (
-            <a
-              href={card.websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${
-                isLightMode 
-                  ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' 
-                  : 'glass-pill text-zinc-300 hover:text-white'
-              }`}
-              style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
-              title="Sitio Web"
-            >
-              <Globe className="w-4 h-4" />
-            </a>
-          )}
-          {card.linkedinUrl && (
-            <a
-              href={card.linkedinUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${
-                isLightMode 
-                  ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' 
-                  : 'glass-pill text-zinc-300 hover:text-white'
-              }`}
-              style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
-              title="LinkedIn"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.68 1.68 0 1 0 0-3.36 1.68 1.68 0 0 0 0 3.36m1.39 9.74v-8.37H5.07v8.37h2.78z" />
-              </svg>
-            </a>
-          )}
-          {card.instagramUrl && (
-            <a
-              href={card.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${
-                isLightMode 
-                  ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' 
-                  : 'glass-pill text-zinc-300 hover:text-white'
-              }`}
-              style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
-              title="Instagram"
-            >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
-              </svg>
-            </a>
-          )}
-        </div>
+        {hasSocialLinks && (
+          <div className={`relative z-10 flex items-center justify-center gap-3 mb-5 pt-4 border-t ${
+            isLightMode ? 'border-slate-200' : 'border-white/5'
+          }`}>
+            {card.websiteUrl && (
+              <a
+                href={card.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${
+                  isLightMode 
+                    ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' 
+                    : 'glass-pill text-zinc-300 hover:text-white'
+                }`}
+                style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
+                title="Sitio Web"
+              >
+                <Globe className="w-4 h-4" />
+              </a>
+            )}
+            {card.linkedinUrl && (
+              <a
+                href={card.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${
+                  isLightMode 
+                    ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' 
+                    : 'glass-pill text-zinc-300 hover:text-white'
+                }`}
+                style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
+                title="LinkedIn"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.68 1.68 0 1 0 0-3.36 1.68 1.68 0 0 0 0 3.36m1.39 9.74v-8.37H5.07v8.37h2.78z" />
+                </svg>
+              </a>
+            )}
+            {card.instagramUrl && (
+              <a
+                href={card.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`w-11 h-11 rounded-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all ${
+                  isLightMode 
+                    ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' 
+                    : 'glass-pill text-zinc-300 hover:text-white'
+                }`}
+                style={{ borderColor: isLightMode ? undefined : `${primaryColor}33` }}
+                title="Instagram"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
+                </svg>
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Modal QR Code desplegable */}
         {showQR && (
@@ -849,7 +819,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         </div>
       </motion.div>
 
-      {/* Modal Universal de Compartir (Safe Zone 1:1 & Hápticos) */}
+      {/* Modal Minimalista de Compartir */}
       <WebShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
@@ -864,11 +834,10 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         }}
       />
 
-      {/* Modal para Billetera Digital & Acceso Rápido Offline (Apple & Google Wallet) */}
+      {/* Modal Minimalista de Google Wallet */}
       <WalletPassModal
         isOpen={isWalletModalOpen}
         onClose={() => setIsWalletModalOpen(false)}
-        initialTab={walletInitialTab}
         card={{
           slug: card.slug,
           title: card.title,
