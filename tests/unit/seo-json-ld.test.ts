@@ -15,6 +15,7 @@ describe('Auditoría de Identidad Visual y SEO JSON-LD (INDI 2026)', () => {
 
       // Verifica que tiene los componentes anatómicos del Alien oficial de INDI
       expect(content).toContain('viewBox="0 0 64 64"');
+      expect(content).toContain('preserveAspectRatio="xMidYMid meet"');
       expect(content).toContain('id="alien-grad"');
       expect(content).toContain('id="node-glow"');
       expect(content).toContain('prefers-color-scheme: light');

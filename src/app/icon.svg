@@ -1,8 +1,8 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="64" height="64" viewBox="0 0 64 64" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
   <style>
     :root {
       --bg-box: #080A12;
-      --border-box: rgba(34, 211, 238, 0.25);
+      --border-box: rgba(34, 211, 238, 0.28);
       --halo-glow: rgba(34, 211, 238, 0.45);
       --eye-fill: #080A12;
     }
@@ -17,7 +17,7 @@
   </style>
   <defs>
     <!-- Gradiente Prismático Oficial INDI (Azul Índigo a Cian Turquesa) -->
-    <linearGradient id="alien-grad" x1="16" y1="8" x2="48" y2="58" gradientUnits="userSpaceOnUse">
+    <linearGradient id="alien-grad" x1="13" y1="16" x2="51" y2="56" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#818CF8" />
       <stop offset="55%" stop-color="#22D3EE" />
       <stop offset="100%" stop-color="#2DD4BF" />
@@ -31,44 +31,44 @@
     </radialGradient>
 
     <!-- Aura de fondo sutil -->
-    <radialGradient id="backdrop-aura" cx="50%" cy="45%" r="50%">
+    <radialGradient id="backdrop-aura" cx="50%" cy="48%" r="50%">
       <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.35" />
       <stop offset="100%" stop-color="#6366F1" stop-opacity="0" />
     </radialGradient>
   </defs>
 
   <!-- Contenedor Base Circular Orgánico Fotónico (Zero Hard Squares) -->
-  <circle cx="32" cy="32" r="30" fill="var(--bg-box)" stroke="var(--border-box)" stroke-width="1.5" />
-  
+  <circle cx="32" cy="32" r="30.5" fill="var(--bg-box)" stroke="var(--border-box)" stroke-width="1.5" />
+
   <!-- Aura Luminosa Detrás del Alien -->
-  <circle cx="32" cy="34" r="22" fill="url(#backdrop-aura)" />
+  <circle cx="32" cy="35" r="23" fill="url(#backdrop-aura)" />
 
   <!-- Nodo Orbital Superior (Antena/Orbe Cósmico) -->
-  <circle cx="32" cy="11.5" r="4" fill="url(#node-glow)" />
+  <circle cx="32" cy="11" r="4.2" fill="url(#node-glow)" />
 
-  <!-- Cabeza Alienígena Geométrica Biomórfica Oficial INDI -->
-  <path 
-    d="M32 17.5C21.8 17.5 15.5 24.8 15.5 35C15.5 45.2 25.5 54.8 32 58.5C38.5 54.8 48.5 45.2 48.5 35C48.5 24.8 42.2 17.5 32 17.5Z" 
-    fill="url(#alien-grad)" 
+  <!-- Cabeza Alienígena Geométrica Biomórfica Oficial INDI (Proporción Exacta 1.06:1) -->
+  <path
+    d="M32 17.5C20.2 17.5 13.5 25.2 13.5 34.8C13.5 44.5 24.2 53.8 32 56.8C39.8 53.8 50.5 44.5 50.5 34.8C50.5 25.2 43.8 17.5 32 17.5Z"
+    fill="url(#alien-grad)"
   />
 
-  <!-- Ojo Izquierdo Elíptico Inclinado hacia Adentro -->
-  <ellipse 
-    cx="25.5" 
-    cy="36.5" 
-    rx="4.2" 
-    ry="7.8" 
-    transform="rotate(-26 25.5 36.5)" 
-    fill="var(--eye-fill)" 
+  <!-- Ojo Izquierdo Elíptico Almendrado (Proporción 1.6:1 inclinación 36°) -->
+  <ellipse
+    cx="24.6"
+    cy="36.2"
+    rx="4.6"
+    ry="7.4"
+    transform="rotate(-36 24.6 36.2)"
+    fill="var(--eye-fill)"
   />
 
-  <!-- Ojo Derecho Elíptico Inclinado hacia Adentro -->
-  <ellipse 
-    cx="38.5" 
-    cy="36.5" 
-    rx="4.2" 
-    ry="7.8" 
-    transform="rotate(26 38.5 36.5)" 
-    fill="var(--eye-fill)" 
+  <!-- Ojo Derecho Elíptico Almendrado (Proporción 1.6:1 inclinación 36°) -->
+  <ellipse
+    cx="39.4"
+    cy="36.2"
+    rx="4.6"
+    ry="7.4"
+    transform="rotate(36 39.4 36.2)"
+    fill="var(--eye-fill)"
   />
 </svg>
