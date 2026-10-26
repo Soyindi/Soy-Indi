@@ -129,4 +129,83 @@ describe('Subscription & Entitlements Logic', () => {
     expect(presentationQuota.allowed).toBe(true);
     expect(presentationQuota.maxLimit).toBe(10);
   });
+
+  it('garantiza el Plan Comunitario Gratuito permanente (1 Tarjeta + 1 Smart CV) cuando el trial Pro de 3 días ha expirado', async () => {
+    const { db } = await import('@/shared/api/db');
+    const { assertQuotaAvailableAction } = await import('@/features/pricing/actions');
+
+    const findFirstSpy = db.query.user.findFirst;
+    const findManyUserSpy = db.query.user.findMany;
+    const findManyCardsSpy = db.query.cards.findMany;
+    const findManyCvsSpy = db.query.smartCvs.findMany;
+
+    const expiredTrialUser = {
+      id: 'user-community-expired-trial',
+      status: 'TRIAL',
+      trialEndsAt: new Date(Date.now() - 86_400_000), // Expiró ayer
+      subscriptionEndsAt: null,
+    };
+
+    try {
+      // Simular usuario con trial vencido, 0 tarjetas, 0 CVs y 0 referidos
+      (db.query.user as any).findFirst = async () => expiredTrialUser;
+      (db.query.user as any).findMany = async () => [];
+      (db.query.cards as any).findMany = async () => [];
+      (db.query.smartCvs as any).findMany = async () => [];
+
+      // 1. assertUserEntitlementAction permite mutaciones de tarjetas y CVs bajo Plan Comunitario
+      const cardEntitlement = await assertUserEntitlementAction('user-community-expired-trial', 'cards');
+      expect(cardEntitlement.allowed).toBe(true);
+      expect(cardEntitlement.entitlement.tier).toBe('starter');
+      expect(cardEntitlement.entitlement.limits.cards).toBe(1);
+      expect(cardEntitlement.entitlement.limits.cvs).toBe(1);
+
+      const cvEntitlement = await assertUserEntitlementAction('user-community-expired-trial', 'cvs');
+      expect(cvEntitlement.allowed).toBe(true);
+      expect(cvEntitlement.entitlement.tier).toBe('starter');
+
+      // 2. Presentaciones sí requieren membresía activa tras expirar el trial Pro
+      const presEntitlement = await assertUserEntitlementAction('user-community-expired-trial', 'presentations');
+      expect(presEntitlement.allowed).toBe(false);
+      expect(presEntitlement.error).toContain('Presentaciones Orbitales');
+
+      // 3. Con 0 tarjetas y 0 CVs, assertQuotaAvailableAction permite crear la 1ra Tarjeta y el 1er CV gratis
+      const firstCardQuota = await assertQuotaAvailableAction('user-community-expired-trial', 'cards');
+      expect(firstCardQuota.allowed).toBe(true);
+      expect(firstCardQuota.currentCount).toBe(0);
+      expect(firstCardQuota.maxLimit).toBe(1);
+
+      const firstCvQuota = await assertQuotaAvailableAction('user-community-expired-trial', 'cvs');
+      expect(firstCvQuota.allowed).toBe(true);
+      expect(firstCvQuota.currentCount).toBe(0);
+      expect(firstCvQuota.maxLimit).toBe(1);
+
+      // 4. Cuando el usuario ya creó 1 tarjeta y 1 CV, bloquea la 2da creación (1/1) salvo que tenga referidos
+      (db.query.cards as any).findMany = async () => [{ id: 'card-1' }];
+      (db.query.smartCvs as any).findMany = async () => [{ id: 'cv-1' }];
+
+      const secondCardQuota = await assertQuotaAvailableAction('user-community-expired-trial', 'cards');
+      expect(secondCardQuota.allowed).toBe(false);
+      expect(secondCardQuota.currentCount).toBe(1);
+      expect(secondCardQuota.maxLimit).toBe(1);
+      expect(secondCardQuota.error).toContain('1/1');
+
+      const secondCvQuota = await assertQuotaAvailableAction('user-community-expired-trial', 'cvs');
+      expect(secondCvQuota.allowed).toBe(false);
+      expect(secondCvQuota.currentCount).toBe(1);
+      expect(secondCvQuota.maxLimit).toBe(1);
+
+      // 5. Si invita a 3 colegas confirmados, desbloquea +1 tarjeta extra gratuita (límite sube a 2)
+      (db.query.user as any).findMany = async () => [{ id: 'r1' }, { id: 'r2' }, { id: 'r3' }];
+      const bonusCardQuota = await assertQuotaAvailableAction('user-community-expired-trial', 'cards');
+      expect(bonusCardQuota.allowed).toBe(true);
+      expect(bonusCardQuota.currentCount).toBe(1);
+      expect(bonusCardQuota.maxLimit).toBe(2);
+    } finally {
+      (db.query.user as any).findFirst = findFirstSpy;
+      (db.query.user as any).findMany = findManyUserSpy;
+      (db.query.cards as any).findMany = findManyCardsSpy;
+      (db.query.smartCvs as any).findMany = findManyCvsSpy;
+    }
+  });
 });

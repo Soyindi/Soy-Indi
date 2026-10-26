@@ -172,7 +172,7 @@ export async function decomposeAndGeneratePresentationAction(
 
     if (targetUserId) {
       const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
-      const entitlement = await assertUserEntitlementAction(targetUserId);
+      const entitlement = await assertUserEntitlementAction(targetUserId, 'presentations');
       if (!entitlement.allowed) {
         return {
           success: false,
@@ -1159,7 +1159,7 @@ export async function refineSlideWithAiAction(
 
     if (targetUserId) {
       const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
-      const entitlement = await assertUserEntitlementAction(targetUserId);
+      const entitlement = await assertUserEntitlementAction(targetUserId, 'presentations');
       if (!entitlement.allowed) {
         return {
           success: false,
@@ -1447,7 +1447,7 @@ export async function upsertPresentationAction(
 
     // Guardrail de Seguridad: Bloqueo de mutaciones por membresía/trial expirado
     const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
-    const entitlementCheck = await assertUserEntitlementAction(targetUserId);
+    const entitlementCheck = await assertUserEntitlementAction(targetUserId, 'presentations');
     if (!entitlementCheck.allowed) {
       return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere membresía comunitaria activa.' };
     }

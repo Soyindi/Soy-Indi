@@ -58,12 +58,24 @@ export interface SmartCvBuilderProps {
   initialData?: Partial<CVFormValues>;
   initialCvId?: string;
   initialScore?: number;
+  defaultUserName?: string;
+  defaultUserEmail?: string;
+  autoLoadedExistingCv?: boolean;
+  quotaSummary?: {
+    currentCount: number;
+    maxLimit: number | 'unlimited';
+    allowedNew: boolean;
+  };
 }
 
 export function SmartCvBuilder({
   initialData,
   initialCvId,
   initialScore,
+  defaultUserName,
+  defaultUserEmail,
+  autoLoadedExistingCv,
+  quotaSummary,
 }: SmartCvBuilderProps = {}) {
   const [isPending, startTransition] = useTransition();
   const [auditPending, startAuditTransition] = useTransition();
@@ -99,15 +111,18 @@ export function SmartCvBuilder({
     suggestions: [],
   });
 
+  const resolvedDefaultFullName = initialData?.content?.fullName ?? defaultUserName ?? 'Matías Riquelme';
+  const resolvedDefaultEmail = initialData?.content?.email ?? defaultUserEmail ?? 'matias@indi.bio';
+
   const [formData, setFormData] = useState<CVFormValues>(() => ({
     title: initialData?.title || 'CV Ejecutivo 2026',
     targetRole: initialData?.targetRole || 'Senior Full Stack Engineer & Software Architect',
-    slug: initialData?.slug || generateCvSlug(initialData?.content?.fullName || 'matias-riquelme', false),
+    slug: initialData?.slug || generateCvSlug(resolvedDefaultFullName, false),
     isPublic: initialData?.isPublic ?? true,
     templateId: initialData?.templateId || 'executive-modern',
     content: {
-      fullName: initialData?.content?.fullName ?? 'Matías Riquelme',
-      email: initialData?.content?.email ?? 'matias@indi.bio',
+      fullName: resolvedDefaultFullName,
+      email: resolvedDefaultEmail,
       phone: initialData?.content?.phone ?? '+56 9 8765 4321',
       location: initialData?.content?.location ?? 'Santiago / Remoto Global',
       rut: initialData?.content?.rut ?? '18.492.041-K',
@@ -546,15 +561,23 @@ export function SmartCvBuilder({
       const res = await upsertSmartCvAction(formData, currentCvId);
       if (res.success) {
         setSavedSuccess(true);
-        if (res.id) setCurrentCvId(res.id);
+        if (res.id) {
+          setCurrentCvId(res.id);
+          if (typeof window !== 'undefined') {
+            const nextUrl = new URL(window.location.href);
+            nextUrl.searchParams.set('id', res.id);
+            nextUrl.searchParams.delete('new');
+            window.history.replaceState(null, '', nextUrl.pathname + nextUrl.search);
+          }
+        }
         if (res.score) setCurrentScore(res.score);
         if (res.slug) {
           setFormData((prev) => ({ ...prev, slug: res.slug }));
         }
-        setTimeout(() => setSavedSuccess(false), 3000);
+        setTimeout(() => setSavedSuccess(false), 3500);
       } else {
         setSaveError(res.error || 'Error al guardar el currículum.');
-        setTimeout(() => setSaveError(null), 5000);
+        setTimeout(() => setSaveError(null), 6000);
       }
     });
   };
@@ -754,6 +777,68 @@ export function SmartCvBuilder({
           </button>
         </div>
       </AppEditorHeader>
+
+      {autoLoadedExistingCv && (
+        <div className="mt-4 p-3.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-200 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 sm:mt-0" />
+            <span>
+              <strong className="text-white">Editando tu Smart CV guardado ({quotaSummary?.currentCount ?? 1}/{quotaSummary?.maxLimit ?? 1}).</strong>{' '}
+              Puedes modificarlo, auditarlo con IA y descargar tu PDF A4 sin límites.
+            </span>
+          </div>
+          {quotaSummary?.allowedNew ? (
+            <a
+              href="/cv?new=true"
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-cyan-300 font-semibold text-xs border border-white/10 transition-colors shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Crear nueva versión</span>
+            </a>
+          ) : (
+            <a
+              href="/dashboard?tab=affiliates"
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-300 font-semibold text-xs border border-white/10 transition-colors shrink-0"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Invitar 5 colegas (+1 CV)</span>
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Alerta de Éxito de Guardado con Acciones Directas */}
+      {savedSuccess && (
+        <div className="mt-4 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>
+              <strong className="text-white">¡Smart CV guardado y publicado exitosamente!</strong>{' '}
+              Tu currículum está sincronizado y listo para compartir o exportar.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {formData.slug && (
+              <a
+                href={`/cv/${formData.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 font-semibold text-xs border border-emerald-500/30 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Ver CV Público</span>
+              </a>
+            )}
+            <a
+              href="/dashboard?tab=cvs"
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-xs border border-white/10 transition-colors"
+            >
+              <span>Ir a Mi Panel</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Alerta de Error de Guardado */}
       {saveError && (

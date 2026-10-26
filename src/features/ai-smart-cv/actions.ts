@@ -308,7 +308,7 @@ export async function upsertSmartCvAction(
 
     // Guardrail de Seguridad: Bloqueo de mutaciones por membresía/trial expirado
     const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
-    const entitlementCheck = await assertUserEntitlementAction(targetUserId);
+    const entitlementCheck = await assertUserEntitlementAction(targetUserId, 'cvs');
     if (!entitlementCheck.allowed) {
       return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere membresía comunitaria activa.' };
     }
@@ -600,7 +600,7 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
 
     if (targetUserId) {
       const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
-      const entitlement = await assertUserEntitlementAction(targetUserId);
+      const entitlement = await assertUserEntitlementAction(targetUserId, 'cvs');
       if (!entitlement.allowed) {
         return {
           success: false,
@@ -866,7 +866,7 @@ export async function analyzeJobMatchAction(input: any): Promise<{
 
     if (targetUserId) {
       const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
-      const entitlement = await assertUserEntitlementAction(targetUserId);
+      const entitlement = await assertUserEntitlementAction(targetUserId, 'cvs');
       if (!entitlement.allowed) {
         return {
           success: false,

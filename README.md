@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-529_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-530_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -27,7 +27,8 @@
 **INDI** es una plataforma diseñada para emprendedores, trabajadores independientes y profesionales que buscan captar más clientes y proyectar una imagen impecable de manera sencilla.
 
 ### 🌟 Fase Comunitaria 2026 (Free & Limited • Vercel-Ready):
-- **Plan Starter (Comunitario Gratuito) 🟢**: **$0 CLP / mes de por vida**. Incluye 1 Tarjeta Digital viva con enlace único y código QR, 1 Smart CV en PDF vectorial ATS, botón de WhatsApp directo y programa oficial de afiliados.
+- **Plan Starter (Comunitario Gratuito) 🟢**: **$0 CLP / mes de por vida**. Incluye 1 Tarjeta Digital viva con enlace único y código QR, 1 Smart CV en PDF vectorial ATS, botón de WhatsApp directo y programa oficial de afiliados. Tras expirar el período de prueba Pro de 3 días, toda cuenta transiciona de forma transparente al Plan Comunitario Gratuito permanente (`assertUserEntitlementAction` y `assertQuotaAvailableAction`), permitiendo crear, editar y actualizar su Tarjeta Digital y su Smart CV sin bloqueos.
+- **Auto-Carga Inteligente de Recursos Existentes (`/cards/new` y `/cv`)**: Cuando el usuario accede al creador de Tarjetas o Smart CV sin parámetro `?id=` y ya alcanzó el tope de su cuota (ej. 1/1 en Plan Comunitario), el sistema carga automáticamente su recurso existente en modo edición y desambigua slugs iniciales con el nombre real de la cuenta.
 - **Enfoque de Producto Core**: Máxima concentración en **Tarjeta Digital + Smart CV (ATS)**, erradicando la sobrecarga cognitiva y optimizando la latencia perimetral en <50ms.
 - **Programa de Afiliados con Incentivo Mutuo (25% CLP)**: Los miembros comparten su código QR exclusivo; acumulan beneficios inmediatos de producto (desbloqueo de tarjetas adicionales) y comisiones monetarias sobre futuras compras y patrocinios.
 - **Planes Pro 🔵 y Max 🟣 en Lista de Espera**: Disponibles para suscripción corporativa y herramientas avanzadas.

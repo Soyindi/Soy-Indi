@@ -46,9 +46,24 @@ import {
 interface CardBuilderProps {
   initialData?: Partial<CardData>;
   cardId?: string;
+  defaultUserName?: string;
+  defaultUserEmail?: string;
+  autoLoadedExistingCard?: boolean;
+  quotaSummary?: {
+    currentCount: number;
+    maxLimit: number | 'unlimited';
+    allowedNew: boolean;
+  };
 }
 
-export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
+export function CardBuilder({
+  initialData,
+  cardId,
+  defaultUserName,
+  defaultUserEmail,
+  autoLoadedExistingCard,
+  quotaSummary,
+}: CardBuilderProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<'profile' | 'contact' | 'social' | 'theme'>('profile');
@@ -89,10 +104,13 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
   const [isExtractingColors, setIsExtractingColors] = useState(false);
   const [colorSourceLabel, setColorSourceLabel] = useState<string | null>(null);
 
+  const resolvedDefaultTitle = initialData?.title || defaultUserName || OFFICIAL_DEMO_CARD.title;
+  const resolvedDefaultEmail = initialData?.emailContact ?? defaultUserEmail ?? OFFICIAL_DEMO_CARD.emailContact;
+
   // Inicialización inteligente del slug: derivado del nombre si existe o del default profesional
   const [initialSlug] = useState(() => {
     if (initialData?.slug) return initialData.slug;
-    return generateCardSlug(initialData?.title || OFFICIAL_DEMO_CARD.title);
+    return generateCardSlug(resolvedDefaultTitle);
   });
 
   // Rastrear si el usuario modificó deliberadamente el slug a mano
@@ -110,11 +128,11 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
   // Estado reactivo del formulario sincronizado con la Tarjeta Demostrativa Oficial (INDI 2026)
   const [formData, setFormData] = useState<CardData>({
     slug: initialData?.slug || initialSlug,
-    title: initialData?.title || OFFICIAL_DEMO_CARD.title,
+    title: resolvedDefaultTitle,
     profession: initialData?.profession || OFFICIAL_DEMO_CARD.profession,
     about: initialData?.about ?? OFFICIAL_DEMO_CARD.about,
     whatsapp: initialData?.whatsapp ?? OFFICIAL_DEMO_CARD.whatsapp,
-    emailContact: initialData?.emailContact ?? OFFICIAL_DEMO_CARD.emailContact,
+    emailContact: resolvedDefaultEmail,
     websiteUrl: initialData?.websiteUrl ?? OFFICIAL_DEMO_CARD.websiteUrl,
     linkedinUrl: initialData?.linkedinUrl ?? OFFICIAL_DEMO_CARD.linkedinUrl,
     instagramUrl: initialData?.instagramUrl ?? OFFICIAL_DEMO_CARD.instagramUrl,
@@ -530,44 +548,64 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
     setSavedSuccess(false);
 
     startTransition(async () => {
-      const res = await upsertCardAction(
-        {
-          slug: formData.slug,
-          title: formData.title,
-          profession: formData.profession,
-          about: formData.about,
-          phone: formData.phone,
-          whatsapp: formData.whatsapp,
-          emailContact: formData.emailContact,
-          websiteUrl: formData.websiteUrl,
-          linkedinUrl: formData.linkedinUrl,
-          instagramUrl: formData.instagramUrl,
-          photoUrl: formData.photoUrl,
-          address: formData.address,
-          themeConfig: {
-            themeId: formData.themeConfig?.themeId || 'stellar',
-            primaryColorOklch: formData.themeConfig?.primaryColorOklch || '#6366f1',
-            backgroundColorOklch: formData.themeConfig?.backgroundColorOklch || '#090a10',
-            particleBehavior: formData.themeConfig?.particleBehavior || 'ambient',
-            particleIntensity: formData.themeConfig?.particleIntensity || 'balanced',
-            fontFamily: 'Inter',
-            enableGlassRefraction: true,
-            cardFinish: formData.themeConfig?.cardFinish || 'classic',
-            surfaceTexture: formData.themeConfig?.surfaceTexture || 'radial-glow',
-            badgeText: formData.themeConfig?.badgeText || null,
-            ctaLabel: formData.themeConfig?.ctaLabel || null,
-            coverImageUrl: formData.themeConfig?.coverImageUrl || null,
-            backgroundImageUrl: formData.themeConfig?.backgroundImageUrl || null,
-            backgroundType: formData.themeConfig?.backgroundType || 'theme',
-            backgroundOverlayBlur: formData.themeConfig?.backgroundOverlayBlur || 'medium',
-            backgroundOverlayOpacity: formData.themeConfig?.backgroundOverlayOpacity ?? 0.5,
-            operationalStatus: formData.themeConfig?.operationalStatus || 'none',
-            customStatusText: formData.themeConfig?.customStatusText || null,
-          },
-          bentoBlocks: formData.bentoBlocks ? [...formData.bentoBlocks] : [],
+      // Si es creación nueva, el usuario no editó manualmente el slug y sabemos que el slug por defecto ya está ocupado,
+      // usamos automáticamente la primera sugerencia disponible o un sufijo limpio para no bloquear la publicación.
+      let effectiveSlug = formData.slug;
+      if (!cardId && !isSlugManuallyEdited && !slugAvailability.available) {
+        effectiveSlug =
+          slugAvailability.suggestions?.[0] || generateCardSlug(formData.title || 'mi-tarjeta', true);
+        setFormData((prev) => ({ ...prev, slug: effectiveSlug }));
+      }
+
+      const buildPayload = (slugToUse: string) => ({
+        slug: slugToUse,
+        title: formData.title,
+        profession: formData.profession,
+        about: formData.about,
+        phone: formData.phone,
+        whatsapp: formData.whatsapp,
+        emailContact: formData.emailContact,
+        websiteUrl: formData.websiteUrl,
+        linkedinUrl: formData.linkedinUrl,
+        instagramUrl: formData.instagramUrl,
+        photoUrl: formData.photoUrl,
+        address: formData.address,
+        themeConfig: {
+          themeId: formData.themeConfig?.themeId || 'stellar',
+          primaryColorOklch: formData.themeConfig?.primaryColorOklch || '#6366f1',
+          backgroundColorOklch: formData.themeConfig?.backgroundColorOklch || '#090a10',
+          particleBehavior: formData.themeConfig?.particleBehavior || 'ambient',
+          particleIntensity: formData.themeConfig?.particleIntensity || 'balanced',
+          fontFamily: 'Inter',
+          enableGlassRefraction: true,
+          cardFinish: formData.themeConfig?.cardFinish || 'classic',
+          surfaceTexture: formData.themeConfig?.surfaceTexture || 'radial-glow',
+          badgeText: formData.themeConfig?.badgeText || null,
+          ctaLabel: formData.themeConfig?.ctaLabel || null,
+          coverImageUrl: formData.themeConfig?.coverImageUrl || null,
+          backgroundImageUrl: formData.themeConfig?.backgroundImageUrl || null,
+          backgroundType: formData.themeConfig?.backgroundType || 'theme',
+          backgroundOverlayBlur: formData.themeConfig?.backgroundOverlayBlur || 'medium',
+          backgroundOverlayOpacity: formData.themeConfig?.backgroundOverlayOpacity ?? 0.5,
+          operationalStatus: formData.themeConfig?.operationalStatus || 'none',
+          customStatusText: formData.themeConfig?.customStatusText || null,
         },
-        cardId
-      );
+        bentoBlocks: formData.bentoBlocks ? [...formData.bentoBlocks] : [],
+      });
+
+      let res = await upsertCardAction(buildPayload(effectiveSlug), cardId);
+
+      // Si el slug no fue editado manualmente y colisionó en creación, desambiguar automáticamente
+      if (
+        !res.success &&
+        !cardId &&
+        !isSlugManuallyEdited &&
+        res.error?.includes('ya está en uso')
+      ) {
+        const autoDisambiguatedSlug = generateCardSlug(formData.title || effectiveSlug, true);
+        setFormData((prev) => ({ ...prev, slug: autoDisambiguatedSlug }));
+        res = await upsertCardAction(buildPayload(autoDisambiguatedSlug), cardId);
+      }
 
       if (!res.success) {
         setErrorMsg(res.error || 'Ocurrió un error');
@@ -631,6 +669,25 @@ export function CardBuilder({ initialData, cardId }: CardBuilderProps) {
           )}
         </button>
       </AppEditorHeader>
+
+      {autoLoadedExistingCard && (
+        <div className="mb-6 p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-200 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 sm:mt-0" />
+            <span>
+              <strong className="text-white">Editando tu Tarjeta Digital activa ({quotaSummary?.currentCount ?? 1}/{quotaSummary?.maxLimit ?? 1}).</strong>{' '}
+              Hemos cargado tu tarjeta actual para que puedas actualizarla libremente. Si deseas crear una tarjeta adicional, invita a 3 colegas desde tu panel.
+            </span>
+          </div>
+          <a
+            href="/dashboard?tab=affiliates"
+            className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-300 font-semibold text-xs border border-white/10 transition-colors shrink-0"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Desbloquear +1 Tarjeta</span>
+          </a>
+        </div>
+      )}
 
       {errorMsg && (
         <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">

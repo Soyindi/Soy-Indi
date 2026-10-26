@@ -1,27 +1,61 @@
 import { SmartCvBuilder } from '@/features/ai-smart-cv/components/SmartCvBuilder';
-import { getSmartCvByIdAction } from '@/features/ai-smart-cv/actions';
-import { checkUserEntitlementAction } from '@/features/pricing/actions';
+import { getSmartCvByIdAction, getUserSmartCvsAction } from '@/features/ai-smart-cv/actions';
+import { assertQuotaAvailableAction, checkUserEntitlementAction } from '@/features/pricing/actions';
 import { TrialBanner } from '@/features/pricing/components/TrialBanner';
+import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
+import { db } from '@/shared/api/db';
+import { user as userTable } from '@/entities/schema';
+import { eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
 interface SmartCvPageProps {
-  searchParams?: Promise<{ id?: string }>;
+  searchParams?: Promise<{ id?: string; new?: string }>;
 }
 
 export default async function SmartCvPage({ searchParams }: SmartCvPageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
-  const cvId = resolvedParams.id;
+  let cvId = resolvedParams.id;
+  const forceNew = resolvedParams.new === 'true';
 
-  // Carga paralela de permisos de suscripción y datos del CV persistido (si existe)
-  const [entitlement, cvResult] = await Promise.all([
-    checkUserEntitlementAction(),
-    cvId ? getSmartCvByIdAction(cvId) : Promise.resolve(null),
+  const sessionResult = await getSafeAuthenticatedUserId();
+  const currentUserId = sessionResult.userId;
+
+  // Carga paralela de permisos de suscripción, CVs existentes y cuota disponible
+  const [entitlement, cvResult, userCvsRes, quotaRes, dbUser] = await Promise.all([
+    checkUserEntitlementAction(currentUserId || undefined),
+    cvId ? getSmartCvByIdAction(cvId, currentUserId || undefined) : Promise.resolve(null),
+    !cvId && currentUserId ? getUserSmartCvsAction(currentUserId) : Promise.resolve(null),
+    !cvId && currentUserId ? assertQuotaAvailableAction(currentUserId, 'cvs') : Promise.resolve(null),
+    !cvId && currentUserId
+      ? db.query.user.findFirst({
+          where: eq(userTable.id, currentUserId),
+          columns: { name: true, email: true },
+        }).catch(() => null)
+      : Promise.resolve(null),
   ]);
 
-  const initialData = cvResult?.success && cvResult.data ? cvResult.data : undefined;
-  const initialCvId = cvResult?.success && cvResult.id ? cvResult.id : undefined;
-  const initialScore = cvResult?.success && typeof cvResult.atsScore === 'number' ? cvResult.atsScore : undefined;
+  let effectiveCvResult = cvResult;
+  let autoLoadedExistingCv = false;
+
+  if (
+    !cvId &&
+    userCvsRes?.success &&
+    Array.isArray(userCvsRes.data) &&
+    userCvsRes.data.length > 0 &&
+    (!forceNew || (quotaRes && !quotaRes.allowed))
+  ) {
+    // Si el usuario navega a /cv sin ?id= y ya tiene un CV guardado (o alcanzó su cuota 1/1 del Plan Comunitario),
+    // cargamos su CV más reciente automáticamente para que pueda editarlo, optimizarlo con IA o exportarlo a PDF sin bloqueos.
+    const latestCv = userCvsRes.data[0];
+    cvId = latestCv.id;
+    effectiveCvResult = await getSmartCvByIdAction(latestCv.id, currentUserId || undefined);
+    autoLoadedExistingCv = true;
+  }
+
+  const initialData = effectiveCvResult?.success && effectiveCvResult.data ? effectiveCvResult.data : undefined;
+  const initialCvId = effectiveCvResult?.success && effectiveCvResult.id ? effectiveCvResult.id : undefined;
+  const initialScore = effectiveCvResult?.success && typeof effectiveCvResult.atsScore === 'number' ? effectiveCvResult.atsScore : undefined;
 
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col">
@@ -37,6 +71,18 @@ export default async function SmartCvPage({ searchParams }: SmartCvPageProps) {
           initialData={initialData}
           initialCvId={initialCvId}
           initialScore={initialScore}
+          defaultUserName={dbUser?.name || undefined}
+          defaultUserEmail={dbUser?.email || undefined}
+          autoLoadedExistingCv={autoLoadedExistingCv}
+          quotaSummary={
+            quotaRes
+              ? {
+                  currentCount: quotaRes.currentCount,
+                  maxLimit: quotaRes.maxLimit,
+                  allowedNew: quotaRes.allowed,
+                }
+              : undefined
+          }
         />
       </div>
     </div>

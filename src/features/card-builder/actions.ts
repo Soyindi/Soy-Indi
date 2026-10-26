@@ -52,9 +52,9 @@ export async function upsertCardAction(
     }
     const targetUserId = sessionResult.userId;
 
-    // 2.1 Guardrail de Seguridad: Bloqueo de mutaciones por membresía/trial expirado
+    // 2.1 Guardrail de Seguridad: Validación de derechos (Trial Pro / Membresía Activa / Plan Comunitario Gratuito)
     const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
-    const entitlementCheck = await assertUserEntitlementAction(targetUserId);
+    const entitlementCheck = await assertUserEntitlementAction(targetUserId, 'cards');
     if (!entitlementCheck.allowed) {
       return { success: false, error: entitlementCheck.error || 'Período de prueba finalizado. Se requiere membresía comunitaria activa.' };
     }

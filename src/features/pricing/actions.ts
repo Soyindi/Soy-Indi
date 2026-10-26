@@ -100,11 +100,24 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
   }
 }
 
+export type ResourceQuotaType = 'cards' | 'cvs' | 'presentations';
+
 /**
  * Guardrail de Seguridad Server-Side: Valida si el usuario tiene permiso activo
  * para mutaciones críticas (creación, edición o publicación).
+ *
+ * Gobernanza Plan Comunitario Gratuito 2026:
+ * - Si el usuario tiene acceso activo (TRIAL vigente, ACTIVE o GRACE_PERIOD), se permite toda mutación.
+ * - Si el período de prueba Pro de 3 días finalizó (status === 'EXPIRED'), el usuario transiciona
+ *   automáticamente al Plan Comunitario Gratuito Permanente (Starter: 1 Tarjeta Digital + 1 Smart CV
+ *   de por vida + bonos por referidos). Por lo tanto, las mutaciones de Tarjetas ('cards') y Smart CV
+ *   ('cvs') permanecen habilitadas, delegando el tope cuantitativo de creación a assertQuotaAvailableAction.
+ * - Las Presentaciones Orbitales ('presentations') requieren Trial Pro vigente o Membresía Activa.
  */
-export async function assertUserEntitlementAction(userId?: string): Promise<{
+export async function assertUserEntitlementAction(
+  userId?: string,
+  resource?: ResourceQuotaType
+): Promise<{
   allowed: boolean;
   entitlement: UserEntitlement;
   error?: string;
@@ -112,11 +125,24 @@ export async function assertUserEntitlementAction(userId?: string): Promise<{
   const entitlement = await checkUserEntitlementAction(userId);
 
   if (!entitlement.hasAccess) {
+    // En el Plan Comunitario Gratuito (post-trial), Tarjetas Digitales y Smart CVs son 100% gratuitos y permanentes
+    if (!resource || resource === 'cards' || resource === 'cvs') {
+      const communityEntitlement: UserEntitlement = {
+        ...entitlement,
+        tier: 'starter',
+        limits: PRICING_TIERS.starter.limits,
+      };
+      return {
+        allowed: true,
+        entitlement: communityEntitlement,
+      };
+    }
+
     return {
       allowed: false,
       entitlement,
       error:
-        'Tu período de prueba ha finalizado. Invita a colegas con tu enlace personal o accede a la Membresía Comunitaria para continuar creando y editando tus recursos profesionales.',
+        'Tu período de prueba Pro ha finalizado. El generador de Presentaciones Orbitales requiere una Membresía activa (Pro o Max), mientras que tu Tarjeta Digital y Smart CV siguen siendo 100% gratuitos en tu Plan Comunitario.',
     };
   }
 
@@ -126,12 +152,13 @@ export async function assertUserEntitlementAction(userId?: string): Promise<{
   };
 }
 
-export type ResourceQuotaType = 'cards' | 'cvs' | 'presentations';
-
 /**
  * Guardrail de Cuotas Cuantitativas Server-Side:
  * Verifica que el usuario no supere los límites numéricos de su plan ('starter', 'pro', 'max').
  * Si el límite es 'unlimited', la acción siempre está permitida.
+ * Cuando el trial Pro de 3 días ha expirado (!entitlement.hasAccess), aplica automáticamente
+ * los límites permanentes del Plan Comunitario Gratuito (Starter: 1 Tarjeta, 1 Smart CV, 0 Presentaciones)
+ * más las recompensas acumuladas por referidos.
  */
 export async function assertQuotaAvailableAction(
   userId: string,
@@ -143,16 +170,13 @@ export async function assertQuotaAvailableAction(
   error?: string;
 }> {
   const entitlement = await checkUserEntitlementAction(userId);
-  if (!entitlement.hasAccess) {
-    return {
-      allowed: false,
-      currentCount: 0,
-      maxLimit: entitlement.limits[resource],
-      error: 'Tu período de prueba o membresía comunitaria ha expirado.',
-    };
-  }
 
-  const baseLimit = entitlement.limits[resource];
+  // Si el trial Pro expiró, evaluar con las cuotas permanentes del Plan Comunitario Gratuito (Starter)
+  const effectiveTierLimits = entitlement.hasAccess
+    ? entitlement.limits
+    : PRICING_TIERS.starter.limits;
+
+  const baseLimit = effectiveTierLimits[resource];
   if (baseLimit === 'unlimited') {
     return { allowed: true, currentCount: 0, maxLimit: 'unlimited' };
   }
@@ -177,6 +201,16 @@ export async function assertQuotaAvailableAction(
   }
 
   const effectiveLimit = (baseLimit as number) + bonusQuota;
+
+  if (effectiveLimit <= 0) {
+    return {
+      allowed: false,
+      currentCount: 0,
+      maxLimit: 0,
+      error:
+        'Tu Plan Comunitario Gratuito incluye 1 Tarjeta Digital y 1 Smart CV permanentes. Para crear Presentaciones Orbitales 16:9, activa el Plan Pro o Max.',
+    };
+  }
 
   let currentCount = 0;
   try {
@@ -210,14 +244,16 @@ export async function assertQuotaAvailableAction(
       presentations: 'presentaciones 16:9',
     };
     const referralHint = resource === 'cards'
-      ? ' Invita a 3 amigos con tu enlace para desbloquear +1 tarjeta extra automáticamente.'
-      : ' Invita a colegas con tu enlace para desbloquear capacidades adicionales.';
+      ? ' Puedes editar tu tarjeta actual desde el Panel o invitar a 3 colegas con tu enlace para desbloquear +1 tarjeta extra gratis.'
+      : resource === 'cvs'
+      ? ' Puedes editar y descargar tu CV actual desde el Panel o invitar a 5 colegas con tu enlace para desbloquear +1 CV extra gratis.'
+      : ' Activa un plan superior para ampliar tu capacidad.';
 
     return {
       allowed: false,
       currentCount,
       maxLimit: effectiveLimit,
-      error: `Has alcanzado el límite máximo de ${effectiveLimit} ${resourceNames[resource]} de tu membresía comunitaria.${referralHint}`,
+      error: `Has alcanzado el límite máximo de ${effectiveLimit} ${resourceNames[resource]} de tu plan (${currentCount}/${effectiveLimit}).${referralHint}`,
     };
   }
 
