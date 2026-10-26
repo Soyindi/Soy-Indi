@@ -8,7 +8,7 @@ import { user as userTable } from '@/entities/schema';
 import { eq } from 'drizzle-orm';
 
 interface NewCardPageProps {
-  searchParams?: Promise<{ id?: string }>;
+  searchParams?: Promise<{ id?: string; ref?: string }>;
 }
 
 export default async function NewCardPage({ searchParams }: NewCardPageProps) {
@@ -17,6 +17,23 @@ export default async function NewCardPage({ searchParams }: NewCardPageProps) {
 
   const sessionResult = await getSafeAuthenticatedUserId();
   const currentUserId = sessionResult.userId;
+
+  // Atribución de referido idempotente si el usuario llega directo a /cards/new tras registrarse
+  if (currentUserId) {
+    try {
+      const { cookies } = await import('next/headers');
+      const cookieStore = await cookies();
+      const { REFERRAL_COOKIE_NAME, sanitizeReferralCode } = await import('@/entities/affiliate/referral-cookie');
+      const rawCookieRef = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
+      const activeRefCode = sanitizeReferralCode(resolvedParams.ref) || sanitizeReferralCode(rawCookieRef);
+      if (activeRefCode) {
+        const { attributeReferralAction } = await import('@/features/affiliates/actions');
+        await attributeReferralAction(currentUserId, activeRefCode);
+      }
+    } catch {
+      // Silencioso
+    }
+  }
 
   const [entitlement, cardRes, userCardsRes, quotaRes, dbUser] = await Promise.all([
     checkUserEntitlementAction(currentUserId || undefined),

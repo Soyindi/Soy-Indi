@@ -80,13 +80,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
       {/* Contenedor del Modal embebido en página */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center">
-        {rawParamRef && (
-          <div className="w-full max-w-md mb-4 p-3 rounded-2xl glass-panel border border-emerald-500/30 bg-emerald-950/20 text-center animate-fade-in">
-            <span className="text-xs font-semibold text-emerald-300">
-              🎁 Invitación de @{rawParamRef} activada
+        {activeReferralCode && (
+          <div className="w-full max-w-md mb-4 p-3.5 rounded-2xl glass-panel border border-emerald-500/30 bg-emerald-950/20 text-center animate-fade-in">
+            <span className="text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span>🎁 Invitación de @{activeReferralCode} activada</span>
             </span>
-            <p className="text-[11px] text-zinc-400 mt-0.5">
-              Tu Plan Comunitario Gratuito de por vida se activará automáticamente al registrarte.
+            <p className="text-[11px] text-zinc-300 mt-1">
+              Tu Plan Comunitario Gratuito de por vida (Tarjeta Digital + Smart CV ATS) se activará automáticamente al registrarte.
             </p>
           </div>
         )}

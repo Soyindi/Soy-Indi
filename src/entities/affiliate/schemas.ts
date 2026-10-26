@@ -303,3 +303,19 @@ export const MarkAffiliateCommissionsPaidSchema = z.object({
 
 export type MarkAffiliateCommissionsPaidInput = z.infer<typeof MarkAffiliateCommissionsPaidSchema>;
 
+/**
+ * Esquema de validación para comprobar disponibilidad de código de referido
+ */
+export const CheckReferralCodeInputSchema = z.object({
+  rawCode: z.string().trim().min(1, 'El código es requerido').max(64, 'El código excede el largo permitido'),
+});
+
+/**
+ * Esquema de validación para atribución de referido (Anti-IDOR + Sanitización)
+ */
+export const AttributeReferralInputSchema = z.object({
+  newUserId: z.string().min(1, 'ID de usuario requerido'),
+  rawReferralCode: z.string().trim().min(1, 'Código de referido requerido').max(64),
+});
+
+

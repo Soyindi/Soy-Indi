@@ -182,8 +182,9 @@ export async function assertQuotaAvailableAction(
   }
 
   // Bonus cuantitativo por referidos activos en la comunidad (Recompensa Comunitaria 2026):
-  // - +1 Tarjeta Digital por cada 3 colegas referidos confirmados
-  // - +1 Smart CV por cada 5 colegas referidos confirmados
+  // - Nivel 1 (3+ referidos): +1 Tarjeta Digital por cada 3 colegas referidos confirmados
+  // - Nivel 2 (5+ referidos): +1 Smart CV por cada 5 colegas referidos confirmados
+  // - Nivel 3 (10+ referidos - Embajador Oro): Cupos ilimitados en Tarjetas Digitales y Smart CVs
   let bonusQuota = 0;
   try {
     const referredUsers = await db.query.user.findMany({
@@ -191,6 +192,11 @@ export async function assertQuotaAvailableAction(
       columns: { id: true },
     });
     const totalReferred = Array.isArray(referredUsers) ? referredUsers.length : 0;
+
+    if (totalReferred >= 10 && (resource === 'cards' || resource === 'cvs')) {
+      return { allowed: true, currentCount: 0, maxLimit: 'unlimited' };
+    }
+
     if (resource === 'cards') {
       bonusQuota = Math.floor(totalReferred / 3);
     } else if (resource === 'cvs') {

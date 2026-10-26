@@ -101,7 +101,9 @@ src/
 
 18. **Sistema de Referidos, Generación de Código QR de Afiliado & Omnipresencia:**
    - Todo usuario dispone de acceso a su Código QR oficial de afiliado (`ReferralQrModal.tsx`) generado con `qrcode.react` (`QRCodeSVG`, `ssr: false`), exportable en PNG 1024x1024 con contraste óptico blanco universal para eventos y presentaciones.
-   - El enlace de registro directo (`/login?mode=signup&ref=CODIGO`) y Onboarding Hub (`/start?ref=CODIGO`) preservan la atribución sticky mediante la cookie `indi_ref_code` (30 días).
+   - El enlace de registro directo (`/login?mode=signup&ref=CODIGO`) y Onboarding Hub (`/start?ref=CODIGO`) preservan la atribución sticky mediante la cookie `indi_ref_code` (30 días), aplicando atribución automática tanto en el hook `databaseHooks.user.create.before` como en las rutas de destino post-autenticación (`/dashboard`, `/start`, `/cards/new`, `/cv`).
+   - **Escalera de Recompensas Comunitarias**: En el Plan Comunitario (`starter`), `assertQuotaAvailableAction` otorga `+1` Tarjeta cada 3 referidos (Nivel 1), `+1` Smart CV cada 5 referidos (Nivel 2 • Embajador Plata) y **cupos ilimitados (`'unlimited'`) para Tarjetas y Smart CVs al alcanzar 10 o más referidos (Nivel 3 • Embajador Oro)**.
+   - **Integridad Financiera en Balances**: `getAffiliateOverviewAction` y `getAdminReferralsAuditAction` excluyen estrictamente las comisiones con estado `'refunded'` o `'charged_back'` del cálculo de ganancias totales y saldos pendientes.
    - **Simulador Educativo de Ganancias (`AffiliateEarningsCalculator`)**: Módulo interactivo accesible en el panel de afiliados (`/dashboard?tab=affiliates`) que expone con total transparencia el cálculo del 25% tanto en planes mensuales ($625/$1.248/$2.248 CLP) como semestrales ($1.500/$3.750/$7.498 CLP), incorporando sliders reactivos por plan, desglose de fórmulas y ejemplos tangibles de ingresos.
    - El programa de recomendación (25% CLP) se visibiliza de forma omnipresente en:
      - Navegación autenticada (`GlobalNavbar.tsx` y `MobileNavDrawer.tsx`).

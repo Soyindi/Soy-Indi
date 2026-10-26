@@ -12,6 +12,8 @@ import {
   AdminAffiliatePayoutItem,
   AdminReferralAuditItem,
   MarkAffiliateCommissionsPaidSchema,
+  CheckReferralCodeInputSchema,
+  AttributeReferralInputSchema,
   AFFILIATE_COMMISSION_PERCENTAGE,
   calculateNextPayoutDate,
   calculateGrossFromNetHonorarios,
@@ -19,6 +21,7 @@ import {
   isReservedReferralCode,
   updateReferralCodeSchema
 } from '@/entities/affiliate/schemas';
+import { getAppBaseUrl } from '@/entities/brand/domain';
 
 export interface ReferralCodeAvailabilityResult {
   available: boolean;
@@ -34,7 +37,16 @@ export async function checkReferralCodeAvailabilityAction(
   userId?: string
 ): Promise<ReferralCodeAvailabilityResult> {
   try {
-    const formatted = formatReferralCode(rawCode);
+    const parsedInput = CheckReferralCodeInputSchema.safeParse({ rawCode });
+    if (!parsedInput.success) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'El código debe tener al menos 3 caracteres alfanuméricos.',
+      };
+    }
+
+    const formatted = formatReferralCode(parsedInput.data.rawCode);
 
     if (!formatted || formatted.length < 3) {
       return {
@@ -197,12 +209,15 @@ export async function getAffiliateOverviewAction(userId?: string): Promise<{
       limit: 50,
     });
 
-    // Calcular balances
+    // Calcular balances (excluyendo comisiones reembolsadas o con contracargo)
     let totalEarningsClp = 0;
     let pendingBalanceClp = 0;
     let paidBalanceClp = 0;
 
     for (const c of commissions) {
+      if (c.status === 'refunded' || c.status === 'charged_back') {
+        continue;
+      }
       totalEarningsClp += c.amountClp;
       if (c.status === 'paid') {
         paidBalanceClp += c.amountClp;
@@ -232,7 +247,7 @@ export async function getAffiliateOverviewAction(userId?: string): Promise<{
       ? Math.round((proReferralsCount / totalReferralsCount) * 100) 
       : 0;
 
-    const origin = process.env.BETTER_AUTH_URL || 'https://soyindi.cl';
+    const origin = getAppBaseUrl();
     const referralUrl = `${origin}/start?ref=${referralCode}`;
     const directSignupUrl = `${origin}/login?mode=signup&ref=${referralCode}`;
 
@@ -259,7 +274,7 @@ export async function getAffiliateOverviewAction(userId?: string): Promise<{
       recentCommissions: commissions.map((c) => ({
         id: c.id,
         amountClp: c.amountClp,
-        status: c.status as 'pending' | 'payable' | 'paid',
+        status: c.status as 'pending' | 'payable' | 'paid' | 'refunded' | 'charged_back',
         createdAt: new Date(c.createdAt),
         paidAt: c.paidAt ? new Date(c.paidAt) : null,
       })),
@@ -377,15 +392,18 @@ export async function getReferralPartnerInfoAction(rawCode?: string | null): Pro
  */
 export async function attributeReferralAction(newUserId: string, rawReferralCode: string) {
   try {
+    const parsedInput = AttributeReferralInputSchema.safeParse({ newUserId, rawReferralCode });
+    if (!parsedInput.success) return;
+
     // Guardrail Anti-IDOR: sólo el propio usuario autenticado puede atribuirse un referente.
     // Sin esta verificación, cualquier cliente podía reasignar el referente de cuentas ajenas.
-    const sessionResult = await getSafeAuthenticatedUserId(newUserId);
-    if (!sessionResult.userId || sessionResult.userId !== newUserId) return;
+    const sessionResult = await getSafeAuthenticatedUserId(parsedInput.data.newUserId);
+    if (!sessionResult.userId || sessionResult.userId !== parsedInput.data.newUserId) return;
 
     const { sanitizeReferralCode } = await import('@/entities/affiliate/referral-cookie');
     const { normalizeEmailForAntiGaming } = await import('@/entities/affiliate/schemas');
-    const referralCode = sanitizeReferralCode(rawReferralCode);
-    if (!referralCode || !newUserId) return;
+    const referralCode = sanitizeReferralCode(parsedInput.data.rawReferralCode);
+    if (!referralCode) return;
 
     // Verificar que el usuario no tenga ya un referente asignado (first-touch / sticky attribution)
     const currentUser = await db.query.user.findFirst({
@@ -615,10 +633,13 @@ export async function getAdminReferralsAuditAction(userId?: string): Promise<{
       limit: 200,
     });
 
-    // Obtener comisiones para calcular el aporte por usuario
+    // Obtener comisiones para calcular el aporte por usuario (excluyendo reembolsos/contracargos)
     const allCommissions = await db.query.affiliateCommissions.findMany();
     const commissionsByBuyer = new Map<string, number>();
     for (const comm of allCommissions) {
+      if (comm.status === 'refunded' || comm.status === 'charged_back') {
+        continue;
+      }
       const current = commissionsByBuyer.get(comm.buyerUserId) || 0;
       commissionsByBuyer.set(comm.buyerUserId, current + comm.amountClp);
     }

@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   AffiliateOverview, 
   formatReferralCode
 } from '@/entities/affiliate/schemas';
+import { getAppBaseUrl } from '@/entities/brand/domain';
 import { 
   checkReferralCodeAvailabilityAction,
   updateReferralCodeAction 
@@ -22,9 +23,12 @@ import {
   QrCode,
   Gift,
   Award,
-  FileText
+  FileText,
+  MessageCircle,
+  Copy
 } from 'lucide-react';
 import { ReferralQrModal } from './ReferralQrModal';
+import { AffiliateEarningsCalculator } from './AffiliateEarningsCalculator';
 
 interface AffiliateDashboardTabProps {
   overview: AffiliateOverview;
@@ -33,6 +37,7 @@ interface AffiliateDashboardTabProps {
 
 export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboardTabProps) {
   const [copiedDirect, setCopiedDirect] = useState(false);
+  const [copiedHub, setCopiedHub] = useState(false);
 
   // Estado para Personalización del Código de Referido
   const [currentCode, setCurrentCode] = useState(overview.referralCode);
@@ -47,9 +52,11 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
   const [isSavingCode, setIsSavingCode] = useState(false);
   const [codeSuccessMessage, setCodeSuccessMessage] = useState<string | null>(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const checkRequestCounterRef = useRef(0);
 
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || 'https://soyindi.cl');
+  const baseUrl = getAppBaseUrl();
   const directSignupUrl = `${baseUrl}/login?mode=signup&ref=${currentCode}`;
+  const onboardingHubUrl = `${baseUrl}/start?ref=${currentCode}`;
 
   const extraCardsUnlocked = Math.floor(overview.totalReferralsCount / 3);
   const extraCvsUnlocked = Math.floor(overview.totalReferralsCount / 5);
@@ -58,7 +65,7 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
   const ambassadorRank = 
     overview.totalReferralsCount >= 10 
       ? { title: 'Embajador Oro', color: 'text-amber-400 bg-amber-500/20 border-amber-500/30' }
-      : overview.totalReferralsCount >= 6
+      : overview.totalReferralsCount >= 5
       ? { title: 'Embajador Plata', color: 'text-cyan-300 bg-cyan-500/20 border-cyan-500/30' }
       : overview.totalReferralsCount >= 3
       ? { title: 'Miembro Activo', color: 'text-emerald-300 bg-emerald-500/20 border-emerald-500/30' }
@@ -68,6 +75,18 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
     navigator.clipboard.writeText(directSignupUrl);
     setCopiedDirect(true);
     setTimeout(() => setCopiedDirect(false), 2500);
+  };
+
+  const handleCopyHub = () => {
+    navigator.clipboard.writeText(onboardingHubUrl);
+    setCopiedHub(true);
+    setTimeout(() => setCopiedHub(false), 2500);
+  };
+
+  const handleWhatsAppShare = () => {
+    const shareText = `¡Hola! Te invito a crear gratis tu Tarjeta Digital con QR y tu Smart CV adaptado a filtros ATS en INDI (Plan Comunitario 100% gratuito de por vida): ${directSignupUrl}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleCodeChange = async (val: string) => {
@@ -85,18 +104,23 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
       return;
     }
 
+    const requestId = ++checkRequestCounterRef.current;
     setIsCheckingCode(true);
     try {
       const res = await checkReferralCodeAvailabilityAction(formatted);
+      if (requestId !== checkRequestCounterRef.current) return;
       setCodeStatus({
         available: res.available,
         message: res.message,
         status: res.status,
       });
     } catch {
+      if (requestId !== checkRequestCounterRef.current) return;
       setCodeStatus({ available: false, message: 'Error al comprobar', status: 'invalid' });
     } finally {
-      setIsCheckingCode(false);
+      if (requestId === checkRequestCounterRef.current) {
+        setIsCheckingCode(false);
+      }
     }
   };
 
@@ -199,25 +223,25 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
 
           {/* Hito 2 */}
           <div className={`p-4 rounded-2xl border transition-all ${
-            overview.totalReferralsCount >= 6
+            overview.totalReferralsCount >= 5
               ? 'bg-cyan-500/10 border-cyan-500/40 shadow-lg shadow-cyan-500/5'
               : 'bg-white/5 border-white/5'
           }`}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-bold text-cyan-400">Nivel 2 • 6 Invitados</span>
-              {overview.totalReferralsCount >= 6 ? (
+              <span className="text-xs font-mono font-bold text-cyan-400">Nivel 2 • 5 Invitados</span>
+              {overview.totalReferralsCount >= 5 ? (
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                   ¡Desbloqueado!
                 </span>
               ) : (
                 <span className="text-[10px] font-mono text-zinc-400">
-                  Faltan {Math.max(0, 6 - overview.totalReferralsCount)}
+                  Faltan {Math.max(0, 5 - overview.totalReferralsCount)}
                 </span>
               )}
             </div>
-            <h4 className="text-sm font-bold text-white mb-1">Insignia VIP & Analítica Prioritaria</h4>
+            <h4 className="text-sm font-bold text-white mb-1">+1 Smart CV ATS & Insignia Plata</h4>
             <p className="text-[11px] text-zinc-400 leading-relaxed">
-              Distintivo verificado en tu tarjeta digital y refresco acelerado de estadísticas de visitas.
+              Desbloqueas una segunda versión de Smart CV ATS y el distintivo de Embajador Plata.
             </p>
           </div>
 
@@ -287,11 +311,21 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               type="button"
+              onClick={handleWhatsAppShare}
+              className="min-h-[44px] px-3.5 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-white text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border border-emerald-500/30"
+              title="Compartir enlace de invitación por WhatsApp"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+              <span>WhatsApp</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsQrModalOpen(true)}
-              className="min-h-[44px] px-3.5 py-2.5 rounded-xl glass-pill text-emerald-300 hover:text-white hover:bg-emerald-500/20 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border border-emerald-500/30"
+              className="min-h-[44px] px-3.5 py-2.5 rounded-xl glass-pill text-cyan-300 hover:text-white hover:bg-cyan-500/20 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border border-cyan-500/30"
               title="Generar y descargar código QR de afiliado"
             >
-              <QrCode className="w-3.5 h-3.5 text-emerald-400" />
+              <QrCode className="w-3.5 h-3.5 text-cyan-400" />
               <span>Código QR</span>
             </button>
 
@@ -333,6 +367,37 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
           </div>
         </div>
 
+        {/* Enlace Secundario: Onboarding Hub (/start?ref=CODIGO) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-white/[0.03] border border-white/10">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-semibold">
+                Enlace al Hub de Herramientas (Onboarding)
+              </span>
+            </div>
+            <p className="text-xs font-mono text-zinc-300 break-all select-all mt-0.5">
+              {onboardingHubUrl}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleCopyHub}
+            className="min-h-[44px] px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-200 hover:text-white flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
+          >
+            {copiedHub ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-300">¡Hub Copiado!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Copiar Hub</span>
+              </>
+            )}
+          </button>
+        </div>
+
         {/* Modal de Código QR de Afiliado */}
         <ReferralQrModal
           isOpen={isQrModalOpen}
@@ -341,23 +406,25 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
           directSignupUrl={directSignupUrl}
         />
 
-        {/* Panel Desplegable para Personalizar Código */}
+        {/* Panel Desplegable para Personalizar Código (100% Responsivo en 390px) */}
         {isEditingCode && (
           <div className="pt-4 border-t border-cyan-500/20 animate-fade-in space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500 font-mono text-xs">
-                  soyindi.cl/login?mode=signup&ref=
-                </div>
+              <div className="flex-1 flex items-center rounded-xl bg-zinc-900 border border-cyan-500/30 focus-within:border-cyan-400 overflow-hidden min-h-[44px]">
+                <span className="pl-3.5 pr-1.5 text-zinc-400 font-mono text-xs select-none shrink-0">
+                  <span className="hidden sm:inline">soyindi.cl/login?mode=signup&amp;ref=</span>
+                  <span className="sm:hidden">?ref=</span>
+                </span>
                 <input
                   type="text"
                   value={codeCandidate}
                   onChange={(e) => handleCodeChange(e.target.value)}
                   placeholder="mi-nombre-o-marca"
                   maxLength={24}
-                  className="w-full min-h-[44px] pl-60 pr-10 py-2 rounded-xl bg-zinc-900 border border-cyan-500/30 text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                  aria-label="Nuevo código de referido personalizado"
+                  className="flex-1 min-w-0 min-h-[44px] pr-2 py-2 bg-transparent text-white font-mono text-xs sm:text-sm focus:outline-none"
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <div className="pr-3 flex items-center shrink-0">
                   {isCheckingCode && <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />}
                   {!isCheckingCode && codeStatus.status === 'available' && (
                     <Check className="w-4 h-4 text-emerald-400" />
@@ -584,6 +651,9 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
           </div>
         </div>
       </div>
+
+      {/* Simulador Educativo de Ganancias de Afiliado (25% en Planes Starter, Pro y Max) */}
+      <AffiliateEarningsCalculator />
     </div>
   );
 }

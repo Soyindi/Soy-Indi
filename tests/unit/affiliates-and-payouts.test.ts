@@ -325,6 +325,223 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
       expect(expectedFilename).toMatch(/^indi-referral-qr-[a-z0-9-]+\.png$/);
     });
   });
+
+  describe('Contratos de Entrada Zod en Server Actions de Referidos & Integridad Financiera', () => {
+    it('valida CheckReferralCodeInputSchema y AttributeReferralInputSchema con safeParse', async () => {
+      const { CheckReferralCodeInputSchema, AttributeReferralInputSchema } = await import('@/entities/affiliate/schemas');
+
+      expect(CheckReferralCodeInputSchema.safeParse({ rawCode: 'mi-codigo-2026' }).success).toBe(true);
+      expect(CheckReferralCodeInputSchema.safeParse({ rawCode: '   ' }).success).toBe(false);
+
+      expect(
+        AttributeReferralInputSchema.safeParse({
+          newUserId: 'usr_123',
+          rawReferralCode: 'colega-vip',
+        }).success
+      ).toBe(true);
+
+      expect(
+        AttributeReferralInputSchema.safeParse({
+          newUserId: '',
+          rawReferralCode: 'colega-vip',
+        }).success
+      ).toBe(false);
+    });
+
+    it('excluye comisiones refunded y charged_back del balance de ganancias y por pagar en getAffiliateOverviewAction', async () => {
+      const { db } = await import('@/shared/api/db');
+      const { user, affiliateCommissions, paymentsHistory } = await import('@/entities/schema');
+      const { eq } = await import('drizzle-orm');
+      const { getAffiliateOverviewAction } = await import('@/features/affiliates/actions');
+
+      const testAffiliateId = `aff_audit_${Date.now()}`;
+      const testBuyerId = `buyer_audit_${Date.now()}`;
+      const now = new Date();
+
+      await db.insert(user).values([
+        {
+          id: testAffiliateId,
+          name: 'Afiliado Auditoria',
+          email: `aff_${Date.now()}@soyindi.cl`,
+          emailVerified: true,
+          status: 'ACTIVE' as const,
+          referralCode: `audit-${Date.now().toString(36).slice(-5)}`,
+          createdAt: now,
+          updatedAt: now,
+        },
+        {
+          id: testBuyerId,
+          name: 'Comprador Auditoria',
+          email: `buyer_${Date.now()}@soyindi.cl`,
+          emailVerified: true,
+          status: 'ACTIVE' as const,
+          referredBy: testAffiliateId,
+          createdAt: now,
+          updatedAt: now,
+        },
+      ]);
+
+      const pay1Id = `pay_1_${Date.now()}`;
+      const pay2Id = `pay_2_${Date.now()}`;
+      const pay3Id = `pay_3_${Date.now()}`;
+      const pay4Id = `pay_4_${Date.now()}`;
+
+      await db.insert(paymentsHistory).values([
+        {
+          id: pay1Id,
+          userId: testBuyerId,
+          provider: 'flow' as const,
+          planInterval: 'semiannual' as const,
+          planTier: 'pro' as const,
+          amount: 15000,
+          currency: 'CLP',
+          status: 'approved',
+          createdAt: now,
+        },
+        {
+          id: pay2Id,
+          userId: testBuyerId,
+          provider: 'flow' as const,
+          planInterval: 'semiannual' as const,
+          planTier: 'starter' as const,
+          amount: 6000,
+          currency: 'CLP',
+          status: 'approved',
+          createdAt: now,
+        },
+        {
+          id: pay3Id,
+          userId: testBuyerId,
+          provider: 'mercadopago' as const,
+          planInterval: 'semiannual' as const,
+          planTier: 'pro' as const,
+          amount: 15000,
+          currency: 'CLP',
+          status: 'refunded',
+          createdAt: now,
+        },
+        {
+          id: pay4Id,
+          userId: testBuyerId,
+          provider: 'mercadopago' as const,
+          planInterval: 'semiannual' as const,
+          planTier: 'max' as const,
+          amount: 29990,
+          currency: 'CLP',
+          status: 'charged_back',
+          createdAt: now,
+        },
+      ]);
+
+      await db.insert(affiliateCommissions).values([
+        {
+          id: `comm_payable_${Date.now()}`,
+          affiliateUserId: testAffiliateId,
+          buyerUserId: testBuyerId,
+          paymentId: pay1Id,
+          amountClp: 3750,
+          status: 'payable' as const,
+          createdAt: now,
+        },
+        {
+          id: `comm_paid_${Date.now()}`,
+          affiliateUserId: testAffiliateId,
+          buyerUserId: testBuyerId,
+          paymentId: pay2Id,
+          amountClp: 1500,
+          status: 'paid' as const,
+          paidAt: now,
+          createdAt: now,
+        },
+        {
+          id: `comm_refunded_${Date.now()}`,
+          affiliateUserId: testAffiliateId,
+          buyerUserId: testBuyerId,
+          paymentId: pay3Id,
+          amountClp: 3750,
+          status: 'refunded' as const,
+          createdAt: now,
+        },
+        {
+          id: `comm_cb_${Date.now()}`,
+          affiliateUserId: testAffiliateId,
+          buyerUserId: testBuyerId,
+          paymentId: pay4Id,
+          amountClp: 7498,
+          status: 'charged_back' as const,
+          createdAt: now,
+        },
+      ]);
+
+      try {
+        const overviewRes = await getAffiliateOverviewAction(testAffiliateId);
+        expect(overviewRes.success).toBe(true);
+        expect(overviewRes.data).toBeDefined();
+        if (overviewRes.data) {
+          // Solo payable (3750) + paid (1500) = 5250 CLP. Reembolsos y contracargos NO deben inflar las ganancias.
+          expect(overviewRes.data.pendingBalanceClp).toBe(3750);
+          expect(overviewRes.data.paidBalanceClp).toBe(1500);
+          expect(overviewRes.data.totalEarningsClp).toBe(5250);
+          expect(overviewRes.data.totalReferralsCount).toBe(1);
+          expect(overviewRes.data.proReferralsCount).toBe(1);
+        }
+      } finally {
+        await db.delete(affiliateCommissions).where(eq(affiliateCommissions.affiliateUserId, testAffiliateId));
+        await db.delete(paymentsHistory).where(eq(paymentsHistory.userId, testBuyerId));
+        await db.delete(user).where(eq(user.id, testBuyerId));
+        await db.delete(user).where(eq(user.id, testAffiliateId));
+      }
+    });
+
+    it('desbloquea cupos ilimitados (Embajador Oro) al alcanzar 10 o más referidos en el Plan Comunitario', async () => {
+      const { db } = await import('@/shared/api/db');
+      const { user } = await import('@/entities/schema');
+      const { inArray, eq } = await import('drizzle-orm');
+      const { assertQuotaAvailableAction } = await import('@/features/pricing/actions');
+
+      const ambassadorId = `amb_gold_${Date.now()}`;
+      const now = new Date();
+      const expiredTrial = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+
+      await db.insert(user).values({
+        id: ambassadorId,
+        name: 'Embajador Oro',
+        email: `amb_${Date.now()}@soyindi.cl`,
+        emailVerified: true,
+        status: 'EXPIRED' as const,
+        trialEndsAt: expiredTrial,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      const referredIds = Array.from({ length: 10 }, (_, idx) => `ref_guest_${Date.now()}_${idx}`);
+      await db.insert(user).values(
+        referredIds.map((rid, idx) => ({
+          id: rid,
+          name: `Colega Invitado ${idx + 1}`,
+          email: `guest_${Date.now()}_${idx}@soyindi.cl`,
+          emailVerified: true,
+          status: 'TRIAL' as const,
+          referredBy: ambassadorId,
+          createdAt: now,
+          updatedAt: now,
+        }))
+      );
+
+      try {
+        const cardsQuota = await assertQuotaAvailableAction(ambassadorId, 'cards');
+        expect(cardsQuota.allowed).toBe(true);
+        expect(cardsQuota.maxLimit).toBe('unlimited');
+
+        const cvsQuota = await assertQuotaAvailableAction(ambassadorId, 'cvs');
+        expect(cvsQuota.allowed).toBe(true);
+        expect(cvsQuota.maxLimit).toBe('unlimited');
+      } finally {
+        await db.delete(user).where(inArray(user.id, referredIds));
+        await db.delete(user).where(eq(user.id, ambassadorId));
+      }
+    });
+  });
 });
 
 

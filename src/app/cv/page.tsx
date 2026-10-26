@@ -10,7 +10,7 @@ import { eq } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 
 interface SmartCvPageProps {
-  searchParams?: Promise<{ id?: string; new?: string }>;
+  searchParams?: Promise<{ id?: string; new?: string; ref?: string }>;
 }
 
 export default async function SmartCvPage({ searchParams }: SmartCvPageProps) {
@@ -20,6 +20,23 @@ export default async function SmartCvPage({ searchParams }: SmartCvPageProps) {
 
   const sessionResult = await getSafeAuthenticatedUserId();
   const currentUserId = sessionResult.userId;
+
+  // Atribución de referido idempotente si el usuario llega directo a /cv tras registrarse
+  if (currentUserId) {
+    try {
+      const { cookies } = await import('next/headers');
+      const cookieStore = await cookies();
+      const { REFERRAL_COOKIE_NAME, sanitizeReferralCode } = await import('@/entities/affiliate/referral-cookie');
+      const rawCookieRef = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
+      const activeRefCode = sanitizeReferralCode(resolvedParams.ref) || sanitizeReferralCode(rawCookieRef);
+      if (activeRefCode) {
+        const { attributeReferralAction } = await import('@/features/affiliates/actions');
+        await attributeReferralAction(currentUserId, activeRefCode);
+      }
+    } catch {
+      // Silencioso
+    }
+  }
 
   // Carga paralela de permisos de suscripción, CVs existentes y cuota disponible
   const [entitlement, cvResult, userCvsRes, quotaRes, dbUser] = await Promise.all([
