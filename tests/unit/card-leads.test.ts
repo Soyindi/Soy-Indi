@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { submitCardLeadAction } from '@/features/card-builder/lead-actions';
+import { describe, it, expect } from 'vitest';
+import { submitCardLeadAction, deleteCardLeadAction } from '@/features/card-builder/lead-actions';
+import { deleteCardAction, toggleCardActiveAction } from '@/features/card-builder/dashboard-actions';
 
 describe('Captura Bidireccional de Leads (Mini-CRM)', () => {
   it('rechaza envíos sin nombre o con nombre menor a 2 caracteres', async () => {
@@ -58,5 +59,19 @@ describe('Captura Bidireccional de Leads (Mini-CRM)', () => {
 
     expect(res.success).toBe(true);
     expect(res.leadId).toBeDefined();
+  });
+
+  it('valida estrictamente con Zod los identificadores en deleteCardLeadAction, deleteCardAction y toggleCardActiveAction', async () => {
+    const invalidLeadDelete = await deleteCardLeadAction('   ');
+    expect(invalidLeadDelete.success).toBe(false);
+    expect(invalidLeadDelete.error).toContain('obligatorio');
+
+    const invalidCardDelete = await deleteCardAction('');
+    expect(invalidCardDelete.success).toBe(false);
+    expect(invalidCardDelete.error).toContain('obligatorio');
+
+    const invalidCardToggle = await toggleCardActiveAction('', true);
+    expect(invalidCardToggle.success).toBe(false);
+    expect(invalidCardToggle.error).toContain('obligatorio');
   });
 });

@@ -1,5 +1,15 @@
 import { z } from 'zod';
 
+export const cardBentoBlockSchema = z.object({
+  id: z.string(),
+  type: z.enum(['link', 'metric', 'featured_project', 'testimonial']),
+  title: z.string().min(1).max(100),
+  subtitle: z.string().max(160).optional().nullable(),
+  url: z.string().url().optional().nullable().or(z.literal('')),
+  metricValue: z.string().max(30).optional().nullable(),
+  metricDelta: z.string().max(30).optional().nullable(),
+});
+
 export const cardThemeConfigSchema = z.object({
   themeId: z.string().default('stellar'),
   primaryColorOklch: z.string().default('#6366f1'),
@@ -19,16 +29,26 @@ export const cardThemeConfigSchema = z.object({
   backgroundOverlayOpacity: z.number().min(0).max(1).default(0.5).optional(),
   operationalStatus: z.enum(['none', 'open_now', 'taking_orders', 'available_by_appointment', 'custom']).default('none').optional(),
   customStatusText: z.string().max(60).optional().nullable(),
+  bentoBlocks: z.array(cardBentoBlockSchema).optional(),
 });
 
-export const cardBentoBlockSchema = z.object({
-  id: z.string(),
-  type: z.enum(['link', 'metric', 'featured_project', 'testimonial']),
-  title: z.string().min(1).max(100),
-  subtitle: z.string().max(160).optional().nullable(),
-  url: z.string().url().optional().nullable().or(z.literal('')),
-  metricValue: z.string().max(30).optional().nullable(),
-  metricDelta: z.string().max(30).optional().nullable(),
+export const cardIdLookupSchema = z.object({
+  cardId: z.string().trim().min(1, 'El ID de la tarjeta es obligatorio').max(128, 'ID de tarjeta inválido'),
+});
+
+export const toggleCardActiveSchema = z.object({
+  cardId: z.string().trim().min(1, 'El ID de la tarjeta es obligatorio').max(128, 'ID de tarjeta inválido'),
+  currentStatus: z.boolean(),
+});
+
+export const deleteCardLeadSchema = z.object({
+  leadId: z.string().trim().min(1, 'El ID del contacto es obligatorio').max(128, 'ID de contacto inválido'),
+});
+
+export const checkCardSlugSchema = z.object({
+  rawSlug: z.string().trim(),
+  currentCardId: z.string().trim().max(128).optional(),
+  profession: z.string().trim().max(120).optional(),
 });
 
 export type CardThemeConfig = z.infer<typeof cardThemeConfigSchema>;

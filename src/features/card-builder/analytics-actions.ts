@@ -30,6 +30,11 @@ export async function trackCardEventAction(input: RecordEventInput): Promise<{
 
     const { slug, eventType, source, device } = validated.data;
 
+    // Ignorar telemetría en la tarjeta demo oficial para evitar consultas innecesarias a Turso
+    if (slug === 'demo') {
+      return { success: true };
+    }
+
     // Buscar tarjeta correspondiente
     const card = await db.query.cards.findFirst({
       where: eq(cards.slug, slug),

@@ -104,6 +104,7 @@ export function CardBuilder({
   const [isExtractingColors, setIsExtractingColors] = useState(false);
   const [colorSourceLabel, setColorSourceLabel] = useState<string | null>(null);
 
+  const isCustomUserWithoutSavedCard = Boolean((defaultUserName || defaultUserEmail) && !initialData?.slug && !cardId);
   const resolvedDefaultTitle = initialData?.title || defaultUserName || OFFICIAL_DEMO_CARD.title;
   const resolvedDefaultEmail = initialData?.emailContact ?? defaultUserEmail ?? OFFICIAL_DEMO_CARD.emailContact;
 
@@ -125,19 +126,25 @@ export function CardBuilder({
     suggestions: [],
   });
 
-  // Estado reactivo del formulario sincronizado con la Tarjeta Demostrativa Oficial (INDI 2026)
+  // Estado reactivo del formulario sincronizado con la Tarjeta Demostrativa Oficial (INDI 2026) o aislado para usuarios nuevos reales
+  const resolvedInitialBentoBlocks =
+    initialData?.bentoBlocks ??
+    initialData?.themeConfig?.bentoBlocks ??
+    [];
+
   const [formData, setFormData] = useState<CardData>({
     slug: initialData?.slug || initialSlug,
     title: resolvedDefaultTitle,
     profession: initialData?.profession || OFFICIAL_DEMO_CARD.profession,
     about: initialData?.about ?? OFFICIAL_DEMO_CARD.about,
-    whatsapp: initialData?.whatsapp ?? OFFICIAL_DEMO_CARD.whatsapp,
+    phone: initialData?.phone ?? (isCustomUserWithoutSavedCard ? '' : ''),
+    whatsapp: initialData?.whatsapp ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.whatsapp),
     emailContact: resolvedDefaultEmail,
-    websiteUrl: initialData?.websiteUrl ?? OFFICIAL_DEMO_CARD.websiteUrl,
-    linkedinUrl: initialData?.linkedinUrl ?? OFFICIAL_DEMO_CARD.linkedinUrl,
-    instagramUrl: initialData?.instagramUrl ?? OFFICIAL_DEMO_CARD.instagramUrl,
-    photoUrl: initialData?.photoUrl ?? OFFICIAL_DEMO_CARD.photoUrl,
-    address: initialData?.address ?? OFFICIAL_DEMO_CARD.address,
+    websiteUrl: initialData?.websiteUrl ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.websiteUrl),
+    linkedinUrl: initialData?.linkedinUrl ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.linkedinUrl),
+    instagramUrl: initialData?.instagramUrl ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.instagramUrl),
+    photoUrl: initialData?.photoUrl ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.photoUrl),
+    address: initialData?.address ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.address),
     themeConfig: {
       themeId: initialData?.themeConfig?.themeId || OFFICIAL_DEMO_CARD.themeConfig.themeId,
       primaryColorOklch: initialData?.themeConfig?.primaryColorOklch || OFFICIAL_DEMO_CARD.themeConfig.primaryColorOklch,
@@ -153,8 +160,9 @@ export function CardBuilder({
       operationalStatus: initialData?.themeConfig?.operationalStatus || 'none',
       customStatusText: initialData?.themeConfig?.customStatusText || '',
       badgeText: initialData?.themeConfig?.badgeText ?? '',
+      ctaLabel: initialData?.themeConfig?.ctaLabel ?? '',
     },
-    bentoBlocks: initialData?.bentoBlocks ? [...initialData.bentoBlocks] : [],
+    bentoBlocks: [...resolvedInitialBentoBlocks],
   });
 
   // Efecto debounced (350ms) para comprobar disponibilidad de slug en Turso
@@ -1083,20 +1091,52 @@ export function CardBuilder({
           {/* Tab 2: Contacto */}
           {activeTab === 'contact' && (
             <div className="space-y-5 animate-fade-in">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-2">
+                    Número de WhatsApp (con código de país)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.whatsapp || ''}
+                    onChange={(e) => handleChange('whatsapp', e.target.value)}
+                    className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono"
+                    placeholder="+56 9 1234 5678"
+                  />
+                  <p className="text-[11px] text-zinc-500 mt-1.5">
+                    Genera el botón directo a chat con mensaje automático.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-2">
+                    Teléfono de Llamada / Agenda (Opcional)
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone || ''}
+                    onChange={(e) => handleChange('phone', e.target.value)}
+                    className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors font-mono"
+                    placeholder="Ej. +56 2 2345 6789"
+                  />
+                  <p className="text-[11px] text-zinc-500 mt-1.5">
+                    Se incluye en la tarjeta de contacto vCard 4.0 descargable.
+                  </p>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-2">
-                  Número de WhatsApp (con código de país)
+                  Texto del Botón Principal (CTA Personalizado)
                 </label>
                 <input
                   type="text"
-                  value={formData.whatsapp || ''}
-                  onChange={(e) => handleChange('whatsapp', e.target.value)}
-                  className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono"
-                  placeholder="+56 9 1234 5678"
+                  maxLength={40}
+                  value={formData.themeConfig?.ctaLabel || ''}
+                  onChange={(e) => handleThemeChange('ctaLabel', e.target.value)}
+                  className="w-full rounded-xl bg-black/50 border border-white/10 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                  placeholder="Por defecto: Guardar en Contactos (Ej. Agendar Consulta, Guardar mi Ficha)"
                 />
-                <p className="text-[11px] text-zinc-500 mt-1.5">
-                  Genera el botón directo a chat con mensaje personalizado automático.
-                </p>
               </div>
 
               <div>

@@ -12,7 +12,8 @@ import {
   Sparkles,
   UserPlus,
   MapPin,
-  Navigation
+  Navigation,
+  ArrowLeftRight
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { downloadVCardWithPhoto } from '@/shared/lib/vcard';
@@ -61,6 +62,15 @@ export interface CardData {
     backgroundOverlayOpacity?: number;
     operationalStatus?: 'none' | 'open_now' | 'taking_orders' | 'available_by_appointment' | 'custom';
     customStatusText?: string | null;
+    bentoBlocks?: ReadonlyArray<{
+      id: string;
+      type: 'link' | 'metric' | 'featured_project' | 'testimonial';
+      title: string;
+      subtitle?: string | null;
+      url?: string | null;
+      metricValue?: string | null;
+      metricDelta?: string | null;
+    }>;
   };
   bentoBlocks?: ReadonlyArray<{
     id: string;
@@ -221,7 +231,6 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const buttonTextColor = getAccessibleTextColor(primaryColor);
 
   const handleShare = () => {
-    trackCardEventAction({ slug: card.slug, eventType: 'share' }).catch(() => {});
     setIsShareModalOpen(true);
   };
 
@@ -482,7 +491,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           {/* Botón Guardar en Contactos (vCard 4.0 One-Tap con Color Reactivo y Contraste WCAG 2.2 AA) */}
           <button
             onClick={handleDownloadContact}
-            className="w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl font-semibold text-sm shadow-xl active:scale-[0.98] transition-all duration-300"
+            className="w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl font-semibold text-sm shadow-xl active:scale-[0.98] transition-all duration-300 cursor-pointer"
             style={{
               color: buttonTextColor,
               background: `linear-gradient(135deg, ${primaryColor} 0%, color-mix(in srgb, ${primaryColor} 70%, #000000) 100%)`,
@@ -497,9 +506,24 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             ) : (
               <>
                 <UserPlus className="w-4 h-4" />
-                <span>Guardar en Contactos</span>
+                <span>{card.themeConfig?.ctaLabel?.trim() || 'Guardar en Contactos'}</span>
               </>
             )}
+          </button>
+
+          {/* Botón Bidireccional Intercambiar Contacto (Mini-CRM Lead Capture) */}
+          <button
+            type="button"
+            onClick={() => setIsExchangeModalOpen(true)}
+            className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl font-semibold text-sm border transition-all active:scale-[0.98] cursor-pointer ${
+              isLightMode
+                ? 'bg-white hover:bg-slate-50 text-slate-900 border-slate-300 shadow-sm'
+                : 'bg-white/[0.06] hover:bg-white/[0.12] text-white border-white/15 shadow-md'
+            }`}
+            style={{ borderColor: isLightMode ? undefined : `${primaryColor}44` }}
+          >
+            <ArrowLeftRight className="w-4 h-4" style={{ color: primaryColor }} />
+            <span>Intercambiar Contacto</span>
           </button>
 
           {whatsappUrl && (
@@ -609,63 +633,67 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
         )}
 
         {/* Bloques Bento Modulares (Vitrina Interactiva) */}
-        {card.bentoBlocks && card.bentoBlocks.length > 0 && (
-          <div className="relative z-10 flex flex-col gap-2.5 mb-6 pt-2">
-            {card.bentoBlocks.map((block) => (
-              <div
-                key={block.id}
-                className={`p-3.5 rounded-xl border transition-all flex items-center justify-between text-left ${
-                  isLightMode 
-                    ? 'bg-white/80 hover:bg-white border-slate-200/80 shadow-xs' 
-                    : 'bg-white/[0.04] hover:border-white/20'
-                }`}
-                style={{ borderColor: isLightMode ? undefined : `${primaryColor}22` }}
-              >
-                <div>
-                  <h4 className={`text-xs font-semibold tracking-wide ${
-                    isLightMode ? 'text-slate-900' : 'text-white'
-                  }`}>
-                    {block.title}
-                  </h4>
-                  {block.subtitle && (
-                    <p className={`text-[11px] mt-0.5 leading-tight ${
-                      isLightMode ? 'text-slate-500' : 'text-zinc-400'
+        {(() => {
+          const resolvedBentoBlocks = card.bentoBlocks ?? card.themeConfig?.bentoBlocks ?? [];
+          if (resolvedBentoBlocks.length === 0) return null;
+          return (
+            <div className="relative z-10 flex flex-col gap-2.5 mb-6 pt-2">
+              {resolvedBentoBlocks.map((block) => (
+                <div
+                  key={block.id}
+                  className={`p-3.5 rounded-xl border transition-all flex items-center justify-between text-left ${
+                    isLightMode 
+                      ? 'bg-white/80 hover:bg-white border-slate-200/80 shadow-xs' 
+                      : 'bg-white/[0.04] hover:border-white/20'
+                  }`}
+                  style={{ borderColor: isLightMode ? undefined : `${primaryColor}22` }}
+                >
+                  <div>
+                    <h4 className={`text-xs font-semibold tracking-wide ${
+                      isLightMode ? 'text-slate-900' : 'text-white'
                     }`}>
-                      {block.subtitle}
-                    </p>
-                  )}
-                </div>
-                {block.metricValue && (
-                  <div className="text-right">
-                    <span 
-                      className="text-xs font-mono font-bold"
-                      style={{ color: primaryColor }}
-                    >
-                      {block.metricValue}
-                    </span>
-                    {block.metricDelta && (
-                      <span className="block text-[9px] font-mono text-emerald-600">
-                        {block.metricDelta}
-                      </span>
+                      {block.title}
+                    </h4>
+                    {block.subtitle && (
+                      <p className={`text-[11px] mt-0.5 leading-tight ${
+                        isLightMode ? 'text-slate-500' : 'text-zinc-400'
+                      }`}>
+                        {block.subtitle}
+                      </p>
                     )}
                   </div>
-                )}
-                {block.url && (
-                  <a
-                    href={block.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`p-1 rounded-lg transition-colors ${
-                      isLightMode ? 'text-slate-500 hover:text-slate-900' : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    <Globe className="w-3.5 h-3.5" />
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                  {block.metricValue && (
+                    <div className="text-right">
+                      <span 
+                        className="text-xs font-mono font-bold"
+                        style={{ color: primaryColor }}
+                      >
+                        {block.metricValue}
+                      </span>
+                      {block.metricDelta && (
+                        <span className="block text-[9px] font-mono text-emerald-600">
+                          {block.metricDelta}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {block.url && (
+                    <a
+                      href={block.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 rounded-lg transition-colors ${
+                        isLightMode ? 'text-slate-500 hover:text-slate-900' : 'text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Acceso a Billeteras Digitales Nativas (Apple & Google Wallet Offline) */}
         <div className="relative z-10 flex items-center justify-center gap-2 mb-6">
@@ -787,9 +815,16 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           isLightMode ? 'border-slate-200 text-slate-600' : 'border-white/10 text-zinc-400'
         }`}>
           <button
-            onClick={() => setShowQR(!showQR)}
-            className={`inline-flex items-center gap-1.5 transition-colors ${
-              isLightMode ? 'hover:text-slate-900 font-medium' : 'hover:text-white'
+            type="button"
+            onClick={() => {
+              const nextState = !showQR;
+              setShowQR(nextState);
+              if (nextState) {
+                trackCardEventAction({ slug: card.slug, eventType: 'qr_scan' }).catch(() => {});
+              }
+            }}
+            className={`min-h-[44px] px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
+              isLightMode ? 'hover:text-slate-900 hover:bg-slate-100 font-medium' : 'hover:text-white hover:bg-white/5'
             }`}
           >
             <QrCode className="w-4 h-4" style={{ color: primaryColor }} />
@@ -797,8 +832,9 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           </button>
 
           <button
+            type="button"
             onClick={handleShare}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white font-medium transition-all"
+            className="min-h-[44px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white font-medium transition-all cursor-pointer active:scale-[0.98]"
             style={{
               background: isLightMode ? `${primaryColor}18` : `${primaryColor}26`,
               color: primaryColor,
@@ -830,6 +866,14 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           </a>
         </div>
       </motion.div>
+
+      {/* Modal Bidireccional de Intercambio de Contacto (Mini-CRM Lead Capture) */}
+      <ExchangeContactModal
+        cardId={card.id || card.slug}
+        cardTitle={card.title}
+        isOpen={isExchangeModalOpen}
+        onClose={() => setIsExchangeModalOpen(false)}
+      />
 
       {/* Modal Universal de Compartir (Safe Zone 1:1 & Hápticos) */}
       <WebShareModal

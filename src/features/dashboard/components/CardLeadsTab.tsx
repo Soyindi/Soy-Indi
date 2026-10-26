@@ -17,6 +17,7 @@ import {
   Inbox
 } from 'lucide-react';
 import { getCardLeadsAction, deleteCardLeadAction, CardLeadItem } from '@/features/card-builder/lead-actions';
+import { getWhatsAppDigits } from '@/shared/lib/phone';
 
 export function CardLeadsTab() {
   const [leads, setLeads] = useState<CardLeadItem[]>([]);
@@ -161,7 +162,7 @@ export function CardLeadsTab() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <AnimatePresence>
             {filteredLeads.map((lead) => {
-              const cleanPhone = lead.phone ? lead.phone.replace(/[^0-9]/g, '') : null;
+              const cleanPhone = lead.phone ? getWhatsAppDigits(lead.phone) : '';
               const whatsappUrl = cleanPhone
                 ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hola ${lead.name}, un gusto. Vi que me dejaste tus datos en mi tarjeta INDI...`)}`
                 : null;

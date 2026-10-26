@@ -399,10 +399,11 @@ El proyecto utiliza **Vitest** como motor de pruebas unitarias.
 - **Aislamiento de Datos Personales en Onboarding & Paridad de Firma Digital A4**: Usuarios autenticados sin CV previo reciben sus campos de contacto personales limpios (sin heredar RUT, teléfono ni redes del perfil demo), y `CvDocumentPreview.tsx` garantiza la visualización de la firma electrónica tanto en documentos compactos de 1 página como en CVs de 2 páginas.
 - **Inferencia Híbrida Cero Caídas**: El cálculo heurístico determinista entrega resultados instantáneos (<10ms). Si existe disponibilidad en la malla de modelos (NVIDIA NIM / Groq), enriquece los consejos con síntesis ejecutiva personalizada. Blindado por `tests/unit/cv-job-match-and-skills.test.ts` y `tests/unit/ats-audit.test.ts`.
 
-28. **Gobernanza de Captura Bidireccional de Leads & Mini-CRM (`card_leads`):**
-- Toda inserción de leads debe validar que la tarjeta exista y esté activa (`submitCardLeadAction`).
-- Toda consulta, eliminación o exportación de prospectos en Server Actions debe blindarse estrictamente con `getSafeAuthenticatedUserId(targetUserId)` y la cláusula compuesta `and(eq(cardLeads.id, id), eq(cardLeads.userId, targetUserId))` para prevenir IDOR.
-- Touch targets $\ge 44\text{px}$, retroalimentación háptica accesible WCAG 2.2 AA y acción One-Tap a WhatsApp (`https://wa.me/...`).
+28. **Gobernanza de Tarjetas Digitales, Bloques Bento, Control de Estado (`isActive`) & Mini-CRM (`card_leads`):**
+- Toda inserción de leads debe validar que la tarjeta exista y esté activa (`submitCardLeadAction`), conectando de extremo a extremo el botón *"Intercambiar Contacto"* y `<ExchangeContactModal />` en `DigitalCard.tsx` con la pestaña **"Contactos (CRM)"** en `UnifiedDashboardView.tsx` (`/dashboard?tab=leads`).
+- Toda consulta, alternancia de estado (`toggleCardActiveAction`), verificación de disponibilidad de slug (`checkCardSlugAvailabilityAction`) o eliminación de recursos y prospectos en Server Actions debe validar entradas al 100% con esquemas Zod (`cardIdLookupSchema`, `toggleCardActiveSchema`, `deleteCardLeadSchema`, `checkCardSlugSchema`) y blindarse con `getSafeAuthenticatedUserId(targetUserId)` + cláusula compuesta anti-IDOR `and(eq(table.id, id), eq(table.userId, targetUserId))`.
+- Los bloques modulares Bento (`bentoBlocks`) se persisten atómicamente dentro del JSON `theme_config` (`themeConfig.bentoBlocks`) en `upsertCardAction`, y las vistas públicas `/c/[slug]` deben respetar estrictamente el flag `card.isActive` (emitiendo `robots: noindex, nofollow` y pantalla de pausa cuando `isActive === false`).
+- Touch targets $\ge 44\text{px}$, retroalimentación háptica accesible WCAG 2.2 AA, aislamiento de datos demo en onboarding de cuentas nuevas y acción One-Tap a WhatsApp (`https://wa.me/...`) con normalización `getWhatsAppDigits`.
 
 29. **Gobernanza de Pases Digitales Nativos (Wallets) & Carga Directa R2 con Presigned URLs:**
 - Los pases para Apple Wallet y Google Wallet deben generarse exclusivamente con URLs canónicas oficiales (`https://soyindi.cl/c/{slug}`) y código QR offline (`PKBarcodeFormatQR`) sin llamadas síncronas bloqueantes a APIs externas.

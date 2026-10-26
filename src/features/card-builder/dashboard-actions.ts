@@ -2,6 +2,7 @@
 
 import { db } from '@/shared/api/db';
 import { cards } from '@/entities/schema';
+import { cardIdLookupSchema, toggleCardActiveSchema } from '@/entities/card/schemas';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { eq, desc, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -28,6 +29,11 @@ export async function getUserCardsAction(userId?: string) {
 
 export async function deleteCardAction(cardId: string, userId?: string) {
   try {
+    const parsed = cardIdLookupSchema.safeParse({ cardId });
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'ID de tarjeta inválido' };
+    }
+
     const sessionResult = await getSafeAuthenticatedUserId(userId);
     if (!sessionResult.userId) {
       return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
@@ -36,7 +42,7 @@ export async function deleteCardAction(cardId: string, userId?: string) {
 
     await db
       .delete(cards)
-      .where(and(eq(cards.id, cardId), eq(cards.userId, targetUserId)));
+      .where(and(eq(cards.id, parsed.data.cardId), eq(cards.userId, targetUserId)));
 
     revalidatePath('/cards');
     revalidatePath('/dashboard');
@@ -49,6 +55,11 @@ export async function deleteCardAction(cardId: string, userId?: string) {
 
 export async function toggleCardActiveAction(cardId: string, currentStatus: boolean, userId?: string) {
   try {
+    const parsed = toggleCardActiveSchema.safeParse({ cardId, currentStatus });
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'Parámetros inválidos' };
+    }
+
     const sessionResult = await getSafeAuthenticatedUserId(userId);
     if (!sessionResult.userId) {
       return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
@@ -57,12 +68,12 @@ export async function toggleCardActiveAction(cardId: string, currentStatus: bool
 
     await db
       .update(cards)
-      .set({ isActive: !currentStatus, updatedAt: new Date() })
-      .where(and(eq(cards.id, cardId), eq(cards.userId, targetUserId)));
+      .set({ isActive: !parsed.data.currentStatus, updatedAt: new Date() })
+      .where(and(eq(cards.id, parsed.data.cardId), eq(cards.userId, targetUserId)));
 
     revalidatePath('/cards');
     revalidatePath('/dashboard');
-    return { success: true, newStatus: !currentStatus };
+    return { success: true, newStatus: !parsed.data.currentStatus };
   } catch (err: any) {
     console.error('Error toggling card active status:', err);
     return { success: false, error: err.message };
@@ -71,6 +82,11 @@ export async function toggleCardActiveAction(cardId: string, currentStatus: bool
 
 export async function getCardByIdAction(cardId: string, userId?: string) {
   try {
+    const parsed = cardIdLookupSchema.safeParse({ cardId });
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'ID de tarjeta inválido' };
+    }
+
     const sessionResult = await getSafeAuthenticatedUserId(userId);
     if (!sessionResult.userId) {
       return { success: false, error: sessionResult.error || 'Acceso no autorizado' };
@@ -78,7 +94,7 @@ export async function getCardByIdAction(cardId: string, userId?: string) {
     const targetUserId = sessionResult.userId;
 
     const card = await db.query.cards.findFirst({
-      where: and(eq(cards.id, cardId), eq(cards.userId, targetUserId)),
+      where: and(eq(cards.id, parsed.data.cardId), eq(cards.userId, targetUserId)),
     });
 
     if (!card) {

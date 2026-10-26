@@ -7,7 +7,8 @@ import {
   CardFormValues, 
   CardFormInput, 
   isReservedCardSlug, 
-  generateSlugAlternatives 
+  generateSlugAlternatives,
+  checkCardSlugSchema
 } from '@/entities/card/schemas';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 import { assertZeroBinaryPersistence } from '@/shared/lib/fileSecurity';
@@ -83,6 +84,12 @@ export async function upsertCardAction(
         }
       }
 
+      // Sincronizar bentoBlocks dentro de themeConfig JSON para persistencia atómica en SQLite
+      const persistedThemeConfig = {
+        ...data.themeConfig,
+        bentoBlocks: data.bentoBlocks ?? data.themeConfig.bentoBlocks ?? [],
+      };
+
       // 3c. Actualizar la tarjeta existente
       await db
         .update(cards)
@@ -99,7 +106,7 @@ export async function upsertCardAction(
           instagramUrl: data.instagramUrl || null,
           photoUrl: data.photoUrl || null,
           address: data.address || null,
-          themeConfig: data.themeConfig,
+          themeConfig: persistedThemeConfig,
           updatedAt: new Date(),
         })
         .where(and(eq(cards.id, cardId), eq(cards.userId, targetUserId)));
@@ -137,6 +144,12 @@ export async function upsertCardAction(
 
       const newId = crypto.randomUUID();
 
+      // Sincronizar bentoBlocks dentro de themeConfig JSON para persistencia atómica en SQLite
+      const persistedThemeConfig = {
+        ...data.themeConfig,
+        bentoBlocks: data.bentoBlocks ?? data.themeConfig.bentoBlocks ?? [],
+      };
+
       // 4d. Insertar nueva tarjeta con UUID propio
       await db.insert(cards).values({
         id: newId,
@@ -153,7 +166,7 @@ export async function upsertCardAction(
         instagramUrl: data.instagramUrl || null,
         photoUrl: data.photoUrl || null,
         address: data.address || null,
-        themeConfig: data.themeConfig,
+        themeConfig: persistedThemeConfig,
         isActive: true,
         viewsCount: 0,
         clicksCount: 0,
@@ -197,7 +210,21 @@ export async function checkCardSlugAvailabilityAction(
   profession?: string
 ): Promise<SlugAvailabilityResult> {
   try {
-    const slug = rawSlug.toLowerCase().trim();
+    const parsedInput = checkCardSlugSchema.safeParse({
+      rawSlug,
+      currentCardId,
+      profession,
+    });
+    if (!parsedInput.success) {
+      return {
+        available: false,
+        status: 'invalid',
+        message: 'Parámetros de verificación inválidos.',
+        suggestions: [],
+      };
+    }
+
+    const slug = parsedInput.data.rawSlug.toLowerCase().trim();
 
     if (!slug || slug.length < 3) {
       return {

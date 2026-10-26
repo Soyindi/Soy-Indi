@@ -203,4 +203,44 @@ describe('Multi-Card Independence & Explicit Edit Mode Suite', () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain('no tienes permisos');
   });
+
+  it('debe persistir los bloques Bento (bentoBlocks) dentro de themeConfig JSON al crear y actualizar una tarjeta', async () => {
+    const { db } = await import('@/shared/api/db');
+    (vi.mocked(db.query.cards.findFirst) as any).mockImplementationOnce(async () => null);
+
+    const customBentoBlocks = [
+      {
+        id: 'bento-metric-1',
+        type: 'metric' as const,
+        title: 'Crecimiento Anual',
+        subtitle: 'Expansión B2B LatAm',
+        metricValue: '+68%',
+        metricDelta: '↑ YoY',
+      },
+      {
+        id: 'bento-project-1',
+        type: 'featured_project' as const,
+        title: 'Portafolio de Arquitectura',
+        subtitle: 'Casos de estudio enterprise',
+        url: 'https://soyindi.cl',
+      },
+    ];
+
+    const createResult = await upsertCardAction(
+      {
+        ...baseCardInput,
+        slug: 'tarjeta-bento-persist',
+        bentoBlocks: customBentoBlocks,
+      },
+      undefined,
+      testUserA
+    );
+
+    expect(createResult.success).toBe(true);
+    const createdCard = memoryCards.find((c) => c.slug === 'tarjeta-bento-persist');
+    expect(createdCard).toBeDefined();
+    expect(createdCard.themeConfig.bentoBlocks).toHaveLength(2);
+    expect(createdCard.themeConfig.bentoBlocks[0].metricValue).toBe('+68%');
+    expect(createdCard.themeConfig.bentoBlocks[1].url).toBe('https://soyindi.cl');
+  });
 });

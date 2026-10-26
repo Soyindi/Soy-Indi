@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { eq, and, or, desc } from 'drizzle-orm';
 import { db } from '@/shared/api/db';
 import { cardLeads, cards } from '@/entities/schema';
+import { deleteCardLeadSchema } from '@/entities/card/schemas';
 import { getSafeAuthenticatedUserId } from '@/shared/lib/session';
 
 const SubmitCardLeadInputSchema = z.object({
@@ -168,6 +169,11 @@ export async function deleteCardLeadAction(
   targetUserId?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const parsed = deleteCardLeadSchema.safeParse({ leadId });
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.issues[0]?.message || 'ID de contacto inválido' };
+    }
+
     const authResult = await getSafeAuthenticatedUserId(targetUserId);
     if (!authResult.userId) {
       return {
@@ -177,13 +183,9 @@ export async function deleteCardLeadAction(
     }
     const authUserId = authResult.userId;
 
-    if (!leadId) {
-      return { success: false, error: 'ID de contacto inválido' };
-    }
-
     await db
       .delete(cardLeads)
-      .where(and(eq(cardLeads.id, leadId), eq(cardLeads.ownerUserId, authUserId)));
+      .where(and(eq(cardLeads.id, parsed.data.leadId), eq(cardLeads.ownerUserId, authUserId)));
 
     return { success: true };
   } catch (error: any) {

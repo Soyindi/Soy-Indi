@@ -71,6 +71,7 @@ Responde EXCLUSIVAMENTE con un JSON con la estructura:
               messages: [{ role: 'user', content: prompt }],
               response_format: { type: 'json_object' },
             }),
+            signal: AbortSignal.timeout(8000),
           });
 
           if (res.ok) {
