@@ -1401,7 +1401,6 @@ export function CardBuilder({
                               cardFinish: preset.cardFinish,
                               surfaceTexture: preset.surfaceTexture,
                               coverImageUrl: preset.coverImageUrl ?? prev.themeConfig?.coverImageUrl,
-                              badgeText: preset.badgeText ?? prev.themeConfig?.badgeText,
                               operationalStatus: preset.operationalStatus ?? prev.themeConfig?.operationalStatus,
                             },
                           }));
@@ -1464,7 +1463,6 @@ export function CardBuilder({
                                 ...prev.themeConfig,
                                 coverImageUrl: item.url,
                                 primaryColorOklch: item.suggestedPrimaryColor,
-                                badgeText: item.suggestedBadge,
                               },
                             }));
                           }}

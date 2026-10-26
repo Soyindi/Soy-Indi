@@ -169,6 +169,12 @@ describe('Motor Visual Open Graph y Módulo de Compartir (INDI 2026)', () => {
       expect(cardCode).not.toContain('<span>Apple Wallet</span>');
       expect(cardCode).toContain('<span>Google Wallet</span>');
       expect(cardCode).toContain('hasSocialLinks && (');
+
+      // Verificar que la foto de perfil esté por encima de cualquier insignia para evitar colisión con -mt-14
+      const photoIndex = cardCode.indexOf('card.photoUrl ? (');
+      const badgeIndex = cardCode.indexOf('card.themeConfig?.badgeText && (');
+      expect(photoIndex).toBeGreaterThan(-1);
+      expect(badgeIndex).toBeGreaterThan(photoIndex);
     });
 
     it('WalletPassModal se enfoca exclusivamente en el pase de Google Wallet y QR sin acciones redundantes', async () => {

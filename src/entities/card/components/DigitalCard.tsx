@@ -384,24 +384,10 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           </div>
         )}
 
-        {/* Badge Superior Contextual Personalizado (Solo si fue definido por el usuario) */}
-        {card.themeConfig?.badgeText && (
-          <div className="relative z-10 flex items-center justify-center mb-3">
-            <span 
-              className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase border shadow-sm backdrop-blur-md ${
-                isLightMode ? 'bg-black/5 text-slate-800 border-slate-300' : 'bg-white/10 text-white'
-              }`}
-              style={{ borderColor: `${primaryColor}55`, color: primaryColor }}
-            >
-              <span>{card.themeConfig.badgeText}</span>
-            </span>
-          </div>
-        )}
-
         {/* Header de la Tarjeta */}
         <div className="relative z-10 flex flex-col items-center text-center">
-          {/* Foto de Perfil con Anillo de Degradado y Glow Reactivo (con solapamiento si hay portada) */}
-          <div className={`relative w-24 h-24 group transition-all duration-300 ${hasCover ? '-mt-14 sm:-mt-16 mb-4' : 'mb-5'}`}>
+          {/* Foto de Perfil con Anillo de Degradado y Glow Reactivo (con solapamiento limpio si hay portada) */}
+          <div className={`relative z-20 w-24 h-24 group transition-all duration-300 ${hasCover ? '-mt-14 sm:-mt-16 mb-3' : 'mb-4'}`}>
             <div 
               className="absolute inset-0 rounded-full animate-pulse blur-md opacity-75 transition-all duration-500" 
               style={{
@@ -439,6 +425,20 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               )}
             </div>
           </div>
+
+          {/* Insignia de Especialidad (Debajo de la foto para cero colisiones con portadas) */}
+          {card.themeConfig?.badgeText && (
+            <div className="mb-2">
+              <span 
+                className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase border shadow-sm backdrop-blur-md ${
+                  isLightMode ? 'bg-black/5 text-slate-800 border-slate-300' : 'bg-white/10 text-white'
+                }`}
+                style={{ borderColor: `${primaryColor}55`, color: primaryColor }}
+              >
+                <span>{card.themeConfig.badgeText}</span>
+              </span>
+            </div>
+          )}
 
           {/* Insignia de Estado Operacional con LED Pulsante */}
           {statusDisplay && (
