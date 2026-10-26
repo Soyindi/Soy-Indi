@@ -557,16 +557,29 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
               </div>
             </div>
 
-            {/* Mapa Embebido con OpenStreetMap (Liviano, Privacy-First, Sin API Keys) */}
-            <div className="relative w-full h-36 bg-zinc-900 overflow-hidden">
+            {/* Mapa Real Centrado en la Calle Exacta (Google Maps Street Zoom + Dark Mode Adaptativo) */}
+            <div className="relative w-full h-40 bg-zinc-950 overflow-hidden group/map">
               <iframe
                 title={`Mapa de ${card.title}`}
-                className="w-full h-full border-0 filter contrast-[1.05] opacity-90 hover:opacity-100 transition-opacity"
-                src={`https://www.openstreetmap.org/export/embed.html?bbox=-180%2C-85%2C180%2C85&layer=mapnik&marker=${encodeURIComponent(card.address)}`}
+                className="w-full h-full border-0 transition-all duration-500"
+                style={{
+                  filter: isLightMode
+                    ? 'contrast(1.03) saturate(1.05)'
+                    : 'invert(90%) hue-rotate(180deg) brightness(95%) contrast(92%)',
+                }}
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(card.address)}&t=m&z=16&ie=UTF8&iwloc=near&output=embed`}
                 loading="lazy"
-                referrerPolicy="no-referrer"
+                referrerPolicy="no-referrer-when-downgrade"
               />
-              <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-white/10 rounded-b-none" />
+              {/* Scrim sutil superior e inferior para integrar el mapa con el cristal de la tarjeta */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  boxShadow: isLightMode
+                    ? 'inset 0 0 16px rgba(15, 23, 42, 0.08)'
+                    : 'inset 0 0 24px rgba(9, 10, 16, 0.55)',
+                }}
+              />
             </div>
 
             {/* Botón de Navegación Rápida GPS (Google Maps / Waze / Apple Maps) con touch target >= 44px */}

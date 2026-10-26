@@ -175,6 +175,12 @@ describe('Motor Visual Open Graph y Módulo de Compartir (INDI 2026)', () => {
       const badgeIndex = cardCode.indexOf('card.themeConfig?.badgeText && (');
       expect(photoIndex).toBeGreaterThan(-1);
       expect(badgeIndex).toBeGreaterThan(photoIndex);
+
+      // Verificar que el mapa use Google Maps Street Zoom (z=16&ie=UTF8&iwloc=near&output=embed) con Dark Mode adaptativo
+      expect(cardCode).toContain('https://maps.google.com/maps?q=');
+      expect(cardCode).toContain('z=16&ie=UTF8&iwloc=near&output=embed');
+      expect(cardCode).toContain('invert(90%) hue-rotate(180deg)');
+      expect(cardCode).not.toContain('openstreetmap.org');
     });
 
     it('WalletPassModal se enfoca exclusivamente en el pase de Google Wallet y QR sin acciones redundantes', async () => {
