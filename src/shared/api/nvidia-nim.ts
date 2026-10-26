@@ -32,13 +32,23 @@ import {
   setCachedResponse,
   withInFlightCoalescing,
 } from '@/shared/lib/aiCircuitBreaker';
+import { maskSensitiveDataForAi } from '@/shared/lib/dataPrivacy';
 
 export async function callNvidiaNimChat(
   messages: NvidiaChatMessage[],
   options: NvidiaNimOptions = {}
 ): Promise<{ success: boolean; content?: string; error?: string; modelUsed?: string }> {
+  // Privacy-by-Design (Ley N° 21.719): Enmascarar RUTs y teléfonos en mensajes antes de enviar a APIs externas de IA
+  const sanitizedMessages: NvidiaChatMessage[] = messages.map((msg) => ({
+    ...msg,
+    content:
+      msg.role === 'user'
+        ? maskSensitiveDataForAi(msg.content, { maskRut: true, maskPhone: true, maskEmail: false }).sanitizedText
+        : msg.content,
+  }));
+
   // 0. Micro-Caché Semántica Distribuida (Redis + Memoria LRU): Retornar de inmediato si ya fue resuelto
-  const requestKey = generateRequestKey(messages, options);
+  const requestKey = generateRequestKey(sanitizedMessages, options);
   const cached = (await getCachedResponseAsync(requestKey)) || getCachedResponse(requestKey);
   if (cached) {
     return {
@@ -75,7 +85,7 @@ export async function callNvidiaNimChat(
           signal: AbortSignal.timeout(6000),
           body: JSON.stringify({
             model: 'qwen/qwen3.8-27b',
-            messages,
+            messages: sanitizedMessages,
             temperature: options.temperature ?? 0.2,
             max_tokens: options.maxTokens ?? 3000,
             response_format: options.responseFormat,
@@ -118,7 +128,7 @@ export async function callNvidiaNimChat(
             signal: AbortSignal.timeout(5000),
             body: JSON.stringify({
               model: targetModel,
-              messages,
+              messages: sanitizedMessages,
               temperature: options.temperature ?? 0.2,
               max_tokens: options.maxTokens ?? 3000,
               response_format: options.responseFormat,
@@ -158,8 +168,8 @@ export async function callNvidiaNimChat(
     // 3. Failover a Google Gemini 2.0 Flash (Latencia <800ms, Context Caching & JSON Mode)
     if (geminiApiKey && (await isProviderAvailableAsync('gemini'))) {
       try {
-        const systemMsg = messages.find((m) => m.role === 'system')?.content || '';
-        const userMsgs = messages.filter((m) => m.role !== 'system');
+        const systemMsg = sanitizedMessages.find((m) => m.role === 'system')?.content || '';
+        const userMsgs = sanitizedMessages.filter((m) => m.role !== 'system');
         const combinedPrompt = systemMsg
           ? `${systemMsg}\n\n${userMsgs.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`
           : userMsgs.map((m) => m.content).join('\n\n');
@@ -216,7 +226,7 @@ export async function callNvidiaNimChat(
           signal: AbortSignal.timeout(6000),
           body: JSON.stringify({
             model: 'google/gemini-2.0-flash-001',
-            messages,
+            messages: sanitizedMessages,
             temperature: options.temperature ?? 0.2,
             max_tokens: options.maxTokens ?? 3000,
             response_format: options.responseFormat,

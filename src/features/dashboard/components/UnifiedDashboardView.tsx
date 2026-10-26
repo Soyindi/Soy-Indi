@@ -39,7 +39,6 @@ import { AffiliateDashboardTab } from '@/features/affiliates/components/Affiliat
 import { ReferralQrModal } from '@/features/affiliates/components/ReferralQrModal';
 import { PrivacySettingsTab } from '@/features/privacy/components/PrivacySettingsTab';
 import { ArcoRightsModal } from '@/features/privacy/components/ArcoRightsModal';
-import { CardLeadsTab } from '@/features/dashboard/components/CardLeadsTab';
 import type { AffiliateOverview } from '@/entities/affiliate/schemas';
 
 interface CardItem {
@@ -83,7 +82,7 @@ interface UnifiedDashboardViewProps {
   initialCvs: CvItem[];
   initialPresentations: PresentationItem[];
   initialAffiliateOverview?: AffiliateOverview | null;
-  initialTab?: 'cards' | 'cvs' | 'leads' | 'presentations' | 'affiliates' | 'privacy';
+  initialTab?: 'cards' | 'cvs' | 'presentations' | 'affiliates' | 'privacy';
   justCreatedSlug?: string | null;
 }
 
@@ -95,7 +94,7 @@ export function UnifiedDashboardView({
   initialTab = 'cards',
   justCreatedSlug,
 }: UnifiedDashboardViewProps) {
-  const [activeTab, setActiveTab] = useState<'cards' | 'cvs' | 'leads' | 'presentations' | 'affiliates' | 'privacy'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'cards' | 'cvs' | 'presentations' | 'affiliates' | 'privacy'>(initialTab);
 
   // Sincronizar pestaña activa cuando se navega con parámetro ?tab= en la URL
   useEffect(() => {
@@ -241,12 +240,6 @@ export function UnifiedDashboardView({
       label: 'Crear o Mejorar CV',
       gradient: 'from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/20',
       icon: <FileText className="w-4 h-4" />
-    },
-    leads: {
-      href: '/cards/new',
-      label: 'Compartir Mi Tarjeta',
-      gradient: 'from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-emerald-500/20',
-      icon: <Sparkles className="w-4 h-4" />
     },
     presentations: {
       href: '/presentations',
@@ -494,6 +487,8 @@ export function UnifiedDashboardView({
                   ? 'Buscar en currículums...'
                   : activeTab === 'presentations'
                   ? 'Buscar en presentaciones...'
+                  : activeTab === 'privacy'
+                  ? 'Buscar subprocesadores (Turso, Flow, Vercel...)'
                   : 'Buscar en el panel...'
               }
               value={searchQuery}
@@ -968,13 +963,6 @@ export function UnifiedDashboardView({
         </div>
       )}
 
-      {/* ================= PESTAÑA: CONTACTOS CAPTADOS (MINI-CRM) ================= */}
-      {activeTab === 'leads' && (
-        <div className="space-y-6 sm:space-y-8 animate-fade-in">
-          <CardLeadsTab />
-        </div>
-      )}
-
       {/* ================= PESTAÑA 4: PROGRAMA DE AFILIADOS ================= */}
       {activeTab === 'affiliates' && (
         <div className="space-y-6 sm:space-y-8 animate-fade-in">
@@ -993,6 +981,7 @@ export function UnifiedDashboardView({
         <div className="space-y-6 sm:space-y-8 animate-fade-in">
           <PrivacySettingsTab 
             userEmail={sessionData?.user?.email} 
+            searchQuery={searchQuery}
             onOpenArcoModal={() => setIsArcoModalOpen(true)} 
           />
         </div>
@@ -1041,6 +1030,7 @@ export function UnifiedDashboardView({
         isOpen={isArcoModalOpen}
         onClose={() => setIsArcoModalOpen(false)}
         userEmail={sessionData?.user?.email}
+        userName={sessionData?.user?.name}
       />
     </div>
   );

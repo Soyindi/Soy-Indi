@@ -1,6 +1,7 @@
 'use server';
 
 import { z } from 'zod';
+import { maskSensitiveDataForAi } from '@/shared/lib/dataPrivacy';
 
 const generateBioSchema = z.object({
   title: z.string().min(1, 'El cargo es requerido'),
@@ -32,6 +33,8 @@ export async function generateBioVariantsAction(input: GenerateBioInput): Promis
     }
 
     const { title, profession } = validated.data;
+    const safeTitle = maskSensitiveDataForAi(title).sanitizedText;
+    const safeProfession = maskSensitiveDataForAi(profession).sanitizedText;
     const openRouterApiKey = process.env.OPENROUTER_API_KEY;
     const geminiApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
 
@@ -39,7 +42,7 @@ export async function generateBioVariantsAction(input: GenerateBioInput): Promis
     if (openRouterApiKey || geminiApiKey) {
       try {
         const prompt = `Actúa como redactor senior de perfiles ejecutivos y bio profesionales en LinkedIn.
-Para un profesional con el nombre "${title}" y el cargo/especialidad "${profession}", redacta exactamente 3 opciones de biografía profesional concisas (máximo 35 palabras cada una) en español:
+Para un profesional con el nombre "${safeTitle}" y el cargo/especialidad "${safeProfession}", redacta exactamente 3 opciones de biografía profesional concisas (máximo 35 palabras cada una) en español:
 1. Tono Ejecutivo / Corporativo (enfoque en resultados de negocio, liderazgo y estrategia).
 2. Tono Innovador / Tech (enfoque en tecnología de vanguardia, disrupción y transformación digital).
 3. Tono Cercano / Consultor (enfoque en conectar con personas, empatía y resolución ágil de problemas).

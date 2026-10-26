@@ -458,3 +458,12 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
 - **Persistencia Sin Migraciones Destructivas para `bentoBlocks`**: Los bloques modulares Bento (`metric`, `project`, `link`, `quote`) se validan con `cardBentoBlockSchema` y se persisten dentro de la columna JSON `theme_config` (`themeConfig.bentoBlocks`) en `upsertCardAction`, hidratándose de forma transparente en `CardBuilder.tsx` y `DigitalCard.tsx`.
 - **Enforcement del Estado Activo/Pausado (`isActive`) en `/c/[slug]`**: Cuando una tarjeta tiene `isActive === false`, `generateMetadata` aplica `robots: { index: false, follow: false }` y `PublicCardPage` bloquea la exposición de datos de contacto mostrando una pantalla de estado pausado con CTA de conversión viral (`/login?mode=signup&callbackUrl=/cards/new`).
 - **Jerarquía CTA Simplificada & Contratos Zod 100%**: `DigitalCard.tsx` y `UnifiedDashboardView.tsx` mantienen ocultos los controles de intercambio de contacto / pestaña CRM para preservar una jerarquía CTA limpia (vCard 4.0 + WhatsApp), mientras todas las Server Actions secundarias operan bajo validación estricta Zod (`cardIdLookupSchema`, `toggleCardActiveSchema`, `deleteCardLeadSchema`, `checkCardSlugSchema`).
+
+## 9.8 Gobernanza Integral de Privacidad, Enmascaramiento IA & Derechos ARCO (SOP-128)
+- **Contratos Zod de Dominio (`src/entities/privacy/schemas.ts`)**: Validación estricta `safeParse` para `exportUserDataInputSchema`, `rectifyUserDataInputSchema` y `deleteUserAccountInputSchema`.
+- **Enmascaramiento Activo en Orquestador de IA (`callNvidiaNimChat`)**: Todo mensaje de usuario enviado a proveedores externos (Groq LPU, NVIDIA NIM, Gemini, OpenRouter) pasa automáticamente por `maskSensitiveDataForAi` para reemplazar RUTs (`[RUT_PROTEGIDO]`) y teléfonos (`[TELEFONO_PROTEGIDO]`) antes de la llamada de red.
+- **Autoservicio ARCO Transaccional (`src/features/privacy/actions.ts`)**:
+  - `exportUserDataAction`: Incluye perfil completo, tarjetas, Smart CVs, presentaciones y cuenta bancaria de afiliado con número enmascarado (`****1234`).
+  - `rectifyUserDataAction`: Permite corregir de inmediato el nombre o razón social en Turso SQLite desde `<ArcoRightsModal />`.
+  - `deleteAndAnonymizeUserAccountAction`: Ejecuta un `db.batch()` atómico que revoca `session` y `account` (tokens OAuth), purga `affiliate_bank_accounts`, `card_leads`, `card_events` (con `inArray`), `cards`, `smart_cvs`, `presentations` y anonimiza `user` preservando la integridad referencial contable en `payments_history`.
+

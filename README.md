@@ -6,7 +6,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-537_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
+[![Tests](https://img.shields.io/badge/Tests-539_Passing-success?style=for-the-badge&logo=vitest)](#-pruebas-unitarias-y-calidad)
 [![Turso](https://img.shields.io/badge/Turso-LibSQL_Serverless-4ade80?style=for-the-badge&logo=sqlite)](https://turso.tech/)
 [![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=for-the-badge&logo=drizzle)](https://orm.drizzle.team/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4_OKLCH-38bdf8?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com/)
@@ -177,11 +177,12 @@
   - **Blindaje Server-Only de Comisiones**: Módulo `commission-engine.ts` aislado sin `'use server'` para evitar la invocación maliciosa de liquidaciones desde el cliente. Guardrail Anti-IDOR en `attributeReferralAction` limitando la atribución exclusivamente al propio usuario autenticado.
 
 ### 10. 🛡️ Gobernanza de Privacidad & Cumplimiento Ley N° 21.719 (Chile)
-- **Privacy-by-Design & Enmascaramiento de Datos para IA (`dataPrivacy.ts`)**: Motor algorítmico que sanitiza y sustituye RUTs chilenos (`[RUT_PROTEGIDO]`) y números telefónicos (`[TELEFONO_PROTEGIDO]`) en textos libres y currículums antes de enviarlos a modelos de lenguaje externos, mitigando riesgos de fuga de datos sensibles y acatando los principios de proporcionalidad y finalidad.
-- **Centro de Privacidad y Derechos ARCO en el Panel (`/dashboard?tab=privacy`)**: Pestaña dedicada con interfaz táctil accesible ($\ge 44\text{px}$) donde cualquier usuario puede ejercer de forma autónoma:
-  - *Derecho de Acceso y Portabilidad*: Descarga instantánea de un archivo JSON estructurado con la totalidad de su información de cuenta, tarjetas, Smart CVs y presentaciones mediante `exportUserDataAction`.
-  - *Derecho al Olvido / Supresión Permanente*: Flujo de eliminación destructiva y anonimización de identidad con confirmación textual estricta (`"ELIMINAR MI CUENTA"`) vía `deleteAndAnonymizeUserAccountAction`.
-- **Inventario Oficial de Subprocesadores (Artículo 15 Ley 21.719)**: Registro canónico transparente que detalla la finalidad, ubicación y estado de contratos de tratamiento de datos (DPA) con proveedores esenciales (Turso, Vercel, Cloudflare, Upstash, Flow.cl, Mercado Pago, Fintoc y Groq).
+- **Privacy-by-Design & Enmascaramiento Automático en Pipeline IA (`dataPrivacy.ts` & `nvidia-nim.ts`)**: Motor algorítmico que sanitiza y sustituye automáticamente RUTs chilenos (`[RUT_PROTEGIDO]`) y números telefónicos (`[TELEFONO_PROTEGIDO]`) en textos libres, biografías y currículums dentro de `callNvidiaNimChat` y `generateBioVariantsAction` antes de enviarlos a modelos de lenguaje externos, mitigando riesgos de fuga de datos sensibles y acatando los principios de proporcionalidad y finalidad.
+- **Centro de Privacidad y Derechos ARCO en el Panel (`/dashboard?tab=privacy`)**: Pestaña dedicada con interfaz táctil accesible ($\ge 44\text{px}$), filtrado en vivo de subprocesadores y validación 100% Zod (`@/entities/privacy/schemas`) donde cualquier usuario puede ejercer de forma autónoma:
+  - *Derecho de Acceso y Portabilidad (`exportUserDataAction`)*: Descarga instantánea de un archivo JSON estructurado con la totalidad de su información de cuenta, tarjetas, Smart CVs, presentaciones y datos bancarios de afiliado enmascarados (`****1234`).
+  - *Derecho de Rectificación en 1 Clic (`rectifyUserDataAction`)*: Actualización inmediata en base de datos del nombre o razón social del titular desde `<ArcoRightsModal />`, más canal formal directo al DPO para otros datos registrales.
+  - *Derecho al Olvido / Supresión Atómica (`deleteAndAnonymizeUserAccountAction`)*: Flujo de eliminación destructiva transaccional con `db.batch()` (tarjetas, eventos, prospectos, CVs, presentaciones, cuentas bancarias TEF, tokens OAuth `account` y sesiones `session`), cierre de sesión en cliente (`signOut()`) y anonimización de identidad con confirmación textual estricta (`"ELIMINAR MI CUENTA"`).
+- **Inventario Oficial de Subprocesadores (Artículo 15 Ley 21.719)**: Registro canónico transparente y buscable en tiempo real que detalla la finalidad, ubicación y estado de contratos de tratamiento de datos (DPA) con proveedores esenciales (Turso, Vercel, Cloudflare, Upstash, Flow.cl, Mercado Pago, Fintoc y Groq).
 - **Gobernanza de Infraestructura por Etapas**: Operación oficial en Etapa 1 bajo **Vercel Hobby (100% Free-Tier, $0 cobros comerciales)** + Turso LibSQL Cloud Serverless + Cloudflare R2 + Upstash Redis. La transición a **Vercel Pro ($20 USD/mes)** se activará en la Etapa 2 con los primeros 20-30 clientes de pago.
 
 ---

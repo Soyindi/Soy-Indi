@@ -2,7 +2,7 @@ import React from 'react';
 import { AuthModal } from '@/features/dashboard/components/AuthModal';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { Sparkles, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { BrandLogo } from '@/shared/ui/BrandLogo';
 
 export const metadata: Metadata = {
@@ -20,11 +20,13 @@ interface LoginPageProps {
     mode?: string;
     callbackUrl?: string;
     ref?: string;
+    deleted?: string;
   }>;
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const rawParams = await searchParams;
+  const isAccountDeleted = rawParams?.deleted === 'true';
   const parsed = AuthRedirectParamsSchema.safeParse(rawParams);
   const { mode, callbackUrl } = parsed.success
     ? parsed.data
@@ -80,6 +82,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
       {/* Contenedor del Modal embebido en página */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center">
+        {isAccountDeleted && (
+          <div className="w-full max-w-md mb-4 p-4 rounded-2xl glass-panel border border-cyan-500/30 bg-cyan-950/20 text-center animate-fade-in">
+            <span className="text-xs font-bold text-cyan-300 flex items-center justify-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-cyan-400" />
+              <span>Cuenta eliminada y anonimizada exitosamente</span>
+            </span>
+            <p className="text-[11px] text-zinc-300 mt-1">
+              Tus tarjetas, currículums, presentaciones y sesiones activas han sido suprimidos conforme al Artículo 7 de la Ley N° 21.719.
+            </p>
+          </div>
+        )}
+
         {activeReferralCode && (
           <div className="w-full max-w-md mb-4 p-3.5 rounded-2xl glass-panel border border-emerald-500/30 bg-emerald-950/20 text-center animate-fade-in">
             <span className="text-xs font-semibold text-emerald-300 flex items-center justify-center gap-1.5">

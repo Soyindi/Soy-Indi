@@ -1,6 +1,15 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { maskSensitiveDataForAi, DATA_SUBPROCESSORS_REGISTRY } from '@/shared/lib/dataPrivacy';
-import { exportUserDataAction, deleteAndAnonymizeUserAccountAction } from '@/features/privacy/actions';
+import {
+  exportUserDataAction,
+  deleteAndAnonymizeUserAccountAction,
+  rectifyUserDataAction,
+} from '@/features/privacy/actions';
+import {
+  exportUserDataInputSchema,
+  deleteUserAccountInputSchema,
+  rectifyUserDataInputSchema,
+} from '@/entities/privacy/schemas';
 
 describe('Ley N° 21.719 Compliance & Data Privacy Engine', () => {
   describe('Sanitización y Enmascaramiento para IA (Privacy-by-Design)', () => {
@@ -66,20 +75,43 @@ describe('Ley N° 21.719 Compliance & Data Privacy Engine', () => {
     });
   });
 
-  describe('Derechos ARCO: Exportación y Supresión de Cuenta', () => {
+  describe('Contratos Zod & Derechos ARCO: Acceso, Rectificación y Supresión', () => {
+    it('valida estrictamente los esquemas Zod de privacidad (export, rectify, delete)', () => {
+      expect(exportUserDataInputSchema.safeParse({ userId: 'usr_123' }).success).toBe(true);
+      expect(deleteUserAccountInputSchema.safeParse({ confirmationText: 'ELIMINAR MI CUENTA' }).success).toBe(true);
+      expect(deleteUserAccountInputSchema.safeParse({ confirmationText: 'borrar' }).success).toBe(false);
+      expect(rectifyUserDataInputSchema.safeParse({ name: 'Matías Riquelme' }).success).toBe(true);
+      expect(rectifyUserDataInputSchema.safeParse({ name: 'A' }).success).toBe(false);
+    });
+
     it('exportUserDataAction requiere sesión autorizada o retorna error si el usuario no existe', async () => {
-      // Si el usuario no existe en la base de datos
       const result = await exportUserDataAction('non-existent-user-id');
       if (!result.success) {
         expect(result.error).toBeTruthy();
       } else {
-        // En caso de resolver usuario fallback en entorno local de pruebas
         expect(result.data).toBeDefined();
         expect(result.data?.exportedAt).toBeTruthy();
+        expect(result.data?.complianceStandard).toContain('21.719');
       }
     });
 
-    it('deleteAndAnonymizeUserAccountAction rechaza confirmaciones incorrectas', async () => {
+    it('rectifyUserDataAction rechaza nombres inválidos mediante Zod y aplica rectificación en sesión autorizada', async () => {
+      const invalidRes = await rectifyUserDataAction({ name: '' });
+      expect(invalidRes.success).toBe(false);
+      expect(invalidRes.error).toContain('al menos 2 caracteres');
+
+      const validRes = await rectifyUserDataAction({
+        name: 'Usuario Demo INDI',
+        reason: 'Actualización de prueba unitaria',
+      });
+      if (!validRes.success) {
+        expect(validRes.error).toBeTruthy();
+      } else {
+        expect(validRes.updatedName).toBe('Usuario Demo INDI');
+      }
+    });
+
+    it('deleteAndAnonymizeUserAccountAction rechaza confirmaciones incorrectas con validación Zod', async () => {
       const result = await deleteAndAnonymizeUserAccountAction('some-user-id', 'incorrect text');
       expect(result.success).toBe(false);
       expect(result.error).toContain('ELIMINAR MI CUENTA');

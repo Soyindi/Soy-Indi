@@ -1,42 +1,54 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { exportUserDataAction, deleteAndAnonymizeUserAccountAction } from '@/features/privacy/actions';
-import { 
-  X, 
-  ShieldCheck, 
-  Download, 
-  Trash2, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Mail, 
-  FileText, 
-  RefreshCw, 
+import {
+  exportUserDataAction,
+  deleteAndAnonymizeUserAccountAction,
+  rectifyUserDataAction,
+} from '@/features/privacy/actions';
+import { signOut, authClient } from '@/shared/lib/auth-client';
+import { useRouter } from 'next/navigation';
+import {
+  X,
+  ShieldCheck,
+  Download,
+  Trash2,
+  AlertTriangle,
+  CheckCircle2,
+  Mail,
+  RefreshCw,
   Lock,
   ExternalLink,
-  Loader2
+  Loader2,
+  UserCheck,
 } from 'lucide-react';
 
 interface ArcoRightsModalProps {
   isOpen: boolean;
   onClose: () => void;
   userEmail?: string;
+  userName?: string;
 }
 
 type ArcoTab = 'acceso' | 'rectificacion' | 'cancelacion' | 'oposicion';
 
-export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalProps) {
+export function ArcoRightsModal({ isOpen, onClose, userEmail, userName }: ArcoRightsModalProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<ArcoTab>('acceso');
   const [isPendingExport, startExportTransition] = useTransition();
   const [isPendingDelete, startDeleteTransition] = useTransition();
+  const [isPendingRectify, startRectifyTransition] = useTransition();
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [exportSuccess, setExportSuccess] = useState<boolean>(true);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // Formulario de Rectificación
+  // Formulario de Rectificación (Autoservicio en DB + Canal DPO)
   const [rectificationField, setRectificationField] = useState('Nombre de Usuario');
+  const [newAccountName, setNewAccountName] = useState(userName || '');
   const [rectificationDetail, setRectificationDetail] = useState('');
-  const [rectificationSuccess, setRectificationSuccess] = useState(false);
+  const [rectificationFeedback, setRectificationFeedback] = useState<string | null>(null);
+  const [rectificationError, setRectificationError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -54,8 +66,10 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        setExportSuccess(true);
         setExportMessage('¡Copia descargada con éxito! Archivo JSON generado de forma segura.');
       } else {
+        setExportSuccess(false);
         setExportMessage(res.error || 'No fue posible exportar los datos en este momento.');
       }
     });
@@ -66,6 +80,11 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
     startDeleteTransition(async () => {
       const res = await deleteAndAnonymizeUserAccountAction(undefined, deleteConfirmation);
       if (res.success) {
+        try {
+          await signOut();
+        } catch {
+          // Ignorar si ya fue revocada en servidor
+        }
         window.location.href = '/login?mode=signup&deleted=true';
       } else {
         setDeleteError(res.error || 'No se pudo eliminar la cuenta.');
@@ -75,25 +94,61 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
 
   const handleSendRectification = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!rectificationDetail.trim()) return;
+    setRectificationFeedback(null);
+    setRectificationError(null);
+
+    if (rectificationField === 'Nombre de Usuario') {
+      startRectifyTransition(async () => {
+        const res = await rectifyUserDataAction({
+          name: newAccountName,
+          reason: rectificationDetail || undefined,
+        });
+
+        if (res.success) {
+          try {
+            await authClient.getSession();
+            router.refresh();
+          } catch {
+            // Silencioso
+          }
+          setRectificationFeedback(
+            `¡Rectificación aplicada de inmediato! Tu nombre registral ha sido actualizado a "${res.updatedName}".`
+          );
+        } else {
+          setRectificationError(res.error || 'No se pudo actualizar el nombre en la cuenta.');
+        }
+      });
+      return;
+    }
+
+    if (!rectificationDetail.trim()) {
+      setRectificationError('Por favor detalla la corrección solicitada.');
+      return;
+    }
 
     const subject = encodeURIComponent(`[ARCO - Rectificación] Solicitud de ${userEmail || 'Usuario'}`);
     const body = encodeURIComponent(
       `Estimado Oficial de Protección de Datos de INDI (Ley 21.719):\n\n` +
-      `Por medio de la presente, solicito la rectificación formal de mis datos personales:\n\n` +
-      `Campo a corregir: ${rectificationField}\n` +
-      `Detalle de la corrección solicitada: ${rectificationDetail}\n` +
-      `Correo registrado: ${userEmail || 'No especificado'}\n\n` +
-      `Agradezco la confirmación y aplicación de esta rectificación conforme a la ley.`
+        `Por medio de la presente, solicito la rectificación formal de mis datos personales:\n\n` +
+        `Campo a corregir: ${rectificationField}\n` +
+        `Detalle de la corrección solicitada: ${rectificationDetail}\n` +
+        `Correo registrado: ${userEmail || 'No especificado'}\n\n` +
+        `Agradezco la confirmación y aplicación de esta rectificación conforme a la ley.`
     );
 
     window.open(`mailto:privacidad@soyindi.cl?subject=${subject}&body=${body}`, '_blank');
-    setRectificationSuccess(true);
-    setTimeout(() => setRectificationSuccess(false), 5000);
+    setRectificationFeedback(
+      'Se ha generado tu solicitud formal al Oficial de Protección de Datos (DPO). Te contactaremos en menos de 48 horas hábiles.'
+    );
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="arco-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+    >
       <div className="w-full max-w-2xl rounded-3xl bg-zinc-900 border border-cyan-500/30 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Cabecera del Modal */}
         <div className="p-6 border-b border-white/10 flex items-center justify-between gap-4 bg-gradient-to-r from-zinc-900 via-zinc-900 to-cyan-950/30 shrink-0">
@@ -103,7 +158,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-black text-white">
+                <h3 id="arco-modal-title" className="text-base sm:text-lg font-black text-white">
                   Tus Derechos ARCO
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
@@ -118,7 +173,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            className="min-h-[44px] min-w-[44px] rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Cerrar modal"
           >
             <X className="w-4 h-4" />
@@ -130,7 +185,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
           <button
             type="button"
             onClick={() => setActiveTab('acceso')}
-            className={`min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'acceso'
                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
                 : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
@@ -143,7 +198,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
           <button
             type="button"
             onClick={() => setActiveTab('rectificacion')}
-            className={`min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'rectificacion'
                 ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
                 : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
@@ -156,7 +211,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
           <button
             type="button"
             onClick={() => setActiveTab('cancelacion')}
-            className={`min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'cancelacion'
                 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                 : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
@@ -169,7 +224,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
           <button
             type="button"
             onClick={() => setActiveTab('oposicion')}
-            className={`min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
               activeTab === 'oposicion'
                 ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                 : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
@@ -196,8 +251,18 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
               </div>
 
               {exportMessage && (
-                <div className="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-300 flex items-center gap-2 animate-fade-in">
-                  <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                <div
+                  className={`p-3.5 rounded-xl border text-xs flex items-center gap-2 animate-fade-in ${
+                    exportSuccess
+                      ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
+                      : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                  }`}
+                >
+                  {exportSuccess ? (
+                    <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                  )}
                   <span>{exportMessage}</span>
                 </div>
               )}
@@ -206,10 +271,10 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
                 <div className="text-xs text-zinc-400 space-y-1">
                   <p className="font-semibold text-zinc-200">El archivo JSON incluye:</p>
                   <ul className="list-disc list-inside space-y-0.5 text-zinc-400 text-[11px]">
-                    <li>Perfil de usuario (Nombre, Correo, Identificador único).</li>
-                    <li>Tarjetas digitales creadas con enlaces, configuraciones y telemetría.</li>
-                    <li>Currículums Smart CV y puntajes ATS.</li>
-                    <li>Registro histórico de consentimientos.</li>
+                    <li>Perfil de usuario (Nombre, Correo, Identificador único, Código de Afiliado).</li>
+                    <li>Tarjetas digitales creadas con enlaces, bloques Bento y configuraciones.</li>
+                    <li>Currículums Smart CV, presentaciones y puntajes ATS.</li>
+                    <li>Datos bancarios de liquidación de afiliados (con cuenta enmascarada por seguridad).</li>
                   </ul>
                 </div>
 
@@ -248,10 +313,17 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
                 </p>
               </div>
 
-              {rectificationSuccess && (
+              {rectificationFeedback && (
                 <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2 animate-fade-in">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Se ha generado tu solicitud de rectificación formal. Te contactaremos en menos de 48 horas hábiles.</span>
+                  <span>{rectificationFeedback}</span>
+                </div>
+              )}
+
+              {rectificationError && (
+                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2 animate-fade-in">
+                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{rectificationError}</span>
                 </div>
               )}
 
@@ -262,36 +334,79 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
                   </label>
                   <select
                     value={rectificationField}
-                    onChange={(e) => setRectificationField(e.target.value)}
+                    onChange={(e) => {
+                      setRectificationField(e.target.value);
+                      setRectificationFeedback(null);
+                      setRectificationError(null);
+                    }}
                     className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs focus:outline-none focus:border-indigo-400"
                   >
-                    <option value="Nombre de Usuario">Nombre o Razón Social</option>
-                    <option value="Correo Electrónico">Correo Electrónico Registrado</option>
-                    <option value="Datos Profesionales">Datos de Perfil Profesional</option>
-                    <option value="Otro">Otro dato registral</option>
+                    <option value="Nombre de Usuario">Nombre o Razón Social (Actualización Inmediata)</option>
+                    <option value="Correo Electrónico">Correo Electrónico Registrado (Solicitud DPO)</option>
+                    <option value="Datos Profesionales">Datos de Perfil Profesional (Solicitud DPO)</option>
+                    <option value="Otro">Otro dato registral (Solicitud DPO)</option>
                   </select>
                 </div>
 
+                {rectificationField === 'Nombre de Usuario' && (
+                  <div>
+                    <label className="block text-xs font-mono text-zinc-400 mb-1">
+                      Nuevo Nombre o Razón Social Correcto
+                    </label>
+                    <input
+                      type="text"
+                      value={newAccountName}
+                      onChange={(e) => setNewAccountName(e.target.value)}
+                      placeholder="Ej. María Ignacia Valdés"
+                      required
+                      minLength={2}
+                      maxLength={120}
+                      className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs placeholder-zinc-600 focus:outline-none focus:border-indigo-400"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-mono text-zinc-400 mb-1">
-                    Detalle de la Corrección
+                    {rectificationField === 'Nombre de Usuario'
+                      ? 'Motivo o Nota Adicional (Opcional)'
+                      : 'Detalle de la Corrección'}
                   </label>
                   <textarea
                     rows={3}
                     value={rectificationDetail}
                     onChange={(e) => setRectificationDetail(e.target.value)}
-                    placeholder="Indica el dato actual y el nuevo dato correcto..."
-                    required
+                    placeholder={
+                      rectificationField === 'Nombre de Usuario'
+                        ? 'Opcional: indica el motivo de la actualización...'
+                        : 'Indica el dato actual y el nuevo dato correcto...'
+                    }
+                    required={rectificationField !== 'Nombre de Usuario'}
                     className="w-full p-3 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs placeholder-zinc-600 focus:outline-none focus:border-indigo-400"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="min-h-[44px] w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white font-bold text-xs shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+                  disabled={isPendingRectify}
+                  className="min-h-[44px] w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white font-bold text-xs shadow-lg transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  <Mail className="w-4 h-4" />
-                  <span>Enviar Solicitud Formal al DPO</span>
+                  {isPendingRectify ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Aplicando rectificación...</span>
+                    </>
+                  ) : rectificationField === 'Nombre de Usuario' ? (
+                    <>
+                      <UserCheck className="w-4 h-4" />
+                      <span>Aplicar Rectificación Inmediata</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4" />
+                      <span>Enviar Solicitud Formal al DPO</span>
+                    </>
+                  )}
                 </button>
               </form>
             </div>
@@ -306,7 +421,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
                   <span>Derecho de Cancelación / Supresión (Artículo 7)</span>
                 </h4>
                 <p className="text-xs text-zinc-300 leading-relaxed">
-                  Puedes solicitar la eliminación irreversible y destructiva de tu cuenta, suprimiendo de forma inmediata todas tus tarjetas digitales, currículums, archivos multimedia y registros asociados.
+                  Puedes solicitar la eliminación irreversible y destructiva de tu cuenta, suprimiendo de forma inmediata todas tus tarjetas digitales, currículums, presentaciones, sesiones OAuth y registros asociados.
                 </p>
               </div>
 
@@ -341,7 +456,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
                   <button
                     type="button"
                     onClick={handleDeleteAccount}
-                    disabled={deleteConfirmation !== 'ELIMINAR MI CUENTA' || isPendingDelete}
+                    disabled={deleteConfirmation.trim() !== 'ELIMINAR MI CUENTA' || isPendingDelete}
                     className="min-h-[44px] w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-rose-900/30"
                   >
                     {isPendingDelete ? (
@@ -383,6 +498,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
                   <ul className="space-y-1.5 text-zinc-400 text-[11px] list-disc list-inside">
                     <li><strong>Cero Venta de Datos:</strong> Nunca comercializamos ni cedemos tu información a brokers o empresas de publicidad.</li>
                     <li><strong>Sin Rastreadores Invasivos:</strong> Operamos sin cookies de terceros para publicidad comportamental.</li>
+                    <li><strong>Enmascaramiento Antes de IA:</strong> Tu RUT y teléfono se enmascaran automáticamente (`[RUT_PROTEGIDO]`, `[TELEFONO_PROTEGIDO]`) antes de cualquier inferencia de lenguaje.</li>
                     <li><strong>Tratamiento Exclusivo:</strong> Los datos se utilizan única y exclusivamente para renderizar tu perfil público y calcular tu compatibilidad ATS.</li>
                   </ul>
                 </div>
@@ -391,7 +507,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
                   <span className="text-[11px] text-zinc-500">¿Dudas o requerimientos adicionales?</span>
                   <a
                     href="mailto:privacidad@soyindi.cl?subject=[ARCO%20-%20Oposición]%20Consulta%20General"
-                    className="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-bold text-xs"
+                    className="min-h-[36px] px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 inline-flex items-center gap-1.5 text-cyan-300 font-bold text-xs transition-colors"
                   >
                     <span>Contactar al DPO (privacidad@soyindi.cl)</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -403,12 +519,12 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail }: ArcoRightsModalP
         </div>
 
         {/* Pie de Página del Modal */}
-        <div className="p-4 border-t border-white/10 bg-zinc-950/60 flex items-center justify-between text-[11px] text-zinc-500 shrink-0">
+        <div className="p-4 border-t border-white/10 bg-zinc-950/60 flex items-center justify-between text-[11px] text-zinc-400 shrink-0">
           <span>Ley N° 21.719 de Protección de Datos Personales • Chile</span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 text-xs font-semibold cursor-pointer transition-colors"
+            className="min-h-[44px] px-5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 text-xs font-semibold cursor-pointer transition-colors"
           >
             Cerrar
           </button>
