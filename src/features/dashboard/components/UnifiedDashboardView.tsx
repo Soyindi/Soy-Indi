@@ -25,8 +25,7 @@ import {
   Clock,
   Play,
   Edit3,
-  X,
-  Inbox
+  X
 } from 'lucide-react';
 import { BrandLogo } from '@/shared/ui/BrandLogo';
 import { deleteCardAction, toggleCardActiveAction } from '@/features/card-builder/dashboard-actions';
@@ -440,18 +439,6 @@ export function UnifiedDashboardView({
           >
             <FileText className={`w-4 h-4 ${activeTab === 'cvs' ? 'text-emerald-300' : 'text-zinc-400'}`} />
             <span>Smart CVs ({cvsList.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('leads')}
-            className={`min-h-[44px] min-w-[155px] flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer snap-start active:scale-[0.98] ${
-              activeTab === 'leads'
-                ? 'bg-gradient-to-r from-teal-500/30 to-cyan-500/25 text-white border border-teal-400/30 shadow-lg shadow-teal-500/10'
-                : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
-            }`}
-          >
-            <Inbox className={`w-4 h-4 ${activeTab === 'leads' ? 'text-teal-300' : 'text-zinc-400'}`} />
-            <span>Contactos (CRM)</span>
           </button>
 
           {presentationsList.length > 0 && (

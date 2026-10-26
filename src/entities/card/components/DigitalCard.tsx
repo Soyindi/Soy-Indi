@@ -12,8 +12,7 @@ import {
   Sparkles,
   UserPlus,
   MapPin,
-  Navigation,
-  ArrowLeftRight
+  Navigation
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { downloadVCardWithPhoto } from '@/shared/lib/vcard';
@@ -22,7 +21,6 @@ import { trackCardEventAction } from '@/features/card-builder/analytics-actions'
 import { trackResourceView } from '@/shared/lib/telemetryClient';
 import { WebShareModal } from '@/shared/ui/WebShareModal';
 import { getWhatsAppDigits, normalizeChileanPhone } from '@/shared/lib/phone';
-import { ExchangeContactModal } from '@/features/card-builder/components/ExchangeContactModal';
 import { WalletPassModal } from '@/features/card-builder/components/WalletPassModal';
 
 // Importar QRCode dinámicamente para SSR seguro
@@ -93,7 +91,6 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
   const [copied, setCopied] = useState(false);
   const [vcardSaved, setVcardSaved] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isExchangeModalOpen, setIsExchangeModalOpen] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [walletInitialTab, setWalletInitialTab] = useState<'apple' | 'google'>('apple');
 
@@ -511,21 +508,6 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             )}
           </button>
 
-          {/* Botón Bidireccional Intercambiar Contacto (Mini-CRM Lead Capture) */}
-          <button
-            type="button"
-            onClick={() => setIsExchangeModalOpen(true)}
-            className={`w-full min-h-[48px] inline-flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl font-semibold text-sm border transition-all active:scale-[0.98] cursor-pointer ${
-              isLightMode
-                ? 'bg-white hover:bg-slate-50 text-slate-900 border-slate-300 shadow-sm'
-                : 'bg-white/[0.06] hover:bg-white/[0.12] text-white border-white/15 shadow-md'
-            }`}
-            style={{ borderColor: isLightMode ? undefined : `${primaryColor}44` }}
-          >
-            <ArrowLeftRight className="w-4 h-4" style={{ color: primaryColor }} />
-            <span>Intercambiar Contacto</span>
-          </button>
-
           {whatsappUrl && (
             <a
               href={whatsappUrl}
@@ -866,14 +848,6 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
           </a>
         </div>
       </motion.div>
-
-      {/* Modal Bidireccional de Intercambio de Contacto (Mini-CRM Lead Capture) */}
-      <ExchangeContactModal
-        cardId={card.id || card.slug}
-        cardTitle={card.title}
-        isOpen={isExchangeModalOpen}
-        onClose={() => setIsExchangeModalOpen(false)}
-      />
 
       {/* Modal Universal de Compartir (Safe Zone 1:1 & Hápticos) */}
       <WebShareModal
