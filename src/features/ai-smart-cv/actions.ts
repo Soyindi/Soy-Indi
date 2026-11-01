@@ -746,7 +746,7 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
       };
     }
 
-    // 3. Preparación del Prompt Contextualizado y Sanitización de Privacidad (Ley 21.719)
+    // 3. Preparación del Prompt Contextualizado, Estrategia Pre-Route y Sanitización de Privacidad (Ley 21.719)
     const rawCleanInput = text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim();
     const { maskSensitiveDataForAi } = await import('@/shared/lib/dataPrivacy');
     const { sanitizedText: cleanInput } = maskSensitiveDataForAi(rawCleanInput, {
@@ -754,26 +754,55 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
       maskPhone: true,
       maskEmail: false,
     });
+
+    const { evaluateCvPreRouteStrategy, auditAndRepairCvBullet } = await import('@/features/ai-smart-cv/lib/cv-auditor');
+    const preRoute = evaluateCvPreRouteStrategy(
+      `${targetRole || ''} ${role || ''} ${company || ''} ${skills?.join(' ') || ''} ${cleanInput}`
+    );
+
+    const inputBullets = cleanInput
+      .split('\n')
+      .map((b) => b.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim())
+      .filter((b) => b.length > 0);
+
+    const isMultiBullet = type === 'BULLET' && inputBullets.length > 1;
+
     const roleContext = role ? `Cargo actual: ${role}` : '';
     const companyContext = company ? `Empresa: ${company}` : '';
     const targetRoleContext = targetRole ? `Rol Objetivo del CV: ${targetRole}` : '';
     const skillsContext = skills && skills.length > 0 ? `Habilidades del perfil: ${skills.join(', ')}` : '';
 
-    const contextSummary = [roleContext, companyContext, targetRoleContext, skillsContext]
+    const contextSummary = [
+      roleContext,
+      companyContext,
+      targetRoleContext,
+      skillsContext,
+      `Arquetipo: ${preRoute.detectedArchetype}`,
+      `Tono: ${preRoute.recommendedTone}`,
+    ]
       .filter(Boolean)
       .join(' | ');
 
     const systemPrompt = `Eres un Redactor Ejecutivo y Estratega de Empleabilidad de nivel mundial especializado en currículums para el estándar corporativo 2026.
-REGLAS OBLIGATORIAS:
-1. No inventes métricas específicas (como porcentajes exactos o millones) que el usuario NO haya proporcionado; si falta la cifra, incluye un marcador elegante como "[añadir métrica]" o enfócate en el impacto metodológico real.
-2. Si es una viñeta laboral, aplica la fórmula de Google XYZ: "Logré [X], medido por [Y], mediante [Z]" usando verbos de acción fuertes en primera persona singular o pasado ("Lideré", "Diseñé", "Orquesté", "Optimicé").
+ARQUETIPO DEL CANDIDATO: ${preRoute.detectedArchetype.toUpperCase()}
+TONO RECOMENDADO: ${preRoute.recommendedTone}
+PALABRAS CLAVE DEL SECTOR: ${preRoute.focusKeywords.join(', ')}
+
+REGLAS DE ORO OBLIGATORIAS:
+1. STRICT ZERO-HALLUCINATION: No inventes métricas específicas (como porcentajes exactos o millones) que el usuario NO haya proporcionado; si falta la cifra en una viñeta laboral, incluye un marcador elegante como "[añadir métrica de impacto]" o enfócate en el impacto metodológico real.
+2. Si es una viñeta laboral, aplica la fórmula de Google XYZ: "Logré [X], medido por [Y], mediante [Z]" usando verbos de acción fuertes en primera persona singular o pasado ("Lideré", "Diseñé", "Orquesté", "Optimicé", "Implementé").
 3. Mantén estricta coherencia con el contexto provisto (${contextSummary || 'Perfil Profesional'}).
-4. Devuelve ÚNICAMENTE un objeto JSON válido con la clave "suggestions", conteniendo un array de exactamente 3 variantes distintas y profesionales sin texto introductorio ni formato markdown extra.`;
+4. ${
+      isMultiBullet
+        ? `MULTILÍNEA: El usuario ha proporcionado ${inputBullets.length} viñetas. En cada sugerencia, devuelve exactamente ${inputBullets.length} viñetas mejoradas separadas por saltos de línea (\\n), sin viñetas tipográficas (• o -).`
+        : 'VIÑETA ÚNICA: Devuelve exactamente 3 opciones completas y profesionales para esta viñeta.'
+    }
+5. Devuelve ÚNICAMENTE un objeto JSON válido con la clave "suggestions", conteniendo un array de exactamente 3 variantes distintas y profesionales sin texto introductorio ni formato markdown extra.`;
 
     const userPrompt = `TEXTO ORIGINAL A MEJORAR:
 "${cleanInput}"
 
-TIPO DE SECCIÓN: ${type === 'SUMMARY' ? 'Resumen Profesional / Perfil' : 'Viñeta de Logro Laboral'}
+TIPO DE SECCIÓN: ${type === 'SUMMARY' ? 'Resumen Profesional / Perfil' : isMultiBullet ? 'Conjunto de Logros Laborales' : 'Viñeta de Logro Laboral'}
 ENFOQUE SOLICITADO: ${
       mode === 'XYZ_IMPACT'
         ? 'Impacto Cuantitativo (Google XYZ)'
@@ -785,16 +814,16 @@ ${contextSummary ? `CONTEXTO ADICIONAL:\n${contextSummary}` : ''}
 
 Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
 
-    // 4. Invocación al Motor LLM (NVIDIA NIM / Groq LPU / Gemini Flash Failover)
+    // 4. Invocación al Motor LLM (NVIDIA NIM Llama 3.3 70B / Groq LPU / Gemini Flash Failover)
     const aiResult = await callNvidiaNimChat(
       [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       {
-        model: 'meta/llama-3.2-90b-vision-instruct',
-        temperature: 0.3,
-        maxTokens: 800,
+        model: 'meta/llama-3.3-70b-instruct',
+        temperature: 0.25,
+        maxTokens: isMultiBullet ? 1200 : 700,
         responseFormat: { type: 'json_object' },
       }
     );
@@ -807,9 +836,15 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
           .trim();
         const parsedJson = JSON.parse(cleanedJson);
         if (Array.isArray(parsedJson.suggestions) && parsedJson.suggestions.length > 0) {
-          const { auditAndRepairCvBullet } = await import('@/features/ai-smart-cv/lib/cv-auditor');
           const cleanedSuggestions = parsedJson.suggestions.slice(0, 3).map((s: any) => {
             const raw = String(s).trim();
+            if (isMultiBullet) {
+              return raw
+                .split('\n')
+                .map((b) => auditAndRepairCvBullet(b).repairedText)
+                .filter(Boolean)
+                .join('\n');
+            }
             const { repairedText } = auditAndRepairCvBullet(raw);
             return repairedText;
           });
@@ -825,7 +860,6 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
           .map((l) => l.replace(/^[\d\.\-\*\•\s"]+|["]+$/g, '').trim())
           .filter((l) => l.length > 15);
         if (lines.length >= 2) {
-          const { auditAndRepairCvBullet } = await import('@/features/ai-smart-cv/lib/cv-auditor');
           const cleanedSuggestions = lines.slice(0, 3).map((s) => {
             const { repairedText } = auditAndRepairCvBullet(s);
             return repairedText;
@@ -840,40 +874,78 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
 
     // 5. Fallback Heurístico Contextualizado Inteligente (en caso de falta de conectividad AI)
     const effectiveTarget = targetRole || role || 'Profesional';
-    const cleanLower = cleanInput.charAt(0).toLowerCase() + cleanInput.slice(1);
 
     if (type === 'SUMMARY') {
       return {
         success: true,
         suggestions: [
-          `${effectiveTarget} con sólida trayectoria impulsando iniciativas de alto impacto. Especialista en optimización de procesos, buenas prácticas y alineación de requerimientos con objetivos de negocio.`,
-          `Profesional enfocado en ${effectiveTarget}, con probada capacidad para resolver desafíos complejos, coordinar soluciones estratégicas y elevar la eficiencia operativa.`,
-          `Líder en ${effectiveTarget} con enfoque en innovación, calidad técnica y entrega de valor continuo para equipos y proyectos corporativos.`,
+          `${effectiveTarget} con sólida trayectoria impulsando iniciativas de alto impacto y eficiencia técnica. Especialista en optimización de procesos, buenas prácticas y alineación de requerimientos con objetivos de negocio.`,
+          `Profesional enfocado en ${effectiveTarget}, con probada capacidad para resolver desafíos complejos, coordinar soluciones estratégicas y elevar la eficiencia operativa en ${company || 'entornos corporativos de alta exigencia'}.`,
+          `Líder en ${effectiveTarget} con enfoque en innovación, calidad técnica y entrega de valor continuo para equipos y proyectos estratégicos.`,
         ],
       };
     }
 
-    // Viñetas laborales
-    const hasMetric = /\b(?:\d+[%kKmM]?|\$\d+|\d+\s?(?:personas|usuarios|pacientes|clientes|meses|días|proyectos))\b/i.test(cleanInput);
+    // Viñetas laborales: limpiador de prefijos redundantes y verbos duplicados
+    const stripRedundantPrefixes = (str: string): string => {
+      return str
+        .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '')
+        .replace(/^(?:responsable de|encargad[oa] de|a cargo de|particip[eé] en|ayud[eé] en|colabor[eé] con)\s+/i, '')
+        .replace(/^(?:lider[eé]|diseñ[eé]|desarroll[eé]|optimiz[eé]|coordin[eé]|gestion[eé]|implement[eé]|arquitect[eé]|dirig[ií]|cre[eé])\s+/i, '')
+        .trim();
+    };
 
-    if (hasMetric) {
-      return {
-        success: true,
-        suggestions: [
+    const generateSingleBulletOptions = (bulletText: string): string[] => {
+      const cleanBase = stripRedundantPrefixes(bulletText);
+      const cleanLower = cleanBase ? cleanBase.charAt(0).toLowerCase() + cleanBase.slice(1) : bulletText;
+      const hasMetric = /\b(?:\d+[%kKmM]?|\$\d+|\d+\s?(?:personas|usuarios|pacientes|clientes|meses|días|proyectos|ms|s))\b/i.test(bulletText);
+
+      if (hasMetric) {
+        return [
           `Lideré ${cleanLower}, consolidando un impacto medible en los objetivos clave de ${company || 'la organización'}.`,
           `Orquesté ${cleanLower}, optimizando la entrega técnica y garantizando la calidad requerida para el rol de ${effectiveTarget}.`,
           `Dirigí la implementación de ${cleanLower}, asegurando escalabilidad operativa y alineación con los estándares del equipo.`,
-        ],
+        ];
+      }
+
+      if (mode === 'EXECUTIVE') {
+        return [
+          `Dirigí estratégicamente ${cleanLower}, optimizando flujos de trabajo en ${company || 'la organización'}.`,
+          `Lideré la coordinación de ${cleanLower}, garantizando alineación con los estándares de ${effectiveTarget}.`,
+          `Supervisé la ejecución técnica de ${cleanLower}, elevando la eficiencia de entrega.`,
+        ];
+      }
+
+      if (mode === 'ATS_KEYWORDS') {
+        const keywordPill = preRoute.focusKeywords.slice(0, 2).join(' y ');
+        return [
+          `Implementé mejores prácticas de ${keywordPill} en ${cleanLower} para ${company || 'el equipo'}.`,
+          `Optimicé procesos técnicos de ${cleanLower}, reforzando estándares de ${keywordPill}.`,
+          `Diseñé soluciones enfocadas en ${keywordPill} mediante ${cleanLower} para el rol de ${effectiveTarget}.`,
+        ];
+      }
+
+      // Default XYZ_IMPACT con corchetes de métrica para Google XYZ
+      return [
+        `Lideré ${cleanLower}, optimizando los flujos de trabajo e impulsando mejores prácticas en ${company || 'la organización'} [añadir métrica de impacto].`,
+        `Orquesté la ejecución de ${cleanLower}, mejorando los tiempos de respuesta y confiabilidad del servicio para el rol de ${effectiveTarget} [especificar volumen o mejora lograda].`,
+        `Diseñé e implementé mejoras en ${cleanLower}, alineando las entregas con las prioridades clave de ${company || effectiveTarget} [especificar métrica o porcentaje alcanzado].`,
+      ];
+    };
+
+    if (isMultiBullet) {
+      const option0 = inputBullets.map((b) => generateSingleBulletOptions(b)[0]).join('\n');
+      const option1 = inputBullets.map((b) => generateSingleBulletOptions(b)[1]).join('\n');
+      const option2 = inputBullets.map((b) => generateSingleBulletOptions(b)[2]).join('\n');
+      return {
+        success: true,
+        suggestions: [option0, option1, option2],
       };
     }
 
     return {
       success: true,
-      suggestions: [
-        `Lideré ${cleanLower}, optimizando los flujos de trabajo e impulsando mejores prácticas de la disciplina en ${company || 'la organización'} [añadir métrica o resultado clave].`,
-        `Orquesté la ejecución de ${cleanLower}, mejorando los tiempos de respuesta y la confiabilidad del servicio [especificar volumen o porcentaje alcanzado].`,
-        `Diseñé e implementé mejoras en ${cleanLower}, alineando las entregas con las prioridades estratégicas de ${effectiveTarget} [especificar impacto o métrica alcanzada].`,
-      ],
+      suggestions: generateSingleBulletOptions(cleanInput),
     };
 
   } catch (err: any) {
@@ -1045,7 +1117,7 @@ Experiencia: ${cvContent.experience.map((e) => `${e.role} en ${e.company}: ${e.b
           { role: 'user', content: userPrompt },
         ],
         {
-          model: 'meta/llama-3.2-90b-vision-instruct',
+          model: 'meta/llama-3.3-70b-instruct',
           temperature: 0.2,
           maxTokens: 700,
           responseFormat: { type: 'json_object' },

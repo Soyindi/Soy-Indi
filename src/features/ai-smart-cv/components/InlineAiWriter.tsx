@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
-import { Sparkles, ArrowRight, Check, X, Loader2, Wand2 } from 'lucide-react';
+import React, { useState, useTransition, useEffect } from 'react';
+import { Sparkles, Check, X, Loader2, Wand2, Copy, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { rewriteCvSectionAction } from '@/features/ai-smart-cv/actions';
 
 interface InlineAiWriterProps {
@@ -11,6 +11,8 @@ interface InlineAiWriterProps {
   company?: string;
   role?: string;
   skills?: string[];
+  label?: string;
+  size?: 'xs' | 'sm' | 'md';
   onApply: (newText: string) => void;
 }
 
@@ -21,21 +23,43 @@ export function InlineAiWriter({
   company,
   role,
   skills,
+  label = 'Mejorar con IA',
+  size = 'sm',
   onApply,
 }: InlineAiWriterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [activeMode, setActiveMode] = useState<'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS'>(
     type === 'BULLET' ? 'XYZ_IMPACT' : 'EXECUTIVE'
   );
 
+  const bulletLines = currentText
+    ? currentText
+        .split('\n')
+        .map((b) => b.trim())
+        .filter(Boolean)
+    : [];
+  const isMultiBullet = type === 'BULLET' && bulletLines.length > 1;
+
   // Resetear sugerencias si el texto o contexto del elemento cambia
-  React.useEffect(() => {
+  useEffect(() => {
     setSuggestions([]);
     setErrorMessage(null);
   }, [currentText, role, company, targetRole]);
+
+  // Manejar tecla Escape para cerrar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   const handleGenerate = (mode: 'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS') => {
     setActiveMode(mode);
@@ -72,116 +96,229 @@ export function InlineAiWriter({
     }
   };
 
+  const handleCopy = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(idx);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  // Botón disparador según tamaño
+  const buttonClasses =
+    size === 'xs'
+      ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 text-[10px] font-medium transition-all group'
+      : size === 'md'
+      ? 'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-200 border border-indigo-500/30 text-xs font-medium transition-all shadow-sm group min-h-[44px]'
+      : 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 text-[11px] font-medium transition-all shadow-sm group';
+
   return (
     <div className="relative inline-block text-left">
       <button
         type="button"
         onClick={handleOpen}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 text-[11px] font-medium transition-all shadow-sm group"
+        aria-expanded={isOpen}
+        className={buttonClasses}
       >
         <Wand2 className="w-3 h-3 text-cyan-400 group-hover:rotate-12 transition-transform" />
-        <span>Mejorar con IA</span>
+        <span>{label}</span>
+        {isMultiBullet && (
+          <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 text-[9px] font-mono">
+            {bulletLines.length}
+          </span>
+        )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 p-3.5 rounded-2xl bg-slate-900/95 backdrop-blur-2xl border border-white/10 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/5">
-            <span className="text-[11px] font-mono font-semibold text-zinc-300 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              Asistente Editorial IA
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="text-zinc-500 hover:text-white p-0.5"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
+        <>
+          {/* Backdrop móvil para evitar desbordes y garantizar ergonomía táctil */}
+          <div
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm sm:hidden animate-in fade-in duration-150"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
 
-          {/* Pastillas de Estilo / Objetivo */}
-          <div className="flex gap-1 mb-3">
-            {type === 'BULLET' && (
+          {/* Panel Flotante Responsivo: Bottom-sheet en móvil / Popover alineado en desktop */}
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Asistente Editorial IA para Smart CV"
+            className="fixed inset-x-3 bottom-4 z-50 sm:static sm:absolute sm:right-0 sm:top-full sm:mt-2 sm:inset-x-auto sm:bottom-auto w-auto sm:w-[420px] max-h-[85vh] p-4 rounded-2xl bg-slate-900/98 backdrop-blur-2xl border border-cyan-500/30 sm:border-white/10 shadow-2xl flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-150 overflow-hidden"
+          >
+            {/* Cabecera */}
+            <div className="flex items-center justify-between pb-2.5 border-b border-white/5">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-semibold text-zinc-100 flex items-center gap-1.5">
+                    Asistente Editorial IA
+                    {isMultiBullet && (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                        Bloque de {bulletLines.length} logros
+                      </span>
+                    )}
+                  </h4>
+                  <p className="text-[10px] text-zinc-400">
+                    {role || targetRole ? `Adaptado a ${role || targetRole}` : 'Optimización ejecutiva para ATS 2026'}
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => handleGenerate('XYZ_IMPACT')}
-                className={`px-2 py-1 rounded text-[10px] font-medium transition-all ${
-                  activeMode === 'XYZ_IMPACT'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-                title="Fórmula: Logré [X], medido por [Y], haciendo [Z]"
+                onClick={() => setIsOpen(false)}
+                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors"
+                aria-label="Cerrar asistente"
               >
-                Logro con Impacto
+                <X className="w-4 h-4" />
               </button>
-            )}
-            <button
-              type="button"
-              onClick={() => handleGenerate('EXECUTIVE')}
-              className={`px-2 py-1 rounded text-[10px] font-medium transition-all ${
-                activeMode === 'EXECUTIVE'
-                  ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              Ejecutivo
-            </button>
-            <button
-              type="button"
-              onClick={() => handleGenerate('ATS_KEYWORDS')}
-              className={`px-2 py-1 rounded text-[10px] font-medium transition-all ${
-                activeMode === 'ATS_KEYWORDS'
-                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              Palabras Clave ATS
-            </button>
-          </div>
-
-          {/* Mensaje de Error */}
-          {errorMessage && (
-            <div className="mb-2 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[11px] leading-tight flex items-start gap-2 animate-fade-in">
-              <span className="shrink-0 text-rose-400">⚠️</span>
-              <div>
-                <span className="font-semibold block">{errorMessage}</span>
-                <span className="text-[10px] text-zinc-400 block mt-0.5">Puedes conservar tu texto original o reintentar en un instante.</span>
-              </div>
             </div>
-          )}
 
-          {/* Contenido / Sugerencias */}
-          {isPending ? (
-            <div className="py-6 flex flex-col items-center justify-center gap-2 text-zinc-400">
-              <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
-              <span className="text-[11px]">Redactando propuesta de alto impacto...</span>
-            </div>
-          ) : (
-            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-              {suggestions.map((sug, idx) => (
-                <div
-                  key={idx}
-                  className="p-2.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/5 hover:border-cyan-500/30 transition-all text-xs text-zinc-300 flex flex-col gap-2 group/item"
+            {/* Selector de Modo / Enfoque Estratégico */}
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-black/40 border border-white/5">
+              {type === 'BULLET' && (
+                <button
+                  type="button"
+                  onClick={() => handleGenerate('XYZ_IMPACT')}
+                  className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-medium transition-all text-center ${
+                    activeMode === 'XYZ_IMPACT'
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                  title="Fórmula Google XYZ: Logré [X], medido por [Y], mediante [Z]"
                 >
-                  <p className="leading-relaxed text-[11px] text-zinc-200">{sug}</p>
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onApply(sug);
-                        setIsOpen(false);
-                      }}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-[10px] font-medium transition-all"
-                    >
-                      <Check className="w-3 h-3" />
-                      Aplicar esta versión
-                    </button>
-                  </div>
-                </div>
-              ))}
+                  🎯 Google XYZ
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleGenerate('EXECUTIVE')}
+                className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-medium transition-all text-center ${
+                  activeMode === 'EXECUTIVE'
+                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+                title="Liderazgo, gobierno corporativo e impacto directivo"
+              >
+                👔 Ejecutivo
+              </button>
+              <button
+                type="button"
+                onClick={() => handleGenerate('ATS_KEYWORDS')}
+                className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-medium transition-all text-center ${
+                  activeMode === 'ATS_KEYWORDS'
+                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30 shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+                title="Inyección densa de palabras clave de la disciplina"
+              >
+                ⚡ Keywords ATS
+              </button>
             </div>
-          )}
-        </div>
+
+            {/* Mensaje de Error con Botón de Reintento */}
+            {errorMessage && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[11px] leading-tight flex items-start gap-2.5 animate-fade-in">
+                <span className="shrink-0 text-rose-400 text-sm">⚠️</span>
+                <div className="flex-1">
+                  <span className="font-semibold block">{errorMessage}</span>
+                  <span className="text-[10px] text-zinc-400 block mt-0.5">
+                    Puedes conservar tu texto original o reintentar ahora.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleGenerate(activeMode)}
+                  className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-[10px] font-medium transition-colors"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Reintentar
+                </button>
+              </div>
+            )}
+
+            {/* Contenido / Sugerencias */}
+            {isPending ? (
+              <div className="py-8 flex flex-col items-center justify-center gap-2.5 text-zinc-400">
+                <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
+                <span className="text-xs font-medium text-zinc-300">
+                  {isMultiBullet ? 'Elevando bloque de logros con IA...' : 'Redactando propuesta de alto impacto...'}
+                </span>
+                <span className="text-[10px] text-zinc-500 font-mono">
+                  Groq LPU / NVIDIA NIM Llama 3.3
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-2.5 max-h-64 sm:max-h-72 overflow-y-auto pr-1">
+                {suggestions.map((sug, idx) => {
+                  const lines = sug.split('\n').filter(Boolean);
+                  return (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-xl bg-black/40 hover:bg-black/60 border border-white/5 hover:border-cyan-500/30 transition-all text-xs text-zinc-300 flex flex-col gap-2.5 group/item"
+                    >
+                      <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 border-b border-white/5 pb-1">
+                        <span>Variante #{idx + 1}</span>
+                        <span className="text-cyan-400 font-medium">
+                          {activeMode === 'XYZ_IMPACT'
+                            ? 'Fórmula XYZ'
+                            : activeMode === 'EXECUTIVE'
+                            ? 'Enfoque Ejecutivo'
+                            : 'ATS Optimizado'}
+                        </span>
+                      </div>
+
+                      {/* Render de líneas o viñetas */}
+                      {lines.length > 1 ? (
+                        <ul className="space-y-1.5 pl-1">
+                          {lines.map((l, lIdx) => (
+                            <li key={lIdx} className="leading-relaxed text-[11px] text-zinc-200 flex items-start gap-1.5">
+                              <span className="text-cyan-400 shrink-0 font-bold">•</span>
+                              <span>{l}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="leading-relaxed text-[11px] text-zinc-200">{sug}</p>
+                      )}
+
+                      {/* Botones de Acción */}
+                      <div className="flex items-center justify-end gap-2 pt-1 border-t border-white/5">
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(sug, idx)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 text-[10px] font-medium transition-all"
+                        >
+                          {copiedIndex === idx ? (
+                            <>
+                              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                              <span className="text-emerald-300">Copiado</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3" />
+                              <span>Copiar</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onApply(sug);
+                            setIsOpen(false);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[10px] font-semibold transition-all shadow-sm active:scale-95"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Aplicar esta versión</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

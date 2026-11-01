@@ -1526,6 +1526,7 @@ export function SmartCvBuilder({
                           company={exp.company}
                           targetRole={formData.targetRole}
                           skills={formData.content.skills}
+                          label={(exp.bullets || []).length > 1 ? "Optimizar todo con IA" : "Mejorar con IA"}
                           onApply={(newText) => {
                             const updated = [...formData.content.experience];
                             // Si el texto generado contiene varias líneas o viñetas, dividirlas
@@ -1562,8 +1563,81 @@ export function SmartCvBuilder({
                           handleContentChange('experience', updated);
                         }}
                         className="w-full text-xs text-zinc-200 bg-zinc-900/80 rounded-lg p-2.5 border border-white/5 resize-none leading-relaxed focus:border-teal-500/40"
-                        placeholder="Logré [X], medido por [Y], haciendo [Z]..."
+                        placeholder="Logré [X], medido por [Y], haciendo [Z] (un logro por línea)..."
                       />
+
+                      {/* Desglose Quirúrgico de Viñetas Individuales con Copiloto Granular */}
+                      {(exp.bullets || []).length > 0 && (
+                        <div className="pt-1 space-y-1.5">
+                          <span className="text-[10px] font-mono text-zinc-500 block">
+                            Afinación Quirúrgica por Logro:
+                          </span>
+                          <div className="space-y-1.5">
+                            {exp.bullets.map((bText, bIdx) => {
+                              const hasMetric = hasQuantitativeMetric(bText);
+                              return (
+                                <div
+                                  key={`bullet-${idx}-${bIdx}`}
+                                  className="flex items-start sm:items-center justify-between gap-2 p-2 rounded-lg bg-black/30 border border-white/5 hover:border-white/10 transition-colors text-xs"
+                                >
+                                  <div className="flex items-start sm:items-center gap-2 flex-1 min-w-0">
+                                    <span
+                                      className={`mt-0.5 sm:mt-0 shrink-0 w-2 h-2 rounded-full ${
+                                        hasMetric ? 'bg-emerald-400' : 'bg-amber-400'
+                                      }`}
+                                      title={hasMetric ? 'Métrica cuantificada OK' : 'Falta métrica (%) o ($)'}
+                                    />
+                                    <span className="text-[11px] text-zinc-300 leading-snug line-clamp-2 break-words">
+                                      {bText}
+                                    </span>
+                                  </div>
+                                  <div className="shrink-0 flex items-center gap-1.5">
+                                    <InlineAiWriter
+                                      key={`writer-single-${idx}-${bIdx}`}
+                                      currentText={bText}
+                                      type="BULLET"
+                                      role={exp.role}
+                                      company={exp.company}
+                                      targetRole={formData.targetRole}
+                                      skills={formData.content.skills}
+                                      size="xs"
+                                      label="Mejorar viñeta"
+                                      onApply={(repairedBullet) => {
+                                        const updated = [...formData.content.experience];
+                                        const newBullets = [...updated[idx].bullets];
+                                        newBullets[bIdx] = repairedBullet.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '').trim();
+                                        updated[idx].bullets = newBullets;
+                                        updated[idx].detailedBullets = newBullets.map((t) => ({
+                                          text: t,
+                                          needs_metric: !hasQuantitativeMetric(t),
+                                        }));
+                                        handleContentChange('experience', updated);
+                                      }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = [...formData.content.experience];
+                                        const newBullets = updated[idx].bullets.filter((_, i) => i !== bIdx);
+                                        updated[idx].bullets = newBullets;
+                                        updated[idx].detailedBullets = newBullets.map((t) => ({
+                                          text: t,
+                                          needs_metric: !hasQuantitativeMetric(t),
+                                        }));
+                                        handleContentChange('experience', updated);
+                                      }}
+                                      className="p-1 text-zinc-500 hover:text-rose-400 transition-colors"
+                                      title="Eliminar este logro"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

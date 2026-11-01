@@ -471,3 +471,10 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
   - `rectifyUserDataAction`: Permite corregir de inmediato el nombre o razón social en Turso SQLite desde `<ArcoRightsModal />`.
   - `deleteAndAnonymizeUserAccountAction`: Ejecuta un `db.batch()` atómico que revoca `session` y `account` (tokens OAuth), purga `affiliate_bank_accounts`, `card_leads`, `card_events` (con `inArray`), `cards`, `smart_cvs`, `presentations` y anonimiza `user` preservando la integridad referencial contable en `payments_history`.
 
+## 9.9 Orquestación Editorial de IA para Smart CV & Afinación Quirúrgica por Logro (SOP-129)
+- **Matriz de Inferencia Activa Llama 3.3 70B & Groq LPU**: Migración definitiva desde identificadores deprecados hacia `llama-3.3-70b-versatile` en Groq (<200ms) y `meta/llama-3.3-70b-instruct` en NVIDIA NIM, garantizando disponibilidad y erradicando peticiones erróneas a modelos de visión para redacción textual.
+- **Pre-Route por Arquetipos (`evaluateCvPreRouteStrategy`)**: Clasificación determinista previa de roles técnicos, ejecutivos, de salud o comerciales para contextualizar el prompt del redactor con tono y palabras clave de la disciplina antes de la invocación LLM.
+- **Heurística de Fallback Limpia**: Supresión de verbos redundantes duplicados ("Lideré lideré...") y placeholders estáticos repetitivos, entregando proposiciones contextualizadas con la empresa y el cargo del postulante.
+- **Afinación Dual (Bloque vs Viñeta Individual)**: `SmartCvBuilder.tsx` ofrece optimización simultánea de todos los logros o afinación granular de viñetas individuales con `InlineAiWriter.tsx` (`size="xs"`), complementado por un panel responsivo con backdrop táctil que previene cualquier desborde horizontal en viewports móviles (390px).
+
+

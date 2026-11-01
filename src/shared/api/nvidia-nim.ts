@@ -68,50 +68,56 @@ export async function callNvidiaNimChat(
     // Modelos activos verificados en endpoint público de NVIDIA NIM
     const candidateModels = [
       options.model,
-      'meta/llama-3.2-11b-vision-instruct',
-      'meta/llama-3.2-90b-vision-instruct',
+      'meta/llama-3.3-70b-instruct',
+      'meta/llama-3.1-70b-instruct',
+      'deepseek-ai/deepseek-r1',
     ].filter(Boolean) as string[];
 
-    // 1. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 200ms con Qwen 3.8 27B)
+    // 1. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 200ms con Llama 3.3 70B Versatile)
     // Protegido por Circuit Breaker: si Groq está saturado (429/500), se salta instantáneamente a NVIDIA
     if (groqApiKey && (await isProviderAvailableAsync('groq'))) {
-      try {
-        const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${groqApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          signal: AbortSignal.timeout(6000),
-          body: JSON.stringify({
-            model: 'qwen/qwen3.8-27b',
-            messages: sanitizedMessages,
-            temperature: options.temperature ?? 0.2,
-            max_tokens: options.maxTokens ?? 3000,
-            response_format: options.responseFormat,
-          }),
-        });
+      const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+      for (const groqModel of groqModels) {
+        try {
+          const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${groqApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            signal: AbortSignal.timeout(6000),
+            body: JSON.stringify({
+              model: groqModel,
+              messages: sanitizedMessages,
+              temperature: options.temperature ?? 0.2,
+              max_tokens: options.maxTokens ?? 3000,
+              response_format: options.responseFormat,
+            }),
+          });
 
-        if (groqRes.ok) {
-          const groqData = await groqRes.json();
-          const groqContent = groqData.choices?.[0]?.message?.content;
-          if (groqContent) {
-            recordProviderSuccess('groq');
-            setCachedResponse(requestKey, groqContent, 'groq/qwen3.8-27b');
-            return {
-              success: true,
-              content: groqContent,
-              modelUsed: 'groq/qwen3.8-27b',
-            };
+          if (groqRes.ok) {
+            const groqData = await groqRes.json();
+            const groqContent = groqData.choices?.[0]?.message?.content;
+            if (groqContent) {
+              recordProviderSuccess('groq');
+              setCachedResponse(requestKey, groqContent, `groq/${groqModel}`);
+              return {
+                success: true,
+                content: groqContent,
+                modelUsed: `groq/${groqModel}`,
+              };
+            }
+          } else {
+            const groqErr = await groqRes.text();
+            console.warn(`[Groq Failover Warning] Status ${groqRes.status} en ${groqModel}:`, groqErr);
+            if (groqRes.status === 429 || groqRes.status >= 500) {
+              recordProviderFailure('groq');
+              break;
+            }
           }
-        } else {
-          recordProviderFailure('groq');
-          const groqErr = await groqRes.text();
-          console.warn(`[Groq Failover Warning] Status ${groqRes.status}:`, groqErr);
+        } catch (groqErr: any) {
+          console.warn(`[Groq Failover Warning] ${groqModel}:`, groqErr?.message);
         }
-      } catch (groqErr: any) {
-        recordProviderFailure('groq');
-        console.warn('[Groq Failover Warning]:', groqErr?.message);
       }
     }
 

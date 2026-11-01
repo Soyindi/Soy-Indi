@@ -93,4 +93,58 @@ describe('Smart CV - Inline AI Writer & Schema Audit', () => {
     expect(res.success).toBe(true);
     expect(res.suggestions[0]).toContain('Lead Frontend Engineer');
   });
+
+  it('procesa bloques multilínea de viñetas devolviendo conjuntos de viñetas separados por saltos de línea', async () => {
+    const multiBulletText = `Lideré equipo de 4 ingenieros
+Diseñé arquitectura de microservicios
+Reduje costos en un 30%`;
+
+    const res = await rewriteCvSectionAction({
+      text: multiBulletText,
+      type: 'BULLET',
+      mode: 'XYZ_IMPACT',
+      role: 'Tech Lead',
+      company: 'Startup SpA',
+      targetRole: 'Engineering Manager'
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.suggestions).toHaveLength(3);
+    // Cada variante debe preservar el formato multilínea (3 viñetas separadas por \n)
+    for (const sug of res.suggestions) {
+      const lines = sug.split('\n').filter(Boolean);
+      expect(lines).toHaveLength(3);
+    }
+  });
+
+  it('previene duplicación de verbos de acción en las sugerencias generadas', async () => {
+    const res = await rewriteCvSectionAction({
+      text: 'Lideré el despliegue de infraestructura en la nube',
+      type: 'BULLET',
+      mode: 'XYZ_IMPACT',
+      role: 'Cloud Architect',
+      company: 'Tech Chile'
+    });
+
+    expect(res.success).toBe(true);
+    for (const sug of res.suggestions) {
+      expect(sug).not.toMatch(/lider[eé]\s+lider[eé]/i);
+      expect(sug).not.toMatch(/orquest[eé]\s+orquest[eé]/i);
+    }
+  });
+
+  it('aplica enfoque de Palabras Clave ATS incorporando términos del sector', async () => {
+    const res = await rewriteCvSectionAction({
+      text: 'Desarrollé la interfaz de usuario con React y TypeScript',
+      type: 'BULLET',
+      mode: 'ATS_KEYWORDS',
+      role: 'Frontend Developer',
+      company: 'Digital Solutions',
+      targetRole: 'Senior Frontend Engineer'
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.suggestions).toHaveLength(3);
+    expect(res.suggestions[0]).not.toContain('[añadir métrica]');
+  });
 });
