@@ -1,5 +1,5 @@
 import { multimodalCvExtractionSchema, MultimodalCvExtraction, verifiedCredentialSchema, VerifiedCredential } from '@/entities/cv/schemas';
-import { parseCvTextToStructuredData } from '@/features/ai-smart-cv/lib/cv-text-parser';
+import { parseCvTextToStructuredData, isolateCvBodyFromAttachments } from '@/features/ai-smart-cv/lib/cv-text-parser';
 
 /**
  * Prompt para el extractor multimodal Qwen2.5-VL / Gemini Flash
@@ -156,6 +156,11 @@ export async function parseCvDocumentMultimodal(
     }
   }
 
+  // Aislar cuerpo del CV de diplomas o certificados de respaldo adjuntos en páginas posteriores
+  if (extractedRawText && extractedRawText.trim().length > 20) {
+    extractedRawText = isolateCvBodyFromAttachments(extractedRawText);
+  }
+
   // 2. Cascade AI Router: Invocación de Frontera (NVIDIA NIM / Gemini 2.0 Flash / OpenRouter)
   try {
     const { callNvidiaNimChat } = await import('@/shared/api/nvidia-nim');
@@ -230,9 +235,10 @@ export async function parseCvDocumentMultimodal(
  * con fallback a parseCvTextToStructuredData si la IA no está disponible.
  */
 export async function parseCvTextWithAiCascade(
-  extractedRawText: string,
+  rawInputText: string,
   fileName: string = 'cv.pdf'
 ): Promise<MultimodalCvExtraction> {
+  const extractedRawText = isolateCvBodyFromAttachments(rawInputText);
   const { evaluateCvPreRouteStrategy, auditAndRepairCvExtraction } = await import('@/features/ai-smart-cv/lib/cv-auditor');
   const preRoute = evaluateCvPreRouteStrategy(extractedRawText);
 
@@ -520,53 +526,80 @@ function synthesizeDeterministicExtraction(fileName: string): MultimodalCvExtrac
  */
 function reconcileReferenceContacts(
   references: Array<{ name: string; role: string; company: string; contact?: string | undefined }>,
-  rawText: string
+  rawText: string,
+  fileName: string = 'document.pdf'
 ): Array<{ name: string; role: string; company: string; contact: string }> {
   if (!rawText || !Array.isArray(references) || references.length === 0) {
     return (references || []).map((r) => ({ ...r, contact: r.contact || '' }));
   }
 
+  // 1. Extraer referencias usando el parser heurístico determinista como fuente fidedigna
+  const textParsed = parseCvTextToStructuredData(rawText, fileName);
+  const textRefMap = new Map<string, string>();
+  if (textParsed.references && textParsed.references.length > 0) {
+    textParsed.references.forEach((tr) => {
+      if (tr.contact && /\d{6,}/.test(tr.contact)) {
+        const norm = tr.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        textRefMap.set(norm, tr.contact);
+      }
+    });
+  }
+
   // Extraer todos los números telefónicos presentes en el texto original
-  const phoneRegex = /(?:\+?56\s?9|\b9)\s?\d{4}\s?\d{4}\b|(?:\+?56\s?)?(?:61|2|32|33|34|35|41|42|43|45|51|52|53|55|57|58|71|72|73|75)\s?\d{1,2}\s?\d{5,6}\b/g;
-  const allPhones = Array.from(rawText.matchAll(phoneRegex)).map((m) => m[0].trim());
+  const phoneRegex = /(?:\+?56\s?(?:9\s?)?|\b9\s?)?\d{4}[\s.-]?\d{4}\b|\b(?:\+?\d{1,3}[\s.-]?)?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}\b/g;
+  const allPhones = Array.from(rawText.matchAll(phoneRegex))
+    .map((m) => m[0].trim())
+    .filter((p) => p.replace(/\D/g, '').length >= 8);
 
   const lines = rawText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
   return references.map((ref, idx) => {
     let cleanContact = ref.contact || '';
+    const normRefName = ref.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
     // Si el contacto contiene marcadores de privacidad residuales o no tiene dígitos reales
     if (cleanContact.includes('PROTEGIDO') || !/\d{6,}/.test(cleanContact)) {
-      // Buscar en las líneas cercanas al nombre de la persona
-      const nameParts = ref.name.split(' ').filter((p) => p.length > 2);
-      let foundPhone = '';
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const matchesName = nameParts.some((part) => line.toLowerCase().includes(part.toLowerCase()));
-        if (matchesName) {
-          // Buscar teléfono en un radio de 6 líneas alrededor del nombre
-          const start = Math.max(0, i - 2);
-          const end = Math.min(lines.length, i + 7);
-          for (let j = start; j < end; j++) {
-            const surrounding = lines[j];
-            const pMatch = surrounding.match(/(?:\+?56\s?9|\b9)\s?\d{4}\s?\d{4}\b|(?:\+?56\s?)?(?:61|2|32|33|34|35|41|42|43|45|51|52|53|55|57|58|71|72|73|75)\s?\d{1,2}\s?\d{5,6}\b/);
-            if (pMatch) {
-              foundPhone = pMatch[0].trim();
-              break;
-            }
-          }
-          if (foundPhone) break;
+      // 1. Verificar si el parser heurístico ya mapeó el número real para este contacto
+      for (const [key, phone] of textRefMap.entries()) {
+        const parts = key.split(' ').filter((p) => p.length > 2);
+        if (parts.some((p) => normRefName.includes(p)) || normRefName.includes(key)) {
+          cleanContact = phone;
+          break;
         }
       }
 
-      // Si no se encontró en la ventana local, asociar por orden de aparición en el documento
-      if (!foundPhone && allPhones[idx]) {
-        foundPhone = allPhones[idx];
-      }
+      // 2. Si aún falta, buscar en las líneas contiguas al nombre de la persona
+      if (!cleanContact || cleanContact.includes('PROTEGIDO') || !/\d{6,}/.test(cleanContact)) {
+        const nameParts = normRefName.split(' ').filter((p) => p.length > 2);
+        let foundPhone = '';
 
-      if (foundPhone) {
-        cleanContact = foundPhone;
+        for (let i = 0; i < lines.length; i++) {
+          const normLine = lines[i].normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+          const matchesName = nameParts.some((part) => normLine.includes(part));
+          if (matchesName) {
+            // Buscar teléfono en un radio de 6 líneas alrededor del nombre
+            const start = Math.max(0, i - 2);
+            const end = Math.min(lines.length, i + 7);
+            for (let j = start; j < end; j++) {
+              const surrounding = lines[j];
+              const pMatch = surrounding.match(/(?:\+?56\s?(?:9\s?)?|\b9\s?)?\d{4}[\s.-]?\d{4}\b|\b(?:\+?\d{1,3}[\s.-]?)?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}\b/);
+              if (pMatch && pMatch[0].replace(/\D/g, '').length >= 8) {
+                foundPhone = pMatch[0].trim();
+                break;
+              }
+            }
+            if (foundPhone) break;
+          }
+        }
+
+        // Si no se encontró en la ventana local, asociar por orden de aparición en el documento
+        if (!foundPhone && allPhones[idx]) {
+          foundPhone = allPhones[idx];
+        }
+
+        if (foundPhone) {
+          cleanContact = foundPhone;
+        }
       }
     }
 

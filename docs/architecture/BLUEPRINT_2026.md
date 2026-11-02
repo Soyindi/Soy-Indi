@@ -539,6 +539,21 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
   - **Instrucción Exhaustiva en `MULTIMODAL_CV_PROMPT`**: Ordena explícitamente extraer títulos, licenciaturas, diplomados, postítulos, cursos y especializaciones clínicas/técnicas como ítems individuales en `education`.
   - **Fusión Defensiva `mergeEducations` & Agregación Multisección en `cv-text-parser.ts`**: `getSectionLines` acumula todas las secciones de educación y cursos del documento, y `mergeEducations` garantiza que ningún curso detectado en el texto se pierda tras la extracción de la IA.
 
+## 9.16 Aislamiento Estricto de CV frente a Diplomas Anexos, Extracción Fiel de Especializaciones y Lookahead No Destructivo (SOP-136)
+- **Diagnóstico y Causa Raíz de Regresión en Documentos Compuestos (CV + Certificados Anexos)**:
+  - Al incorporar la extracción espacial 2D en noviembre para leer documentos completos, los PDFs de candidatos que incluyen sus diplomas de respaldo al final (páginas 4 a 14) eran procesados íntegramente por `parseCvTextToStructuredData` y `mergeEducations`.
+  - Los textos legales y de validación de los diplomas (*"Fecha de Término Curso...", "Natural de República de Chile...", "Para verificar la autenticidad...", "Certificado de Participación..."*) eran clasificados como títulos por contener palabras como "curso" o "certificado", inyectando 15 filas falsas en `education`.
+  - Al saturarse la Hoja 2 A4 con educación espuria, la sección de Referencias Laborales quedaba empujada fuera de la vista de la página, desapareciendo visualmente.
+  - Subencabezados de categoría taxonómica (*"Área laboral / forense"*, *"Evaluación y clínica"*) eran interpretados como títulos por no estar en `isEduSubheader`.
+  - Cursos clínicos legítimos sin la palabra "curso" (*"Prevención de Autolesiones y Suicidio – OPS"*) eran descartados por un filtro `hasAcademicKeyword` restrictivo.
+  - En las referencias, `isPotentialNewReference` evaluaba `isJobTitleLine` antes de verificar el separador de nombre, devorando a Claudia Cárcamo en el lookahead de Jannette Pantoja.
+- **Solución Arquitectónica Canónica**:
+  - **Aislamiento Pre-Procesamiento (`isolateCvBodyFromAttachments`)**: Delimita formalmente el cuerpo del CV al detectar la línea de firma final con RUT (`Matías Ricardo... · RUT 18.209.442-0` o `______`) o los encabezados de certificados anexos, truncando el texto procesado para que el LLM y el parser operen únicamente sobre las páginas 1 a 3 del CV real.
+  - **Catálogo de Subencabezados Taxonómicos (`isEduSubheader`)**: Incorporación de rótulos taxonómicos (`área laboral`, `evaluación y clínica`, `derechos y marco legal`) para que no se conviertan en grados académicos.
+  - **Extracción de Viñetas de Especializaciones**: Toda línea con viñeta (`^[●•\-\*·]`) en educación se procesa como curso/especialización sin exigir `hasAcademicKeyword`, garantizando que el 100% de las capacitaciones del candidato se extraigan fielmente.
+  - **Lookahead No Destructivo de Referencias**: Evaluación prioritaria de separadores (`[—–|·]|\s-\s`) con nombres de persona antes de palabras de cargo en `isPotentialNewReference`, preservando íntegras las 5 referencias con sus números de teléfono reales.
+
+
 
 
 

@@ -554,3 +554,19 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
    - Tanto en el prompt estructurado (`MULTIMODAL_CV_PROMPT`) como en el parser heurístico (`cv-text-parser.ts`), el array `education` debe capturar sin exclusión títulos universitarios, licenciaturas, diplomados, postítulos, cursos de especialización y capacitaciones clínicas/técnicas.
    - `getSectionLines` debe acumular todas las secciones de educación y cursos del documento, erradicando exclusiones previas de "formación complementaria" o "formación continua".
    - `mergeEducations` fusiona las detecciones de la IA con el parser heurístico para blindar al usuario contra omisiones de cursos y diplomados.
+
+---
+
+### SOP-136: Aislamiento Estricto de CV frente a Diplomas Anexos, Extracción Fiel de Especializaciones y Lookahead No Destructivo de Referencias
+1. **Aislamiento Pre-Procesamiento del Cuerpo del CV (`isolateCvBodyFromAttachments`)**:
+   - Todo documento compuesto (CV de varias páginas con diplomas, certificados SENCE/OPS o constancias escaneadas al final) debe delimitarse formalmente en `isolateCvBodyFromAttachments` antes de enviarse a inferencia LLM o al parser heurístico.
+   - Detecta la línea de firma o RUT final del candidato (ej: `Matías Ricardo... · RUT 18.209.442-0` o `______`) o los encabezados inequívocos de certificados posteriores (`Se confiere el presente diploma`, `Certificado de Finalización`, `N° Folio:`, `Para verificar la autenticidad...`).
+   - Todo texto posterior a la frontera es truncado para la extracción del CV, previniendo la contaminación de la sección de educación con metadatos administrativos espurios y protegiendo el espacio vertical de la Hoja 2 A4.
+2. **Subencabezados de Categoría en Educación (`isEduSubheader`)**:
+   - Rótulos taxonómicos como `"Área laboral / forense"`, `"Evaluación y clínica"`, `"Derechos y marco legal"` deben catalogarse explícitamente en `isEduSubheader` para evitar que se interpreten erróneamente como títulos o grados universitarios.
+3. **Extracción Exhaustiva de Viñetas de Cursos y Especializaciones**:
+   - Toda línea que inicie con viñeta (`^[●•\-\*·]`) dentro de las secciones de educación, especializaciones o formación complementaria debe procesarse directamente como curso/especialización sin exigir palabras clave académicas restrictivas (`hasAcademicKeyword`), preservando cursos clínicos legítimos sin la palabra "curso" (ej. *"Prevención de Autolesiones y Suicidio – OPS"*).
+4. **Lookahead No Destructivo en Referencias Laborales (`isPotentialNewReference`)**:
+   - `isPotentialNewReference` debe evaluar prioritariamente si la línea presenta separador de entidad (`[—–|·]|\s-\s`) con un nombre propio en el primer segmento antes de verificar palabras de cargo (`isJobTitleLine`).
+   - Evita que referencias con cargo incluido en la misma línea (ej: `"Claudia Cárcamo — Psicóloga, CESFAM..."`) sean devoradas por el lookahead de la referencia precedente.
+

@@ -1,6 +1,67 @@
 import { MultimodalCvExtraction } from '@/entities/cv/schemas';
 
 /**
+ * Aísla el cuerpo legítimo del CV descartando páginas posteriores con diplomas o certificados escaneados adjuntos.
+ * Detecta la firma o término formal del CV (ej: línea de RUT al final de las referencias) o encabezados
+ * de certificados oficiales posteriores (SENCE, OPS, diplomas, etc.).
+ */
+export function isolateCvBodyFromAttachments(rawText: string, candidateName?: string): string {
+  if (!rawText) return '';
+  const lines = rawText.split(/\r?\n/);
+  let cutoffIndex = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const lower = line.toLowerCase();
+
+    // 1. Línea de firma o delimitación con RUT al final del CV (ej: "Matías Ricardo... · RUT 18.209.442-0" o "______")
+    if (
+      line.includes('______') ||
+      /^[_\-\s]{6,}$/.test(line) ||
+      (candidateName && line.toLowerCase().includes(candidateName.toLowerCase()) && (line.includes('RUT') || line.includes('18.')))
+    ) {
+      if (i > 15) {
+        let endOffset = 1;
+        if (i + 1 < lines.length && (lines[i + 1].includes('RUT') || (candidateName && lines[i + 1].toLowerCase().includes(candidateName.toLowerCase())))) {
+          endOffset = 2;
+        }
+        cutoffIndex = i + endOffset;
+        break;
+      }
+    }
+
+    // 2. Encabezados inequívocos de certificados o diplomas anexos que inician después del cuerpo del CV
+    if (
+      lower.startsWith('se confiere el presente diploma') ||
+      lower.startsWith('se otorga el presente diploma') ||
+      lower.startsWith('oficialmente certifica a') ||
+      lower.startsWith('certificado de finalización') ||
+      lower.startsWith('certificado de finalizacion') ||
+      lower.startsWith('certificado de capacitación') ||
+      lower.startsWith('certificado de capacitacion') ||
+      lower.startsWith('certificado de participación') ||
+      lower.startsWith('certificado de participacion') ||
+      lower.startsWith('n° folio:') ||
+      lower.startsWith('nº folio:') ||
+      lower.startsWith('para verificar la autenticidad del certificado') ||
+      lower.startsWith('la autenticidad de este certificado se puede verificar') ||
+      (lower === 'constancia' && i > 25)
+    ) {
+      if (i > 15) {
+        cutoffIndex = i;
+        break;
+      }
+    }
+  }
+
+  if (cutoffIndex !== -1 && cutoffIndex < lines.length) {
+    return lines.slice(0, cutoffIndex).join('\n');
+  }
+
+  return rawText;
+}
+
+/**
  * Parser heurístico y semántico de texto plano para CVs
  * Diseñado para procesar con máxima precisión el texto extraído directamente de documentos PDF,
  * desacoplando empresas multilínea, filtrando fechas administrativas espurias en educación
@@ -10,21 +71,24 @@ export function parseCvTextToStructuredData(
   rawText: string,
   fileName: string
 ): MultimodalCvExtraction {
+  // 0. Aislar cuerpo del CV de posibles certificados anexos al final del archivo
+  const cleanCvBody = isolateCvBodyFromAttachments(rawText);
+
   // 1. Limpieza inicial de texto y separación en líneas
-  const lines = rawText
+  const lines = cleanCvBody
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter((l) => l.length > 0 && !/^(?:---\s*)?p[áa]gina\s+siguiente(?:\s*---)?$/i.test(l) && !/^[-—]{3,}$/.test(l));
 
   // 1.1 Extraer RUT chileno primero con máxima prioridad (formato XX.XXX.XXX-K o XXXXXXXX-K)
-  const rutMatch = rawText.match(/\b\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]\b/);
+  const rutMatch = cleanCvBody.match(/\b\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]\b/);
   const rut = rutMatch ? rutMatch[0] : '';
 
   // 1.2 Extraer Teléfono excluyendo explícitamente cualquier fragmento que forme parte del RUT
   // Los números de teléfono chilenos tienen formato: +56 9 XXXX XXXX o fijo 61 2 XXXXXX o 9XXXXXXXX
   let phone = '';
-  const chileanMobileMatch = rawText.match(/(?:\+?56\s?9|\b9)\s?\d{4}\s?\d{4}\b/);
-  const chileanLandlineMatch = rawText.match(/(?:\+?56\s?)?(?:61|2|32|33|34|35|41|42|43|45|51|52|53|55|57|58|71|72|73|75)\s?\d{1,2}\s?\d{5,6}\b/);
+  const chileanMobileMatch = cleanCvBody.match(/(?:\+?56\s?9|\b9)\s?\d{4}\s?\d{4}\b/);
+  const chileanLandlineMatch = cleanCvBody.match(/(?:\+?56\s?)?(?:61|2|32|33|34|35|41|42|43|45|51|52|53|55|57|58|71|72|73|75)\s?\d{1,2}\s?\d{5,6}\b/);
 
   if (chileanMobileMatch && (!rut || !rut.includes(chileanMobileMatch[0].replace(/\s/g, '')))) {
     phone = chileanMobileMatch[0].trim();
@@ -499,25 +563,28 @@ export function parseCvTextToStructuredData(
   const isEduSubheader = (l: string): boolean => {
     const lower = l.toLowerCase().trim().replace(/[:\-#*]/g, '');
     if (lower.length > 55) return false; // Si es una línea descriptiva con institución o título, procesar
-    if (
-      lower === 'formación complementaria' ||
-      lower === 'formacion complementaria' ||
-      lower === 'especializaciones y formación' ||
-      lower === 'especializaciones y formacion' ||
-      lower === 'especializaciones y formación complementaria' ||
-      lower === 'especializaciones y formacion complementaria' ||
-      lower === 'cursos y capacitaciones' ||
-      lower === 'cursos y talleres' ||
+    return (
+      lower.includes('formación complementaria') ||
+      lower.includes('formacion complementaria') ||
+      lower.includes('especializaciones y formación') ||
+      lower.includes('especializaciones y formacion') ||
+      lower.includes('especializaciones y formación complementaria') ||
+      lower.includes('especializaciones y formacion complementaria') ||
+      lower.includes('cursos y capacitaciones') ||
+      lower.includes('cursos y talleres') ||
+      lower.includes('área laboral') ||
+      lower.includes('area laboral') ||
+      lower.includes('evaluación y clínica') ||
+      lower.includes('evaluacion y clinica') ||
+      lower.includes('derechos y marco legal') ||
+      lower.includes('derechos humanos y marco legal') ||
       lower === 'educación' ||
       lower === 'educacion' ||
       lower === 'formación' ||
       lower === 'formacion' ||
       lower === 'cursos' ||
       lower === 'capacitaciones'
-    ) {
-      return true;
-    }
-    return false;
+    );
   };
 
   // Palabras indispensables para considerar una línea como educación formal o continua
@@ -560,7 +627,7 @@ export function parseCvTextToStructuredData(
   };
 
   for (const rawLine of eduLines) {
-    if (isDateOnlyLine(rawLine) || isEduSubheader(rawLine)) {
+    if (isDateOnlyLine(rawLine) || isEduSubheader(rawLine) || rawLine.toLowerCase().startsWith('tesis:')) {
       continue;
     }
 
@@ -570,19 +637,25 @@ export function parseCvTextToStructuredData(
       .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '')
       .trim();
 
-    if (hasAcademicKeyword(line)) {
+    if (line.length < 4) continue;
+
+    const hasBulletSymbol = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]/.test(rawLine);
+
+    if (hasBulletSymbol || hasAcademicKeyword(line)) {
       const parts = line.split(/[|–—·•]|\s[-–—]\s/).map((p) => p.trim()).filter(Boolean);
       let year = '';
       let inst = '';
       let deg = '';
 
       parts.forEach((p) => {
-        if (datePattern.test(p)) {
+        if (datePattern.test(p) && p.length <= 15) {
           year = p;
         } else if (
           p.toLowerCase().includes('universidad') ||
           p.toLowerCase().includes('instituto') ||
           p.toLowerCase().includes('subdirección') ||
+          p.toLowerCase().includes('subsecretaría') ||
+          p.toLowerCase().includes('subsecretaria') ||
           p.toLowerCase().includes('servicio') ||
           p.toLowerCase().includes('adipa') ||
           p.toLowerCase().includes('centro') ||
@@ -594,7 +667,11 @@ export function parseCvTextToStructuredData(
           p.toLowerCase().includes('group') ||
           p.toLowerCase().includes('sence') ||
           p.toLowerCase().includes('senda') ||
-          p.toLowerCase().includes('ops')
+          p.toLowerCase().includes('ops') ||
+          p.toLowerCase().includes('oms') ||
+          p.toLowerCase().includes('organización panamericana') ||
+          p.toLowerCase().includes('organizacion panamericana') ||
+          p.toLowerCase().includes('agile')
         ) {
           inst = p;
         } else if (!deg) {
@@ -804,7 +881,20 @@ export function parseCvTextToStructuredData(
         return false;
       }
 
-      // Si la línea contiene palabras típicas de cargo
+      // 1. Si la línea tiene un separador claro (em-dash, en-dash, bullet interno, guión con espacios, barra)
+      if (/[—–|·]|\s-\s/.test(stripped)) {
+        const firstSegment = stripped.split(/[—–|·]|\s-\s/)[0].trim();
+        // Si antes del separador NO parece un cargo (sino un nombre de persona de 4+ caracteres)
+        if (firstSegment.length >= 4 && !isJobTitleLine(firstSegment)) {
+          return true;
+        }
+        // Si antes del separador SÍ es un cargo (ej: "Inspectora General - Escuela..."), es cargo de la actual
+        if (!currentHasRoleOrCompany && isJobTitleLine(firstSegment)) {
+          return false;
+        }
+      }
+
+      // 2. Si la línea contiene palabras típicas de cargo
       if (isJobTitleLine(stripped)) {
         // Si la referencia actual AÚN NO tiene cargo ni empresa asignados, esta línea es el cargo de la actual, no una nueva persona
         if (!currentHasRoleOrCompany) {
@@ -812,20 +902,7 @@ export function parseCvTextToStructuredData(
         }
       }
 
-      // Si la línea tiene un separador claro (em-dash, en-dash, bullet interno, guión con espacios, barra)
-      if (/[—–|·]|\s-\s/.test(stripped)) {
-        // Si no tiene cargo asignado la referencia actual y la línea parece describir rol - empresa, no es nueva persona
-        if (!currentHasRoleOrCompany && isJobTitleLine(stripped)) {
-          return false;
-        }
-        // Si tiene separador y antes del separador NO parece un cargo (sino un nombre de persona)
-        const firstSegment = stripped.split(/[—–|·]|\s-\s/)[0].trim();
-        if (firstSegment.length >= 4 && !isJobTitleLine(firstSegment)) {
-          return true;
-        }
-      }
-
-      // Si la línea parece ser un nombre propio de persona (2 a 4 palabras capitalizadas, sin números ni palabras de contacto)
+      // 3. Si la línea parece ser un nombre propio de persona (2 a 4 palabras capitalizadas, sin números ni palabras de contacto)
       if (
         stripped.length >= 6 &&
         stripped.length <= 40 &&

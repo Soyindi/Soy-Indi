@@ -214,5 +214,108 @@ Contacto: +56 9 1122 3344
       expect(result.references[1].contact).toContain('9876');
       expect(result.references[2].contact).toContain('1122');
     });
+
+    it('debe aislar el CV de certificados anexos, extrayendo los 11 cursos y las 5 referencias completas (incluyendo Claudia Cárcamo)', () => {
+      const cvConCertificadosAnexos = `
+Matías Ricardo Riquelme Cárdenas
+Psicólogo · Intervención Clínica y Psicosocial | Desarrollo de Sistemas e IA (autodidacta)
+psriquelme.m@gmail.com · +56 9 2372 6707 · linkedin.com/in/matiriquelme
+Residencia: Punta Arenas, Chile · Edad: 33 años · Estado civil: Soltero
+
+PERFIL PROFESIONAL
+Psicólogo con más de cinco años de trayectoria en los ámbitos de salud, educación y justicia.
+
+EXPERIENCIA PROFESIONAL
+Psicólogo de Reinserción Social · Complejo Penitenciario Biobío – Concepción
+Dic. 2021 – Mar. 2022 | Ene. 2023 – Nov. 2024 · (Justice Services Sodexo)
+● Evaluación psico-criminológica y redacción de informes técnicos.
+● Diseño y aplicación del Modelo RNR.
+
+Psicólogo (Reemplazante) · Programa de Cuidados Paliativos Universales – Hospital Clínico de Magallanes
+Ene. 2025 – Mar. 2025
+● Apoyo psicológico a pacientes crónicos y terminales.
+
+EDUCACIÓN
+Título de Psicólogo · Licenciado en Psicología · Universidad de Magallanes, Chile
+2013 – 2018
+Tesis: «Sensibilidad Estacional en la Región de Magallanes»
+
+ESPECIALIZACIONES Y FORMACIÓN COMPLEMENTARIA
+Área laboral / forense
+● Diplomado en Psicodiagnóstico Laboral – Grupo ASCS do Agile.
+● Elaboración de Informes Técnicos bajo el Modelo RNR – Certificado por SENCE.
+● Prevención del Consumo de Drogas y Alcohol en el Mundo Laboral – SENDA.
+Evaluación y clínica
+● Formación en WISC-V – Education Business Group, Inc.
+● Primeros Auxilios Psicológicos – Universidad de Magallanes.
+● Prevención de Autolesiones y Suicidio – OPS / Organización Panamericana de la Salud.
+● Salud de la Mujer y el Embarazo – Organización Panamericana de la Salud.
+● Detección Temprana de consumo problemático – SENDA.
+Derechos y marco legal
+● Derechos de los Niños, Niñas y Adolescentes – Subsecretaría de los Derechos Humanos.
+● Introducción a los Derechos Humanos – Subsecretaría de los Derechos Humanos.
+
+REFERENCIAS PROFESIONALES
+Cecilia Vivallo Corvalán — Enfermera encargada, Cuidados Paliativos Universales, Hospital Clínico de Magallanes · +56 9 8226 8970
+Carlos Domínguez Parra — Jefe de Reinserción Social, Justice Services Sodexo, Complejo Penitenciario Biobío · +56 9 8933 0333
+Marisol Cárcamo — Coordinadora del Área Psicosocial, Justice Services Sodexo, Complejo Penitenciario Biobío · +56 9 7467 7104
+Jannette Pantoja — Inspectora General, Escuela Almirante Jorge Montt Álvarez, Penco · +56 9 6143 4397
+Claudia Cárcamo — Psicóloga, CESFAM, Penco · +56 9 7387 7180
+_____________________
+Matías Ricardo Riquelme Cárdenas · RUT 18.209.442-0
+
+Se confiere el presente Diploma a:
+Matías Ricardo Riquelme Cárdenas
+Diplomado en Psicodiagnóstico Laboral
+Santiago, 08 de junio de 2019
+
+Fecha de Término Curso 02-06-2023
+Natural de República de Chile, aprobo el Curso Online Internacional denominado:
+Formación en la prueba de Inteligencia WISC - V
+Para verificar la autenticidad del certificado debes ingresar el código de validez en el siguiente link:
+https://ebg.ec/verificacion
+Certificado de Participación
+ha participado y aprobado el Curso de autoaprendizaje en línea:
+La autenticidad de este certificado se puede verificar en:
+CERTIFICADO DE FINALIZACIÓN
+ha completado el curso
+La Subsecretaría de Derechos Humanos otorga el presente certificado de aprobación a:
+Por haber participado y completado con éxito el curso de
+Realizado en modalidad de formación a distancia e-learning. Tuvo una duración de 20 horas.
+`;
+
+      const result = parseCvTextToStructuredData(cvConCertificadosAnexos, 'cv_14_paginas.pdf');
+
+      // 1. Debe haber extraído exactamente 11 elementos de educación (1 título universitario + 10 cursos/especializaciones)
+      expect(result.education.length).toBe(11);
+      expect(result.education[0].degree).toContain('Psicólogo');
+      expect(result.education.some((e) => e.degree.includes('Autolesiones y Suicidio'))).toBe(true);
+      expect(result.education.some((e) => e.degree.includes('WISC-V'))).toBe(true);
+      expect(result.education.some((e) => e.degree.includes('Derechos de los Niños'))).toBe(true);
+
+      // 2. Ningún texto administrativo de diplomas anexos debe colarse como título
+      expect(result.education.some((e) => e.degree.includes('Fecha de Término'))).toBe(false);
+      expect(result.education.some((e) => e.degree.includes('Natural de República'))).toBe(false);
+      expect(result.education.some((e) => e.degree.includes('Para verificar la autenticidad'))).toBe(false);
+      expect(result.education.some((e) => e.degree.includes('Evaluación y clínica'))).toBe(false);
+      expect(result.education.some((e) => e.degree.includes('Área laboral'))).toBe(false);
+
+      // 3. Debe extraer las 5 referencias completas incluyendo a Claudia Cárcamo
+      expect(result.references.length).toBe(5);
+      const names = result.references.map((r) => r.name);
+      expect(names).toContain('Cecilia Vivallo Corvalán');
+      expect(names).toContain('Carlos Domínguez Parra');
+      expect(names).toContain('Marisol Cárcamo');
+      expect(names).toContain('Jannette Pantoja');
+      expect(names).toContain('Claudia Cárcamo');
+
+      // 4. Cada referencia debe tener su teléfono celular chileno real y cero [TELEFONO_PROTEGIDO]
+      for (const ref of result.references) {
+        expect(ref.contact).not.toContain('PROTEGIDO');
+        expect(ref.contact).toMatch(/\+?56\s?9\s?\d{4}\s?\d{4}/);
+      }
+      expect(result.references.find((r) => r.name.includes('Claudia'))?.contact).toContain('7387 7180');
+      expect(result.references.find((r) => r.name.includes('Carlos'))?.contact).toContain('8933 0333');
+    });
   });
 });
