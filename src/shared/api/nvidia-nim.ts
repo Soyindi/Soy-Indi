@@ -74,9 +74,9 @@ export async function callNvidiaNimChat(
     ].filter(Boolean) as string[];
 
     // 1. Google Gemini (Tier Free Primario / Respaldo Masivo con Ventana de 1M Tokens)
-    // Modelos verificados con respuesta 200 OK en tiempo real: gemini-flash-latest / gemini-2.5-flash-lite / gemini-3.5-flash
+    // Modelos verificados con respuesta 200 OK en tiempo real: gemini-flash-latest / gemini-3.5-flash / gemini-flash-lite-latest
     if (geminiApiKey && (await isProviderAvailableAsync('gemini'))) {
-      const geminiModels = ['gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-3.5-flash', 'gemini-flash-lite-latest'];
+      const geminiModels = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-3-flash-preview'];
       for (const gemModel of geminiModels) {
         try {
           const systemMsg = sanitizedMessages.find((m) => m.role === 'system')?.content || '';
