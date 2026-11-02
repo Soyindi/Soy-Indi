@@ -29,11 +29,17 @@ Tu misión exclusiva es transformar notas, documentos o currículums desestructu
    - Si ya contiene métricas cuantitativas reales (ej. "35%", "$1.2M", "8 personas", "40 pacientes"), marca:
      "needs_metric": false
 
-3. SUBSTRACCIÓN EJECUTIVA ("SHOW, DON'T LABEL"):
+3. EXTRACCIÓN EXHAUSTIVA DE TODA LA TRAYECTORIA LABORAL Y PROYECTOS:
+   - En el array "experience", DEBES EXTRAER ABSOLUTAMENTE TODOS los cargos, empleos y proyectos que figuren en el documento, cronológicamente y sin omitir ninguno.
+   - Si el candidato tiene 4, 5 o más cargos en el documento (ej. Psicólogo de Reinserción Social, Psicólogo de Cuidados Paliativos, Psicólogo PIE Escuela, Psicólogo CESFAM, Psicólogo Practicante, etc.), DEBES CREAR UN ELEMENTO INDIVIDUAL PARA CADA UNO.
+   - Tienes TERMINANTEMENTE PROHIBIDO resumir, omitir o dejar un solo cargo como muestra.
+   - Extrae TODAS las viñetas originales de cada cargo.
+
+4. SUBSTRACCIÓN EJECUTIVA ("SHOW, DON'T LABEL"):
    - PROHIBICIÓN DE ETIQUETAS Y PREFIJOS OBVIOS: No incluyas prefijos como "Responsabilidades:", "Funciones:" o "Logros clave:". Extrae la sustancia fáctica directa.
    - En "summary", extrae y pule el perfil profesional del usuario sin imponer clichés de auto-engrandecimiento ("líder visionario") ni plantillas prefabricadas. Preserva la autenticidad de su experiencia.
 
-4. EXTRACCIÓN EXHAUSTIVA DE EDUCACIÓN, DIPLOMADOS, CURSOS Y ESPECIALIZACIONES:
+5. EXTRACCIÓN EXHAUSTIVA DE EDUCACIÓN, DIPLOMADOS, CURSOS Y ESPECIALIZACIONES:
    - En el array "education", DEBES EXTRAER TODA la trayectoria académica y formativa del candidato sin omitir ninguna:
      * Títulos profesionales y universitarios (ej. "Título de Psicólogo • Licenciado en Psicología").
      * Diplomados, postítulos y posgrados.
@@ -44,11 +50,11 @@ Tu misión exclusiva es transformar notas, documentos o currículums desestructu
    - En "institution", la universidad, instituto o entidad que lo impartió. Si el texto no menciona institución explícita, coloca la entidad certificadora o "Centro de Formación Profesional".
    - En "year", el año de realización o graduación (ej. "2023", "2018").
 
-5. PRESERVACIÓN FIDEDIGNA DE CONTACTOS Y REFERENCIAS LABORALES:
+6. PRESERVACIÓN FIDEDIGNA DE CONTACTOS Y REFERENCIAS LABORALES:
    - En "references", extrae rigurosamente TODOS los contactos de referencia que figuren en el documento con su nombre completo, cargo desempeñado, institución/empresa y número telefónico o email de contacto real.
    - Tienes terminantemente PROHIBIDO reemplazar los teléfonos por etiquetas como "[TELEFONO_PROTEGIDO]". Extráelos exactamente con su numeración real (ej. "+56 9 8226 8970").
 
-6. DEVUELVE EXCLUSIVAMENTE UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
+7. DEVUELVE EXCLUSIVAMENTE UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 {
   "fullName": string,
   "email": string,
@@ -180,6 +186,7 @@ export async function parseCvDocumentMultimodal(
       {
         model: 'meta/llama-3.3-70b-instruct',
         temperature: 0.1,
+        maxTokens: 6000,
         responseFormat: { type: 'json_object' },
         preserveSensitiveData: true,
       }
@@ -202,9 +209,21 @@ export async function parseCvDocumentMultimodal(
           data.references = reconcileReferenceContacts(data.references, extractedRawText);
         }
 
-        // 2. Fusión defensiva de educación: asegurar que cursos, talleres y diplomados del texto no se pierdan
+        // 2. Fusión defensiva de experiencia laboral, referencias y educación:
         if (extractedRawText) {
           const textParsed = parseCvTextToStructuredData(extractedRawText, fileName);
+
+          // A. Preservar todas las experiencias laborales si la IA omitió cargos o viñetas
+          if (textParsed.experience && textParsed.experience.length > data.experience.length) {
+            data.experience = mergeExperiences(data.experience, textParsed.experience);
+          }
+
+          // B. Preservar todas las referencias si la IA omitió contactos
+          if (textParsed.references && textParsed.references.length > (data.references?.length || 0)) {
+            data.references = mergeReferences(data.references || [], textParsed.references);
+          }
+
+          // C. Preservar cursos y diplomados
           if (textParsed.education && textParsed.education.length > data.education.length) {
             data.education = mergeEducations(data.education, textParsed.education);
           }
@@ -269,6 +288,7 @@ Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIE
       {
         model: 'meta/llama-3.3-70b-instruct',
         temperature: 0.1,
+        maxTokens: 6000,
         responseFormat: { type: 'json_object' },
         preserveSensitiveData: true,
       }
@@ -291,9 +311,21 @@ Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIE
           data.references = reconcileReferenceContacts(data.references, extractedRawText);
         }
 
-        // 2. Fusión defensiva de educación: asegurar que cursos, talleres y diplomados del texto no se pierdan
+        // 2. Fusión defensiva de experiencia laboral, referencias y educación:
         if (extractedRawText) {
           const textParsed = parseCvTextToStructuredData(extractedRawText, fileName);
+
+          // A. Preservar todas las experiencias laborales si la IA omitió cargos
+          if (textParsed.experience && textParsed.experience.length > data.experience.length) {
+            data.experience = mergeExperiences(data.experience, textParsed.experience);
+          }
+
+          // B. Preservar todas las referencias si la IA omitió contactos
+          if (textParsed.references && textParsed.references.length > (data.references?.length || 0)) {
+            data.references = mergeReferences(data.references || [], textParsed.references);
+          }
+
+          // C. Preservar cursos y diplomados
           if (textParsed.education && textParsed.education.length > data.education.length) {
             data.education = mergeEducations(data.education, textParsed.education);
           }
@@ -736,5 +768,103 @@ function mergeEducations(
     }
   }
 
+  return result;
+}
+
+/**
+ * Fusiona la experiencia laboral extraída por la IA con las experiencias detectadas
+ * por el parser heurístico de texto para garantizar que ningún cargo o viñeta se pierda.
+ */
+function mergeExperiences(
+  aiExp: Array<{
+    company: string;
+    role: string;
+    period: string;
+    rawAchievements: string[];
+    xyzBullets: Array<{ text: string; needs_metric: boolean }>;
+  }>,
+  textExp: Array<{
+    company: string;
+    role: string;
+    period: string;
+    rawAchievements: string[];
+    xyzBullets: Array<{ text: string; needs_metric: boolean }>;
+  }>
+): Array<{
+  company: string;
+  role: string;
+  period: string;
+  rawAchievements: string[];
+  xyzBullets: Array<{ text: string; needs_metric: boolean }>;
+}> {
+  if (!Array.isArray(textExp) || textExp.length === 0) return aiExp;
+  if (!Array.isArray(aiExp) || aiExp.length === 0) return textExp;
+
+  const result = [...aiExp];
+
+  for (const tExp of textExp) {
+    const tNorm = (tExp.role + ' ' + tExp.company).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const existingIndex = result.findIndex((item) => {
+      const itemNorm = (item.role + ' ' + item.company).toLowerCase().replace(/[^a-z0-9]/g, '');
+      return (
+        itemNorm.includes(tNorm) ||
+        tNorm.includes(itemNorm) ||
+        (item.role.toLowerCase() === tExp.role.toLowerCase() && item.company.toLowerCase() === tExp.company.toLowerCase())
+      );
+    });
+
+    if (existingIndex === -1) {
+      // Cargo no extraído por la IA: agregar íntegramente
+      result.push(tExp);
+    } else {
+      // Si la IA extrajo el cargo pero omitió viñetas originales
+      const existing = result[existingIndex];
+      const existingCount = (existing.xyzBullets || []).length;
+      const textCount = (tExp.xyzBullets || []).length;
+
+      if (textCount > existingCount) {
+        result[existingIndex] = {
+          ...existing,
+          rawAchievements:
+            tExp.rawAchievements && tExp.rawAchievements.length > (existing.rawAchievements || []).length
+              ? tExp.rawAchievements
+              : existing.rawAchievements,
+          xyzBullets: tExp.xyzBullets,
+        };
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Fusiona las referencias laborales para garantizar que no se omitan contactos.
+ */
+function mergeReferences(
+  aiRefs: Array<{ name: string; role: string; company: string; contact?: string | undefined }>,
+  textRefs: Array<{ name: string; role: string; company: string; contact?: string | undefined }>
+): Array<{ name: string; role: string; company: string; contact?: string }> {
+  if (!Array.isArray(textRefs) || textRefs.length === 0) return aiRefs;
+  if (!Array.isArray(aiRefs) || aiRefs.length === 0) {
+    return textRefs.map((r) => ({ ...r, contact: r.contact || '' }));
+  }
+
+  const result = [...aiRefs];
+  for (const tRef of textRefs) {
+    const tNorm = tRef.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const exists = result.some((item) => {
+      const itemNorm = item.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return itemNorm.includes(tNorm) || tNorm.includes(itemNorm);
+    });
+    if (!exists) {
+      result.push({
+        name: tRef.name,
+        role: tRef.role,
+        company: tRef.company,
+        contact: tRef.contact || '',
+      });
+    }
+  }
   return result;
 }

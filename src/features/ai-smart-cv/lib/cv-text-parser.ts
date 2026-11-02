@@ -424,17 +424,56 @@ export function parseCvTextToStructuredData(
         // Separar componentes (Cargo · Empresa / Institución - Fechas)
         const parts = strippedLine.split(/[|–—·•]|\s[-–—]\s/).map((p) => p.trim()).filter(Boolean);
 
+        const isInstitutionalWord = (str: string): boolean => {
+          const l = str.toLowerCase();
+          return (
+            l.includes('hospital') ||
+            l.includes('clínica') ||
+            l.includes('clinica') ||
+            l.includes('sodexo') ||
+            l.includes('universidad') ||
+            l.includes('empresa') ||
+            l.includes('instituto') ||
+            l.includes('cesfam') ||
+            l.includes('escuela') ||
+            l.includes('colegio') ||
+            l.includes('liceo') ||
+            l.includes('ministerial') ||
+            l.includes('ministerio') ||
+            l.includes('seremi') ||
+            l.includes('gendarmería') ||
+            l.includes('complejo') ||
+            l.includes('fundación') ||
+            l.includes('fundacion') ||
+            l.includes('corporación') ||
+            l.includes('corporacion')
+          );
+        };
+
         parts.forEach((p) => {
           if (datePattern.test(p)) {
             period = period ? `${period} - ${p}` : p;
+          } else if (isInstitutionalWord(p)) {
+            inlineCompany = inlineCompany && !isInstitutionalWord(inlineCompany)
+              ? p
+              : inlineCompany
+                ? `${inlineCompany} · ${p}`
+                : p;
           } else if (!role && looksLikeRoleHeader(p)) {
             role = p;
-          } else if (!inlineCompany && (p.toLowerCase().includes('hospital') || p.toLowerCase().includes('clínica') || p.toLowerCase().includes('sodexo') || p.toLowerCase().includes('universidad') || p.toLowerCase().includes('programa') || p.toLowerCase().includes('empresa') || p.toLowerCase().includes('instituto') || p.toLowerCase().includes('cesfam') || p.toLowerCase().includes('escuela') || p.toLowerCase().includes('ministerial') || p.toLowerCase().includes('seremi'))) {
-            inlineCompany = p;
           } else if (!role) {
             role = p;
           } else if (!inlineCompany) {
-            inlineCompany = p;
+            // Si el rol ya existe pero este part parece un área/especialidad (ej: PIE, Convivencia Escolar)
+            if (p.length < 55 && (p.toLowerCase().includes('pie') || p.toLowerCase().includes('convivencia') || p.toLowerCase().includes('clínic') || p.toLowerCase().includes('social') || p.toLowerCase().includes('comunitari') || p.toLowerCase().includes('infantil') || p.toLowerCase().includes('laboral') || p.toLowerCase().includes('reemplazante') || p.toLowerCase().includes('área'))) {
+              role = `${role} – ${p}`;
+            } else {
+              inlineCompany = p;
+            }
+          } else {
+            if (p.length < 55) {
+              role = `${role} – ${p}`;
+            }
           }
         });
 

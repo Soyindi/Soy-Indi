@@ -574,5 +574,11 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
    - Queda estrictamente prohibido propagar o reutilizar el número de un referente a las demás referencias por búsquedas retrospectivas amplias (`i - 2`).
 6. **Enriquecimiento de Fechas Fidedignas desde Certificados de Respaldo (`enrichEducationDatesFromCertificates`)**:
    - Cuando un CV declare cursos o capacitaciones sin año en la viñeta y el usuario haya adjuntado diplomas o certificados escaneados en páginas posteriores, el sistema debe consultar los certificados de respaldo para extraer el año real de completación (ej. SENDA 2019/2020, OPS 2020, EBG 2021, SENCE 2023), erradicando años alucinados por defecto (ej. 2024 en todos los cursos).
+7. **Salvaguarda Defensiva de Experiencias Laborales y Prevención de Colapso A4 (`mergeExperiences`, `mergeReferences`, `maxTokens: 6000`)**:
+   - Para prevenir que modelos LLM resuman agresivamente la trayectoria laboral a 1 solo cargo para reducir tokens, el sistema implementa `mergeExperiences` y `mergeReferences`. Si la IA devuelve menos cargos que el parser heurístico determinista, fusiona e inyecta todos los cargos y viñetas faltantes.
+   - Esto previene el colapso accidental a 1 sola página A4 (`needsTwoPages = false`), garantizando que la Hoja 2 A4 permanezca siempre activa para desplegar las Referencias Laborales y la Educación completa cuando el candidato posee múltiples cargos y certificaciones.
+8. **Desacoplamiento Jerárquico de Instituciones y Especialidades en Roles Compuestos (`isInstitutionalWord`)**:
+   - En líneas con múltiples segmentos (ej: `Psicólogo – PIE y Convivencia Escolar · Escuela Almirante...`), los términos institucionales (`escuela`, `hospital`, `cesfam`, `sodexo`, `complejo`, etc.) tienen precedencia absoluta como entidad/empresa (`inlineCompany`).
+   - Los segmentos intermedios de área o especialidad (ej: `PIE`, `Convivencia Escolar`, `Reinserción`) se concatenan al cargo profesional (`role = Psicólogo – PIE y Convivencia Escolar`), evitando que programas internos desplacen el nombre de la institución real.
 
 

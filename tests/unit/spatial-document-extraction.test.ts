@@ -317,5 +317,49 @@ Realizado en modalidad de formación a distancia e-learning. Tuvo una duración 
       expect(result.references.find((r) => r.name.includes('Claudia'))?.contact).toContain('7387 7180');
       expect(result.references.find((r) => r.name.includes('Carlos'))?.contact).toContain('8933 0333');
     });
+
+    it('debe fusionar defensivamente todas las experiencias si la IA colapsa en un solo cargo', async () => {
+      const { parseCvTextWithAiCascade } = await import('@/features/ai-smart-cv/lib/multimodal-parser');
+      const cvTextConMultiplesCargos = `
+Matías Ricardo Riquelme Cárdenas
+Psicólogo Clínico
+psriquelme.m@gmail.com · +56 9 2372 6707
+
+EXPERIENCIA PROFESIONAL
+Psicólogo de Reinserción Social · Complejo Penitenciario Biobío
+Dic. 2021 – Nov. 2024
+● Evaluación psico-criminológica y redacción de informes técnicos.
+● Diseño y aplicación del Modelo RNR.
+
+Psicólogo (Reemplazante) · Hospital Clínico de Magallanes
+Ene. 2025 – Mar. 2025
+● Apoyo psicológico a pacientes crónicos y terminales.
+
+Psicólogo – PIE y Convivencia Escolar · Escuela Almirante Jorge Montt Álvarez
+Mar. 2021 – Dic. 2022
+● Evaluación y seguimiento de estudiantes con NEE.
+
+EDUCACIÓN
+Título de Psicólogo · Universidad de Magallanes (2018)
+● Diplomado en Psicodiagnóstico Laboral · Grupo ASCS do Agile (2019)
+
+REFERENCIAS PROFESIONALES
+Carlos Domínguez Parra — Jefe de Reinserción · Sodexo · +56 9 8933 0333
+Marisol Cárcamo — Coordinadora · Sodexo · +56 9 7467 7104
+`;
+
+      const result = await parseCvTextWithAiCascade(cvTextConMultiplesCargos, 'cv_test.pdf');
+
+      // Debe preservar los 3 cargos de experiencia laboral
+      expect(result.experience.length).toBeGreaterThanOrEqual(3);
+      expect(result.experience.some((e) => e.role.includes('Reinserción'))).toBe(true);
+      expect(result.experience.some((e) => e.role.includes('Hospital') || e.company.includes('Hospital') || e.role.includes('Reemplazante'))).toBe(true);
+      expect(result.experience.some((e) => e.role.includes('PIE') || e.company.includes('Escuela'))).toBe(true);
+
+      // Debe preservar las 2 referencias con números distintos
+      expect(result.references.length).toBe(2);
+      expect(result.references[0].contact).toContain('8933 0333');
+      expect(result.references[1].contact).toContain('7467 7104');
+    });
   });
 });
