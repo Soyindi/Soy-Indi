@@ -73,7 +73,62 @@ export async function callNvidiaNimChat(
       'deepseek-ai/deepseek-r1',
     ].filter(Boolean) as string[];
 
-    // 1. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 200ms con Llama 3.3 70B Versatile)
+    // 1. Google Gemini (Tier Free Primario / Respaldo Masivo con Ventana de 1M Tokens)
+    // Modelo verificado activo: gemini-2.5-flash / gemini-2.0-flash
+    if (geminiApiKey && (await isProviderAvailableAsync('gemini'))) {
+      const geminiModels = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+      for (const gemModel of geminiModels) {
+        try {
+          const systemMsg = sanitizedMessages.find((m) => m.role === 'system')?.content || '';
+          const userMsgs = sanitizedMessages.filter((m) => m.role !== 'system');
+          const combinedPrompt = systemMsg
+            ? `${systemMsg}\n\n${userMsgs.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`
+            : userMsgs.map((m) => m.content).join('\n\n');
+
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${gemModel}:generateContent?key=${geminiApiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              signal: AbortSignal.timeout(options.maxTokens && options.maxTokens > 1500 ? 18000 : 8000),
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: combinedPrompt }] }],
+                generationConfig: {
+                  temperature: options.temperature ?? 0.2,
+                  maxOutputTokens: options.maxTokens ?? 3000,
+                  responseMimeType: options.responseFormat?.type === 'json_object' ? 'application/json' : undefined,
+                },
+              }),
+            }
+          );
+
+          if (geminiRes.ok) {
+            const geminiData = await geminiRes.json();
+            const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (geminiText) {
+              recordProviderSuccess('gemini');
+              setCachedResponse(requestKey, geminiText, gemModel);
+              return {
+                success: true,
+                content: geminiText,
+                modelUsed: gemModel,
+              };
+            }
+          } else {
+            const errBody = await geminiRes.text();
+            console.warn(`[Gemini Warning] Status ${geminiRes.status} en ${gemModel}:`, errBody.slice(0, 200));
+            if (geminiRes.status === 429 || geminiRes.status >= 500) {
+              recordProviderFailure('gemini');
+              break;
+            }
+          }
+        } catch (geminiErr: any) {
+          console.warn(`[Gemini Failover Warning] ${gemModel}:`, geminiErr?.message);
+        }
+      }
+    }
+
+    // 2. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 200ms con Llama 3.3 70B Versatile)
     // Protegido por Circuit Breaker: si Groq está saturado (429/500), se salta instantáneamente a NVIDIA
     if (groqApiKey && (await isProviderAvailableAsync('groq'))) {
       const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
@@ -85,7 +140,7 @@ export async function callNvidiaNimChat(
               Authorization: `Bearer ${groqApiKey}`,
               'Content-Type': 'application/json',
             },
-            signal: AbortSignal.timeout(6000),
+            signal: AbortSignal.timeout(8000),
             body: JSON.stringify({
               model: groqModel,
               messages: sanitizedMessages,
@@ -121,7 +176,7 @@ export async function callNvidiaNimChat(
       }
     }
 
-    // 2. NVIDIA NIM Frontier Models (Fallback activo o cuando no se dispone de Groq)
+    // 3. NVIDIA NIM Frontier Models (Fallback activo o cuando no se dispone de Groq/Gemini)
     if (nvidiaApiKey && (await isProviderAvailableAsync('nvidia'))) {
       for (const targetModel of candidateModels) {
         try {

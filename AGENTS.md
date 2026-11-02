@@ -490,3 +490,15 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
    - Cada viñeta laboral debe computar su peso vertical únicamente en función de las líneas de texto reales (`Math.ceil(length / 118) * 1.0 + 0.25`). Queda prohibido sumar multiplicadores rígidos por viñeta sobre conteos por caracteres (`bulletsCount * 1.3 + Math.ceil(length / 90)`), lo que distorsionaba el peso en más de un 60%.
 3. **Distribución Armónica Determinista (`calculateCvPageDistribution`)**:
    - La partición de experiencias entre Hoja 1 y Hoja 2 debe procurar una ocupación visual equilibrada ($\ge 75\%$ en la Hoja 1), evitando que un solo cargo ocupe toda la primera página y dejando grandes vacíos blancos verticales. Hoja 2 solo se habilita cuando la suma real de secciones sobrepasa el umbral físico del documento.
+
+---
+
+### SOP-131: Calidad Editorial de IA, Anti-Alucinaciones & Grounding Guard en Smart CV
+1. **Prohibición Estricta de Plantillas Falsas en Fallback**:
+   - Queda terminantemente prohibido generar sugerencias de plantilla sintética repetitivas (como *"Implementé mejores prácticas de visión estratégica..."*) haciéndolas pasar por respuestas de IA. Si la red no responde, el sistema debe entregar saneamiento veraz preservando los hechos del usuario.
+2. **Pre-Route Ponderado por Rol (`evaluateCvPreRouteStrategy`)**:
+   - El título o cargo explícito tiene un peso 5x sobre las palabras del cuerpo. Profesionales del área clínica, pedagógica, técnica o legal jamás deben ser clasificados como C-Level ni recibir terminología financiera ("EBITDA") por el mero uso de palabras comunes como "liderazgo".
+3. **Grounding Guard & Verificación Numérica (`cv-quality-engine.ts`)**:
+   - Toda sugerencia debe validarse con `verifyBulletGrounding`. Queda estrictamente prohibido que la IA invente porcentajes, volúmenes de ventas o cifras cuantitativas que el usuario no haya aportado explícitamente.
+4. **Cascada de Inferencia de Alta Concurrencia**:
+   - El enrutador de inferencia en `nvidia-nim.ts` debe admitir Google Gemini 2.5 Flash como proveedor primario de alta capacidad junto con Groq LPU y NVIDIA NIM, garantizando disponibilidad y tolerancia a fallos ante picos de tráfico masivo.

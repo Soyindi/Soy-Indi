@@ -14,10 +14,12 @@ import { MultimodalCvExtraction } from '@/entities/cv/schemas';
 import { assertSyntacticCompleteness } from '@/features/orbital-presentations/lib/presentation-auditor';
 
 export type CvCandidateArchetype = 
-  | 'executive_c_level'      // Liderazgo, EBITDA, dirección estratégica, gestión de equipos
+  | 'executive_c_level'      // Liderazgo C-Level, directores, gerentes generales
   | 'technical_specialist'    // Arquitectura de software, DevOps, analítica, ingeniería
-  | 'clinical_healthcare'     // Psicología, medicina, salud, terapias
-  | 'business_growth'         // Ventas, marketing, adquisición, operaciones
+  | 'clinical_healthcare'     // Psicología, psiquiatría, medicina, enfermería, salud clínica
+  | 'education_pedagogy'      // Docencia, educación, orientación vocacional, pedagogía
+  | 'legal_finance'           // Derecho, finanzas, contabilidad, auditoría, compliance
+  | 'business_growth'         // Ventas, marketing, adquisición, operaciones comerciales
   | 'general_professional';   // Perfil multifacético estándar
 
 export interface CvPreRouteAssessment {
@@ -29,55 +31,98 @@ export interface CvPreRouteAssessment {
 }
 
 /**
- * Pre-Route: Evalúa el texto crudo del CV en microsegundos para determinar el arquetipo
- * y ajustar los prompts del Cascade AI Router con enfoque quirúrgico.
+ * Pre-Route: Evalúa el texto del CV con ponderación estricta de rol frente al cuerpo.
+ * Previene categóricamente que profesionales de salud, educación o ingeniería sean
+ * clasificados como C-Level por incluir palabras como "liderazgo" o "gestión".
  */
-export function evaluateCvPreRouteStrategy(rawText: string): CvPreRouteAssessment {
-  const text = (rawText || '').toLowerCase();
+export function evaluateCvPreRouteStrategy(rawText: string, specificRole?: string): CvPreRouteAssessment {
+  const fullText = (rawText || '').toLowerCase();
+  const roleText = (specificRole || '').toLowerCase();
 
-  // 1. Detección de arquetipo
-  const hasTech = /\b(software|developer|frontend|backend|full\s?stack|typescript|python|react|docker|aws|sql|api|arquitectura)\b/i.test(text);
-  const hasExecutive = /\b(director|gerente|vp|head\s?of|chief|ceo|cto|cfo|liderazgo|presupuesto|ebitda|directorio)\b/i.test(text);
-  const hasHealth = /\b(psic[oó]log|m[eé]dic|terapeuta|salud|cl[ií]nic|paciente|atenci[oó]n|fonasa)\b/i.test(text);
-  const hasGrowth = /\b(marketing|ventas|sales|growth|adquisici[oó]n|roi|kpis|comercial|negocios)\b/i.test(text);
+  // Patrones jerárquicos: título/rol directo vs cuerpo del texto
+  const archetypesPatterns: Record<
+    Exclude<CvCandidateArchetype, 'general_professional'>,
+    { title: RegExp; body: RegExp; keywords: string[]; tone: string }
+  > = {
+    clinical_healthcare: {
+      title: /\b(psic[oó]log[oa]|m[eé]dic[oa]|enfermer[oa]|terapeut[oa]|kinesi[oó]log[oa]|psiquiatr[oa]|nutricionist[oa]|fonoaudi[oó]log[oa]|cl[ií]nic[oa])\b/i,
+      body: /\b(pacientes?|atenci[oó]n cl[ií]nica|diagn[oó]stico|intervenci[oó]n|salud mental|terapia|fonasa|fichas? cl[ií]nicas?|cuidados paliativos|rehabilitaci[oó]n|reincidencia|psicoeduca|rnr)\b/i,
+      keywords: ['atención clínica', 'evaluación diagnóstica', 'adherencia terapéutica', 'intervención integral', 'ética profesional'],
+      tone: 'Clínico riguroso, ético, empático y orientado a resultados en pacientes o usuarios',
+    },
+    education_pedagogy: {
+      title: /\b(profesor[a]?|docente|educador[a]?|pedagog[oa]|orientador[a]?|tutor[a]?|maestr[oa])\b/i,
+      body: /\b(alumnos?|estudiantes?|aula|curr[ií]cul|aprendizaje|evaluaci[oó]n formativa|pedag[oó]gic[oa]|convivencia escolar|pie)\b/i,
+      keywords: ['diseño curricular', 'metodologías activas', 'evaluación formativa', 'convivencia escolar'],
+      tone: 'Pedagógico, formador, estructurado y enfocado en el desarrollo integral',
+    },
+    technical_specialist: {
+      title: /\b(software|developer|desarrollador[a]?|frontend|backend|full\s?stack|devops|data scientist|ingenier[oa] de datos|arquitect[oa] de software|sysadmin)\b/i,
+      body: /\b(typescript|python|react|docker|aws|sql|api|microservicios|ci\/cd|git|latencia|bases de datos|c[oó]digo|testing)\b/i,
+      keywords: ['arquitectura distribuida', 'escalabilidad', 'latencia', 'calidad de código', 'ci/cd'],
+      tone: 'Técnico de precisión, orientado a métricas de ingeniería, confiabilidad y rendimiento',
+    },
+    legal_finance: {
+      title: /\b(abogad[oa]|jur[ií]dic[oa]|auditor[a]?|contador[a]?|analista financier[oa]|oficial de cumplimiento|compliance)\b/i,
+      body: /\b(tributari[oa]|ifrs|balance|auditor[ií]a|litigios?|contratos?|normativa|riesgo financier[oa]|presupuestario)\b/i,
+      keywords: ['cumplimiento normativo', 'control interno', 'gestión de riesgo', 'análisis financiero'],
+      tone: 'Riguroso, analítico, estructurado y apegado a estándares de gobierno corporativo',
+    },
+    executive_c_level: {
+      title: /\b(director[a]? general|gerente general|vp|chief executive|ceo|cto|cfo|coo|head of|directorio|socio director)\b/i,
+      body: /\b(p&l|ebitda|presupuesto anual|gobierno corporativo|estrategia corporativa|directorio)\b/i,
+      keywords: ['visión estratégica', 'gestión de p&l', 'eficiencia operativa', 'liderazgo de equipos', 'crecimiento sostenible'],
+      tone: 'Ejecutivo estratégico, gobierno corporativo, alta dirección y métricas financieras',
+    },
+    business_growth: {
+      title: /\b(marketing|growth|ventas|sales|account executive|kam|comercial|business developer)\b/i,
+      body: /\b(adquisici[oó]n|conversisi[oó]n|pipeline|funnel|roi|kpis comerciales|clientes|prospecci[oó]n|facturaci[oó]n)\b/i,
+      keywords: ['adquisición de clientes', 'crecimiento de ingresos', 'conversión de funnel', 'roi comercial'],
+      tone: 'Comercial asertivo, orientado a metas cuantitativas y generación de demanda',
+    },
+  };
 
-  let detectedArchetype: CvCandidateArchetype = 'general_professional';
-  let focusKeywords: string[] = ['impacto', 'resultados', 'optimización'];
-  let recommendedTone = 'Profesional y estructurado con logros verificables';
+  // Ponderación de señales: Coincidencia en Rol = 5 Puntos, en Cuerpo = 1 Punto
+  let bestArchetype: CvCandidateArchetype = 'general_professional';
+  let highestScore = 0;
+  let selectedConfig = {
+    keywords: ['impacto verificable', 'eficiencia operativa', 'mejora continua'],
+    tone: 'Profesional, preciso y orientado a resultados medibles',
+  };
 
-  if (hasExecutive) {
-    detectedArchetype = 'executive_c_level';
-    focusKeywords = ['visión estratégica', 'liderazgo de equipos', 'ebitda', 'eficiencia operativa'];
-    recommendedTone = 'Ejecutivo de alto nivel, métricas de negocio y gobierno corporativo';
-  } else if (hasTech) {
-    detectedArchetype = 'technical_specialist';
-    focusKeywords = ['arquitectura distribuida', 'escalabilidad', 'latencia', 'calidad de código'];
-    recommendedTone = 'Técnico de precisión, impacto en ingeniería y rendimiento';
-  } else if (hasHealth) {
-    detectedArchetype = 'clinical_healthcare';
-    focusKeywords = ['atención clínica', 'evaluación diagnóstica', 'adherencia terapéutica', 'bienestar'];
-    recommendedTone = 'Clínico riguroso, ético y orientado al impacto en pacientes';
-  } else if (hasGrowth) {
-    detectedArchetype = 'business_growth';
-    focusKeywords = ['conversión', 'adquisición', 'retención', 'roi'];
-    recommendedTone = 'Comercial asertivo con métricas de ingresos y funnel';
+  for (const [archetype, config] of Object.entries(archetypesPatterns) as [Exclude<CvCandidateArchetype, 'general_professional'>, any][]) {
+    let score = 0;
+    if (roleText && config.title.test(roleText)) {
+      score += 5;
+    } else if (config.title.test(fullText)) {
+      score += 3;
+    }
+    if (config.body.test(fullText)) {
+      score += 1;
+    }
+
+    if (score > highestScore) {
+      highestScore = score;
+      bestArchetype = archetype;
+      selectedConfig = config;
+    }
   }
 
-  // 2. Estimación de seniority según años o menciones
-  const yearsMatches = text.match(/\b(1[0-9]|[5-9])\s*(?:años|years)\b/i);
+  // 2. Estimación de seniority según años o títulos
+  const yearsMatches = fullText.match(/\b(1[0-9]|[5-9])\s*(?:años|years)\b/i);
   let estimatedSeniority: 'entry' | 'mid' | 'senior' | 'executive' = 'mid';
-  if (hasExecutive || (yearsMatches && parseInt(yearsMatches[1], 10) >= 10)) {
+  if (bestArchetype === 'executive_c_level' || (yearsMatches && parseInt(yearsMatches[1], 10) >= 10)) {
     estimatedSeniority = 'executive';
   } else if (yearsMatches && parseInt(yearsMatches[1], 10) >= 5) {
     estimatedSeniority = 'senior';
-  } else if (/\b(junior|trainee|practicante|pasante|egresad[oa]|asistente)\b/i.test(text)) {
+  } else if (/\b(junior|trainee|practicante|pasante|egresad[oa]|asistente)\b/i.test(fullText)) {
     estimatedSeniority = 'entry';
   }
 
   return {
-    detectedArchetype,
-    recommendedTone,
-    focusKeywords,
+    detectedArchetype: bestArchetype,
+    recommendedTone: selectedConfig.tone,
+    focusKeywords: selectedConfig.keywords,
     requiresExecutiveSummary: estimatedSeniority === 'senior' || estimatedSeniority === 'executive',
     estimatedSeniority,
   };

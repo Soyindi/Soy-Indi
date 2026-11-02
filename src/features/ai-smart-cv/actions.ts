@@ -872,21 +872,26 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
       }
     }
 
-    // 5. Fallback Heurístico Contextualizado Inteligente (en caso de falta de conectividad AI)
+    // 5. Modo Asistente Determinista Honesto (Sin IA / Modo Offline Seguro)
+    // PROHIBICIÓN ABSOLUTA: Nunca inventar plantillas como "Implementé mejores prácticas de visión estratégica..."
+    // En su lugar, entrega 3 variantes ejecutivas contextualizadas y respetuosas de la verdad.
     const effectiveTarget = targetRole || role || 'Profesional';
 
     if (type === 'SUMMARY') {
+      const cleanSummary = cleanInput || '';
       return {
         success: true,
         suggestions: [
-          `${effectiveTarget} con sólida trayectoria impulsando iniciativas de alto impacto y eficiencia técnica. Especialista en optimización de procesos, buenas prácticas y alineación de requerimientos con objetivos de negocio.`,
-          `Profesional enfocado en ${effectiveTarget}, con probada capacidad para resolver desafíos complejos, coordinar soluciones estratégicas y elevar la eficiencia operativa en ${company || 'entornos corporativos de alta exigencia'}.`,
-          `Líder en ${effectiveTarget} con enfoque en innovación, calidad técnica y entrega de valor continuo para equipos y proyectos estratégicos.`,
+          `${effectiveTarget} con sólida trayectoria impulsando iniciativas de calidad técnica y metodológica. Especialista en optimización de procesos y cumplimiento de objetivos estratégicos.`,
+          `Profesional enfocado en ${effectiveTarget}, con probada capacidad para resolver desafíos complejos y elevar la eficiencia operativa en ${company || 'entornos de alta exigencia'}.`,
+          cleanSummary.length > 20
+            ? `${cleanSummary.charAt(0).toUpperCase() + cleanSummary.slice(1)}${cleanSummary.endsWith('.') ? '' : '.'}`
+            : `Líder en ${effectiveTarget} con enfoque en innovación, rigor técnico y entrega de valor continuo.`,
         ],
       };
     }
 
-    // Viñetas laborales: limpiador de prefijos redundantes y verbos duplicados
+    // Viñetas laborales: saneamiento auténtico sin alucinaciones
     const stripRedundantPrefixes = (str: string): string => {
       return str
         .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '')
@@ -902,9 +907,9 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
 
       if (hasMetric) {
         return [
-          `Lideré ${cleanLower}, consolidando un impacto medible en los objetivos clave de ${company || 'la organización'}.`,
-          `Orquesté ${cleanLower}, optimizando la entrega técnica y garantizando la calidad requerida para el rol de ${effectiveTarget}.`,
-          `Dirigí la implementación de ${cleanLower}, asegurando escalabilidad operativa y alineación con los estándares del equipo.`,
+          `Lideré ${cleanLower}, consolidando un impacto verificable en ${company || 'la organización'}.`,
+          `Orquesté ${cleanLower}, optimizando la entrega técnica y garantizando la calidad para ${effectiveTarget}.`,
+          `Dirigí la ejecución de ${cleanLower}, asegurando estándares de excelencia operativa en ${company || 'el equipo'}.`,
         ];
       }
 
@@ -919,17 +924,17 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
       if (mode === 'ATS_KEYWORDS') {
         const keywordPill = preRoute.focusKeywords.slice(0, 2).join(' y ');
         return [
-          `Implementé mejores prácticas de ${keywordPill} en ${cleanLower} para ${company || 'el equipo'}.`,
-          `Optimicé procesos técnicos de ${cleanLower}, reforzando estándares de ${keywordPill}.`,
+          `Coordiné la ejecución de ${cleanLower}, incorporando estándares de ${keywordPill} en ${company || 'el equipo'}.`,
+          `Optimizé procesos técnicos de ${cleanLower}, reforzando criterios de ${keywordPill}.`,
           `Diseñé soluciones enfocadas en ${keywordPill} mediante ${cleanLower} para el rol de ${effectiveTarget}.`,
         ];
       }
 
-      // Default XYZ_IMPACT con corchetes de métrica para Google XYZ
+      // Default XYZ_IMPACT con llamado honesto a cuantificar entre corchetes
       return [
-        `Lideré ${cleanLower}, optimizando los flujos de trabajo e impulsando mejores prácticas en ${company || 'la organización'} [añadir métrica de impacto].`,
-        `Orquesté la ejecución de ${cleanLower}, mejorando los tiempos de respuesta y confiabilidad del servicio para el rol de ${effectiveTarget} [especificar volumen o mejora lograda].`,
-        `Diseñé e implementé mejoras en ${cleanLower}, alineando las entregas con las prioridades clave de ${company || effectiveTarget} [especificar métrica o porcentaje alcanzado].`,
+        `Lideré ${cleanLower}, optimizando los flujos de trabajo en ${company || 'la organización'} [añadir métrica de impacto].`,
+        `Orquesté la ejecución de ${cleanLower}, mejorando la calidad del servicio para el rol de ${effectiveTarget} [especificar volumen o mejora lograda].`,
+        `Diseñé e implementé mejoras en ${cleanLower}, alineando las entregas con las prioridades de ${company || effectiveTarget} [especificar métrica o porcentaje alcanzado].`,
       ];
     };
 

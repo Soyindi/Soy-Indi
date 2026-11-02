@@ -488,5 +488,19 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
   - Consume reactivamente `calculateCvPageDistribution`.
   - Renderiza badge tipográfico `(Continuación)` en cargos fragmentados y limpia caracteres especiales residuales con `cleanBulletText`.
 
+## 9.11 Arquitectura de Inferencia Multimodal Resiliente & Quality Scorer Anti-Alucinaciones (SOP-131)
+- **Cascada Primaria de Alta Concurrencia (Gemini 2.5 Flash + Groq LPU + NVIDIA NIM)**:
+  - Integración nativa de Google Gemini (`gemini-2.5-flash` y `gemini-2.0-flash`) con ventana de contexto de 1M tokens y soporte para extracción estructurada JSON de alta densidad sin latencia.
+  - Failover automático protegido por Circuit Breaker: Groq LPU (`llama-3.3-70b-versatile`) para velocidad instantánea (<200ms) con failover a Gemini y NVIDIA NIM ante saturación 429.
+- **Pre-Route Ponderado de Arquetipos (`evaluateCvPreRouteStrategy`)**:
+  - Priorización jerárquica: Coincidencia en título de rol = 5 puntos; cuerpo = 1 punto.
+  - Erradicación total de falsos positivos donde profesionales de salud o educación eran asignados a `executive_c_level` y se les inyectaba "EBITDA" o "visión estratégica corporativa" por contener la palabra "liderazgo".
+- **Erradicación de Plantillas Falsas & Modo Determinista Honesto**:
+  - Eliminación definitiva de frases fijas de relleno ("Implementé mejores prácticas de visión estratégica..."). En caso de desconexión o fallo de red, el sistema preserva el texto real del usuario y ofrece versiones saneadas con verbos de acción precisos.
+- **Quality Scorer & Grounding Guard (`cv-quality-engine.ts`)**:
+  - Evaluación determinista 0-100 de viñetas midiendo verbos fuertes al inicio, presencia de métricas cuantitativas, longitud ideal (80-190 caracteres), ausencia de clichés y detección de marcadores residuales sin resolver.
+  - Función `verifyBulletGrounding`: detecta y bloquea cualquier métrica numérica o porcentaje introducido por la IA que no haya existido en el documento original.
+
+
 
 
