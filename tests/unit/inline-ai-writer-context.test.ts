@@ -147,4 +147,35 @@ Reduje costos en un 30%`;
     expect(res.suggestions).toHaveLength(3);
     expect(res.suggestions[0]).not.toContain('[añadir métrica]');
   });
+
+  it('erradica duplicaciones sintácticas ("Lideré orquesté", "Lideré coordinación") y corchetes en fallback offline', async () => {
+    const rawBullets = `Orquesté la ejecución de apoyo psicológico a pacientes con enfermedades crónicas
+Coordinación con el equipo de enfermería y trabajo social para dar continuidad
+Contención emocional en situaciones de crisis y acompañamiento en duelo anticipatorio`;
+
+    const res = await rewriteCvSectionAction({
+      text: rawBullets,
+      type: 'BULLET',
+      mode: 'XYZ_IMPACT',
+      role: 'Psicólogo (Reemplazante)',
+      company: 'Programa de Cuidados Paliativos Universales',
+      targetRole: 'Psicólogo Clínico'
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.suggestions).toHaveLength(3);
+
+    for (const variant of res.suggestions) {
+      // Cero duplicación de verbos
+      expect(variant).not.toMatch(/lider[eé]\s+orquest/i);
+      expect(variant).not.toMatch(/lider[eé]\s+coordinaci/i);
+      expect(variant).not.toMatch(/lider[eé]\s+contenci/i);
+      expect(variant).not.toMatch(/orquest[eé]\s+ejecuci/i);
+      // Cero corchetes de programación o placeholders toscos
+      expect(variant).not.toMatch(/\[(?:añadir|especificar).*?\]/i);
+      // Preserva el formato multilínea
+      const lines = variant.split('\n').filter(Boolean);
+      expect(lines).toHaveLength(3);
+    }
+  });
 });

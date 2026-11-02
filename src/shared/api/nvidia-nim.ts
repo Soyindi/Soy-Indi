@@ -77,9 +77,9 @@ export async function callNvidiaNimChat(
     ].filter(Boolean) as string[];
 
     // 1. Google Gemini (Tier Free Primario / Respaldo Masivo con Ventana de 1M Tokens)
-    // Modelos verificados con respuesta 200 OK en tiempo real: gemini-flash-latest / gemini-3.5-flash / gemini-flash-lite-latest
+    // Modelos verificados con respuesta 200 OK en tiempo real: gemini-flash-latest / gemini-2.5-flash / gemini-flash-lite-latest
     if (geminiApiKey && (await isProviderAvailableAsync('gemini'))) {
-      const geminiModels = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-flash-lite-latest', 'gemini-3-flash-preview'];
+      const geminiModels = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-flash-lite-latest', 'gemini-3-flash-preview'];
       for (const gemModel of geminiModels) {
         try {
           const systemMsg = sanitizedMessages.find((m) => m.role === 'system')?.content || '';
@@ -93,7 +93,7 @@ export async function callNvidiaNimChat(
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              signal: AbortSignal.timeout(options.maxTokens && options.maxTokens > 1500 ? 18000 : 8000),
+              signal: AbortSignal.timeout(options.maxTokens && options.maxTokens > 1500 ? 20000 : 10000),
               body: JSON.stringify({
                 contents: [{ parts: [{ text: combinedPrompt }] }],
                 generationConfig: {
@@ -131,10 +131,10 @@ export async function callNvidiaNimChat(
       }
     }
 
-    // 2. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 200ms con Llama 3.3 70B Versatile)
+    // 2. Groq LPU Ultra-Low Latency Cloud (Velocidad extrema < 350ms con modelos activos 2026)
     // Protegido por Circuit Breaker: si Groq está saturado (429/500), se salta instantáneamente a NVIDIA
     if (groqApiKey && (await isProviderAvailableAsync('groq'))) {
-      const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+      const groqModels = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b', 'llama-3.3-70b-versatile'];
       for (const groqModel of groqModels) {
         try {
           const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -143,7 +143,7 @@ export async function callNvidiaNimChat(
               Authorization: `Bearer ${groqApiKey}`,
               'Content-Type': 'application/json',
             },
-            signal: AbortSignal.timeout(8000),
+            signal: AbortSignal.timeout(options.maxTokens && options.maxTokens > 1500 ? 15000 : 10000),
             body: JSON.stringify({
               model: groqModel,
               messages: sanitizedMessages,
@@ -168,6 +168,9 @@ export async function callNvidiaNimChat(
           } else {
             const groqErr = await groqRes.text();
             console.warn(`[Groq Failover Warning] Status ${groqRes.status} en ${groqModel}:`, groqErr);
+            if (groqRes.status === 404 || groqRes.status === 410) {
+              continue; // Modelo retirado o no disponible en este tier, probar siguiente modelo del pool
+            }
             if (groqRes.status === 429 || groqRes.status >= 500) {
               recordProviderFailure('groq');
               break;
@@ -189,7 +192,7 @@ export async function callNvidiaNimChat(
               'Content-Type': 'application/json',
               Authorization: `Bearer ${nvidiaApiKey}`,
             },
-            signal: AbortSignal.timeout(5000),
+            signal: AbortSignal.timeout(options.maxTokens && options.maxTokens > 1500 ? 15000 : 10000),
             body: JSON.stringify({
               model: targetModel,
               messages: sanitizedMessages,
@@ -215,7 +218,7 @@ export async function callNvidiaNimChat(
             const errText = await response.text();
             console.warn(`[NVIDIA NIM Warning] Status ${response.status} en ${targetModel}: ${errText}`);
             if (response.status === 410 || response.status === 404) {
-              continue;
+              continue; // Probar siguiente modelo candidato
             }
             if (response.status === 429 || response.status >= 500) {
               recordProviderFailure('nvidia');
@@ -223,10 +226,10 @@ export async function callNvidiaNimChat(
             }
           }
         } catch (err: any) {
-          recordProviderFailure('nvidia');
           console.warn(`[NVIDIA NIM Warning] Error de conexión en ${targetModel}:`, err?.message);
         }
       }
+      recordProviderFailure('nvidia');
     }
 
     // 3. Failover a Google Gemini 2.0 Flash (Latencia <800ms, Context Caching & JSON Mode)

@@ -517,6 +517,17 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
 - **Normalización Universal de Saltos de Línea PEM**: `buildGoogleWalletSaveUrl` y `buildApplePassBundle` procesan las claves privadas sanitizando saltos de línea escapados (`.replace(/\\n/g, '\n')`), blindando la firma JWT RS256 de Google Wallet y PKCS#7 DER de Apple Wallet frente a variables de entorno inyectadas con formato JSON o string en Vercel.
 - **Degradación Segura & Resiliencia en Rutas Públicas**: Ante la ausencia de credenciales de Google Cloud o certificados de Apple, los endpoints `/api/wallet/google/[slug]` y `/api/wallet/apple/[slug]` responden limpiamente con guía de configuración y sin emitir errores 500, garantizando que la tarjeta pública permanezca 100% operativa.
 
+## 9.14 Resiliencia de Inferencia Activa 2026, Catálogo de Modelos LLM Vivos & Erradicación de Placeholders en CV (SOP-134)
+- **Diagnóstico y Causa Raíz de Disparidad de Calidad**:
+  - Al procesar el Cargo #1, la llamada al LLM (Gemini/Groq) tuvo éxito y generó texto ejecutivo contextual de clase mundial ("Modelo RNR", "baterías psicométricas estandarizadas").
+  - Al procesar el Cargo #2, la llamada remota al LLM falló debido a deprecación de modelos (`meta/llama-3.3-70b-instruct` en NVIDIA arrojó 410 EOL; `llama-3.3-70b-versatile` en Groq arrojó 404 Not Found) y un timeout de sólo 5 segundos en NVIDIA NIM.
+  - Al fallar los proveedores, el sistema activó silenciosamente el modo de contingencia offline determinista (`generateSingleBulletOptions`).
+  - Dicho modo contenía dos fallas de redacción: (1) `stripRedundantPrefixes` no contemplaba verbos como "orquesté", "coordinación con", o "contención", lo que provocaba concatenaciones toscas como *"Lideré orquesté la ejecución..."* y *"Lideré coordinación con..."*; (2) Inyectaba corchetes de programación visibles (`[añadir métrica de impacto]`, `[especificar volumen o mejora lograda]`), generando la percepción de valores hardcodeados o de baja calidad.
+- **Solución Arquitectónica Canónica**:
+  - **Catálogo de Modelos LLM Vivos (`src/shared/api/nvidia-nim.ts`)**: Actualización del pool de Groq a los modelos activos 2026 con respuesta sub-400ms (`openai/gpt-oss-120b`, `qwen/qwen3.8-27b`, `openai/gpt-oss-20b`). Manejo resiliente de códigos 404/410 con `continue` hacia el siguiente modelo en lugar de abortar. Timeouts aumentados a 10-15s para bloques multilínea.
+  - **Saneamiento Sintáctico sin Duplicación (`src/features/ai-smart-cv/actions.ts`)**: `stripRedundantPrefixes` ampliado con todos los verbos y formas nominales (`orquest[eé]`, `coordin[eé]`, `coordinación`, `ejecut[eé]`, `ejecución`, `contención`, `brind[eé]`, `realic[eé]`, `atend[ií]`, etc.). Cero duplicación de verbos en el fallback.
+  - **Erradicación Absoluta de Placeholders entre Corchetes**: Tanto en el prompt del LLM como en el fallback offline, se prohíben corchetes como `[añadir métrica...]`. En su defecto, se formulan cierres ejecutivos orientados a procesos, protocolos, adherencia a estándares o calidad de servicio.
+
 
 
 

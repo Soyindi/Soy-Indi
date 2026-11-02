@@ -526,3 +526,18 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
    - Previene fallos críticos de firma criptográfica (`ERR_OSSL_PEM_NO_START_LINE`) originados por el escape automático de nuevas líneas en plataformas de despliegue serverless (Vercel).
 2. **Degradación Segura & Resiliencia en Rutas Públicas (`/c/[slug]`, `/api/wallet/*`)**:
    - Si las credenciales de Service Account o certificados de Apple no se encuentran configurados, los endpoints deben responder con estado claro de degradación y sugerencias estructuradas sin romper el renderizado de la tarjeta digital ni emitir errores HTTP 500.
+
+---
+
+### SOP-134: Resiliencia de Inferencia Activa 2026, Catálogo de Modelos LLM Vivos & Erradicación de Placeholders en Fallbacks de CV
+1. **Catálogo de Modelos LLM Vivos & Tolerancia a Deprecación en Inferencia (`nvidia-nim.ts`)**:
+   - Todo pool de modelos remotos (Groq LPU, NVIDIA NIM, Gemini) debe mantenerse sincronizado con los catálogos activos en producción.
+   - En Groq LPU, se debe priorizar modelos activos (`openai/gpt-oss-120b`, `qwen/qwen3.8-27b`, `openai/gpt-oss-20b`), erradicando identificadores retirados que emitan `HTTP 404 Not Found`.
+   - Si un modelo dentro del pool de un proveedor emite `HTTP 404` o `HTTP 410`, el bucle de failover debe ejecutar `continue` hacia el siguiente modelo candidato del pool en lugar de abortar el proveedor de inmediato.
+   - Los timeouts de red deben dimensionarse holgadamente (10-15s para bloques multilínea complejos) previniendo caídas prematuras por latencia.
+2. **Saneamiento Sintáctico Completo sin Duplicación de Verbos (`stripRedundantPrefixes`)**:
+   - La limpieza de viñetas en el modo de contingencia offline debe eliminar exhaustivamente cualquier verbo en primera persona, pasado o sustantivo de acción inicial (`lider[eé]`, `orquest[eé]`, `coordin[eé]`, `coordinación (de|con)`, `ejecut[eé]`, `ejecución (de)`, `contención (emocional)?`, `brind[eé]`, `realic[eé]`, `elabor[eé]`, `atend[ií]`, etc.).
+   - Queda estrictamente prohibido que el fallback genere duplicaciones gramaticales como *"Lideré orquesté la ejecución..."* o *"Lideré coordinación con..."*.
+3. **Erradicación Absoluta de Placeholders y Corchetes de Programación (`[añadir métrica...]`)**:
+   - Tanto en el System Prompt de los modelos LLM como en el fallback offline determinista de `rewriteCvSectionAction`, queda terminantemente prohibido emitir corchetes o etiquetas de plantilla como `[añadir métrica de impacto]` o `[especificar volumen o mejora lograda]`.
+   - Cuando no existan cifras numéricas aportadas por el usuario, el motor debe formular cierres ejecutivos orientados a procesos, protocolos, adherencia a estándares o calidad de servicio, entregando un producto 100% natural, pulcro y digno de presentación corporativa.

@@ -130,7 +130,7 @@ describe('CVFormSchema & EU AI Act Guardrails', () => {
 
       expect(result.success).toBe(true);
       expect(result.content).toBe('OK Groq LPU Resiliente');
-      expect(result.modelUsed).toBe('groq/llama-3.3-70b-versatile');
+      expect(result.modelUsed).toMatch(/^groq\//);
     } finally {
       global.fetch = originalFetch;
       if (originalGroqKey !== undefined) {

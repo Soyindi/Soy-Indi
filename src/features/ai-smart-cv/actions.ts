@@ -789,8 +789,8 @@ TONO RECOMENDADO: ${preRoute.recommendedTone}
 PALABRAS CLAVE DEL SECTOR: ${preRoute.focusKeywords.join(', ')}
 
 REGLAS DE ORO OBLIGATORIAS:
-1. STRICT ZERO-HALLUCINATION: No inventes métricas específicas (como porcentajes exactos o millones) que el usuario NO haya proporcionado; si falta la cifra en una viñeta laboral, incluye un marcador elegante como "[añadir métrica de impacto]" o enfócate en el impacto metodológico real.
-2. Si es una viñeta laboral, aplica la fórmula de Google XYZ: "Logré [X], medido por [Y], mediante [Z]" usando verbos de acción fuertes en primera persona singular o pasado ("Lideré", "Diseñé", "Orquesté", "Optimicé", "Implementé").
+1. STRICT ZERO-HALLUCINATION & CERO PLACEHOLDERS: No inventes cifras numéricas no proporcionadas (como porcentajes ficticios o millones inventados). Si el usuario no entregó un número, enfoca la medición en el rigor metodológico, precisión técnica, calidad de entrega, adherencia a estándares o continuidad operativa. Queda estrictamente PROHIBIDO usar corchetes o marcadores artificiales como "[añadir métrica...]" o "[especificar...]".
+2. Si es una viñeta laboral, aplica la fórmula de Google XYZ: "Logré [X], medido por [Y], mediante [Z]" usando verbos de acción fuertes en primera persona singular o pasado ("Lideré", "Diseñé", "Orquesté", "Optimicé", "Implementé", "Coordiné", "Ejecuté").
 3. Mantén estricta coherencia con el contexto provisto (${contextSummary || 'Perfil Profesional'}).
 4. ${
       isMultiBullet
@@ -930,7 +930,8 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
       return str
         .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '')
         .replace(/^(?:responsable de|encargad[oa] de|a cargo de|particip[eé] en|ayud[eé] en|colabor[eé] con)\s+/i, '')
-        .replace(/^(?:lider[eé]|diseñ[eé]|desarroll[eé]|optimiz[eé]|coordin[eé]|gestion[eé]|implement[eé]|arquitect[eé]|dirig[ií]|cre[eé])\s+/i, '')
+        .replace(/^(?:lider[eé]|diseñ[eé]|desarroll[eé]|optimiz[eé]|coordin[eé]|coordinaci[oó]n (?:de|con)?|orquest[eé]|orquestaci[oó]n (?:de)?|ejecut[eé]|ejecuci[oó]n (?:de)?|gestion[eé]|gesti[oó]n (?:de)?|implement[eé]|implementaci[oó]n (?:de)?|dirig[ií]|direcci[oó]n (?:de)?|supervis[eé]|supervisi[oó]n (?:de)?|evalu[eé]|evaluaci[oó]n (?:de)?|brind[eé]|realic[eé]|realizaci[oó]n (?:de)?|elabor[eé]|elaboraci[oó]n (?:de)?|atend[ií]|atenci[oó]n (?:de|a)?|facilit[eé]|apoy[eé]|apoyo (?:a|en|de)?|acompañ[eé]|acompañamiento (?:en|de)?|contenci[oó]n (?:emocional)? (?:en|de)?|participaci[oó]n en|administr[eé]|administraci[oó]n (?:de)?|arquitect[eé]|cre[eé]|creaci[oó]n (?:de)?)\s+/i, '')
+        .replace(/^de\s+/i, '')
         .trim();
     };
 
@@ -941,7 +942,7 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
 
       if (hasMetric) {
         return [
-          `Lideré ${cleanLower}, consolidando un impacto verificable en ${fallbackOrg}.`,
+          `Lideré ${cleanLower}, consolidando un impacto verificable y trazabilidad en ${fallbackOrg}.`,
           `Orquesté ${cleanLower}, optimizando la entrega técnica y garantizando la calidad como ${fallbackRole}.`,
           `Dirigí la ejecución de ${cleanLower}, asegurando estándares de excelencia operativa en ${fallbackOrg}.`,
         ];
@@ -949,9 +950,9 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
 
       if (mode === 'EXECUTIVE') {
         return [
-          `Dirigí estratégicamente ${cleanLower}, optimizando flujos de trabajo en ${fallbackOrg}.`,
-          `Lideré la coordinación de ${cleanLower}, garantizando alineación con las metas de ${fallbackRole}.`,
-          `Supervisé la ejecución técnica de ${cleanLower}, elevando la eficiencia operativa en ${fallbackOrg}.`,
+          `Dirigí estratégicamente ${cleanLower}, optimizando flujos de trabajo e impulsando la continuidad operativa en ${fallbackOrg}.`,
+          `Lideré la coordinación integral de ${cleanLower}, garantizando alineación con las metas estratégicas de ${fallbackRole}.`,
+          `Supervisé la ejecución técnica de ${cleanLower}, elevando la eficiencia y los estándares de calidad en ${fallbackOrg}.`,
         ];
       }
 
@@ -964,11 +965,11 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
         ];
       }
 
-      // Default XYZ_IMPACT con llamado honesto a cuantificar entre corchetes
+      // Default XYZ_IMPACT con redacción pulcra de clase mundial (cero corchetes ni texto truncado)
       return [
-        `Lideré ${cleanLower}, optimizando los procesos en ${fallbackOrg} [añadir métrica de impacto].`,
-        `Orquesté la ejecución de ${cleanLower}, mejorando los resultados como ${fallbackRole} [especificar volumen o mejora lograda].`,
-        `Diseñé e implementé mejoras en ${cleanLower}, alineando las entregas con las prioridades de ${fallbackOrg} [especificar métrica o porcentaje alcanzado].`,
+        `Lideré ${cleanLower}, optimizando los procesos y protocolos de atención en ${fallbackOrg}.`,
+        `Orquesté la ejecución de ${cleanLower}, mejorando la efectividad del servicio y la entrega de resultados como ${fallbackRole}.`,
+        `Diseñé e implementé mejoras continuas en ${cleanLower}, asegurando el cumplimiento riguroso de estándares en ${fallbackOrg}.`,
       ];
     };
 

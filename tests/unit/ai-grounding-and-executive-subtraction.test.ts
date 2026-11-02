@@ -57,8 +57,10 @@ describe('AI Architecture, Strict Grounding & Executive Subtraction (tests/unit)
       for (const sug of res.suggestions) {
         expect(sug).not.toContain('35%');
         expect(sug).not.toContain('90%');
-        // Debe usar llamados claros a cuantificar entre corchetes
-        expect(sug).toMatch(/\[.*(?:métrica|impacto|volumen|mejora).*\]/i);
+        // Erradicación absoluta de corchetes de programación o marcadores toscos
+        expect(sug).not.toMatch(/\[.*(?:métrica|impacto|volumen|mejora).*\]/i);
+        // Debe generar formulaciones orientadas a procesos, protocolos o calidad
+        expect(sug).toMatch(/(?:optimizando|asegurando|mejorando|procesos|estándares|protocolos)/i);
       }
     });
 
