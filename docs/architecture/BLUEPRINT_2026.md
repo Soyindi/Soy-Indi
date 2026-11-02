@@ -513,6 +513,10 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
   - **Prioridad de Cargo en Fallback**: Para viñetas, `fallbackRole = role || targetRole || 'el puesto'` y `fallbackOrg = company || 'la organización'`, garantizando coherencia sin cruce de puestos.
   - **Bypass de Caché (`bypassCache: true`) & Refresco en UI (`InlineAiWriter.tsx`)**: Botón de regeneración que permite solicitar variantes frescas a la IA sin bloqueo de caché. Claves de React unívocas en `SmartCvBuilder.tsx` (`writer-single-${idx}-${bIdx}-${exp.company}-${exp.role}`) para remontaje aislado por experiencia.
 
+## 9.13 Normalización Criptográfica en Billeteras Digitales (Google Wallet & Apple PassKit) (SOP-133)
+- **Normalización Universal de Saltos de Línea PEM**: `buildGoogleWalletSaveUrl` y `buildApplePassBundle` procesan las claves privadas sanitizando saltos de línea escapados (`.replace(/\\n/g, '\n')`), blindando la firma JWT RS256 de Google Wallet y PKCS#7 DER de Apple Wallet frente a variables de entorno inyectadas con formato JSON o string en Vercel.
+- **Degradación Segura & Resiliencia en Rutas Públicas**: Ante la ausencia de credenciales de Google Cloud o certificados de Apple, los endpoints `/api/wallet/google/[slug]` y `/api/wallet/apple/[slug]` responden limpiamente con guía de configuración y sin emitir errores 500, garantizando que la tarjeta pública permanezca 100% operativa.
+
 
 
 

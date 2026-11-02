@@ -149,6 +149,14 @@ export function buildGoogleWalletSaveUrl(input: GoogleWalletInput): GoogleWallet
     }
   }
 
+  // Normalizar saltos de línea en la clave privada para variables de entorno de Vercel/Node
+  if (privateKey) {
+    privateKey = privateKey.replace(/\\n/g, '\n');
+  }
+  if (clientEmail) {
+    clientEmail = clientEmail.trim();
+  }
+
   // Si no contamos con credenciales oficiales de Google Cloud
   if (!issuerId || !clientEmail || !privateKey) {
     return {

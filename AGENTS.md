@@ -517,3 +517,12 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
    - En el modo offline determinista para viñetas laborales, el cargo debe resolverse prioritariamente como `role || targetRole || 'el puesto'`, reservando `targetRole` (rol objetivo global del CV) exclusivamente para el resumen profesional (`type === 'SUMMARY'`).
 5. **Capacidad de Regeneración Fresca (`bypassCache: true`)**:
    - El copiloto `InlineAiWriter` y el backend deben admitir el flag `bypassCache` para que el botón de regeneración o reintento obtenga variantes frescas e inmediatas del modelo, superando la micro-caché sin fricción.
+
+---
+
+### SOP-133: Normalización y Resiliencia Criptográfica en Billeteras Digitales (Google Wallet & Apple PassKit)
+1. **Normalización Universal de Saltos de Línea PEM (`\n`)**:
+   - Toda clave privada RSA utilizada para firmar pases digitales (`GOOGLE_WALLET_PRIVATE_KEY`, `GOOGLE_WALLET_SERVICE_ACCOUNT_KEY`, `APPLE_PASS_KEY_PEM`) debe normalizarse obligatoriamente mediante `.replace(/\\n/g, '\n')`.
+   - Previene fallos críticos de firma criptográfica (`ERR_OSSL_PEM_NO_START_LINE`) originados por el escape automático de nuevas líneas en plataformas de despliegue serverless (Vercel).
+2. **Degradación Segura & Resiliencia en Rutas Públicas (`/c/[slug]`, `/api/wallet/*`)**:
+   - Si las credenciales de Service Account o certificados de Apple no se encuentran configurados, los endpoints deben responder con estado claro de degradación y sugerencias estructuradas sin romper el renderizado de la tarjeta digital ni emitir errores HTTP 500.

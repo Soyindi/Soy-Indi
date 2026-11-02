@@ -226,9 +226,9 @@ export async function buildApplePassBundle(input: ApplePassInput): Promise<Apple
 
     if (isApplePassSigningConfigured()) {
       try {
-        const certPem = process.env.APPLE_PASS_CERT_PEM;
-        const keyPem = process.env.APPLE_PASS_KEY_PEM;
-        const wwdrPem = process.env.APPLE_WWDR_CERT_PEM;
+        const certPem = process.env.APPLE_PASS_CERT_PEM?.replace(/\\n/g, '\n');
+        const keyPem = process.env.APPLE_PASS_KEY_PEM?.replace(/\\n/g, '\n');
+        const wwdrPem = process.env.APPLE_WWDR_CERT_PEM?.replace(/\\n/g, '\n');
 
         if (certPem && keyPem) {
           signatureBuf = createPkcs7Signature(manifestBuf, certPem, keyPem, wwdrPem);
