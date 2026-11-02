@@ -16,7 +16,7 @@
 
 export interface FileSignatureValidationResult {
   valid: boolean;
-  detectedType: 'pdf' | 'png' | 'jpeg' | 'webp' | 'plain_text' | 'executable' | 'unknown';
+  detectedType: 'pdf' | 'png' | 'jpeg' | 'webp' | 'docx' | 'plain_text' | 'executable' | 'unknown';
   mimeType: string;
   error?: string;
 }
@@ -110,6 +110,17 @@ export function validateFileSignature(
       detectedType: 'png',
       mimeType: 'image/png',
     };
+  }
+
+  // 1.3b Detección de Microsoft Word (.docx ZIP container PK\x03\x04)
+  if (bytes[0] === 0x50 && bytes[1] === 0x4B && bytes[2] === 0x03 && bytes[3] === 0x04) {
+    if (fileName.toLowerCase().endsWith('.docx') || claimedMimeType.includes('wordprocessingml')) {
+      return {
+        valid: true,
+        detectedType: 'docx',
+        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      };
+    }
   }
 
   if (matchesBytes(bytes, MAGIC_BYTES.JPEG)) {

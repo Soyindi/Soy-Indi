@@ -60,14 +60,17 @@ export async function extractSpatialTextFromPdf(uint8: Uint8Array): Promise<stri
       }
 
       // Analizar si la página presenta una estructura de 2 columnas
-      // Criterio: Elementos distribuidos claramente con una brecha o separación en el tercio central
+      // Criterio robusto: Debe haber separación en el tercio central Y elementos en ambas columnas
+      // CUIDADO: En CVs de 1 columna, líneas anchas que cruzan el canal central NO deben activar falsamente el modo
       const midpoint = pageWidth * 0.45;
       const leftColItems = items.filter((it) => it.x < midpoint);
       const rightColItems = items.filter((it) => it.x >= midpoint);
 
-      // Si ambas partes tienen un volumen representativo de texto (> 15% del total en cada una)
-      // y hay elementos con Y superpuestas (es decir, ocurren a la misma altura), estamos ante 2 columnas
+      // Contar líneas que cruzan activamente el centro (ancho horizontal amplio que cubre de izquierda a derecha)
+      const crossingItems = items.filter((it) => it.x < pageWidth * 0.35 && (it.x + it.width) > pageWidth * 0.55);
+
       const isTwoColumn =
+        crossingItems.length < items.length * 0.10 &&
         leftColItems.length > items.length * 0.15 &&
         rightColItems.length > items.length * 0.15;
 

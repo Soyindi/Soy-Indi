@@ -82,13 +82,19 @@ export const cvContentSchema = z.object({
   references: z.array(cvReferenceSchema).optional().default([]),
   credentials: z.array(verifiedCredentialSchema).optional().default([]),
   // Enlaces Profesionales Modernos
-  linkedinUrl: z.string().optional(),
-  websiteUrl: z.string().optional(),
-  indiCardSlug: z.string().optional(),
-  // Firma Digital Ejecutiva
-  signatureUrl: z.string().optional(),
+  linkedinUrl: z.string().max(255).optional(),
+  websiteUrl: z.string().max(255).optional(),
+  indiCardSlug: z.string().max(100).optional(),
+  // Firma Digital Ejecutiva (Zero-Binary Persistence: data URL <= 110KB)
+  signatureUrl: z
+    .string()
+    .max(120000, 'La firma no debe exceder 100KB en base64')
+    .optional(),
   signatureType: z.enum(['DRAWN', 'UPLOADED', 'TYPOGRAPHIC', 'NONE']).optional().default('NONE'),
   signatureDate: z.string().optional(),
+  // Controles de Privacidad Pública (Ley N° 21.719)
+  showRutOnPublic: z.boolean().default(false).optional(),
+  showReferenceContactsOnPublic: z.boolean().default(false).optional(),
 });
 
 export type CVContent = z.infer<typeof cvContentSchema>;
@@ -328,5 +334,31 @@ export const cvSlugLookupSchema = z.object({
     .min(1, 'El enlace personalizado (slug) es requerido')
     .max(80, 'El enlace personalizado es demasiado largo'),
 });
+
+/**
+ * Sanitiza los datos de un CV para su despliegue público en la web (/cv/[slug]).
+ * Aplica el principio de minimización de datos (Ley N° 21.719 de Protección de Datos Personales, Chile):
+ * - Oculta el RUT a menos que showRutOnPublic === true
+ * - Ofusca los teléfonos/correos de las referencias laborales de terceros a menos que showReferenceContactsOnPublic === true
+ */
+export function sanitizeCvForPublicView(cvData: CVFormValues): CVFormValues {
+  const content = { ...cvData.content };
+
+  if (!content.showRutOnPublic && content.rut) {
+    content.rut = undefined;
+  }
+
+  if (!content.showReferenceContactsOnPublic && content.references && content.references.length > 0) {
+    content.references = content.references.map((ref) => ({
+      ...ref,
+      contact: ref.contact && ref.contact.trim().length > 0 ? '[Disponible a solicitud]' : '',
+    }));
+  }
+
+  return {
+    ...cvData,
+    content,
+  };
+}
 
 

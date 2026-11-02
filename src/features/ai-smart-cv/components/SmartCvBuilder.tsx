@@ -112,101 +112,33 @@ export function SmartCvBuilder({
     suggestions: [],
   });
 
-  const resolvedDefaultFullName = initialData?.content?.fullName ?? defaultUserName ?? 'Matías Riquelme';
-  const resolvedDefaultEmail = initialData?.content?.email ?? defaultUserEmail ?? 'matias@indi.bio';
-  const isCustomUserWithoutSavedCv =
-    !initialData &&
-    Boolean(
-      (defaultUserName && !defaultUserName.toLowerCase().includes('matías riquelme') && !defaultUserName.toLowerCase().includes('matias riquelme')) ||
-      (defaultUserEmail && defaultUserEmail !== 'matias@indi.bio')
-    );
+  const resolvedDefaultFullName = initialData?.content?.fullName ?? defaultUserName ?? '';
+  const resolvedDefaultEmail = initialData?.content?.email ?? defaultUserEmail ?? '';
+  const isCustomUserWithoutSavedCv = !initialData;
 
   const [formData, setFormData] = useState<CVFormValues>(() => ({
-    title: initialData?.title || (isCustomUserWithoutSavedCv ? `CV de ${resolvedDefaultFullName}` : 'CV Ejecutivo 2026'),
-    targetRole: initialData?.targetRole || 'Senior Full Stack Engineer & Software Architect',
-    slug: initialData?.slug || generateCvSlug(resolvedDefaultFullName, false),
+    title: initialData?.title || (resolvedDefaultFullName ? `CV de ${resolvedDefaultFullName}` : 'CV Profesional 2026'),
+    targetRole: initialData?.targetRole || 'Profesional Especialista',
+    slug: initialData?.slug || (resolvedDefaultFullName ? generateCvSlug(resolvedDefaultFullName, false) : 'mi-curriculum-profesional'),
     isPublic: initialData?.isPublic ?? true,
     templateId: initialData?.templateId || 'executive-modern',
     content: {
       fullName: resolvedDefaultFullName,
       email: resolvedDefaultEmail,
-      phone: initialData?.content?.phone ?? (isCustomUserWithoutSavedCv ? '' : '+56 9 8765 4321'),
-      location: initialData?.content?.location ?? 'Santiago / Remoto Global',
-      rut: initialData?.content?.rut ?? (isCustomUserWithoutSavedCv ? '' : '18.492.041-K'),
-      linkedinUrl: initialData?.content?.linkedinUrl ?? (isCustomUserWithoutSavedCv ? '' : 'linkedin.com/in/matias-riquelme'),
-      websiteUrl: initialData?.content?.websiteUrl ?? (isCustomUserWithoutSavedCv ? '' : 'github.com/matiquelmec'),
+      phone: initialData?.content?.phone ?? '',
+      location: initialData?.content?.location ?? 'Chile',
+      rut: initialData?.content?.rut ?? '',
+      linkedinUrl: initialData?.content?.linkedinUrl ?? '',
+      websiteUrl: initialData?.content?.websiteUrl ?? '',
       signatureUrl: initialData?.content?.signatureUrl ?? '',
       signatureType: initialData?.content?.signatureType ?? 'NONE',
       signatureDate: initialData?.content?.signatureDate ?? '',
-      summary: initialData?.content?.summary ?? 'Ingeniero de Software Senior con más de 7 años de experiencia diseñando arquitecturas serverless de alta concurrencia en el Edge, microservicios distribuidos con SQLite y liderando equipos multidisciplinarios bajo metodologías ágiles.',
-      skills: initialData?.content?.skills ?? ['TypeScript', 'React 19', 'Next.js 16', 'Turso SQLite', 'Drizzle ORM', 'Tailwind CSS v4', 'Arquitectura Serverless', 'Cloudflare Workers', 'Zod', 'Docker'],
-      experience: initialData?.content?.experience ?? [
-        {
-          company: 'Indi Digital Ecosystems',
-          role: 'Lead Architect & Core Engineer',
-          period: '2024 - Presente',
-          bullets: [
-            'Diseñé la arquitectura distribuida en Turso LibSQL, reduciendo la latencia P95 a 18ms para más de 100k consultas concurrentes.',
-            'Implementé un sistema de caché de borde para perfiles públicos, alcanzando una tasa de acierto del 98% en Cloudflare.',
-          ],
-          detailedBullets: [
-            {
-              text: 'Diseñé la arquitectura distribuida en Turso LibSQL, reduciendo la latencia P95 a 18ms para más de 100k consultas concurrentes.',
-              needs_metric: false,
-            },
-            {
-              text: 'Implementé un sistema de caché de borde para perfiles públicos, alcanzando una tasa de acierto del 98% en Cloudflare.',
-              needs_metric: false,
-            },
-          ],
-        },
-        {
-          company: 'Vanguard Tech LatAm',
-          role: 'Senior Frontend Engineer',
-          period: '2021 - 2024',
-          bullets: [
-            'Lideré la migración completa a Next.js App Router, recortando el First Contentful Paint en un 42% en redes 4G.',
-            'Estandaricé la librería de componentes bajo directrices de accesibilidad WCAG y APCA para todo el equipo de producto.',
-          ],
-          detailedBullets: [
-            {
-              text: 'Lideré la migración completa a Next.js App Router, recortando el First Contentful Paint en un 42% en redes 4G.',
-              needs_metric: false,
-            },
-            {
-              text: 'Estandaricé la librería de componentes bajo directrices de accesibilidad WCAG y APCA para todo el equipo de producto.',
-              needs_metric: true,
-            },
-          ],
-        },
-      ],
-      education: initialData?.content?.education ?? [
-        {
-          degree: 'Ingeniería Civil en Computación e Informática',
-          institution: 'Universidad de Chile',
-          year: '2016 - 2021',
-          credentialType: 'DEGREE',
-        },
-      ],
-      credentials: initialData?.content?.credentials ?? [
-        {
-          id: 'cred-1',
-          issuingInstitution: 'Universidad de Chile',
-          credentialName: 'Título Profesional de Ingeniero Civil en Computación',
-          issueDate: '2021',
-          verificationCode: 'UCH-REG-849204-CL',
-          validationStatus: 'SEMANTIC_MATCH',
-          mappedEducationIndex: 0,
-        },
-      ],
-      references: initialData?.content?.references ?? [
-        {
-          name: 'Dra. Carolina Morales',
-          role: 'Directora de Operaciones Clínicas',
-          company: 'Hospital Clínico',
-          contact: '+56 9 9123 4567 • cmorales@hospital.cl',
-        },
-      ],
+      summary: initialData?.content?.summary ?? 'Profesional proactivo orientado al logro de objetivos estratégicos, mejora continua de procesos y trabajo colaborativo interdisciplinario bajo altos estándares de calidad y ética.',
+      skills: initialData?.content?.skills ?? ['Gestión de proyectos', 'Resolución de problemas', 'Trabajo en equipo', 'Comunicación asertiva'],
+      experience: initialData?.content?.experience ?? [],
+      education: initialData?.content?.education ?? [],
+      credentials: initialData?.content?.credentials ?? [],
+      references: initialData?.content?.references ?? [],
     },
   }));
 

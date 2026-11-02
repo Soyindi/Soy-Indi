@@ -152,6 +152,18 @@ export async function parseCvDocumentMultimodal(
       console.warn('[IDP] Error extrayendo texto con unpdf:', pdfErr);
     }
   } else if (
+    fileName.toLowerCase().endsWith('.docx') ||
+    mimeType.includes('wordprocessingml')
+  ) {
+    try {
+      const buffer = Buffer.from(fileBase64, 'base64');
+      const { extractTextFromDocxArrayBuffer } = await import('@/shared/lib/docxTextExtractor');
+      extractedRawText = await extractTextFromDocxArrayBuffer(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength));
+      console.log(`[IDP] Texto extraído exitosamente de DOCX ${fileName} (${extractedRawText.length} caracteres)`);
+    } catch (docxErr) {
+      console.warn('[IDP] Error extrayendo texto de DOCX:', docxErr);
+    }
+  } else if (
     mimeType.includes('text') ||
     fileName.toLowerCase().endsWith('.txt') ||
     fileName.toLowerCase().endsWith('.md')
@@ -507,66 +519,20 @@ export async function parseCredentialDocumentMultimodal(
 
 /**
  * Generador de extracción resiliente con arquitectura Google XYZ y needs_metric
+ * Si no se puede leer texto del documento, retorna un arquetipo neutral sin datos hardcodeados
  */
 function synthesizeDeterministicExtraction(fileName: string): MultimodalCvExtraction {
+  const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
   return {
-    fullName: 'Matías Riquelme',
-    email: 'matias@indi.bio',
-    phone: '+56 9 8765 4321',
-    location: 'Santiago / Remoto Global',
-    targetRole: 'Senior Full Stack Engineer & Software Architect',
-    summary: 'Ingeniero de Software Senior con más de 7 años de experiencia liderando arquitecturas serverless en el Edge, microservicios de alto tráfico y optimización de rendimiento web con Next.js y SQLite distribuido.',
-    skills: [
-      'TypeScript', 'React 19', 'Next.js 16', 'Turso SQLite', 'Drizzle ORM', 
-      'Tailwind CSS v4', 'Arquitectura Serverless', 'Cloudflare Workers', 'Zod', 'Docker'
-    ],
-    experience: [
-      {
-        company: 'Indi Digital Ecosystems',
-        role: 'Lead Architect & Core Engineer',
-        period: '2024 - Presente',
-        rawAchievements: [
-          'Desarrollé la plataforma de identidad y tarjetas digitales',
-          'Mejoré los tiempos de carga en dispositivos móviles'
-        ],
-        xyzBullets: [
-          {
-            text: 'Diseñé la arquitectura distribuida en Turso LibSQL, reduciendo la latencia P95 a 18ms para más de 100k consultas concurrentes.',
-            needs_metric: false, // Tiene métrica: 18ms, 100k
-          },
-          {
-            text: 'Implementé un sistema de caché de borde para compartir perfiles en redes sociales con generación instantánea de OpenGraph.',
-            needs_metric: true, // ⚠️ Falta métrica: ¿cuánto mejoró el CTR o la velocidad?
-          },
-        ],
-      },
-      {
-        company: 'Vanguard Tech LatAm',
-        role: 'Senior Frontend Engineer',
-        period: '2021 - 2024',
-        rawAchievements: [
-          'Migración de monolito a React y Next.js',
-          'Gestión de equipo de diseño e ingeniería'
-        ],
-        xyzBullets: [
-          {
-            text: 'Lideré la migración completa a Next.js App Router, recortando el First Contentful Paint en un 42% en redes 4G.',
-            needs_metric: false, // Tiene métrica: 42%
-          },
-          {
-            text: 'Estandaricé la librería de componentes bajo directrices de accesibilidad WCAG y APCA para todo el equipo de producto.',
-            needs_metric: true, // ⚠️ Falta métrica: ¿cuántos componentes o qué puntaje de auditoría?
-          },
-        ],
-      },
-    ],
-    education: [
-      {
-        degree: 'Ingeniería Civil en Computación e Informática',
-        institution: 'Universidad de Chile',
-        year: '2016 - 2021',
-      },
-    ],
+    fullName: baseName.length > 2 && !baseName.toLowerCase().includes('cv') ? baseName : 'Profesional Titulado',
+    email: '',
+    phone: '',
+    location: 'Chile',
+    targetRole: 'Profesional Especialista',
+    summary: 'Profesional comprometido con la excelencia técnica, optimización de procesos y cumplimiento riguroso de normativas y buenas prácticas del sector.',
+    skills: ['Trabajo en equipo', 'Gestión de proyectos', 'Resolución de problemas', 'Comunicación asertiva'],
+    experience: [],
+    education: [],
     references: [],
   };
 }
@@ -645,98 +611,121 @@ function reconcileReferenceContacts(
 }
 
 /**
- * Si el candidato subió un documento que incluye diplomas o certificados de respaldo al final,
- * enriquece las fechas reales de los cursos en lugar de dejar años genéricos o alucinados (ej: 2024).
+ * Normaliza y tokeniza un texto para cálculo de similitud léxica sin acentos ni stopwords
+ */
+function extractSignificantTokens(text: string): Set<string> {
+  const stopwords = new Set([
+    'de', 'la', 'que', 'el', 'en', 'y', 'a', 'los', 'del', 'se', 'las', 'por', 'un', 'para', 'con', 'no',
+    'una', 'su', 'al', 'lo', 'como', 'más', 'pero', 'sus', 'le', 'ya', 'o', 'este', 'sí', 'porque', 'esta',
+    'entre', 'cuando', 'muy', 'sin', 'sobre', 'también', 'me', 'hasta', 'hay', 'donde', 'quien', 'desde',
+    'todo', 'nos', 'durante', 'todos', 'uno', 'les', 'ni', 'contra', 'otros', 'ese', 'eso', 'ante', 'ellos',
+    'curso', 'diplomado', 'título', 'titulo', 'licenciado', 'licenciatura', 'capacitación', 'capacitacion',
+    'programa', 'certificación', 'certificacion', 'formación', 'formacion', 'aprobado', 'participación'
+  ]);
+
+  const clean = text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ');
+
+  const tokens = clean.split(/\s+/).filter((t) => t.length > 2 && !stopwords.has(t));
+  return new Set(tokens);
+}
+
+/**
+ * Busca de forma universal la fecha o año en un bloque de certificado/diploma.
+ * Admite formatos:
+ * - "dd de mes de aaaa" (ej: 08 de junio de 2019)
+ * - "dd/mm/aaaa" o "dd-mm-aaaa" (ej: 02-06-2023)
+ * - "mes aaaa" o años explícitos "19xx" / "20xx"
+ */
+function extractDateFromCertificateBlock(blockText: string): string | null {
+  // 1. Rango de años o año explícito de titulación "2013 – 2018" o "2018"
+  const rangeMatch = blockText.match(/\b(19\d{2}|20\d{2})\s*[–—-]\s*(19\d{2}|20\d{2})\b/);
+  if (rangeMatch) {
+    return `${rangeMatch[1]} – ${rangeMatch[2]}`;
+  }
+
+  // 2. Patrones con fecha de término o emisión: "Fecha de Término... 02-06-2023" o "dd de [mes] de aaaa"
+  const dateFullMatch = blockText.match(/\b\d{1,2}\s+(?:de\s+)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(?:del?\s+)?(19\d{2}|20\d{2})\b/i);
+  if (dateFullMatch) {
+    return dateFullMatch[2]; // año del evento
+  }
+
+  const slashDateMatch = blockText.match(/\b\d{1,2}[/-]\d{1,2}[/-](19\d{2}|20\d{2})\b/);
+  if (slashDateMatch) {
+    return slashDateMatch[1];
+  }
+
+  // 3. Años sueltos recientes en bloques de diploma (preferir el más tardío si indica finalización)
+  const years = Array.from(blockText.matchAll(/\b(19\d{2}|20\d{2})\b/g)).map((m) => parseInt(m[1], 10));
+  if (years.length > 0) {
+    // Si hay año de nacimiento o inicio y fin, tomar el año de finalización/emisión (< 2030)
+    const validYears = years.filter((y) => y >= 1990 && y <= 2030);
+    if (validYears.length > 0) {
+      return String(Math.max(...validYears));
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Emparejador Semántico Universal de Fechas desde Anexos/Diplomas.
+ * Examina los bloques de diplomas adjuntos y busca coincidencias léxicas con los cursos
+ * del profesional sin recurrir a listas estáticas ni arquetipos hardcodeados.
  */
 function enrichEducationDatesFromCertificates(
   education: Array<{ degree: string; institution: string; year: string }>,
   fullRawText: string
 ): Array<{ degree: string; institution: string; year: string }> {
-  if (!fullRawText || !Array.isArray(education)) return education;
+  if (!fullRawText || !Array.isArray(education) || education.length === 0) return education;
 
-  const fullLower = fullRawText.toLowerCase();
+  // Segmentar las páginas de diplomas posteriores usando saltos de página o delimitadores
+  const certificateBlocks = fullRawText
+    .split(/--- PÁGINA SIGUIENTE ---|--- PÁGINA \d+ ---|\f/)
+    .map((b) => b.trim())
+    .filter((b) => b.length > 30);
 
   return education.map((edu) => {
     let currentYear = edu.year || '';
-    const degLower = edu.degree.toLowerCase();
-
-    // 1. Título universitario de Psicólogo (preservar 2013 – 2018 o 2018)
-    if (degLower.includes('psicólog') || degLower.includes('licenciatura')) {
-      return {
-        ...edu,
-        year: currentYear.includes('2018') ? currentYear : '2013 – 2018',
-      };
+    // Si ya tiene un año bien definido de 4 dígitos o rango de titulación y no es el genérico '2024'
+    if (currentYear && currentYear.length >= 4 && !currentYear.includes('2024') && currentYear !== 'Pendiente') {
+      return edu;
     }
 
-    // A. Prevención del Consumo de Drogas y Alcohol (SENDA): abril 10, 2019
-    if (degLower.includes('drogas y alcohol') || degLower.includes('consumo de drogas')) {
-      if (fullLower.includes('abril 10, 2019') || fullLower.includes('2019')) {
-        return { ...edu, year: '2019' };
+    const eduTokens = extractSignificantTokens(`${edu.degree} ${edu.institution}`);
+    if (eduTokens.size === 0) return edu;
+
+    let bestScore = 0;
+    let bestBlock: string | null = null;
+
+    for (const block of certificateBlocks) {
+      const blockTokens = extractSignificantTokens(block);
+      let matchCount = 0;
+
+      for (const token of eduTokens) {
+        if (blockTokens.has(token)) {
+          matchCount++;
+        }
+      }
+
+      // Proporción de tokens del título encontrados en el diploma
+      const score = matchCount / eduTokens.size;
+      if (score > bestScore && score >= 0.40) {
+        bestScore = score;
+        bestBlock = block;
       }
     }
 
-    // B. Diplomado en Psicodiagnóstico Laboral: 2019
-    if (degLower.includes('psicodiagnóstico laboral') || degLower.includes('psicodiagnostico laboral')) {
-      if (fullLower.includes('08 de junio de 2019') || fullLower.includes('2019')) {
-        return { ...edu, year: '2019' };
-      }
-    }
-
-    // C. Formación en WISC-V: 05 de marzo de 2021
-    if (degLower.includes('wisc')) {
-      if (fullLower.includes('marzo del 2021') || fullLower.includes('2021')) {
-        return { ...edu, year: '2021' };
-      }
-    }
-
-    // D. Prevención de Autolesiones y Suicidio (OPS): 12 de enero de 2020
-    if (degLower.includes('autolesi') || degLower.includes('suicidio')) {
-      if (fullLower.includes('12 de enero de 2020') || fullLower.includes('2020')) {
-        return { ...edu, year: '2020' };
-      }
-    }
-
-    // E. Salud de la Mujer y el Embarazo (OPS): 12 de enero de 2020
-    if (degLower.includes('mujer y el embarazo') || degLower.includes('embarazo')) {
-      if (fullLower.includes('12 de enero de 2020') || fullLower.includes('2020')) {
-        return { ...edu, year: '2020' };
-      }
-    }
-
-    // F. Detección Temprana de consumo problemático (SENDA): 13 de enero de 2020
-    if (degLower.includes('detección temprana') || degLower.includes('deteccion temprana')) {
-      if (fullLower.includes('13 enero 2020') || fullLower.includes('2020')) {
-        return { ...edu, year: '2020' };
-      }
-    }
-
-    // G. Primeros Auxilios Psicológicos (UMAG): 2020
-    if (degLower.includes('primeros auxilios')) {
-      return { ...edu, year: '2020' };
-    }
-
-    // H. Elaboración de Informes Técnicos bajo el Modelo RNR (SENCE): Mayo - Junio 2023
-    if (degLower.includes('informes técnicos') || degLower.includes('modelo rnr')) {
-      if (fullLower.includes('2023') || fullLower.includes('02-06-2023')) {
-        return { ...edu, year: '2023' };
-      }
-    }
-
-    // I. Derechos de los Niños, Niñas y Adolescentes: 2021 / 2025
-    if (degLower.includes('derechos de los niños') || degLower.includes('niñas y adolescentes')) {
-      if (fullLower.includes('19/05/25') || fullLower.includes('2025')) {
-        return { ...edu, year: '2025' };
-      } else if (fullLower.includes('2021')) {
-        return { ...edu, year: '2021' };
-      }
-    }
-
-    // J. Introducción a los Derechos Humanos: 2021 / 2025
-    if (degLower.includes('introducción a los derechos humanos') || degLower.includes('derechos humanos')) {
-      if (fullLower.includes('19 de mayo de 2025') || fullLower.includes('2025')) {
-        return { ...edu, year: '2025' };
-      } else if (fullLower.includes('2021')) {
-        return { ...edu, year: '2021' };
+    if (bestBlock) {
+      const detectedYear = extractDateFromCertificateBlock(bestBlock);
+      if (detectedYear) {
+        return {
+          ...edu,
+          year: detectedYear,
+        };
       }
     }
 

@@ -45,15 +45,20 @@ export function SmartDocumentDropzone({
         } catch (compErr) {
           console.warn('[SmartDocumentDropzone] Fallback con archivo original tras error de compresión:', compErr);
         }
-      } else if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        // 2. Si es PDF, extraer texto directamente en el navegador con unpdf (Client-Side Parsing)
+      } else if (
+        file.type === 'application/pdf' ||
+        file.name.toLowerCase().endsWith('.pdf') ||
+        file.name.toLowerCase().endsWith('.docx') ||
+        file.type.includes('wordprocessingml')
+      ) {
+        // 2. Si es PDF o Word (.docx), extraer texto directamente en el navegador
         // Esto reduce una carga de 10MB a menos de 10KB, evitando por completo el error HTTP 413 de Vercel/AWS.
-        setStatusMessage('Extrayendo texto del PDF directamente en tu navegador...');
+        setStatusMessage('Extrayendo contenido estructurado directamente en tu navegador...');
         try {
           const { extractTextFromPdfClient } = await import('@/shared/lib/clientDocumentExtractor');
           clientExtractedText = await extractTextFromPdfClient(file);
-        } catch (pdfClientErr) {
-          console.warn('[SmartDocumentDropzone] Extracción client-side no disponible, usando fallback:', pdfClientErr);
+        } catch (clientErr) {
+          console.warn('[SmartDocumentDropzone] Extracción client-side no disponible, usando fallback:', clientErr);
         }
       }
 
@@ -247,7 +252,7 @@ export function SmartDocumentDropzone({
         <input
           ref={cvFileInputRef}
           type="file"
-          accept=".pdf,.png,.jpg,.jpeg,.webp"
+          accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -284,7 +289,7 @@ export function SmartDocumentDropzone({
                 : 'Arrastra tu Título Universitario, Diploma o Certificación'}
             </p>
             <p className="text-xs text-slate-400">
-              Formatos soportados: PDF, PNG, JPG hasta 10MB • Detección Qwen2.5-VL / Gemini Vision
+              Formatos soportados: PDF, Word (.docx), PNG, JPG hasta 10MB • Detección Qwen2.5-VL / Gemini Vision
             </p>
           </div>
         )}

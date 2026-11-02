@@ -29,6 +29,7 @@ export interface DistributedExperienceItem {
 
 export interface CvPageDistributionResult {
   needsTwoPages: boolean;
+  totalPages: number;
   splitExpIndex: number;
   page1Experiences: DistributedExperienceItem[];
   page2Experiences: DistributedExperienceItem[];
@@ -174,6 +175,7 @@ export function calculateCvPageDistribution(
   if (allContentWeight <= maxPageCapacity) {
     return {
       needsTwoPages: false,
+      totalPages: 1,
       splitExpIndex: experiences.length,
       page1Experiences: experiences.map((exp, idx) => ({
         role: exp.role,
@@ -308,8 +310,11 @@ export function calculateCvPageDistribution(
     return acc + getSingleExperienceWeight(item as any).totalWeight;
   }, 0) + totalSecondaryWeight;
 
+  const totalPages = remainingWeight > maxPageCapacity ? Math.min(3, 2 + Math.ceil((remainingWeight - maxPageCapacity) / maxPageCapacity)) : 2;
+
   return {
     needsTwoPages: true,
+    totalPages,
     splitExpIndex,
     page1Experiences,
     page2Experiences,

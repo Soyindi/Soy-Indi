@@ -42,9 +42,26 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
   error?: string;
 }> {
   try {
+    const { getSafeAuthenticatedUserId } = await import('@/shared/lib/session');
+    const userAuth = await getSafeAuthenticatedUserId();
+
+    if (process.env.NODE_ENV === 'production' && !userAuth.userId) {
+      return { success: false, error: 'Debes iniciar sesión para procesar un documento de currículum.' };
+    }
+
+    const { checkAiRateLimit } = await import('@/shared/lib/rateLimiter');
+    const rateLimitCheck = await checkAiRateLimit(userAuth.userId || 'anonymous-cv-parser');
+    if (!rateLimitCheck.success) {
+      return { success: false, error: 'Límite de solicitudes alcanzado. Por favor, aguarda un minuto antes de reintentar.' };
+    }
+
     const file = formData.get('file') as File | null;
     const extractedTextParam = formData.get('extractedText') as string | null;
     const fileName = (formData.get('fileName') as string | null) || file?.name || 'cv.pdf';
+
+    if (file && file.size > 10 * 1024 * 1024) {
+      return { success: false, error: 'El archivo excede el tamaño máximo permitido de 10 MB.' };
+    }
 
     let extracted: MultimodalCvExtraction | null = null;
 
@@ -141,9 +158,26 @@ export async function parseCredentialDocumentAction(
   error?: string;
 }> {
   try {
+    const { getSafeAuthenticatedUserId } = await import('@/shared/lib/session');
+    const userAuth = await getSafeAuthenticatedUserId();
+
+    if (process.env.NODE_ENV === 'production' && !userAuth.userId) {
+      return { success: false, error: 'Debes iniciar sesión para procesar un documento o diploma.' };
+    }
+
+    const { checkAiRateLimit } = await import('@/shared/lib/rateLimiter');
+    const rateLimitCheck = await checkAiRateLimit(userAuth.userId || 'anonymous-credential-parser');
+    if (!rateLimitCheck.success) {
+      return { success: false, error: 'Límite de solicitudes alcanzado. Por favor, aguarda un momento.' };
+    }
+
     const file = formData.get('file') as File | null;
     if (!file) {
       return { success: false, error: 'No se ha adjuntado ningún diploma o título.' };
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      return { success: false, error: 'El archivo excede el tamaño máximo permitido de 10 MB.' };
     }
 
     const buffer = await file.arrayBuffer();
@@ -859,6 +893,7 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
 
     if (aiResult.success && aiResult.content) {
       try {
+        const { sanitizeAndGroundAiBullet } = await import('@/features/ai-smart-cv/lib/cv-quality-engine');
         const cleanedJson = aiResult.content
           .replace(/```json/gi, '')
           .replace(/```/g, '')
@@ -870,11 +905,15 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
             if (isMultiBullet) {
               return raw
                 .split('\n')
-                .map((b) => auditAndRepairCvBullet(b).repairedText)
+                .map((b) => {
+                  const sanitized = sanitizeAndGroundAiBullet(b, cleanInput).cleanText;
+                  return auditAndRepairCvBullet(sanitized).repairedText;
+                })
                 .filter(Boolean)
                 .join('\n');
             }
-            const { repairedText } = auditAndRepairCvBullet(raw);
+            const sanitized = sanitizeAndGroundAiBullet(raw, cleanInput).cleanText;
+            const { repairedText } = auditAndRepairCvBullet(sanitized);
             return repairedText;
           });
           return {
@@ -884,13 +923,15 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
         }
       } catch (jsonErr) {
         console.warn('[rewriteCvSectionAction] JSON parse warning, aplicando fallback a líneas:', jsonErr);
+        const { sanitizeAndGroundAiBullet } = await import('@/features/ai-smart-cv/lib/cv-quality-engine');
         const lines = aiResult.content
           .split('\n')
           .map((l) => l.replace(/^[\d\.\-\*\•\s"]+|["]+$/g, '').trim())
           .filter((l) => l.length > 15);
         if (lines.length >= 2) {
           const cleanedSuggestions = lines.slice(0, 3).map((s) => {
-            const { repairedText } = auditAndRepairCvBullet(s);
+            const sanitized = sanitizeAndGroundAiBullet(s, cleanInput).cleanText;
+            const { repairedText } = auditAndRepairCvBullet(sanitized);
             return repairedText;
           });
           return {

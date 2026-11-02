@@ -146,18 +146,24 @@ export function buildCvPdfDocument(
 
     for (const exp of content.experience) {
       checkPageBreak(18);
+      
+      const periodStr = exp.period || '';
+      const periodWidth = periodStr ? doc.getTextWidth(periodStr) + 4 : 0;
+      const roleMaxWidth = contentWidth - periodWidth - 2;
+
       // Cargo y Empresa
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.setTextColor(...pdfTokens.headerColor);
-      doc.text(exp.role || 'Cargo', marginX, cursorY);
+      const roleLines = doc.splitTextToSize(exp.role || 'Cargo', roleMaxWidth);
+      doc.text(roleLines[0], marginX, cursorY);
 
       // Periodo alineado a la derecha
-      if (exp.period) {
+      if (periodStr) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
         doc.setTextColor(...pdfTokens.metaColor);
-        doc.text(exp.period, marginX + contentWidth, cursorY, { align: 'right' });
+        doc.text(periodStr, marginX + contentWidth, cursorY, { align: 'right' });
       }
       cursorY += 4.2;
 
@@ -204,7 +210,24 @@ export function buildCvPdfDocument(
     }
   }
 
-  // --- 3. EDUCACIÓN Y CERTIFICACIONES VERIFICADAS ---
+  // --- 3. HABILIDADES CLAVE (Paridad con Previsualizador Web) ---
+  if (content.skills && content.skills.length > 0) {
+    drawSectionHeader('Habilidades y Competencias');
+    const skillsText = content.skills.join('  •  ');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...pdfTokens.bodyColor);
+    const skillLines = doc.splitTextToSize(skillsText, contentWidth);
+    checkPageBreak(skillLines.length * 4.4);
+    doc.text(skillsText, marginX, cursorY, {
+      align: 'justify',
+      maxWidth: contentWidth,
+      lineHeightFactor: 1.35,
+    });
+    cursorY += skillLines.length * 4.4 + 5;
+  }
+
+  // --- 4. EDUCACIÓN Y CERTIFICACIONES VERIFICADAS ---
   if (content.education && content.education.length > 0) {
     drawSectionHeader('Educación y Certificaciones');
 
@@ -239,23 +262,6 @@ export function buildCvPdfDocument(
       }
       cursorY += 5;
     }
-  }
-
-  // --- 4. HABILIDADES CLAVE ---
-  if (content.skills && content.skills.length > 0) {
-    drawSectionHeader('Habilidades y Competencias');
-    const skillsText = content.skills.join('  •  ');
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...pdfTokens.bodyColor);
-    const skillLines = doc.splitTextToSize(skillsText, contentWidth);
-    checkPageBreak(skillLines.length * 4.4);
-    doc.text(skillsText, marginX, cursorY, {
-      align: 'justify',
-      maxWidth: contentWidth,
-      lineHeightFactor: 1.35,
-    });
-    cursorY += skillLines.length * 4.4 + 5;
   }
 
   // --- 4.5. REFERENCIAS LABORALES (FORMATO EJECUTIVO DE ALTA CONVERSIÓN) ---

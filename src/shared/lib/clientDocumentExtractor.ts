@@ -15,6 +15,16 @@
 export async function extractTextFromPdfClient(file: File): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
+
+    // Si es un documento .docx
+    if (file.name.toLowerCase().endsWith('.docx') || file.type.includes('wordprocessingml')) {
+      const { extractTextFromDocxArrayBuffer } = await import('@/shared/lib/docxTextExtractor');
+      const docxText = await extractTextFromDocxArrayBuffer(arrayBuffer);
+      if (docxText && docxText.trim().length > 0) {
+        return docxText.trim();
+      }
+    }
+
     const uint8 = new Uint8Array(arrayBuffer);
 
     // Intentar primero extracción espacial 2D layout-aware

@@ -557,7 +557,21 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
 
 ---
 
-### SOP-136: Aislamiento Estricto de CV frente a Diplomas Anexos, Extracción Fiel de Especializaciones y Lookahead No Destructivo de Referencias
+### SOP-137: Universalidad de Ingesta, Emparejamiento Semántico de Certificados y Privacidad Ley 21.719 en Smart CV (2026)
+1. **Erradicación de Arquetipos e Identidades Hardcodeadas**:
+   - Queda estrictamente prohibido que fallbacks deterministas o estados por defecto de plantillas inyecten nombres, correos o RUTs de personas específicas (ej. `"Matías Riquelme"` o `"18.492.041-K"`).
+   - Todo nuevo usuario o visitante debe recibir un arquetipo neutral derivado exclusivamente de su sesión autenticada o campos guiados en blanco.
+2. **Emparejamiento Semántico Universal de Fechas desde Certificados Anexos**:
+   - `enrichEducationDatesFromCertificates` opera mediante coincidencia léxica normalizada (`extractSignificantTokens`) entre títulos declarados y diplomas anexos.
+   - Queda prohibido el uso de condicionales estáticos con años fijos por profesión (`if (psicólogo) return 2018`).
+3. **Privacidad de Datos Personales por Defecto (Ley N° 21.719 Chile)**:
+   - Toda renderización pública en `/cv/[slug]` debe pasar por `sanitizeCvForPublicView`.
+   - Por defecto, el RUT y los teléfonos/emails de terceras personas en las referencias laborales se omiten u ofuscan (`[Disponible a solicitud]`), protegiendo a los referentes de scrapers y motores de búsqueda.
+4. **Soporte Nativo de Archivos Microsoft Word (`.docx`)**:
+   - Extracción de texto de archivos `.docx` en cliente y servidor mediante descompresión en memoria del contenedor ZIP y análisis de `word/document.xml`, sin dependencias pesadas.
+5. **Paginación Dinámica Multi-Hoja A4 (1..N Hojas) & Paridad Vectorial con PDF**:
+   - `calculateCvPageDistribution` y `CvDocumentPreview` soportan dinámicamente tantas hojas como requiera el contenido del usuario, alineando estrictamente el orden de secciones con `pdf-engine.ts` (`Habilidades ➔ Educación`) y aplicando `splitTextToSize` para impedir colisiones de texto horizontal.
+
 1. **Aislamiento Pre-Procesamiento del Cuerpo del CV (`isolateCvBodyFromAttachments`)**:
    - Todo documento compuesto (CV de varias páginas con diplomas, certificados SENCE/OPS o constancias escaneadas al final) debe delimitarse formalmente en `isolateCvBodyFromAttachments` antes de enviarse a inferencia LLM o al parser heurístico.
    - Detecta la línea de firma o RUT final del candidato (ej: `Matías Ricardo... · RUT 18.209.442-0` o `______`) o los encabezados inequívocos de certificados posteriores (`Se confiere el presente diploma`, `Certificado de Finalización`, `N° Folio:`, `Para verificar la autenticidad...`).

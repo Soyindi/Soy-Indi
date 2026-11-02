@@ -111,3 +111,48 @@ export function verifyBulletGrounding(sourceText: string, suggestedText: string)
     hallucinatedMetrics,
   };
 }
+
+/**
+ * Sanitiza y repara sugerencias generadas por la IA:
+ * 1. Remueve corchetes residuales o placeholders de plantilla como [especificar volumen], [añadir métrica de impacto]
+ * 2. Verifica grounding frente al texto original para prevenir alucinaciones de cifras inventadas
+ */
+export function sanitizeAndGroundAiBullet(
+  suggestedBullet: string,
+  sourceText?: string
+): { cleanText: string; isGrounded: boolean; hallucinatedMetrics: string[] } {
+  let cleanText = suggestedBullet;
+
+  // 1. Eliminar marcadores entre corchetes
+  cleanText = cleanText.replace(/\[(?:especificar|añadir|completar|ingresar|indicar)[^\]]*\]/gi, '').trim();
+  cleanText = cleanText.replace(/\[[^\]]{3,35}\]/g, '').trim();
+
+  // Limpiar posibles espacios dobles o comas huérfanas dejadas por el borrado
+  cleanText = cleanText
+    .replace(/\s+([,\.])/g, '$1')
+    .replace(/\s*,\s*,/g, ',')
+    .replace(/,\s*\./g, '.')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  // Asegurar punto final
+  if (cleanText && !cleanText.endsWith('.')) {
+    cleanText += '.';
+  }
+
+  // 2. Verificación de Grounding si se proveyó texto fuente
+  if (sourceText && sourceText.trim().length > 0) {
+    const check = verifyBulletGrounding(sourceText, cleanText);
+    return {
+      cleanText,
+      isGrounded: check.isGrounded,
+      hallucinatedMetrics: check.hallucinatedMetrics,
+    };
+  }
+
+  return {
+    cleanText,
+    isGrounded: true,
+    hallucinatedMetrics: [],
+  };
+}

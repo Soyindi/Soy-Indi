@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { db } from '@/shared/api/db';
 import { smartCvs } from '@/entities/schema';
 import { eq, sql } from 'drizzle-orm';
-import { CVFormValues } from '@/entities/cv/schemas';
+import { CVFormValues, sanitizeCvForPublicView } from '@/entities/cv/schemas';
 import { PublicCvViewer } from '@/features/ai-smart-cv/components/PublicCvViewer';
 import { getAppBaseUrl, buildCanonicalUrl } from '@/entities/brand/domain';
 import { Sparkles, ArrowLeft, FileText } from 'lucide-react';
@@ -30,6 +30,10 @@ export async function generateMetadata({ params }: PublicCvPageProps): Promise<M
       return {
         title: 'Currículum Digital | INDI',
         description: 'Currículum profesional en formato interactivo y compatible con ATS.',
+        robots: {
+          index: false,
+          follow: false,
+        },
       };
     }
 
@@ -122,7 +126,7 @@ export default async function PublicCvPage({ params }: PublicCvPageProps) {
     );
   }
 
-  const cvData: CVFormValues = {
+  const rawCvData: CVFormValues = {
     title: cvRecord.title,
     targetRole: cvRecord.targetRole,
     slug: cvRecord.slug || slug,
@@ -130,6 +134,8 @@ export default async function PublicCvPage({ params }: PublicCvPageProps) {
     templateId: cvRecord.templateId,
     content: cvRecord.content as any,
   };
+
+  const cvData = sanitizeCvForPublicView(rawCvData);
 
   const candidateName = (cvRecord.content as any)?.fullName || cvRecord.title;
   const canonicalCvUrl = buildCanonicalUrl(`/cv/${slug}`);
