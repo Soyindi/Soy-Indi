@@ -480,3 +480,13 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
    - El drenaje hacia Turso se coordinará mediante una ventana temporal de 60 segundos (`SET NX EX 60`) o cuando el acumulador supere las 25 visitas concurrentes.
 3. **Ejecución Asíncrona en Background:**
    - El volcado hacia la base de datos debe ejecutarse en segundo plano utilizando la función nativa `after()` de Next.js 16 / Edge Runtime (`waitUntil`), garantizando tiempos de respuesta HTTP 200/204 en $< 20\text{ms}$ para el cliente.
+
+---
+
+### SOP-130: Gobernanza Geométrica A4 y Balance de Contenido en Smart CV
+1. **Calibración a Escala Real A4 (`A4_PAGE_MAX_CAPACITY = 46.0`)**:
+   - Todo algoritmo de paginación o distribución de contenido en Smart CV (`src/features/ai-smart-cv/lib/cv-layout.ts`) debe calibrarse con la capacidad real de un viewport A4 a 96 DPI (1123px menos padding y márgenes = 971px de alto útil = ~51 renglones `text-xs`, fijando 46.0 unidades para holgura estética). Queda prohibido aplicar límites arbitrariamente reducidos (como 30 unidades) que provoquen saltos de página prematuros.
+2. **Erradicación del Doble Conteo de Caracteres en Viñetas**:
+   - Cada viñeta laboral debe computar su peso vertical únicamente en función de las líneas de texto reales (`Math.ceil(length / 118) * 1.0 + 0.25`). Queda prohibido sumar multiplicadores rígidos por viñeta sobre conteos por caracteres (`bulletsCount * 1.3 + Math.ceil(length / 90)`), lo que distorsionaba el peso en más de un 60%.
+3. **Distribución Armónica Determinista (`calculateCvPageDistribution`)**:
+   - La partición de experiencias entre Hoja 1 y Hoja 2 debe procurar una ocupación visual equilibrada ($\ge 75\%$ en la Hoja 1), evitando que un solo cargo ocupe toda la primera página y dejando grandes vacíos blancos verticales. Hoja 2 solo se habilita cuando la suma real de secciones sobrepasa el umbral físico del documento.

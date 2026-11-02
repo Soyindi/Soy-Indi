@@ -477,4 +477,16 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
 - **Heurística de Fallback Limpia**: Supresión de verbos redundantes duplicados ("Lideré lideré...") y placeholders estáticos repetitivos, entregando proposiciones contextualizadas con la empresa y el cargo del postulante.
 - **Afinación Dual (Bloque vs Viñeta Individual)**: `SmartCvBuilder.tsx` ofrece optimización simultánea de todos los logros o afinación granular de viñetas individuales con `InlineAiWriter.tsx` (`size="xs"`), complementado por un panel responsivo con backdrop táctil que previene cualquier desborde horizontal en viewports móviles (390px).
 
+## 9.10 Calibración Geométrica A4 & Balance sin Espacios Vacíos en Smart CV (SOP-130)
+- **Causa Raíz Diagnosticada & Resuelta**: El algoritmo previo de previsualización aplicaba un doble cómputo en viñetas (`bulletsCount * 1.3` + `Math.ceil(length / 90)`), inflando un 62% el peso estimado de los cargos (ej. 28.6 unidades para 14 líneas reales). Sumado a un umbral artificialmente comprimido (`page1MaxCapacity = 30` en lugar de las 51 líneas útiles de un contenedor A4 de 1123px), forzaba un salto de página prematuro tras el primer trabajo, dejando más del 50% de la Hoja 1 en blanco y sobrecargando la Hoja 2.
+- **Motor Canónico de Distribución A4 (`src/features/ai-smart-cv/lib/cv-layout.ts`)**:
+  - `A4_PAGE_MAX_CAPACITY = 46.0`: Calibración basada en la física de pantalla A4 (1123px menos padding y pie de página = 971px de alto útil / 19px por renglón `text-xs` = ~51 renglones, reservando 5 unidades de holgura visual).
+  - **Densidad Tipográfica Real**: 118 caracteres por línea para listas con sangría (`cleanBulletText`).
+  - **Eliminación del Doble Conteo**: Cada viñeta computa sus líneas reales sin multiplicadores superpuestos (`lines * 1.0 + 0.25`).
+  - **Función Maestra `calculateCvPageDistribution`**: Distribuye de forma determinista las experiencias entre Hoja 1 y Hoja 2. En perfiles típicos de 2 a 3 cargos iniciales, empaqueta armónicamente los dos primeros cargos en la Hoja 1 (ocupación ~88-90%), eliminando el vacío blanco y manteniendo balanceada la Hoja 2 con los cargos restantes, educación, habilidades, referencias y firma ATS.
+- **Sincronización en Vista Previa (`CvDocumentPreview.tsx`)**:
+  - Consume reactivamente `calculateCvPageDistribution`.
+  - Renderiza badge tipográfico `(Continuación)` en cargos fragmentados y limpia caracteres especiales residuales con `cleanBulletText`.
+
+
 

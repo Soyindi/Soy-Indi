@@ -5,6 +5,7 @@ import { CVFormValues } from '@/entities/cv/schemas';
 import { getCvDesignTemplate } from '@/entities/cv/templates';
 import { Mail, Phone, MapPin, Globe, ShieldCheck, Link2 } from 'lucide-react';
 import { sanitizeBulletText } from '@/features/ai-smart-cv/lib/pdf-engine';
+import { calculateCvPageDistribution, cleanBulletText } from '@/features/ai-smart-cv/lib/cv-layout';
 
 interface CvDocumentPreviewProps {
   cv: CVFormValues;
@@ -17,60 +18,9 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
   const template = getCvDesignTemplate(cv.templateId);
   const { webTokens } = template;
 
-  // Estimación de altura y densidad de contenido para distribución armónica A4
-  // Resumen: aprox 1 unidad por cada 75 caracteres
-  const summaryWeight = Math.ceil((content.summary || '').length / 75);
-  
-  // Peso por experiencia basado en cantidad y longitud de viñetas
-  const expWeights = content.experience.map((exp) => {
-    const bulletsCount = exp.bullets?.length || 0;
-    const bulletsLength = exp.bullets?.reduce((acc, b) => acc + b.length, 0) || 0;
-    // Base de header/cargo/empresa (2.5) + peso de viñetas
-    return 2.5 + bulletsCount * 1.3 + Math.ceil(bulletsLength / 90);
-  });
-  const totalExpWeight = expWeights.reduce((a, b) => a + b, 0);
-
-  // Peso de secciones secundarias
-  const skillsWeight = content.skills && content.skills.length > 0 ? 2.5 + Math.ceil(content.skills.length / 6) : 0;
-  const eduWeight = content.education && content.education.length > 0 ? 2 + content.education.length * 1.8 : 0;
-  const refWeight = content.references && content.references.length > 0 ? 2 + content.references.length * 2.2 : 0;
-
-  // Umbral de capacidad A4 de Hoja 1 (capacidad real de hoja A4 con márgenes: ~30 unidades de peso)
-  const page1MaxCapacity = 30;
-  let accumulatedPage1Weight = summaryWeight + 3.5; // 3.5 por el header del documento
-  let splitExpIndex = 0;
-
-  while (splitExpIndex < content.experience.length) {
-    const nextWeight = expWeights[splitExpIndex] || 2.5;
-    if (accumulatedPage1Weight + nextWeight <= page1MaxCapacity) {
-      accumulatedPage1Weight += nextWeight;
-      splitExpIndex++;
-    } else {
-      break;
-    }
-  }
-
-  // Asegurar al menos 1 o 2 experiencias en hoja 1 si existen
-  if (splitExpIndex === 0 && content.experience.length > 0) {
-    splitExpIndex = 1;
-  }
-
-  const remainingExperiences = content.experience.slice(splitExpIndex);
-  const remainingWeight = 
-    remainingExperiences.reduce((acc, _, i) => acc + (expWeights[splitExpIndex + i] || 2.5), 0) +
-    skillsWeight +
-    eduWeight +
-    refWeight;
-
-  const needsTwoPages = remainingExperiences.length > 0 || (accumulatedPage1Weight + skillsWeight + eduWeight + refWeight > page1MaxCapacity);
-
-  // División de experiencias
-  const page1Experiences = needsTwoPages ? content.experience.slice(0, splitExpIndex) : content.experience;
-  const page2Experiences = needsTwoPages ? content.experience.slice(splitExpIndex) : [];
-
-  // Helper de sanitización: previene viñetas duplicadas (• •) si el texto ya trae viñeta literal
-  const cleanBullet = (text: string) =>
-    text.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '').trim();
+  // Distribución geométrica de precisión A4 sin huecos artificiales
+  const distribution = calculateCvPageDistribution(cv);
+  const { needsTwoPages, page1Experiences, page2Experiences } = distribution;
 
   // Dimensiones canónicas de A4 Internacional con escala fluida para pantallas grandes
   const pageDimensions = 'min-h-[1123px] w-full max-w-[860px] lg:max-w-[920px] mx-auto';
@@ -212,7 +162,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                       {exp.bullets.length > 0 && (
                         <ul className="space-y-1.5 text-zinc-700">
                           {exp.bullets.map((b, bIdx) => {
-                            const cleaned = cleanBullet(b);
+                            const cleaned = cleanBulletText(b);
                             if (!cleaned) return null;
                             return (
                               <li key={bIdx} className="flex items-start gap-2 text-justify leading-relaxed">
@@ -234,14 +184,14 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
               <>
                 {content.skills.length > 0 && (
                   <div className="mb-6">
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900 border-b border-zinc-200 pb-1.5 mb-2.5">
+                    <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-2.5`}>
                       Habilidades y Competencias
                     </h2>
                     <div className="flex flex-wrap gap-1.5">
                       {content.skills.map((skill, sIdx) => (
                         <span
                           key={sIdx}
-                          className="px-2.5 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-zinc-800 text-[11px] font-medium"
+                          className={`px-2.5 py-0.5 rounded ${webTokens.tagBg} border ${webTokens.tagBorder} ${webTokens.tagText} text-[11px] font-medium`}
                         >
                           {skill}
                         </span>
@@ -394,7 +344,12 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                     {page2Experiences.map((exp, idx) => (
                       <div key={idx} className="text-xs">
                         <div className="flex items-center justify-between font-bold text-zinc-900">
-                          <span className="text-[13px]">{exp.role}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[13px]">{exp.role}</span>
+                            {exp.isContinued && (
+                              <span className="text-[10px] font-medium text-zinc-400 font-mono">(Continuación)</span>
+                            )}
+                          </div>
                           <span className="text-zinc-500 text-[11px] font-normal font-mono">{exp.period}</span>
                         </div>
                         <div className={`${webTokens.accentText} font-semibold mb-1.5 text-[11px]`}>
@@ -403,7 +358,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                         {exp.bullets.length > 0 && (
                           <ul className="space-y-1.5 text-zinc-700">
                             {exp.bullets.map((b, bIdx) => {
-                              const cleaned = cleanBullet(b);
+                              const cleaned = cleanBulletText(b);
                               if (!cleaned) return null;
                               return (
                                 <li key={bIdx} className="flex items-start gap-2 text-justify leading-relaxed">

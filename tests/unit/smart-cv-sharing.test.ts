@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { slugifyCvTitle, generateCvSlug, cvFormSchema } from '@/entities/cv/schemas';
 import { getPublicSmartCvAction, incrementCvViewsAction } from '@/features/ai-smart-cv/actions';
 import { db } from '@/shared/api/db';
+import { calculateCvPageDistribution, A4_PAGE_MAX_CAPACITY } from '@/features/ai-smart-cv/lib/cv-layout';
 
 vi.mock('@/shared/api/db', () => ({
   db: {
@@ -188,42 +189,39 @@ describe('Smart CV Digital Sharing & URL Engine', () => {
   });
 
   describe('CvDocumentPreview - Algoritmo de Capacidad y Balance de Páginas A4', () => {
-    it('debe distribuir armónicamente 4 experiencias breves en Hoja 1 con umbral de capacidad calibrado a 28.5', () => {
-      // Simulación de cálculo determinista con la fórmula de CvDocumentPreview
-      const summaryText = 'Líder en psicología - Intervención Clínica y Psicosocial con enfoque en innovación, calidad técnica y entrega de valor continuo para equipos y proyectos corporativos.';
-      const summaryWeight = Math.ceil(summaryText.length / 75); // ~2-3
+    it('debe distribuir armónicamente múltiples experiencias breves en Hoja 1 con umbral A4_PAGE_MAX_CAPACITY', () => {
+      const mockCv: any = {
+        title: 'Psicólogo Clínico',
+        targetRole: 'Psicólogo de Reinserción',
+        templateId: 'modern-executive',
+        primaryColor: '#000000',
+        content: {
+          fullName: 'Matías Ricardo Riquelme Cárdenas',
+          email: 'matias@example.com',
+          phone: '+56 9 1234 5678',
+          location: 'Punta Arenas, Chile',
+          summary: 'Líder en psicología - Intervención Clínica y Psicosocial con enfoque en innovación, calidad técnica y entrega de valor continuo para equipos y proyectos corporativos.',
+          experience: [
+            { role: 'Psicólogo de Reinserción Social', company: 'Complejo Penitenciario', period: '2021 - 2024', bullets: ['Lideré la evaluación psico-criminológica y la redacción de informes técnicos de alta precisión.'] },
+            { role: 'Psicólogo (Reemplazante)', company: 'Programa Cuidados Paliativos', period: '2020 - 2021', bullets: ['Lideré la intervención clínica y psicosocial para pacientes con enfermedades terminales.'] },
+            { role: 'Psicólogo', company: 'PIE y Convivencia Escolar', period: '2019 - 2020', bullets: ['Lideré la orquestación del ciclo completo de psicodiagnóstico y seguimiento clínico para estudiantes con NEE.'] },
+            { role: 'Psicólogo (Reemplazante)', company: 'COSAM', period: '2018 - 2019', bullets: ['Orquesté la coordinación interdisciplinaria con redes comunales de salud fortaleciendo la continuidad asistencial.'] },
+            { role: 'Psicólogo Practicante', company: 'Secretaría Regional Ministerial de Salud', period: '2017 - 2018', bullets: ['Orquesté la ejecución de programas de bienestar y liderazgo.'] },
+          ],
+          education: [
+            { degree: 'Título de Psicólogo', institution: 'Universidad de Magallanes', year: '2017' }
+          ],
+          skills: ['Psicodiagnóstico', 'Intervención Clínica'],
+          references: [],
+        },
+      };
 
-      const experiences = [
-        { role: 'Psicólogo de Reinserción Social', company: 'Complejo Penitenciario', bullets: ['Lideré la evaluación psico-criminológica y la redacción de informes técnicos de alta precisión.'] },
-        { role: 'Psicólogo (Reemplazante)', company: 'Programa Cuidados Paliativos', bullets: ['Lideré la intervención clínica y psicosocial para pacientes con enfermedades terminales.'] },
-        { role: 'Psicólogo', company: 'PIE y Convivencia Escolar', bullets: ['Lideré la orquestación del ciclo completo de psicodiagnóstico y seguimiento clínico para estudiantes con NEE.'] },
-        { role: 'Psicólogo (Reemplazante)', company: 'COSAM', bullets: ['Orquesté la coordinación interdisciplinaria con redes comunales de salud fortaleciendo la continuidad asistencial.'] },
-        { role: 'Psicólogo Practicante', company: 'Secretaría Regional Ministerial de Salud', bullets: ['Orquesté la ejecución de programas de bienestar y liderazgo.'] },
-      ];
+      const distribution = calculateCvPageDistribution(mockCv);
 
-      const expWeights = experiences.map((exp) => {
-        const bulletsCount = exp.bullets.length;
-        const bulletsLength = exp.bullets.reduce((acc, b) => acc + b.length, 0);
-        return 2.5 + bulletsCount * 1.3 + Math.ceil(bulletsLength / 90);
-      });
-
-      const page1MaxCapacity = 30;
-      let accumulatedPage1Weight = summaryWeight + 3.5;
-      let splitExpIndex = 0;
-
-      while (splitExpIndex < experiences.length) {
-        const nextWeight = expWeights[splitExpIndex] || 2.5;
-        if (accumulatedPage1Weight + nextWeight <= page1MaxCapacity) {
-          accumulatedPage1Weight += nextWeight;
-          splitExpIndex++;
-        } else {
-          break;
-        }
-      }
-
-      // Con el nuevo umbral 30, 4 experiencias breves quedan en Hoja 1, eliminando el hueco vertical
-      expect(splitExpIndex).toBeGreaterThanOrEqual(4);
-      expect(accumulatedPage1Weight).toBeLessThanOrEqual(page1MaxCapacity);
+      // Con el nuevo motor de distribución A4 de 46.0 unidades, las experiencias se distribuyen armónicamente
+      expect(distribution.page1Experiences.length).toBeGreaterThanOrEqual(4);
+      expect(distribution.page1Weight).toBeLessThanOrEqual(A4_PAGE_MAX_CAPACITY);
+      expect(A4_PAGE_MAX_CAPACITY).toBe(46.0);
     });
   });
 });
