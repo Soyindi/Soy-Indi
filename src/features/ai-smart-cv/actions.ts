@@ -708,7 +708,7 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
       };
     }
 
-    const { text, type, mode, targetRole, company, role, skills, userId } = parsed.data;
+    const { text, type, mode, targetRole, company, role, skills, impactAnswer, userId } = parsed.data;
 
     // 2. Guardrails de Sesión y Entitlements
     const sessionResult = await getSafeAuthenticatedUserId(userId);
@@ -801,6 +801,7 @@ REGLAS DE ORO OBLIGATORIAS:
 
     const userPrompt = `TEXTO ORIGINAL A MEJORAR:
 "${cleanInput}"
+${impactAnswer ? `\nDATO CUANTITATIVO O RESULTADO PROPORCIONADO POR EL USUARIO:\n"${impactAnswer.trim()}"\n(Incorpora este dato real e indudable armónicamente en la formulación Google XYZ sin inventar otras cifras distintas)` : ''}
 
 TIPO DE SECCIÓN: ${type === 'SUMMARY' ? 'Resumen Profesional / Perfil' : isMultiBullet ? 'Conjunto de Logros Laborales' : 'Viñeta de Logro Laboral'}
 ENFOQUE SOLICITADO: ${

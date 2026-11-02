@@ -35,6 +35,8 @@ export function InlineAiWriter({
   const [activeMode, setActiveMode] = useState<'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS'>(
     type === 'BULLET' ? 'XYZ_IMPACT' : 'EXECUTIVE'
   );
+  const [impactInput, setImpactInput] = useState('');
+  const [showImpactPrompt, setShowImpactPrompt] = useState(false);
 
   const bulletLines = currentText
     ? currentText
@@ -61,7 +63,7 @@ export function InlineAiWriter({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  const handleGenerate = (mode: 'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS') => {
+  const handleGenerate = (mode: 'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS', customImpact?: string) => {
     setActiveMode(mode);
     setErrorMessage(null);
     startTransition(async () => {
@@ -74,6 +76,7 @@ export function InlineAiWriter({
           company,
           role,
           skills,
+          impactAnswer: customImpact !== undefined ? customImpact : impactInput,
         });
 
         if (res.success && res.suggestions.length > 0) {
@@ -214,6 +217,55 @@ export function InlineAiWriter({
                 ⚡ Keywords ATS
               </button>
             </div>
+
+            {/* Módulo Entrevista de Impacto en 1 Clic (Para logros que carecen de métricas) */}
+            {type === 'BULLET' && (
+              <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold text-cyan-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-cyan-400" />
+                    Entrevista de Impacto Cuantitativo
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowImpactPrompt((prev) => !prev)}
+                    className="text-[9.5px] font-mono text-cyan-400 hover:text-cyan-200 transition-colors"
+                  >
+                    {showImpactPrompt ? 'Ocultar' : '¿Tienes cifras reales?'}
+                  </button>
+                </div>
+                {showImpactPrompt && (
+                  <div className="space-y-1.5 pt-1">
+                    <p className="text-[10px] text-zinc-300 leading-tight">
+                      Ingresa el volumen, porcentaje o resultado (ej: <em>&quot;45 pacientes mensuales&quot;</em>, <em>&quot;reduje en 20% el tiempo de espera&quot;</em>):
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={impactInput}
+                        onChange={(e) => setImpactInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleGenerate(activeMode, impactInput);
+                          }
+                        }}
+                        placeholder="Ej: 30 casos al mes, $5M ahorrados, 99% uptime..."
+                        className="flex-1 bg-black/50 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleGenerate(activeMode, impactInput)}
+                        disabled={isPending || !impactInput.trim()}
+                        className="px-3 py-1.5 rounded-lg bg-cyan-500/25 hover:bg-cyan-500/35 border border-cyan-500/40 text-cyan-200 text-[10px] font-semibold transition-all disabled:opacity-40 cursor-pointer"
+                      >
+                        Aplicar dato
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Mensaje de Error con Botón de Reintento */}
             {errorMessage && (

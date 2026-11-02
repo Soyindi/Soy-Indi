@@ -61,10 +61,17 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
       {/* HOJA 1: ENCABEZADO, RESUMEN Y EXPERIENCIA PRINCIPAL           */}
       {/* ============================================================== */}
       <div className="w-full flex flex-col items-center">
-        {/* Badge indicador de hoja unificada */}
-        <div className="page-badge mb-3 self-start flex items-center gap-2 bg-slate-900/90 text-cyan-300 border border-cyan-500/30 text-[11px] font-mono px-3.5 py-1.5 rounded-full shadow-sm backdrop-blur-sm">
+        {/* Badge indicador de hoja unificada con Pacing A4 en vivo */}
+        <div className="page-badge mb-3 self-start flex flex-wrap items-center gap-2 bg-slate-900/90 text-cyan-300 border border-cyan-500/30 text-[11px] font-mono px-3.5 py-1.5 rounded-full shadow-sm backdrop-blur-sm">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          <span>Hoja 1 {needsTwoPages ? 'de 2' : 'de 1'} • Formato Unificado A4 Internacional (Grado Empresarial)</span>
+          <span>Hoja 1 {needsTwoPages ? 'de 2' : 'de 1'} • A4 Internacional</span>
+          <span className="text-zinc-500">•</span>
+          <span className="text-emerald-300 font-semibold">{distribution.capacityUtilizationPct}% de capacidad ocupada</span>
+          {distribution.capacityUtilizationPct >= 75 && distribution.capacityUtilizationPct <= 96 && (
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-sans">
+              (Equilibrio Óptimo)
+            </span>
+          )}
         </div>
 
         <div 

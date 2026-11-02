@@ -261,6 +261,7 @@ export const rewriteCvSectionSchema = z.object({
   company: z.string().optional(),
   role: z.string().optional(),
   skills: z.array(z.string()).optional(),
+  impactAnswer: z.string().max(500, 'Respuesta demasiado larga').optional(),
   userId: z.string().optional(),
 });
 
