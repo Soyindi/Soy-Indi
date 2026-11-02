@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/shared/api/db';
 import { smartCvs } from '@/entities/schema';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { CVFormValues, sanitizeCvForPublicView } from '@/entities/cv/schemas';
 import { PublicCvViewer } from '@/features/ai-smart-cv/components/PublicCvViewer';
 import { getAppBaseUrl, buildCanonicalUrl } from '@/entities/brand/domain';

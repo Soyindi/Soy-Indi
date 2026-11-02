@@ -11,7 +11,7 @@
  */
 
 import { MultimodalCvExtraction } from '@/entities/cv/schemas';
-import { assertSyntacticCompleteness } from '@/features/orbital-presentations/lib/presentation-auditor';
+import { assertSyntacticCompleteness } from '@/shared/lib/syntacticAuditor';
 
 export type CvCandidateArchetype = 
   | 'executive_c_level'      // Liderazgo C-Level, directores, gerentes generales
@@ -223,11 +223,24 @@ export function auditAndRepairCvExtraction(
     };
   });
 
+  // 3. Sanitizar años de educación: erradicar etiquetas de placeholder ("No especificado", "N/A", "Sin fecha")
+  const auditedEducation = (extraction.education || []).map((edu) => {
+    const rawYear = (edu.year || '').trim();
+    const isPlaceholderYear = /^(?:no\s+especificado|sin\s+fecha|no\s+disponible|n\/a|pendiente|graduado(?:\s*\/\s*acreditado)?|desconocido|-+)$/i.test(
+      rawYear
+    );
+    return {
+      ...edu,
+      year: isPlaceholderYear ? '' : rawYear,
+    };
+  });
+
   return {
     auditedExtraction: {
       ...extraction,
       summary: cleanSummary,
       experience: auditedExperience,
+      education: auditedEducation,
     },
     repairedBulletsCount,
   };

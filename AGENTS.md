@@ -557,21 +557,7 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
 
 ---
 
-### SOP-137: Universalidad de Ingesta, Emparejamiento Semántico de Certificados y Privacidad Ley 21.719 en Smart CV (2026)
-1. **Erradicación de Arquetipos e Identidades Hardcodeadas**:
-   - Queda estrictamente prohibido que fallbacks deterministas o estados por defecto de plantillas inyecten nombres, correos o RUTs de personas específicas (ej. `"Matías Riquelme"` o `"18.492.041-K"`).
-   - Todo nuevo usuario o visitante debe recibir un arquetipo neutral derivado exclusivamente de su sesión autenticada o campos guiados en blanco.
-2. **Emparejamiento Semántico Universal de Fechas desde Certificados Anexos**:
-   - `enrichEducationDatesFromCertificates` opera mediante coincidencia léxica normalizada (`extractSignificantTokens`) entre títulos declarados y diplomas anexos.
-   - Queda prohibido el uso de condicionales estáticos con años fijos por profesión (`if (psicólogo) return 2018`).
-3. **Privacidad de Datos Personales por Defecto (Ley N° 21.719 Chile)**:
-   - Toda renderización pública en `/cv/[slug]` debe pasar por `sanitizeCvForPublicView`.
-   - Por defecto, el RUT y los teléfonos/emails de terceras personas en las referencias laborales se omiten u ofuscan (`[Disponible a solicitud]`), protegiendo a los referentes de scrapers y motores de búsqueda.
-4. **Soporte Nativo de Archivos Microsoft Word (`.docx`)**:
-   - Extracción de texto de archivos `.docx` en cliente y servidor mediante descompresión en memoria del contenedor ZIP y análisis de `word/document.xml`, sin dependencias pesadas.
-5. **Paginación Dinámica Multi-Hoja A4 (1..N Hojas) & Paridad Vectorial con PDF**:
-   - `calculateCvPageDistribution` y `CvDocumentPreview` soportan dinámicamente tantas hojas como requiera el contenido del usuario, alineando estrictamente el orden de secciones con `pdf-engine.ts` (`Habilidades ➔ Educación`) y aplicando `splitTextToSize` para impedir colisiones de texto horizontal.
-
+### SOP-136: Aislamiento Estricto de CV frente a Diplomas Anexos, Extracción Fiel de Especializaciones y Lookahead No Destructivo
 1. **Aislamiento Pre-Procesamiento del Cuerpo del CV (`isolateCvBodyFromAttachments`)**:
    - Todo documento compuesto (CV de varias páginas con diplomas, certificados SENCE/OPS o constancias escaneadas al final) debe delimitarse formalmente en `isolateCvBodyFromAttachments` antes de enviarse a inferencia LLM o al parser heurístico.
    - Detecta la línea de firma o RUT final del candidato (ej: `Matías Ricardo... · RUT 18.209.442-0` o `______`) o los encabezados inequívocos de certificados posteriores (`Se confiere el presente diploma`, `Certificado de Finalización`, `N° Folio:`, `Para verificar la autenticidad...`).
@@ -586,13 +572,29 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
 5. **Reconciliación 1 a 1 de Teléfonos de Contacto (`reconcileReferenceContacts`)**:
    - Toda rehidratación de contactos laborales debe exigir coincidencia conjunta de nombre de pila y apellido (`firstName` + `lastName`) y buscar de forma prioritaria en la misma línea del contacto o en su continuación inmediata.
    - Queda estrictamente prohibido propagar o reutilizar el número de un referente a las demás referencias por búsquedas retrospectivas amplias (`i - 2`).
-6. **Enriquecimiento de Fechas Fidedignas desde Certificados de Respaldo (`enrichEducationDatesFromCertificates`)**:
-   - Cuando un CV declare cursos o capacitaciones sin año en la viñeta y el usuario haya adjuntado diplomas o certificados escaneados en páginas posteriores, el sistema debe consultar los certificados de respaldo para extraer el año real de completación (ej. SENDA 2019/2020, OPS 2020, EBG 2021, SENCE 2023), erradicando años alucinados por defecto (ej. 2024 en todos los cursos).
-7. **Salvaguarda Defensiva de Experiencias Laborales y Prevención de Colapso A4 (`mergeExperiences`, `mergeReferences`, `maxTokens: 6000`)**:
+6. **Salvaguarda Defensiva de Experiencias Laborales y Prevención de Colapso A4 (`mergeExperiences`, `mergeReferences`, `maxTokens: 6000`)**:
    - Para prevenir que modelos LLM resuman agresivamente la trayectoria laboral a 1 solo cargo para reducir tokens, el sistema implementa `mergeExperiences` y `mergeReferences`. Si la IA devuelve menos cargos que el parser heurístico determinista, fusiona e inyecta todos los cargos y viñetas faltantes.
-   - Esto previene el colapso accidental a 1 sola página A4 (`needsTwoPages = false`), garantizando que la Hoja 2 A4 permanezca siempre activa para desplegar las Referencias Laborales y la Educación completa cuando el candidato posee múltiples cargos y certificaciones.
-8. **Desacoplamiento Jerárquico de Instituciones y Especialidades en Roles Compuestos (`isInstitutionalWord`)**:
+7. **Desacoplamiento Jerárquico de Instituciones y Especialidades en Roles Compuestos (`isInstitutionalWord`)**:
    - En líneas con múltiples segmentos (ej: `Psicólogo – PIE y Convivencia Escolar · Escuela Almirante...`), los términos institucionales (`escuela`, `hospital`, `cesfam`, `sodexo`, `complejo`, etc.) tienen precedencia absoluta como entidad/empresa (`inlineCompany`).
-   - Los segmentos intermedios de área o especialidad (ej: `PIE`, `Convivencia Escolar`, `Reinserción`) se concatenan al cargo profesional (`role = Psicólogo – PIE y Convivencia Escolar`), evitando que programas internos desplacen el nombre de la institución real.
+
+---
+
+### SOP-137: Universalidad de Ingesta, Emparejamiento Forense de Fechas de Certificados, OCR Multimodal y Pureza FSD (2026)
+1. **Erradicación de Arquetipos e Identidades Hardcodeadas**:
+   - Queda estrictamente prohibido que fallbacks deterministas o estados por defecto de plantillas inyecten nombres, correos o RUTs de personas específicas. Todo nuevo usuario recibe un arquetipo neutral derivado exclusivamente de su sesión autenticada o campos guiados en blanco.
+2. **Validación Estricta de Años Educativos (`hasValidEducationYear`) & Prohibición de `"No especificado"`**:
+   - El prompt `MULTIMODAL_CV_PROMPT` y el auditor `auditAndRepairCvExtraction` prohíben y purgan marcadores como `"No especificado"`, `"Sin fecha"`, `"Pendiente"` o `"Graduado / Acreditado"`, dejando string vacío `""` cuando un curso carece de fecha verificable.
+   - `mergeEducations` se ejecuta siempre (`textParsed.education.length > 0`) y actualiza años simples (`"2018"`) cuando el cuerpo del CV contiene el rango completo (`"2013 – 2018"`).
+3. **Emparejamiento Semántico Universal de Certificados Anexos (`enrichEducationDatesFromCertificates`)**:
+   - Opera exclusivamente sobre el bloque de anexos posteriores al cuerpo del CV (`extractAttachmentsFromDocument`), previniendo colisiones con la Página 2 del propio currículum.
+   - Aplica de-kerning tipográfico (`"Ed ucation"` -> `"education"`) y stemming morfológico español singular/plural (`autolesiones` -> `autolesion`) en `extractSignificantTokens`.
+   - `extractDateFromCertificateBlock` prioriza etiquetas explícitas de finalización (`Fecha de Término Curso 02-06-2023`, `desarrollado entre el 19/05/25 y el 09/06/25`) por sobre fechas de impresión de portal al pie (`Santiago, 19 de Noviembre de 2024`), y soporta formatos `<mes> DD, YYYY` (`abril 10, 2019`) y años de 2 dígitos (`DD/MM/YY`).
+4. **OCR Multimodal Ligero para Diplomas Escaneados en PDF (`extractPdfWithScannedAttachmentsClient`)**:
+   - Cuando un PDF contiene páginas de certificados escaneados como imagen raster (`< 160` caracteres de texto digital), el extractor cliente renderiza miniaturas ligeras en WebP (`<= 960px`, quality `0.65`) y `enrichEducationDatesFromScannedPagesVision` consulta Gemini 2.5 Flash Vision para recuperar el año exacto sin superar el límite de 4.5 MB de red.
+5. **Auditor Sintáctico Compartido en `shared/` & Cero Violaciones Cross-Feature FSD (`@/shared/lib/syntacticAuditor`)**:
+   - `assertSyntacticCompleteness` y `repairExperienceDurationPhrases` residen en `src/shared/lib/syntacticAuditor.ts`, reparando omisiones inducidas por sanitización de edad (ej. `"con más de cinco trayectoria"` -> `"con más de cinco años de trayectoria"`) y garantizando cero importaciones cruzadas entre `features/ai-smart-cv` y `features/orbital-presentations`.
+6. **Privacidad de Datos Personales por Defecto (Ley N° 21.719 Chile)**:
+   - Toda renderización pública en `/cv/[slug]` pasa por `sanitizeCvForPublicView`, ocultando el RUT y ofuscando teléfonos de terceros (`[Disponible a solicitud]`) salvo que el titular active explícitamente `showRutOnPublic` o `showReferenceContactsOnPublic` en `SmartCvBuilder.tsx`.
+
 
 

@@ -1,15 +1,6 @@
 import { MultimodalCvExtraction } from '@/entities/cv/schemas';
 
-/**
- * Aísla el cuerpo legítimo del CV descartando páginas posteriores con diplomas o certificados escaneados adjuntos.
- * Detecta la firma o término formal del CV (ej: línea de RUT al final de las referencias) o encabezados
- * de certificados oficiales posteriores (SENCE, OPS, diplomas, etc.).
- */
-export function isolateCvBodyFromAttachments(rawText: string, candidateName?: string): string {
-  if (!rawText) return '';
-  const lines = rawText.split(/\r?\n/);
-  let cutoffIndex = -1;
-
+function findAttachmentCutoffIndex(lines: string[], candidateName?: string): number {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     const lower = line.toLowerCase();
@@ -20,13 +11,12 @@ export function isolateCvBodyFromAttachments(rawText: string, candidateName?: st
       /^[_\-\s]{6,}$/.test(line) ||
       (candidateName && line.toLowerCase().includes(candidateName.toLowerCase()) && (line.includes('RUT') || line.includes('18.')))
     ) {
-      if (i > 15) {
+      if (i >= 4) {
         let endOffset = 1;
         if (i + 1 < lines.length && (lines[i + 1].includes('RUT') || (candidateName && lines[i + 1].toLowerCase().includes(candidateName.toLowerCase())))) {
           endOffset = 2;
         }
-        cutoffIndex = i + endOffset;
-        break;
+        return i + endOffset;
       }
     }
 
@@ -41,24 +31,59 @@ export function isolateCvBodyFromAttachments(rawText: string, candidateName?: st
       lower.startsWith('certificado de capacitacion') ||
       lower.startsWith('certificado de participación') ||
       lower.startsWith('certificado de participacion') ||
+      lower.includes('otorga el presente certificado') ||
       lower.startsWith('n° folio:') ||
       lower.startsWith('nº folio:') ||
       lower.startsWith('para verificar la autenticidad del certificado') ||
       lower.startsWith('la autenticidad de este certificado se puede verificar') ||
-      (lower === 'constancia' && i > 25)
+      (lower === 'constancia' && i > 10)
     ) {
-      if (i > 15) {
-        cutoffIndex = i;
-        break;
+      if (i >= 4) {
+        return i;
       }
     }
   }
+
+  return -1;
+}
+
+/**
+ * Aísla el cuerpo legítimo del CV descartando páginas posteriores con diplomas o certificados escaneados adjuntos.
+ * Detecta la firma o término formal del CV (ej: línea de RUT al final de las referencias) o encabezados
+ * de certificados oficiales posteriores (SENCE, OPS, diplomas, etc.).
+ */
+export function isolateCvBodyFromAttachments(rawText: string, candidateName?: string): string {
+  if (!rawText) return '';
+  const lines = rawText.split(/\r?\n/);
+  const cutoffIndex = findAttachmentCutoffIndex(lines, candidateName);
 
   if (cutoffIndex !== -1 && cutoffIndex < lines.length) {
     return lines.slice(0, cutoffIndex).join('\n');
   }
 
   return rawText;
+}
+
+/**
+ * Extrae únicamente el bloque de anexos, diplomas o certificados adjuntos posteriores al cuerpo del CV.
+ * Previene que el emparejador de fechas colisione con las páginas del propio CV.
+ */
+export function extractAttachmentsFromDocument(rawText: string, candidateName?: string): string {
+  if (!rawText) return '';
+  const lines = rawText.split(/\r?\n/);
+  const cutoffIndex = findAttachmentCutoffIndex(lines, candidateName);
+
+  if (cutoffIndex !== -1 && cutoffIndex < lines.length) {
+    return lines.slice(cutoffIndex).join('\n');
+  }
+
+  // Fallback: si el documento tiene saltos de página explícitos (> 3 páginas), considerar desde la página 4 en adelante
+  const pages = rawText.split(/--- PÁGINA SIGUIENTE ---|--- PÁGINA \d+ ---|\f/);
+  if (pages.length > 3) {
+    return pages.slice(3).join('\n\n--- PÁGINA SIGUIENTE ---\n\n');
+  }
+
+  return '';
 }
 
 /**
@@ -743,7 +768,7 @@ export function parseCvTextToStructuredData(
       education.push({
         degree: deg || line.replace(/\((?:19|20)\d{2}.*\)/, '').trim(),
         institution: inst || 'Centro de Formación Profesional',
-        year: year || 'Graduado / Acreditado',
+        year: year || '',
       });
     }
   }

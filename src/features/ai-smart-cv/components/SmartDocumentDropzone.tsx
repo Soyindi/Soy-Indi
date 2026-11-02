@@ -31,6 +31,7 @@ export function SmartDocumentDropzone({
     try {
       let fileToSend = file;
       let clientExtractedText = '';
+      let clientScannedPages: Array<{ pageNumber: number; mimeType: string; base64: string }> = [];
 
       // 1. Si es imagen (foto de CV o captura de diploma), comprimir en cliente a WebP (< 150KB)
       if (file.type.startsWith('image/')) {
@@ -51,12 +52,14 @@ export function SmartDocumentDropzone({
         file.name.toLowerCase().endsWith('.docx') ||
         file.type.includes('wordprocessingml')
       ) {
-        // 2. Si es PDF o Word (.docx), extraer texto directamente en el navegador
-        // Esto reduce una carga de 10MB a menos de 10KB, evitando por completo el error HTTP 413 de Vercel/AWS.
+        // 2. Si es PDF o Word (.docx), extraer texto y miniaturas de certificados escaneados en el navegador
+        // Esto reduce una carga de 10MB a menos de 200KB, evitando por completo el error HTTP 413 de Vercel/AWS.
         setStatusMessage('Extrayendo contenido estructurado directamente en tu navegador...');
         try {
-          const { extractTextFromPdfClient } = await import('@/shared/lib/clientDocumentExtractor');
-          clientExtractedText = await extractTextFromPdfClient(file);
+          const { extractPdfWithScannedAttachmentsClient } = await import('@/shared/lib/clientDocumentExtractor');
+          const extractedBundle = await extractPdfWithScannedAttachmentsClient(file);
+          clientExtractedText = extractedBundle.text;
+          clientScannedPages = extractedBundle.scannedPages || [];
         } catch (clientErr) {
           console.warn('[SmartDocumentDropzone] Extracción client-side no disponible, usando fallback:', clientErr);
         }
@@ -79,6 +82,10 @@ export function SmartDocumentDropzone({
 
       if (clientExtractedText && clientExtractedText.trim().length > 20) {
         formData.append('extractedText', clientExtractedText);
+      }
+
+      if (clientScannedPages.length > 0) {
+        formData.append('scannedPages', JSON.stringify(clientScannedPages));
       }
 
       if (type === 'cv') {

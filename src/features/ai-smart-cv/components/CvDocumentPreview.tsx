@@ -213,27 +213,36 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                       Educación & Certificaciones
                     </h2>
                     <div className="space-y-2">
-                      {content.education.map((edu, eIdx) => (
-                        <div key={eIdx} className="text-xs flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-zinc-900">{sanitizeBulletText(edu.degree)}</span>
-                            <span className="text-zinc-600">• {sanitizeBulletText(edu.institution)}</span>
-                            {edu.credentialType === 'DEGREE' && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                                <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                                Título Validado
-                              </span>
-                            )}
-                            {edu.credentialType === 'CERTIFICATION' && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
-                                <ShieldCheck className="w-3 h-3 text-indigo-600" />
-                                Certificado Oficial
+                      {content.education.map((edu, eIdx) => {
+                        const cleanYear = edu.year && !/no\s+especificado|sin\s+fecha|pendiente|n\/a/i.test(edu.year) ? edu.year.trim() : '';
+                        return (
+                          <div key={eIdx} className="text-xs flex items-baseline justify-between gap-4">
+                            <div className="flex-1 min-w-0 leading-relaxed">
+                              <span className="font-bold text-zinc-900">{sanitizeBulletText(edu.degree)}</span>
+                              {edu.institution && (
+                                <span className="text-zinc-600"> • {sanitizeBulletText(edu.institution)}</span>
+                              )}
+                              {edu.credentialType === 'DEGREE' && (
+                                <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 align-middle">
+                                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                  Título Validado
+                                </span>
+                              )}
+                              {edu.credentialType === 'CERTIFICATION' && (
+                                <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200 align-middle">
+                                  <ShieldCheck className="w-3 h-3 text-indigo-600" />
+                                  Certificado Oficial
+                                </span>
+                              )}
+                            </div>
+                            {cleanYear && (
+                              <span className="text-zinc-500 text-[11px] font-mono shrink-0 whitespace-nowrap">
+                                {cleanYear}
                               </span>
                             )}
                           </div>
-                          <span className="text-zinc-500 text-[11px] font-mono">{edu.year}</span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -408,27 +417,36 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
                     Educación & Formación
                   </h2>
                   <div className="space-y-2">
-                    {content.education.map((edu, eIdx) => (
-                      <div key={eIdx} className="text-xs flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-zinc-900">{sanitizeBulletText(edu.degree)}</span>
-                          <span className="text-zinc-600">• {sanitizeBulletText(edu.institution)}</span>
-                          {edu.credentialType === 'DEGREE' && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                              <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                              Título Validado
-                            </span>
-                          )}
-                          {edu.credentialType === 'CERTIFICATION' && (
-                            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold ${webTokens.accentText} ${webTokens.accentBg} px-2 py-0.5 rounded-full border ${webTokens.accentBorder}/30`}>
-                              <ShieldCheck className="w-3 h-3 text-indigo-600" />
-                              Certificado Oficial
+                    {content.education.map((edu, eIdx) => {
+                      const cleanYear = edu.year && !/no\s+especificado|sin\s+fecha|pendiente|n\/a/i.test(edu.year) ? edu.year.trim() : '';
+                      return (
+                        <div key={eIdx} className="text-xs flex items-baseline justify-between gap-4">
+                          <div className="flex-1 min-w-0 leading-relaxed">
+                            <span className="font-bold text-zinc-900">{sanitizeBulletText(edu.degree)}</span>
+                            {edu.institution && (
+                              <span className="text-zinc-600"> • {sanitizeBulletText(edu.institution)}</span>
+                            )}
+                            {edu.credentialType === 'DEGREE' && (
+                              <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 align-middle">
+                                <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                Título Validado
+                              </span>
+                            )}
+                            {edu.credentialType === 'CERTIFICATION' && (
+                              <span className={`ml-2 inline-flex items-center gap-1 text-[10px] font-semibold ${webTokens.accentText} ${webTokens.accentBg} px-2 py-0.5 rounded-full border ${webTokens.accentBorder}/30 align-middle`}>
+                                <ShieldCheck className="w-3 h-3 text-indigo-600" />
+                                Certificado Oficial
+                              </span>
+                            )}
+                          </div>
+                          {cleanYear && (
+                            <span className="text-zinc-500 text-[11px] font-mono shrink-0 whitespace-nowrap">
+                              {cleanYear}
                             </span>
                           )}
                         </div>
-                        <span className="text-zinc-500 text-[11px] font-mono">{edu.year}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -509,7 +527,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
               {/* Pie de Página de Hoja 2 */}
               <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
                 <span>INDI Smart CV • Estándar ATS Grado Empresarial</span>
-                <span>Página 2 de 2</span>
+                <span>Página 2 de {needsTwoPages ? 2 : 1}</span>
               </div>
             </div>
           </div>

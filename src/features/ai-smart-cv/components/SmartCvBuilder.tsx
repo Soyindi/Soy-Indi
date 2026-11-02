@@ -276,6 +276,7 @@ export function SmartCvBuilder({
         content: {
           ...prev.content,
           ...extractedCv.content,
+          credentials: extractedCv.content?.credentials || [],
         },
       };
     });
@@ -1106,6 +1107,52 @@ export function SmartCvBuilder({
                   </p>
                   <span className="text-[10px] font-mono text-zinc-600">min. 3 car.</span>
                 </div>
+
+                {/* Controles de Privacidad de Datos en Vista Pública (Ley 21.719) */}
+                {formData.isPublic && (
+                  <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[11px] font-mono text-zinc-400">
+                      Privacidad en enlace público:
+                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleContentChange('showRutOnPublic', !(formData.content.showRutOnPublic ?? false))
+                        }
+                        className={`min-h-[32px] inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono border transition-colors cursor-pointer ${
+                          formData.content.showRutOnPublic
+                            ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+                            : 'bg-white/5 text-zinc-400 border-white/10 hover:text-zinc-200'
+                        }`}
+                        title="Por defecto el RUT permanece oculto en la URL pública y solo se incluye en tu PDF descargado"
+                      >
+                        <span>{formData.content.showRutOnPublic ? 'RUT visible en web' : 'RUT oculto en web'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleContentChange(
+                            'showReferenceContactsOnPublic',
+                            !(formData.content.showReferenceContactsOnPublic ?? false)
+                          )
+                        }
+                        className={`min-h-[32px] inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono border transition-colors cursor-pointer ${
+                          formData.content.showReferenceContactsOnPublic
+                            ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+                            : 'bg-white/5 text-zinc-400 border-white/10 hover:text-zinc-200'
+                        }`}
+                        title="Protege los teléfonos de tus referentes en la URL pública frente a bots; siempre se incluyen completos al exportar tu PDF"
+                      >
+                        <span>
+                          {formData.content.showReferenceContactsOnPublic
+                            ? 'Tel. referencias visibles'
+                            : 'Tel. referencias protegidos'}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

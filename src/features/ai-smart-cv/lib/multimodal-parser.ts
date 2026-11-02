@@ -1,5 +1,6 @@
 import { multimodalCvExtractionSchema, MultimodalCvExtraction, verifiedCredentialSchema, VerifiedCredential } from '@/entities/cv/schemas';
-import { parseCvTextToStructuredData, isolateCvBodyFromAttachments } from '@/features/ai-smart-cv/lib/cv-text-parser';
+import { parseCvTextToStructuredData, isolateCvBodyFromAttachments, extractAttachmentsFromDocument } from '@/features/ai-smart-cv/lib/cv-text-parser';
+import type { ScannedPageAttachment } from '@/shared/lib/clientDocumentExtractor';
 
 /**
  * Prompt para el extractor multimodal Qwen2.5-VL / Gemini Flash
@@ -17,7 +18,8 @@ Tu misión exclusiva es transformar notas, documentos o currículums desestructu
 [REGLAS DE PROCESAMIENTO CRÍTICAS]
 
 1. SANITIZACIÓN REGULATORIA (EU AI Act):
-   - Descarta explícitamente cualquier mención de: edad, fecha de nacimiento, estado civil, nacionalidad protegida, género, religión o filiación política.
+   - Descarta explícitamente cualquier mención de: edad biológica del candidato (ej. "Edad: 33 años"), fecha de nacimiento, estado civil, nacionalidad protegida, género, religión o filiación política.
+   - ¡PROHIBIDO MUTILAR AÑOS DE EXPERIENCIA!: Conserva SIEMPRE intactas las expresiones sobre años de trayectoria o experiencia profesional (ej. "con más de cinco años de trayectoria" o "10 años de experiencia" NUNCA debe perder las palabras "años de").
    - Concéntrate exclusivamente en mérito técnico, competencias profesionales, experiencia y educación.
 
 2. PROTOCOLO STRICT ZERO-HALLUCINATION & PRESERVACIÓN AUTÉNTICA (ESTRUCTURA GOOGLE XYZ / STAR):
@@ -48,7 +50,7 @@ Tu misión exclusiva es transformar notas, documentos o currículums desestructu
    - Cada curso, diplomado, especialización o título universitario debe figurar como un elemento individual en "education".
    - En "degree", coloca el nombre completo del grado, diplomado o curso.
    - En "institution", la universidad, instituto o entidad que lo impartió. Si el texto no menciona institución explícita, coloca la entidad certificadora o "Centro de Formación Profesional".
-   - En "year", el año de realización o graduación (ej. "2023", "2018").
+   - En "year", preserva el rango completo de años si el documento indica inicio y término (ej. "2013 – 2018"), o el año de realización/graduación si es único (ej. "2023"). Si un curso o certificación no indica año explícito en el listado, devuelve string vacío "" (PROHIBIDO escribir "No especificado", "Sin fecha" o "N/A").
 
 6. PRESERVACIÓN FIDEDIGNA DE CONTACTOS Y REFERENCIAS LABORALES:
    - En "references", extrae rigurosamente TODOS los contactos de referencia que figuren en el documento con su nombre completo, cargo desempeñado, institución/empresa y número telefónico o email de contacto real.
@@ -235,15 +237,15 @@ export async function parseCvDocumentMultimodal(
             data.references = mergeReferences(data.references || [], textParsed.references);
           }
 
-          // C. Preservar cursos y diplomados
-          if (textParsed.education && textParsed.education.length > data.education.length) {
+          // C. Preservar cursos, diplomados y rangos completos de años (ej. 2013 – 2018)
+          if (textParsed.education && textParsed.education.length > 0) {
             data.education = mergeEducations(data.education, textParsed.education);
           }
         }
 
         // 3. Enriquecimiento de fechas reales de cursos desde diplomas/certificados de respaldo
         if (fullOriginalText && data.education && data.education.length > 0) {
-          data.education = enrichEducationDatesFromCertificates(data.education, fullOriginalText);
+          data.education = enrichEducationDatesFromCertificates(data.education, fullOriginalText, data.fullName);
         }
 
         const { auditAndRepairCvExtraction } = await import('@/features/ai-smart-cv/lib/cv-auditor');
@@ -259,7 +261,7 @@ export async function parseCvDocumentMultimodal(
   if (extractedRawText && extractedRawText.trim().length > 30) {
     const rawParsed = parseCvTextToStructuredData(extractedRawText, fileName);
     if (fullOriginalText && rawParsed.education && rawParsed.education.length > 0) {
-      rawParsed.education = enrichEducationDatesFromCertificates(rawParsed.education, fullOriginalText);
+      rawParsed.education = enrichEducationDatesFromCertificates(rawParsed.education, fullOriginalText, rawParsed.fullName);
     }
     const { auditAndRepairCvExtraction } = await import('@/features/ai-smart-cv/lib/cv-auditor');
     const { auditedExtraction } = auditAndRepairCvExtraction(rawParsed);
@@ -279,7 +281,8 @@ export async function parseCvDocumentMultimodal(
  */
 export async function parseCvTextWithAiCascade(
   rawInputText: string,
-  fileName: string = 'cv.pdf'
+  fileName: string = 'cv.pdf',
+  scannedPages: ScannedPageAttachment[] = []
 ): Promise<MultimodalCvExtraction> {
   const extractedRawText = isolateCvBodyFromAttachments(rawInputText);
   const { evaluateCvPreRouteStrategy, auditAndRepairCvExtraction } = await import('@/features/ai-smart-cv/lib/cv-auditor');
@@ -337,15 +340,20 @@ Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIE
             data.references = mergeReferences(data.references || [], textParsed.references);
           }
 
-          // C. Preservar cursos y diplomados
-          if (textParsed.education && textParsed.education.length > data.education.length) {
+          // C. Preservar cursos, diplomados y rangos completos de años
+          if (textParsed.education && textParsed.education.length > 0) {
             data.education = mergeEducations(data.education, textParsed.education);
           }
         }
 
         // 3. Enriquecimiento de fechas reales de cursos desde diplomas/certificados de respaldo
         if (rawInputText && data.education && data.education.length > 0) {
-          data.education = enrichEducationDatesFromCertificates(data.education, rawInputText);
+          data.education = enrichEducationDatesFromCertificates(data.education, rawInputText, data.fullName);
+        }
+
+        // 4. OCR Multimodal Vision para diplomas adjuntos escaneados (imagen en PDF)
+        if (scannedPages && scannedPages.length > 0 && data.education && data.education.length > 0) {
+          data.education = await enrichEducationDatesFromScannedPagesVision(data.education, scannedPages);
         }
 
         const { auditedExtraction } = auditAndRepairCvExtraction(data);
@@ -358,7 +366,10 @@ Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIE
 
   const rawParsed = parseCvTextToStructuredData(extractedRawText, fileName);
   if (rawInputText && rawParsed.education && rawParsed.education.length > 0) {
-    rawParsed.education = enrichEducationDatesFromCertificates(rawParsed.education, rawInputText);
+    rawParsed.education = enrichEducationDatesFromCertificates(rawParsed.education, rawInputText, rawParsed.fullName);
+  }
+  if (scannedPages && scannedPages.length > 0 && rawParsed.education && rawParsed.education.length > 0) {
+    rawParsed.education = await enrichEducationDatesFromScannedPagesVision(rawParsed.education, scannedPages);
   }
   const { auditedExtraction } = auditAndRepairCvExtraction(rawParsed);
   return auditedExtraction;
@@ -611,60 +622,152 @@ function reconcileReferenceContacts(
 }
 
 /**
- * Normaliza y tokeniza un texto para cálculo de similitud léxica sin acentos ni stopwords
+ * Verifica si un string de año educativo contiene un año o rango numérico real (19xx / 20xx)
+ * y no es un marcador genérico como "No especificado", "Pendiente" o "Graduado / Acreditado".
+ */
+function hasValidEducationYear(yearStr: string | undefined): boolean {
+  if (!yearStr) return false;
+  const trimmed = yearStr.trim();
+  if (!trimmed) return false;
+  if (/no\s+especificado|sin\s+fecha|pendiente|graduado|acreditado|n\/a|null|undefined/i.test(trimmed)) {
+    return false;
+  }
+  return /\b(19\d{2}|20\d{2})\b/.test(trimmed);
+}
+
+/**
+ * Normaliza palabras partidas por kerning tipográfico en PDFs de certificados
+ * (ej. "Ed ucation Business Group, I nc." -> "Education Business Group, Inc.")
+ * y aplica stemming español ligero para singular/plural (ej. "autolesiones" -> "autolesion").
+ */
+function stemSpanishToken(token: string): string {
+  if (token.length <= 4) return token;
+  if (token.endsWith('ciones')) return token.slice(0, -6) + 'cion';
+  if (token.endsWith('siones')) return token.slice(0, -6) + 'sion';
+  if (token.endsWith('les') && token.length > 6) return token.slice(0, -2);
+  if (token.endsWith('es') && token.length > 5 && !/[aeiou]es$/.test(token)) {
+    return token.slice(0, -2);
+  }
+  if (token.endsWith('s') && token.length > 4) {
+    return token.slice(0, -1);
+  }
+  return token;
+}
+
+/**
+ * Normaliza y tokeniza un texto para cálculo de similitud léxica sin acentos ni stopwords,
+ * incluyendo reparación de kerning PDF y stemming plural/singular.
  */
 function extractSignificantTokens(text: string): Set<string> {
   const stopwords = new Set([
     'de', 'la', 'que', 'el', 'en', 'y', 'a', 'los', 'del', 'se', 'las', 'por', 'un', 'para', 'con', 'no',
-    'una', 'su', 'al', 'lo', 'como', 'más', 'pero', 'sus', 'le', 'ya', 'o', 'este', 'sí', 'porque', 'esta',
-    'entre', 'cuando', 'muy', 'sin', 'sobre', 'también', 'me', 'hasta', 'hay', 'donde', 'quien', 'desde',
+    'una', 'su', 'al', 'lo', 'como', 'mas', 'pero', 'sus', 'le', 'ya', 'o', 'este', 'si', 'porque', 'esta',
+    'entre', 'cuando', 'muy', 'sin', 'sobre', 'tambien', 'me', 'hasta', 'hay', 'donde', 'quien', 'desde',
     'todo', 'nos', 'durante', 'todos', 'uno', 'les', 'ni', 'contra', 'otros', 'ese', 'eso', 'ante', 'ellos',
-    'curso', 'diplomado', 'título', 'titulo', 'licenciado', 'licenciatura', 'capacitación', 'capacitacion',
-    'programa', 'certificación', 'certificacion', 'formación', 'formacion', 'aprobado', 'participación'
+    'curso', 'diplomado', 'titulo', 'licenciado', 'licenciatura', 'capacitacion', 'programa', 'certificacion',
+    'formacion', 'aprobado', 'participacion', 'certificado', 'otorga', 'presente', 'haber', 'completado',
+    'exito', 'modalidad', 'distancia', 'horas', 'cronologicas', 'duracion', 'realizado'
   ]);
 
-  const clean = text
+  // Reparar palabras comunes partidas por kerning en certificados PDF antes de tokenizar
+  const deKerned = text
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\bed\s+ucation\b/g, 'education')
+    .replace(/\bi\s+nc\b/g, 'inc')
+    .replace(/\bwisc\s*-\s*v\b/g, 'wiscv')
     .replace(/[^a-z0-9\s]/g, ' ');
 
-  const tokens = clean.split(/\s+/).filter((t) => t.length > 2 && !stopwords.has(t));
-  return new Set(tokens);
+  const rawTokens = deKerned.split(/\s+/).filter((t) => t.length >= 3 && !stopwords.has(t));
+  const result = new Set<string>();
+  for (const t of rawTokens) {
+    const stemmed = stemSpanishToken(t);
+    result.add(stemmed.length >= 3 && !stopwords.has(stemmed) ? stemmed : t);
+  }
+  return result;
 }
 
 /**
- * Busca de forma universal la fecha o año en un bloque de certificado/diploma.
- * Admite formatos:
- * - "dd de mes de aaaa" (ej: 08 de junio de 2019)
- * - "dd/mm/aaaa" o "dd-mm-aaaa" (ej: 02-06-2023)
- * - "mes aaaa" o años explícitos "19xx" / "20xx"
+ * Convierte un año de 2 o 4 dígitos a formato canónico de 4 dígitos (ej. "25" -> "2025", "19" -> "2019").
  */
-function extractDateFromCertificateBlock(blockText: string): string | null {
-  // 1. Rango de años o año explícito de titulación "2013 – 2018" o "2018"
+function normalizeYearToken(yearRaw: string): string | null {
+  const clean = yearRaw.trim();
+  if (/^(19\d{2}|20\d{2})$/.test(clean)) {
+    return clean;
+  }
+  if (/^\d{2}$/.test(clean)) {
+    const num = parseInt(clean, 10);
+    if (num >= 0 && num <= 35) return `20${clean}`;
+    if (num >= 70 && num <= 99) return `19${clean}`;
+  }
+  return null;
+}
+
+/**
+ * Busca de forma universal la fecha o año de realización/término en un bloque de certificado/diploma.
+ * Prioriza explícitamente la fecha de término o realización del curso por sobre la fecha de impresión del portal.
+ */
+export function extractDateFromCertificateBlock(blockText: string): string | null {
+  if (!blockText) return null;
+
+  const MONTHS_PATTERN = '(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)';
+
+  // 1. PRIORIDAD MÁXIMA: Fecha de Término / Ejecución explícita del curso (ej. SENCE "Fecha de Término Curso 02-06-2023" o "desarrollado entre el 19/05/25 y el 09/06/25")
+  const explicitCompletionSlash = blockText.match(
+    /(?:fecha\s+de\s+t[ée]rmino(?:\s+curso)?|finalizado\s+el|desarrollado\s+entre\s+el\s+\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\s+y\s+el|completado\s+el|realizado\s+el)[:\s]*\d{1,2}[/-]\d{1,2}[/-](\d{2,4})\b/i
+  );
+  if (explicitCompletionSlash) {
+    const norm = normalizeYearToken(explicitCompletionSlash[1]);
+    if (norm) return norm;
+  }
+
+  // 2. Rango de fechas dd/mm/yy(yy) a dd/mm/yy(yy) (toma la fecha de término del rango)
+  const slashRangeMatch = blockText.match(
+    /\b\d{1,2}[/-]\d{1,2}[/-](\d{2,4})\s+(?:y\s+el|al|a|hasta(?:\s+el)?|-|–)\s+\d{1,2}[/-]\d{1,2}[/-](\d{2,4})\b/i
+  );
+  if (slashRangeMatch) {
+    const normEnd = normalizeYearToken(slashRangeMatch[2]);
+    if (normEnd) return normEnd;
+  }
+
+  // 3. Fechas en español "dd de [mes] de/del aaaa" o "dd [mes] aaaa" (ignorando pies de firma/impresión posteriores si ya hay fecha del curso)
+  const spanishFullMatches = Array.from(
+    blockText.matchAll(
+      new RegExp(`\\b\\d{1,2}\\s+(?:de\\s+)?${MONTHS_PATTERN}\\s+(?:del?\\s+)?(19\\d{2}|20\\d{2})\\b`, 'gi')
+    )
+  );
+  if (spanishFullMatches.length > 0) {
+    return spanishFullMatches[0][1];
+  }
+
+  // 4. Formato anglosajón/híbrido en certificados (ej. SENDA: "abril 10, 2019" o "junio 2019" o "abril – junio 2019")
+  const monthFirstMatch = blockText.match(
+    new RegExp(`\\b${MONTHS_PATTERN}\\s+(?:\\d{1,2},?\\s*|(?:[–—\\-]|a|al)\\s*${MONTHS_PATTERN}\\s+)?(19\\d{2}|20\\d{2})\\b`, 'i')
+  );
+  if (monthFirstMatch) {
+    return monthFirstMatch[1];
+  }
+
+  // 5. Fechas con slash o guion dd/mm/aaaa o dd-mm-aa
+  const slashDateMatch = blockText.match(/\b\d{1,2}[/-]\d{1,2}[/-](19\d{2}|20\d{2}|\d{2})\b/);
+  if (slashDateMatch) {
+    const norm = normalizeYearToken(slashDateMatch[1]);
+    if (norm) return norm;
+  }
+
+  // 6. Rango de años explícito "2013 – 2018"
   const rangeMatch = blockText.match(/\b(19\d{2}|20\d{2})\s*[–—-]\s*(19\d{2}|20\d{2})\b/);
   if (rangeMatch) {
     return `${rangeMatch[1]} – ${rangeMatch[2]}`;
   }
 
-  // 2. Patrones con fecha de término o emisión: "Fecha de Término... 02-06-2023" o "dd de [mes] de aaaa"
-  const dateFullMatch = blockText.match(/\b\d{1,2}\s+(?:de\s+)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(?:del?\s+)?(19\d{2}|20\d{2})\b/i);
-  if (dateFullMatch) {
-    return dateFullMatch[2]; // año del evento
-  }
-
-  const slashDateMatch = blockText.match(/\b\d{1,2}[/-]\d{1,2}[/-](19\d{2}|20\d{2})\b/);
-  if (slashDateMatch) {
-    return slashDateMatch[1];
-  }
-
-  // 3. Años sueltos recientes en bloques de diploma (preferir el más tardío si indica finalización)
+  // 7. Años sueltos válidos en el bloque del diploma
   const years = Array.from(blockText.matchAll(/\b(19\d{2}|20\d{2})\b/g)).map((m) => parseInt(m[1], 10));
   if (years.length > 0) {
-    // Si hay año de nacimiento o inicio y fin, tomar el año de finalización/emisión (< 2030)
     const validYears = years.filter((y) => y >= 1990 && y <= 2030);
     if (validYears.length > 0) {
-      return String(Math.max(...validYears));
+      return String(validYears[0]);
     }
   }
 
@@ -673,55 +776,107 @@ function extractDateFromCertificateBlock(blockText: string): string | null {
 
 /**
  * Emparejador Semántico Universal de Fechas desde Anexos/Diplomas.
- * Examina los bloques de diplomas adjuntos y busca coincidencias léxicas con los cursos
- * del profesional sin recurrir a listas estáticas ni arquetipos hardcodeados.
+ * Examina exclusivamente los bloques de diplomas adjuntos (después del cuerpo del CV)
+ * y busca coincidencias léxicas, institucionales y posicionales con los cursos del profesional.
  */
-function enrichEducationDatesFromCertificates(
+export function enrichEducationDatesFromCertificates(
   education: Array<{ degree: string; institution: string; year: string }>,
-  fullRawText: string
+  fullRawText: string,
+  candidateName?: string
 ): Array<{ degree: string; institution: string; year: string }> {
   if (!fullRawText || !Array.isArray(education) || education.length === 0) return education;
 
-  // Segmentar las páginas de diplomas posteriores usando saltos de página o delimitadores
-  const certificateBlocks = fullRawText
+  // 1. Verificar si en el cuerpo del CV existe un rango de años completo (ej. "2013 – 2018") para títulos que solo quedaron con 1 año ("2018")
+  const cvBodyText = isolateCvBodyFromAttachments(fullRawText, candidateName);
+  const cvBodyLines = cvBodyText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+
+  // 2. Extraer EXCLUSIVAMENTE las páginas de anexos/certificados posteriores al CV
+  const attachmentsRaw = extractAttachmentsFromDocument(fullRawText, candidateName);
+  const certificateBlocks = (attachmentsRaw || '')
     .split(/--- PÁGINA SIGUIENTE ---|--- PÁGINA \d+ ---|\f/)
     .map((b) => b.trim())
-    .filter((b) => b.length > 30);
+    .filter((b) => b.length > 25);
 
-  return education.map((edu) => {
-    let currentYear = edu.year || '';
-    // Si ya tiene un año bien definido de 4 dígitos o rango de titulación y no es el genérico '2024'
-    if (currentYear && currentYear.length >= 4 && !currentYear.includes('2024') && currentYear !== 'Pendiente') {
-      return edu;
-    }
+  const usedBlockIndices = new Set<number>();
 
-    const eduTokens = extractSignificantTokens(`${edu.degree} ${edu.institution}`);
-    if (eduTokens.size === 0) return edu;
+  // Primera pasada: enriquecer rangos del cuerpo del CV y emparejar certificados con texto digital
+  const enriched = education.map((edu) => {
+    const cleanedYear = hasValidEducationYear(edu.year) ? edu.year.trim() : '';
 
-    let bestScore = 0;
-    let bestBlock: string | null = null;
-
-    for (const block of certificateBlocks) {
-      const blockTokens = extractSignificantTokens(block);
-      let matchCount = 0;
-
-      for (const token of eduTokens) {
-        if (blockTokens.has(token)) {
-          matchCount++;
+    // Si tiene un solo año (ej. "2018"), verificar si en el cuerpo del CV aparece como rango "2013 – 2018" junto al título/institución
+    if (/^(19\d{2}|20\d{2})$/.test(cleanedYear)) {
+      const eduTokens = extractSignificantTokens(`${edu.degree} ${edu.institution}`);
+      for (let i = 0; i < cvBodyLines.length; i++) {
+        const windowText = [cvBodyLines[i - 1] || '', cvBodyLines[i], cvBodyLines[i + 1] || ''].join(' ');
+        const rangeMatch = windowText.match(new RegExp(`\\b(19\\d{2}|20\\d{2})\\s*[–—-]\\s*(${cleanedYear})\\b`));
+        if (rangeMatch) {
+          const lineTokens = extractSignificantTokens(windowText);
+          let hits = 0;
+          for (const t of eduTokens) {
+            if (lineTokens.has(t)) hits++;
+          }
+          if (hits >= 2) {
+            return { ...edu, year: `${rangeMatch[1]} – ${rangeMatch[2]}` };
+          }
         }
       }
+      return { ...edu, year: cleanedYear };
+    }
 
-      // Proporción de tokens del título encontrados en el diploma
-      const score = matchCount / eduTokens.size;
-      if (score > bestScore && score >= 0.40) {
-        bestScore = score;
-        bestBlock = block;
+    // Si ya tiene un rango válido o un año válido distinto del genérico '2024', conservarlo
+    if (cleanedYear && !cleanedYear.includes('2024')) {
+      return { ...edu, year: cleanedYear };
+    }
+
+    if (certificateBlocks.length === 0) {
+      return { ...edu, year: cleanedYear };
+    }
+
+    const degreeTokens = extractSignificantTokens(edu.degree);
+    const instTokens = extractSignificantTokens(edu.institution);
+    const allEduTokens = new Set([...degreeTokens, ...instTokens]);
+    if (allEduTokens.size === 0) return { ...edu, year: cleanedYear };
+
+    let bestScore = 0;
+    let bestBlockIdx = -1;
+
+    for (let idx = 0; idx < certificateBlocks.length; idx++) {
+      const block = certificateBlocks[idx];
+      const blockTokens = extractSignificantTokens(block);
+
+      let degreeHits = 0;
+      for (const token of degreeTokens) {
+        if (blockTokens.has(token)) degreeHits++;
+      }
+
+      let instHits = 0;
+      for (const token of instTokens) {
+        if (blockTokens.has(token)) instHits++;
+      }
+
+      const degreeRatio = degreeTokens.size > 0 ? degreeHits / degreeTokens.size : 0;
+      const instBonus = instHits > 0 ? 0.22 : 0;
+
+      // Sinonimia semántica común en certificados oficiales (ej. SENCE "Redacción de informes técnicos" <-> "Elaboración de Informes Técnicos")
+      const hasSemanticCourseMatch =
+        degreeHits >= 2 && instHits >= 1
+          ? 0.25
+          : 0;
+
+      const totalScore = degreeRatio + instBonus + hasSemanticCourseMatch;
+
+      // Exigir al menos 2 tokens coincidentes del título (o 1 si el título solo tiene 1 token significativo, más coincidencia institucional)
+      const minDegreeHits = degreeTokens.size >= 2 ? 2 : 1;
+      if (degreeHits >= minDegreeHits && totalScore > bestScore && totalScore >= 0.42) {
+        bestScore = totalScore;
+        bestBlockIdx = idx;
       }
     }
 
-    if (bestBlock) {
-      const detectedYear = extractDateFromCertificateBlock(bestBlock);
+    if (bestBlockIdx !== -1) {
+      const detectedYear = extractDateFromCertificateBlock(certificateBlocks[bestBlockIdx]);
       if (detectedYear) {
+        usedBlockIndices.add(bestBlockIdx);
         return {
           ...edu,
           year: detectedYear,
@@ -729,13 +884,132 @@ function enrichEducationDatesFromCertificates(
       }
     }
 
-    return edu;
+    return { ...edu, year: cleanedYear };
   });
+
+  // Segunda pasada: resolver certificados vectoriales/aplanados huérfanos (cuando el título del curso está en curvas vectoriales como TCPDF, pero el bloque contiguo tiene fecha de emisión y marcadores de diploma)
+  for (let i = 0; i < enriched.length; i++) {
+    if (enriched[i].year) continue;
+
+    // Buscar si un curso hermano de la misma institución se emparejó con el bloque k, y el bloque k+1 es un diploma válido sin reclamar
+    const instNorm = enriched[i].institution.toLowerCase().trim();
+    for (let j = 0; j < enriched.length; j++) {
+      if (i === j || !enriched[j].year) continue;
+      if (instNorm && enriched[j].institution.toLowerCase().trim() === instNorm) {
+        // Buscar bloques huérfanos cortos (< 250 chars) con marcadores de certificado ("horas cronológicas", "tcpdf", "%")
+        for (let bIdx = 0; bIdx < certificateBlocks.length; bIdx++) {
+          if (usedBlockIndices.has(bIdx)) continue;
+          const orphanBlock = certificateBlocks[bIdx];
+          if (
+            orphanBlock.length < 260 &&
+            /horas\s+cronol[óo]gicas|tcpdf|certificado|aprobaci[óo]n|\b\d{1,3}\s*%/i.test(orphanBlock)
+          ) {
+            const orphanYear = extractDateFromCertificateBlock(orphanBlock);
+            if (orphanYear) {
+              usedBlockIndices.add(bIdx);
+              enriched[i] = { ...enriched[i], year: orphanYear };
+              break;
+            }
+          }
+        }
+      }
+      if (enriched[i].year) break;
+    }
+  }
+
+  return enriched;
+}
+
+/**
+ * Enriquecimiento Multimodal con Visión (Gemini Flash Vision) para páginas de certificados
+ * escaneados como imagen dentro del PDF (donde la capa de texto digital tiene 0 caracteres).
+ */
+async function enrichEducationDatesFromScannedPagesVision(
+  education: Array<{ degree: string; institution: string; year: string }>,
+  scannedPages: ScannedPageAttachment[]
+): Promise<Array<{ degree: string; institution: string; year: string }>> {
+  const missingIndices = education
+    .map((edu, idx) => (!hasValidEducationYear(edu.year) ? idx : -1))
+    .filter((idx) => idx !== -1);
+
+  if (missingIndices.length === 0 || !scannedPages || scannedPages.length === 0) {
+    return education;
+  }
+
+  const geminiKey =
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim() ||
+    process.env.GEMINI_API_KEY?.trim();
+
+  if (!geminiKey) {
+    return education;
+  }
+
+  try {
+    const missingCoursesList = missingIndices.map((idx) => ({
+      index: idx,
+      degree: education[idx].degree,
+      institution: education[idx].institution,
+    }));
+
+    const parts: Array<Record<string, unknown>> = [
+      {
+        text: `Analiza estas imágenes de diplomas/certificados adjuntos en el CV y determina el año de realización o emisión para los siguientes cursos sin fecha:\n${JSON.stringify(missingCoursesList, null, 2)}\n\nDevuelve EXCLUSIVAMENTE un objeto JSON con el formato:\n{\n  "matches": [\n    { "index": number, "year": "YYYY" }\n  ]\n}`,
+      },
+      ...scannedPages.slice(0, 6).map((page) => ({
+        inlineData: {
+          mimeType: page.mimeType,
+          data: page.base64,
+        },
+      })),
+    ];
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts }],
+          generationConfig: {
+            temperature: 0.1,
+            responseMimeType: 'application/json',
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) return education;
+    const data = await response.json();
+    const rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (!rawJson) return education;
+
+    const parsed = JSON.parse(rawJson);
+    if (!Array.isArray(parsed?.matches)) return education;
+
+    const updated = [...education];
+    for (const match of parsed.matches) {
+      const idx = Number(match?.index);
+      const yearStr = String(match?.year || '').trim();
+      if (
+        Number.isInteger(idx) &&
+        idx >= 0 &&
+        idx < updated.length &&
+        hasValidEducationYear(yearStr)
+      ) {
+        updated[idx] = { ...updated[idx], year: yearStr };
+      }
+    }
+    return updated;
+  } catch (err) {
+    console.warn('[IDP Vision] No se pudo extraer fechas de páginas escaneadas:', err);
+    return education;
+  }
 }
 
 /**
  * Fusiona la educación extraída por la IA con cursos, diplomados y certificaciones
- * detectados en el parser heurístico de texto para garantizar que no se pierdan especializaciones.
+ * detectados en el parser heurístico de texto, y actualiza años simples ("2018")
+ * cuando el parser de texto preservó el rango completo ("2013 – 2018").
  */
 function mergeEducations(
   aiEducation: Array<{ degree: string; institution: string; year: string }>,
@@ -744,16 +1018,37 @@ function mergeEducations(
   if (!Array.isArray(textEducation) || textEducation.length === 0) return aiEducation;
   if (!Array.isArray(aiEducation) || aiEducation.length === 0) return textEducation;
 
-  const result = [...aiEducation];
+  const result = aiEducation.map((item) => ({
+    ...item,
+    year: hasValidEducationYear(item.year) ? item.year.trim() : '',
+  }));
+
   for (const textEdu of textEducation) {
     const textNorm = textEdu.degree.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const alreadyExists = result.some((item) => {
+    const existingIndex = result.findIndex((item) => {
       const itemNorm = item.degree.toLowerCase().replace(/[^a-z0-9]/g, '');
       return itemNorm.includes(textNorm) || textNorm.includes(itemNorm);
     });
 
-    if (!alreadyExists && textEdu.degree.length > 5) {
-      result.push(textEdu);
+    if (existingIndex === -1) {
+      if (textEdu.degree.length > 5) {
+        result.push({
+          ...textEdu,
+          year: hasValidEducationYear(textEdu.year) ? textEdu.year.trim() : '',
+        });
+      }
+    } else {
+      const existing = result[existingIndex];
+      const textYearValid = hasValidEducationYear(textEdu.year) ? textEdu.year.trim() : '';
+      const isTextRange = /\b(19\d{2}|20\d{2})\s*[–—-]\s*(19\d{2}|20\d{2}|presente|actual)/i.test(textYearValid);
+      const isExistingRange = /\b(19\d{2}|20\d{2})\s*[–—-]\s*(19\d{2}|20\d{2}|presente|actual)/i.test(existing.year);
+
+      if ((isTextRange && !isExistingRange) || (!existing.year && textYearValid)) {
+        result[existingIndex] = {
+          ...existing,
+          year: textYearValid,
+        };
+      }
     }
   }
 

@@ -232,20 +232,28 @@ export function buildCvPdfDocument(
     drawSectionHeader('Educación y Certificaciones');
 
     for (const edu of content.education) {
-      checkPageBreak(15);
       const degreeTitle = sanitizeBulletText(edu.degree || 'Título o Grado');
+      const cleanYear =
+        edu.year && !/no\s+especificado|sin\s+fecha|pendiente|n\/a/i.test(edu.year)
+          ? edu.year.trim()
+          : '';
+      const maxDegreeWidth = cleanYear ? contentWidth - 28 : contentWidth;
+
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9.5);
-      doc.setTextColor(...pdfTokens.headerColor);
-      doc.text(degreeTitle, marginX, cursorY);
+      const degreeLines = doc.splitTextToSize(degreeTitle, maxDegreeWidth);
+      checkPageBreak(degreeLines.length * 4 + 9);
 
-      if (edu.year) {
+      doc.setTextColor(...pdfTokens.headerColor);
+      doc.text(degreeLines, marginX, cursorY);
+
+      if (cleanYear) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
         doc.setTextColor(...pdfTokens.metaColor);
-        doc.text(edu.year, marginX + contentWidth, cursorY, { align: 'right' });
+        doc.text(cleanYear, marginX + contentWidth, cursorY, { align: 'right' });
       }
-      cursorY += 4;
+      cursorY += degreeLines.length * 4;
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);

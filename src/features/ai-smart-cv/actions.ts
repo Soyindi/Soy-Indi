@@ -57,10 +57,23 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
 
     const file = formData.get('file') as File | null;
     const extractedTextParam = formData.get('extractedText') as string | null;
+    const scannedPagesParam = formData.get('scannedPages') as string | null;
     const fileName = (formData.get('fileName') as string | null) || file?.name || 'cv.pdf';
 
     if (file && file.size > 10 * 1024 * 1024) {
       return { success: false, error: 'El archivo excede el tamaño máximo permitido de 10 MB.' };
+    }
+
+    let scannedPages: Array<{ pageNumber: number; mimeType: string; base64: string }> = [];
+    if (scannedPagesParam) {
+      try {
+        const parsedPages = JSON.parse(scannedPagesParam);
+        if (Array.isArray(parsedPages)) {
+          scannedPages = parsedPages.slice(0, 6);
+        }
+      } catch {
+        scannedPages = [];
+      }
     }
 
     let extracted: MultimodalCvExtraction | null = null;
@@ -69,7 +82,7 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
       const { sanitizeExtractedText } = await import('@/shared/lib/fileSecurity');
       const sanitized = sanitizeExtractedText(extractedTextParam, { maxChars: 250000 });
       const { parseCvTextWithAiCascade } = await import('@/features/ai-smart-cv/lib/multimodal-parser');
-      extracted = await parseCvTextWithAiCascade(sanitized, fileName);
+      extracted = await parseCvTextWithAiCascade(sanitized, fileName, scannedPages);
     } else {
       if (!file) {
         return { success: false, error: 'No se ha adjuntado ningún archivo ni texto de currículum.' };
