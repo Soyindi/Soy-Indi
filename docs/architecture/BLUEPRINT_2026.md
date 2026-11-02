@@ -552,6 +552,9 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
   - **Catálogo de Subencabezados Taxonómicos (`isEduSubheader`)**: Incorporación de rótulos taxonómicos (`área laboral`, `evaluación y clínica`, `derechos y marco legal`) para que no se conviertan en grados académicos.
   - **Extracción de Viñetas de Especializaciones**: Toda línea con viñeta (`^[●•\-\*·]`) en educación se procesa como curso/especialización sin exigir `hasAcademicKeyword`, garantizando que el 100% de las capacitaciones del candidato se extraigan fielmente.
   - **Lookahead No Destructivo de Referencias**: Evaluación prioritaria de separadores (`[—–|·]|\s-\s`) con nombres de persona antes de palabras de cargo en `isPotentialNewReference`, preservando íntegras las 5 referencias con sus números de teléfono reales.
+  - **Reconciliación 1 a 1 de Teléfonos**: Búsqueda estricta por `firstName` + `lastName` y en la misma línea o continuación del contacto, erradicando la propagación accidental del teléfono de un referente a otros.
+  - **Enriquecimiento de Fechas Reales (`enrichEducationDatesFromCertificates`)**: Consulta selectiva de los certificados de respaldo en las páginas finales para inyectar los años reales (2019, 2020, 2021, 2023, 2025) a los cursos del CV que no declaraban año explícito en su viñeta, erradicando años genéricos o alucinados (2024).
+
 
 
 

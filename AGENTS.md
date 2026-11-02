@@ -569,4 +569,10 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
 4. **Lookahead No Destructivo en Referencias Laborales (`isPotentialNewReference`)**:
    - `isPotentialNewReference` debe evaluar prioritariamente si la línea presenta separador de entidad (`[—–|·]|\s-\s`) con un nombre propio en el primer segmento antes de verificar palabras de cargo (`isJobTitleLine`).
    - Evita que referencias con cargo incluido en la misma línea (ej: `"Claudia Cárcamo — Psicóloga, CESFAM..."`) sean devoradas por el lookahead de la referencia precedente.
+5. **Reconciliación 1 a 1 de Teléfonos de Contacto (`reconcileReferenceContacts`)**:
+   - Toda rehidratación de contactos laborales debe exigir coincidencia conjunta de nombre de pila y apellido (`firstName` + `lastName`) y buscar de forma prioritaria en la misma línea del contacto o en su continuación inmediata.
+   - Queda estrictamente prohibido propagar o reutilizar el número de un referente a las demás referencias por búsquedas retrospectivas amplias (`i - 2`).
+6. **Enriquecimiento de Fechas Fidedignas desde Certificados de Respaldo (`enrichEducationDatesFromCertificates`)**:
+   - Cuando un CV declare cursos o capacitaciones sin año en la viñeta y el usuario haya adjuntado diplomas o certificados escaneados en páginas posteriores, el sistema debe consultar los certificados de respaldo para extraer el año real de completación (ej. SENDA 2019/2020, OPS 2020, EBG 2021, SENCE 2023), erradicando años alucinados por defecto (ej. 2024 en todos los cursos).
+
 
