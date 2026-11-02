@@ -33,7 +33,22 @@ Tu misión exclusiva es transformar notas, documentos o currículums desestructu
    - PROHIBICIÓN DE ETIQUETAS Y PREFIJOS OBVIOS: No incluyas prefijos como "Responsabilidades:", "Funciones:" o "Logros clave:". Extrae la sustancia fáctica directa.
    - En "summary", extrae y pule el perfil profesional del usuario sin imponer clichés de auto-engrandecimiento ("líder visionario") ni plantillas prefabricadas. Preserva la autenticidad de su experiencia.
 
-4. DEVUELVE EXCLUSIVAMENTE UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
+4. EXTRACCIÓN EXHAUSTIVA DE EDUCACIÓN, DIPLOMADOS, CURSOS Y ESPECIALIZACIONES:
+   - En el array "education", DEBES EXTRAER TODA la trayectoria académica y formativa del candidato sin omitir ninguna:
+     * Títulos profesionales y universitarios (ej. "Título de Psicólogo • Licenciado en Psicología").
+     * Diplomados, postítulos y posgrados.
+     * Cursos de especialización, capacitaciones, formación continua, certificaciones y talleres profesionales relevantes (ej. cursos clínicos, herramientas diagnósticas, capacitaciones en salud mental, etc.).
+     * Magísteres, másteres y doctorados.
+   - Cada curso, diplomado, especialización o título universitario debe figurar como un elemento individual en "education".
+   - En "degree", coloca el nombre completo del grado, diplomado o curso.
+   - En "institution", la universidad, instituto o entidad que lo impartió. Si el texto no menciona institución explícita, coloca la entidad certificadora o "Centro de Formación Profesional".
+   - En "year", el año de realización o graduación (ej. "2023", "2018").
+
+5. PRESERVACIÓN FIDEDIGNA DE CONTACTOS Y REFERENCIAS LABORALES:
+   - En "references", extrae rigurosamente TODOS los contactos de referencia que figuren en el documento con su nombre completo, cargo desempeñado, institución/empresa y número telefónico o email de contacto real.
+   - Tienes terminantemente PROHIBIDO reemplazar los teléfonos por etiquetas como "[TELEFONO_PROTEGIDO]". Extráelos exactamente con su numeración real (ej. "+56 9 8226 8970").
+
+6. DEVUELVE EXCLUSIVAMENTE UN OBJETO JSON VÁLIDO CON ESTA ESTRUCTURA:
 {
   "fullName": string,
   "email": string,
@@ -157,6 +172,7 @@ export async function parseCvDocumentMultimodal(
         model: 'meta/llama-3.3-70b-instruct',
         temperature: 0.1,
         responseFormat: { type: 'json_object' },
+        preserveSensitiveData: true,
       }
     );
 
@@ -170,8 +186,23 @@ export async function parseCvDocumentMultimodal(
       const validated = multimodalCvExtractionSchema.safeParse(parsed);
       if (validated.success) {
         console.log(`[IDP] Extracción estructurada exitosa vía ${nimResult.modelUsed || 'AI Engine'}`);
+        const data = { ...validated.data };
+
+        // 1. Reconciliación defensiva de teléfonos en referencias laborales
+        if (extractedRawText && data.references && data.references.length > 0) {
+          data.references = reconcileReferenceContacts(data.references, extractedRawText);
+        }
+
+        // 2. Fusión defensiva de educación: asegurar que cursos, talleres y diplomados del texto no se pierdan
+        if (extractedRawText) {
+          const textParsed = parseCvTextToStructuredData(extractedRawText, fileName);
+          if (textParsed.education && textParsed.education.length > data.education.length) {
+            data.education = mergeEducations(data.education, textParsed.education);
+          }
+        }
+
         const { auditAndRepairCvExtraction } = await import('@/features/ai-smart-cv/lib/cv-auditor');
-        const { auditedExtraction } = auditAndRepairCvExtraction(validated.data);
+        const { auditedExtraction } = auditAndRepairCvExtraction(data);
         return auditedExtraction;
       }
     }
@@ -221,6 +252,7 @@ Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIE
         model: 'meta/llama-3.3-70b-instruct',
         temperature: 0.1,
         responseFormat: { type: 'json_object' },
+        preserveSensitiveData: true,
       }
     );
 
@@ -234,7 +266,22 @@ Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIE
       const validated = multimodalCvExtractionSchema.safeParse(parsed);
       if (validated.success) {
         console.log(`[IDP] Extracción estructurada desde texto exitosa vía ${nimResult.modelUsed || 'AI Engine'}`);
-        const { auditedExtraction } = auditAndRepairCvExtraction(validated.data);
+        const data = { ...validated.data };
+
+        // 1. Reconciliación defensiva de teléfonos en referencias
+        if (extractedRawText && data.references && data.references.length > 0) {
+          data.references = reconcileReferenceContacts(data.references, extractedRawText);
+        }
+
+        // 2. Fusión defensiva de educación: asegurar que cursos, talleres y diplomados del texto no se pierdan
+        if (extractedRawText) {
+          const textParsed = parseCvTextToStructuredData(extractedRawText, fileName);
+          if (textParsed.education && textParsed.education.length > data.education.length) {
+            data.education = mergeEducations(data.education, textParsed.education);
+          }
+        }
+
+        const { auditedExtraction } = auditAndRepairCvExtraction(data);
         return auditedExtraction;
       }
     }
@@ -464,4 +511,95 @@ function synthesizeDeterministicExtraction(fileName: string): MultimodalCvExtrac
     ],
     references: [],
   };
+}
+
+/**
+ * Reconcilia y rehidrata los números de contacto de las referencias laborales
+ * buscando en el texto extraído del documento original si la IA devolvió marcadores
+ * como [TELEFONO_PROTEGIDO] o si faltó el teléfono.
+ */
+function reconcileReferenceContacts(
+  references: Array<{ name: string; role: string; company: string; contact?: string | undefined }>,
+  rawText: string
+): Array<{ name: string; role: string; company: string; contact: string }> {
+  if (!rawText || !Array.isArray(references) || references.length === 0) {
+    return (references || []).map((r) => ({ ...r, contact: r.contact || '' }));
+  }
+
+  // Extraer todos los números telefónicos presentes en el texto original
+  const phoneRegex = /(?:\+?56\s?9|\b9)\s?\d{4}\s?\d{4}\b|(?:\+?56\s?)?(?:61|2|32|33|34|35|41|42|43|45|51|52|53|55|57|58|71|72|73|75)\s?\d{1,2}\s?\d{5,6}\b/g;
+  const allPhones = Array.from(rawText.matchAll(phoneRegex)).map((m) => m[0].trim());
+
+  const lines = rawText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+
+  return references.map((ref, idx) => {
+    let cleanContact = ref.contact || '';
+
+    // Si el contacto contiene marcadores de privacidad residuales o no tiene dígitos reales
+    if (cleanContact.includes('PROTEGIDO') || !/\d{6,}/.test(cleanContact)) {
+      // Buscar en las líneas cercanas al nombre de la persona
+      const nameParts = ref.name.split(' ').filter((p) => p.length > 2);
+      let foundPhone = '';
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const matchesName = nameParts.some((part) => line.toLowerCase().includes(part.toLowerCase()));
+        if (matchesName) {
+          // Buscar teléfono en un radio de 6 líneas alrededor del nombre
+          const start = Math.max(0, i - 2);
+          const end = Math.min(lines.length, i + 7);
+          for (let j = start; j < end; j++) {
+            const surrounding = lines[j];
+            const pMatch = surrounding.match(/(?:\+?56\s?9|\b9)\s?\d{4}\s?\d{4}\b|(?:\+?56\s?)?(?:61|2|32|33|34|35|41|42|43|45|51|52|53|55|57|58|71|72|73|75)\s?\d{1,2}\s?\d{5,6}\b/);
+            if (pMatch) {
+              foundPhone = pMatch[0].trim();
+              break;
+            }
+          }
+          if (foundPhone) break;
+        }
+      }
+
+      // Si no se encontró en la ventana local, asociar por orden de aparición en el documento
+      if (!foundPhone && allPhones[idx]) {
+        foundPhone = allPhones[idx];
+      }
+
+      if (foundPhone) {
+        cleanContact = foundPhone;
+      }
+    }
+
+    return {
+      ...ref,
+      contact: cleanContact,
+    };
+  });
+}
+
+/**
+ * Fusiona la educación extraída por la IA con cursos, diplomados y certificaciones
+ * detectados en el parser heurístico de texto para garantizar que no se pierdan especializaciones.
+ */
+function mergeEducations(
+  aiEducation: Array<{ degree: string; institution: string; year: string }>,
+  textEducation: Array<{ degree: string; institution: string; year: string }>
+): Array<{ degree: string; institution: string; year: string }> {
+  if (!Array.isArray(textEducation) || textEducation.length === 0) return aiEducation;
+  if (!Array.isArray(aiEducation) || aiEducation.length === 0) return textEducation;
+
+  const result = [...aiEducation];
+  for (const textEdu of textEducation) {
+    const textNorm = textEdu.degree.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const alreadyExists = result.some((item) => {
+      const itemNorm = item.degree.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return itemNorm.includes(textNorm) || textNorm.includes(itemNorm);
+    });
+
+    if (!alreadyExists && textEdu.degree.length > 5) {
+      result.push(textEdu);
+    }
+  }
+
+  return result;
 }

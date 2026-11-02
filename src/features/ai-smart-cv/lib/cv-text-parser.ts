@@ -181,15 +181,21 @@ export function parseCvTextToStructuredData(
       return { isHeader: true, type: 'experience' };
     }
     if (
-      (lower.includes('educación') ||
+      lower.includes('educación') ||
       lower.includes('educacion') ||
       lower.includes('formación') ||
       lower.includes('formacion') ||
       lower.includes('estudios') ||
       lower.includes('education') ||
-      lower.includes('antecedentes académicos')) &&
-      !lower.includes('complementaria') &&
-      !lower.includes('continua')
+      lower.includes('antecedentes académicos') ||
+      lower.includes('cursos') ||
+      lower.includes('capacitación') ||
+      lower.includes('capacitacion') ||
+      lower.includes('capacitaciones') ||
+      lower.includes('diplomados') ||
+      lower.includes('especializaciones') ||
+      lower.includes('certificaciones') ||
+      lower.includes('talleres')
     ) {
       return { isHeader: true, type: 'education' };
     }
@@ -215,11 +221,16 @@ export function parseCvTextToStructuredData(
   });
 
   const getSectionLines = (type: SectionType): string[] => {
-    const target = sectionIndices.find((s) => s.type === type);
-    if (!target) return [];
-    const nextSection = sectionIndices.find((s) => s.lineIndex > target.lineIndex);
-    const endIndex = nextSection ? nextSection.lineIndex : lines.length;
-    return lines.slice(target.lineIndex + 1, endIndex);
+    const matching = sectionIndices.filter((s) => s.type === type);
+    if (matching.length === 0) return [];
+    
+    const aggregated: string[] = [];
+    for (const section of matching) {
+      const nextSection = sectionIndices.find((s) => s.lineIndex > section.lineIndex);
+      const endIndex = nextSection ? nextSection.lineIndex : lines.length;
+      aggregated.push(...lines.slice(section.lineIndex + 1, endIndex));
+    }
+    return aggregated;
   };
 
   // 5. Procesar Resumen Profesional
@@ -486,25 +497,30 @@ export function parseCvTextToStructuredData(
 
   // Descartar subtítulos de sección como "ESPECIALIZACIONES Y FORMACIÓN COMPLEMENTARIA"
   const isEduSubheader = (l: string): boolean => {
-    const lower = l.toLowerCase().trim();
+    const lower = l.toLowerCase().trim().replace(/[:\-#*]/g, '');
+    if (lower.length > 55) return false; // Si es una línea descriptiva con institución o título, procesar
     if (
-      lower.includes('formación complementaria') ||
-      lower.includes('formacion complementaria') ||
-      lower.includes('especializaciones y formación') ||
-      lower.includes('especializaciones y formacion') ||
-      lower.includes('cursos y capacitaciones') ||
-      lower.includes('cursos y talleres') ||
+      lower === 'formación complementaria' ||
+      lower === 'formacion complementaria' ||
+      lower === 'especializaciones y formación' ||
+      lower === 'especializaciones y formacion' ||
+      lower === 'especializaciones y formación complementaria' ||
+      lower === 'especializaciones y formacion complementaria' ||
+      lower === 'cursos y capacitaciones' ||
+      lower === 'cursos y talleres' ||
       lower === 'educación' ||
       lower === 'educacion' ||
       lower === 'formación' ||
-      lower === 'formacion'
+      lower === 'formacion' ||
+      lower === 'cursos' ||
+      lower === 'capacitaciones'
     ) {
       return true;
     }
     return false;
   };
 
-  // Palabras indispensables para considerar una línea como educación formal
+  // Palabras indispensables para considerar una línea como educación formal o continua
   const hasAcademicKeyword = (l: string): boolean => {
     const lower = l.toLowerCase();
     return (
@@ -533,7 +549,13 @@ export function parseCvTextToStructuredData(
       lower.includes('especialización') ||
       lower.includes('especializacion') ||
       lower.includes('capacitación') ||
-      lower.includes('capacitacion')
+      lower.includes('capacitacion') ||
+      lower.includes('taller') ||
+      lower.includes('seminario') ||
+      lower.includes('postítulo') ||
+      lower.includes('postitulo') ||
+      lower.includes('paliativ') ||
+      lower.includes('clínic')
     );
   };
 

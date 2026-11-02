@@ -541,3 +541,16 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
 3. **Erradicación Absoluta de Placeholders y Corchetes de Programación (`[añadir métrica...]`)**:
    - Tanto en el System Prompt de los modelos LLM como en el fallback offline determinista de `rewriteCvSectionAction`, queda terminantemente prohibido emitir corchetes o etiquetas de plantilla como `[añadir métrica de impacto]` o `[especificar volumen o mejora lograda]`.
    - Cuando no existan cifras numéricas aportadas por el usuario, el motor debe formular cierres ejecutivos orientados a procesos, protocolos, adherencia a estándares o calidad de servicio, entregando un producto 100% natural, pulcro y digno de presentación corporativa.
+
+---
+
+### SOP-135: Preservación Fidedigna de Contactos en Ingesta de Documentos y Extracción Exhaustiva de Educación y Cursos
+1. **Preservación de Datos Sensibles en Ingesta de Documentos Propios (`preserveSensitiveData`)**:
+   - En flujos donde el usuario sube su propio CV (`parseCvDocumentMultimodal`, `parseCvTextWithAiCascade`) con el propósito expreso de estructurar su perfil profesional, queda prohibido enmascarar teléfonos con `[TELEFONO_PROTEGIDO]`.
+   - Se activa `preserveSensitiveData: true` en `callNvidiaNimChat` para que el modelo extraiga los teléfonos reales del candidato y de sus referencias.
+2. **Reconciliación y Rehidratación Defensiva de Referencias (`reconcileReferenceContacts`)**:
+   - Si una referencia laboral presenta marcadores residuales (`[TELEFONO_PROTEGIDO]`) o ausencia de dígitos en la respuesta del modelo, el pipeline reconcilia automáticamente contra el texto extraído del documento original (`extractedRawText`), localizando el número en las líneas contiguas al nombre de la referencia e inyectándolo fielmente.
+3. **Extracción Exhaustiva de Trayectoria Educativa (Títulos, Diplomados, Cursos y Especializaciones)**:
+   - Tanto en el prompt estructurado (`MULTIMODAL_CV_PROMPT`) como en el parser heurístico (`cv-text-parser.ts`), el array `education` debe capturar sin exclusión títulos universitarios, licenciaturas, diplomados, postítulos, cursos de especialización y capacitaciones clínicas/técnicas.
+   - `getSectionLines` debe acumular todas las secciones de educación y cursos del documento, erradicando exclusiones previas de "formación complementaria" o "formación continua".
+   - `mergeEducations` fusiona las detecciones de la IA con el parser heurístico para blindar al usuario contra omisiones de cursos y diplomados.

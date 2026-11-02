@@ -20,6 +20,7 @@ interface NvidiaNimOptions {
   maxTokens?: number;
   responseFormat?: { type: 'json_object' };
   bypassCache?: boolean;
+  preserveSensitiveData?: boolean;
 }
 
 import {
@@ -39,11 +40,14 @@ export async function callNvidiaNimChat(
   messages: NvidiaChatMessage[],
   options: NvidiaNimOptions = {}
 ): Promise<{ success: boolean; content?: string; error?: string; modelUsed?: string }> {
-  // Privacy-by-Design (Ley N° 21.719): Enmascarar RUTs y teléfonos en mensajes antes de enviar a APIs externas de IA
+  // Privacy-by-Design (Ley N° 21.719): Enmascarar RUTs y teléfonos en mensajes antes de enviar a APIs externas de IA,
+  // salvo en pipelines autorizados de ingestión/extracción de documentos propios (preserveSensitiveData)
+  // donde el usuario necesita expresamente recuperar sus datos de contacto reales y teléfonos de referencias.
+  const shouldMask = !options.preserveSensitiveData;
   const sanitizedMessages: NvidiaChatMessage[] = messages.map((msg) => ({
     ...msg,
     content:
-      msg.role === 'user'
+      shouldMask && msg.role === 'user'
         ? maskSensitiveDataForAi(msg.content, { maskRut: true, maskPhone: true, maskEmail: false }).sanitizedText
         : msg.content,
   }));

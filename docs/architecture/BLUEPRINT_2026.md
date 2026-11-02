@@ -528,6 +528,17 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
   - **Saneamiento Sintáctico sin Duplicación (`src/features/ai-smart-cv/actions.ts`)**: `stripRedundantPrefixes` ampliado con todos los verbos y formas nominales (`orquest[eé]`, `coordin[eé]`, `coordinación`, `ejecut[eé]`, `ejecución`, `contención`, `brind[eé]`, `realic[eé]`, `atend[ií]`, etc.). Cero duplicación de verbos en el fallback.
   - **Erradicación Absoluta de Placeholders entre Corchetes**: Tanto en el prompt del LLM como en el fallback offline, se prohíben corchetes como `[añadir métrica...]`. En su defecto, se formulan cierres ejecutivos orientados a procesos, protocolos, adherencia a estándares o calidad de servicio.
 
+## 9.15 Preservación Fidedigna de Contactos en Ingesta de Documentos y Extracción Exhaustiva de Educación y Cursos (SOP-135)
+- **Diagnóstico y Causa Raíz de Enmascaramiento y Pérdida de Especializaciones**:
+  - Al subir un CV, `callNvidiaNimChat` aplicaba ciegamente `maskSensitiveDataForAi` sobre el texto completo del documento, reemplazando los números de teléfono de las referencias por `[TELEFONO_PROTEGIDO]`. El LLM extrajo dicho marcador literalmente como contacto.
+  - El prompt `MULTIMODAL_CV_PROMPT` no instruía al LLM a incluir diplomados, cursos, capacitaciones ni especializaciones en `education`, provocando que los modelos de lenguaje extrajeran únicamente el grado universitario formal y descartaran la formación continua.
+  - En el parser heurístico, `cv-text-parser.ts` excluía encabezados con `!lower.includes('complementaria') && !lower.includes('continua')` y sólo leía la primera sección de educación con `find()`, ignorando bloques posteriores de cursos.
+- **Solución Canónica**:
+  - **Flag `preserveSensitiveData: true`**: La ingesta de documentos propios desactiva el enmascaramiento de teléfonos en `callNvidiaNimChat`, permitiendo a la IA extraer los números reales.
+  - **Reconciliador de Seguridad `reconcileReferenceContacts`**: Si algún contacto presenta `[TELEFONO_PROTEGIDO]` o está vacío, busca en `extractedRawText` el número telefónico en la vecindad del nombre de la referencia y lo rehidrata automáticamente.
+  - **Instrucción Exhaustiva en `MULTIMODAL_CV_PROMPT`**: Ordena explícitamente extraer títulos, licenciaturas, diplomados, postítulos, cursos y especializaciones clínicas/técnicas como ítems individuales en `education`.
+  - **Fusión Defensiva `mergeEducations` & Agregación Multisección en `cv-text-parser.ts`**: `getSectionLines` acumula todas las secciones de educación y cursos del documento, y `mergeEducations` garantiza que ningún curso detectado en el texto se pierda tras la extracción de la IA.
+
 
 
 

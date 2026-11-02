@@ -162,5 +162,57 @@ ESPECIALIZACIONES Y FORMACIÓN COMPLEMENTARIA
       expect(adipaEdu).toBeDefined();
       expect(adipaEdu?.institution.toLowerCase()).toContain('adipa');
     });
+
+    it('debe extraer educación formal y cursos de secciones independientes y preservar teléfonos reales en referencias', () => {
+      const cvConCursosYReferencias = `
+Matías Riquelme
+Psicólogo Clínico
+matias@psicologia.cl
++56 9 8226 8970
+
+EXPERIENCIA LABORAL
+Psicólogo Clínico en Hospital Clínico Magallanes
+2021 - 2024
+• Realicé intervenciones en cuidados paliativos
+
+EDUCACIÓN FORMAL
+• Título de Psicólogo • Licenciado en Psicología · Universidad de Magallanes (2018)
+
+CURSOS Y FORMACIÓN CONTINUA
+• Curso de Cuidados Paliativos y Acompañamiento en Duelo · OPS (2023)
+• Diplomado en Evaluación Pericial Psicológica · Adipa (2022)
+
+REFERENCIAS LABORALES
+Cecilia Vivallo Corvalán
+Enfermera encargada, Cuidados Paliativos Universales · Hospital Clínico de Magallanes
+Contacto: +56 9 8226 8970
+
+Carlos Domínguez Parra
+Jefe de Reinserción Social · Complejo Penitenciario Biobío
+Contacto: +56 9 9876 5432
+
+Marisol Cárcamo
+Coordinadora del Área Psicosocial · Sodexo Biobío
+Contacto: +56 9 1122 3344
+`;
+
+      const result = parseCvTextToStructuredData(cvConCursosYReferencias, 'cv_completo.pdf');
+
+      // 1. Debe extraer el título universitario y ambos cursos/diplomados
+      expect(result.education.length).toBeGreaterThanOrEqual(3);
+      expect(result.education.some((e) => e.degree.includes('Psicólogo'))).toBe(true);
+      expect(result.education.some((e) => e.degree.includes('Cuidados Paliativos'))).toBe(true);
+      expect(result.education.some((e) => e.degree.includes('Evaluación Pericial'))).toBe(true);
+
+      // 2. Debe extraer las 3 referencias con sus números de teléfono reales (cero [TELEFONO_PROTEGIDO])
+      expect(result.references.length).toBe(3);
+      for (const ref of result.references) {
+        expect(ref.contact).not.toContain('PROTEGIDO');
+        expect(ref.contact).toMatch(/\+?56\s?9\s?\d{4}\s?\d{4}/);
+      }
+      expect(result.references[0].contact).toContain('8226');
+      expect(result.references[1].contact).toContain('9876');
+      expect(result.references[2].contact).toContain('1122');
+    });
   });
 });
