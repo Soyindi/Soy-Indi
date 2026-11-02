@@ -501,6 +501,18 @@ En cumplimiento de las convenciones de Better-Auth y Drizzle ORM (`src/entities/
   - Evaluación determinista 0-100 de viñetas midiendo verbos fuertes al inicio, presencia de métricas cuantitativas, longitud ideal (80-190 caracteres), ausencia de clichés y detección de marcadores residuales sin resolver.
   - Función `verifyBulletGrounding`: detecta y bloquea cualquier métrica numérica o porcentaje introducido por la IA que no haya existido en el documento original.
 
+## 9.12 Cero Colisión de Caché Semántica & Aislamiento Estricto de Experiencia en Asistente IA (SOP-132)
+- **Diagnóstico y Causa Raíz Resuelta**:
+  - `generateRequestKey` truncaba los mensajes a los primeros 500 caracteres (`serializedMsgs.slice(0, 500)`). Debido a que el System Prompt mide ~950 caracteres, el User Prompt con el texto real del cargo, empresa y logro nunca entraba en la clave, generando claves 100% idénticas para todas las viñetas.
+  - En Upstash Redis, la clave se recortaba a los primeros 80 caracteres (`key.slice(0, 80)`), fijando la clave en `"json_object::system:Eres un Redactor Ejecutivo..."`. Esto causaba una colisión masiva del 100%, haciendo que peticiones de distintos trabajos devolvieran la respuesta en caché del primer trabajo mejorado.
+  - En el modo fallback offline, `effectiveTarget = targetRole || role || 'Profesional'` inyectaba el rol objetivo general del CV en lugar del cargo concreto desempeñado en esa empresa.
+- **Solución Arquitectónica Canónica**:
+  - **Hash Criptográfico SHA-256 (`src/shared/lib/aiCircuitBreaker.ts`)**: `generateRequestKey` calcula un SHA-256 de 64 caracteres hex sobre el payload completo (`messages` íntegros con sus roles y contenidos, `responseFormat`, `model`, `temperature`), garantizando cero colisiones.
+  - **Namespace Versionado en Redis (`indi:cache:ai:v2:${hash}`)**: Clave completa de ~82 caracteres que invalida automáticamente cualquier entrada corrupta o colisionada previa.
+  - **Aislamiento Estricto en Prompts (`src/features/ai-smart-cv/actions.ts`)**: Para viñetas (`type === 'BULLET'`), el prompt de usuario declara en primer orden el cargo (`role`) y la empresa (`company`), con advertencia de aislamiento estricto que prohíbe al modelo mezclar funciones de otras experiencias laborales.
+  - **Prioridad de Cargo en Fallback**: Para viñetas, `fallbackRole = role || targetRole || 'el puesto'` y `fallbackOrg = company || 'la organización'`, garantizando coherencia sin cruce de puestos.
+  - **Bypass de Caché (`bypassCache: true`) & Refresco en UI (`InlineAiWriter.tsx`)**: Botón de regeneración que permite solicitar variantes frescas a la IA sin bloqueo de caché. Claves de React unívocas en `SmartCvBuilder.tsx` (`writer-single-${idx}-${bIdx}-${exp.company}-${exp.role}`) para remontaje aislado por experiencia.
+
 
 
 

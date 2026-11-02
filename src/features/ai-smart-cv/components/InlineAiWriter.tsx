@@ -63,7 +63,11 @@ export function InlineAiWriter({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
-  const handleGenerate = (mode: 'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS', customImpact?: string) => {
+  const handleGenerate = (
+    mode: 'XYZ_IMPACT' | 'EXECUTIVE' | 'ATS_KEYWORDS',
+    customImpact?: string,
+    bypassCache?: boolean
+  ) => {
     setActiveMode(mode);
     setErrorMessage(null);
     startTransition(async () => {
@@ -77,6 +81,7 @@ export function InlineAiWriter({
           role,
           skills,
           impactAnswer: customImpact !== undefined ? customImpact : impactInput,
+          bypassCache: Boolean(bypassCache),
         });
 
         if (res.success && res.suggestions.length > 0) {
@@ -161,19 +166,43 @@ export function InlineAiWriter({
                       </span>
                     )}
                   </h4>
-                  <p className="text-[10px] text-zinc-400">
-                    {role || targetRole ? `Adaptado a ${role || targetRole}` : 'Optimización ejecutiva para ATS 2026'}
+                  <p className="text-[10px] text-zinc-400 truncate max-w-[200px] sm:max-w-xs" title={role && company ? `${role} en ${company}` : role || targetRole || ''}>
+                    {role && company ? (
+                      <>
+                        <span className="text-cyan-300 font-medium">{role}</span>{' '}
+                        <span className="text-zinc-500 font-normal">en</span>{' '}
+                        <span className="text-zinc-300 font-medium">{company}</span>
+                      </>
+                    ) : role || targetRole ? (
+                      `Adaptado a ${role || targetRole}`
+                    ) : (
+                      'Optimización ejecutiva para ATS 2026'
+                    )}
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors"
-                aria-label="Cerrar asistente"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                {suggestions.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleGenerate(activeMode, undefined, true)}
+                    disabled={isPending}
+                    className="text-zinc-400 hover:text-cyan-300 p-1 rounded-lg hover:bg-white/5 transition-colors disabled:opacity-40"
+                    title="Regenerar nuevas opciones con IA (sin caché)"
+                    aria-label="Regenerar opciones con IA"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isPending ? 'animate-spin' : ''}`} />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors"
+                  aria-label="Cerrar asistente"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Selector de Modo / Enfoque Estratégico */}

@@ -263,6 +263,7 @@ export const rewriteCvSectionSchema = z.object({
   skills: z.array(z.string()).optional(),
   impactAnswer: z.string().max(500, 'Respuesta demasiado larga').optional(),
   userId: z.string().optional(),
+  bypassCache: z.boolean().optional(),
 });
 
 export type RewriteCvSectionInput = z.infer<typeof rewriteCvSectionSchema>;

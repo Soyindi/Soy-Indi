@@ -1568,7 +1568,7 @@ export function SmartCvBuilder({
                               </div>
                               <div className="shrink-0 flex items-center justify-end gap-1.5 pt-1 sm:pt-0 border-t sm:border-t-0 border-white/5">
                                 <InlineAiWriter
-                                  key={`writer-single-${idx}-${bIdx}`}
+                                  key={`writer-single-${idx}-${bIdx}-${exp.company || 'co'}-${exp.role || 'ro'}`}
                                   currentText={bText}
                                   type="BULLET"
                                   role={exp.role}

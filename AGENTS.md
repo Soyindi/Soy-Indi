@@ -502,3 +502,18 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
    - Toda sugerencia debe validarse con `verifyBulletGrounding`. Queda estrictamente prohibido que la IA invente porcentajes, volúmenes de ventas o cifras cuantitativas que el usuario no haya aportado explícitamente.
 4. **Cascada de Inferencia de Alta Concurrencia**:
    - El enrutador de inferencia en `nvidia-nim.ts` debe admitir Google Gemini 2.5 Flash como proveedor primario de alta capacidad junto con Groq LPU y NVIDIA NIM, garantizando disponibilidad y tolerancia a fallos ante picos de tráfico masivo.
+
+---
+
+### SOP-132: Cero Colisión de Caché Semántica & Aislamiento Estricto de Experiencia en Asistente IA
+1. **Claves Criptográficas SHA-256 Completas sin Truncamiento (`generateRequestKey`)**:
+   - Toda clave de micro-caché (en memoria y Upstash Redis) y de deduplicación concurrente (In-Flight Request Coalescing) debe generarse mediante hash SHA-256 de 64 caracteres hex sobre el payload completo (`messages` íntegros con sus roles y contenidos, `responseFormat`, `model` y `temperature`).
+   - Queda estrictamente prohibido utilizar `slice()` o truncar los mensajes serializados, ya que prompts de sistema largos (>800 caracteres) absorben todo el prefijo y generan colisión total entre diferentes cargos, empresas y usuarios.
+2. **Espacio de Nombres Versionado en Redis (`indi:cache:ai:v2:${hash}`)**:
+   - Las claves en Upstash Redis deben usar el namespace `indi:cache:ai:v2:${hash}` de longitud fija (~82 caracteres) sin recortes a 80 caracteres. Esto invalida automáticamente cualquier caché previa corrupta o colisionada.
+3. **Aislamiento Estricto de Experiencia Laboral en Prompts**:
+   - Al mejorar viñetas (`type === 'BULLET'`), el prompt de usuario debe declarar en primerísimo orden el contexto específico: cargo desempeñado (`role`) y empresa (`company`), acompañado de la directiva de aislamiento estricto que prohíbe explícitamente cruzar funciones con otras experiencias del CV.
+4. **Prioridad del Cargo Desempeñado en Fallbacks Deterministas**:
+   - En el modo offline determinista para viñetas laborales, el cargo debe resolverse prioritariamente como `role || targetRole || 'el puesto'`, reservando `targetRole` (rol objetivo global del CV) exclusivamente para el resumen profesional (`type === 'SUMMARY'`).
+5. **Capacidad de Regeneración Fresca (`bypassCache: true`)**:
+   - El copiloto `InlineAiWriter` y el backend deben admitir el flag `bypassCache` para que el botón de regeneración o reintento obtenga variantes frescas e inmediatas del modelo, superando la micro-caché sin fricción.

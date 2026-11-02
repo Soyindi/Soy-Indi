@@ -15,6 +15,7 @@
  * ============================================================================
  */
 
+import { createHash } from 'node:crypto';
 import { getUpstashRedis } from './rateLimiter';
 
 export interface CircuitState {
@@ -144,12 +145,18 @@ export function recordProviderFailure(provider: 'groq' | 'nvidia' | 'gemini' | '
 }
 
 /**
- * Genera una clave hash liviana para deduplicación y micro-caché
+ * Genera una clave hash SHA-256 criptográfica para deduplicación y micro-caché semántica.
+ * Protege contra colisiones de prefijo garantizando que peticiones con distinto contenido
+ * (ej. viñetas de distintas experiencias, cargos o empresas) jamás compartan caché ni promesas in-flight.
  */
 export function generateRequestKey(messages: Array<{ role: string; content: string }>, options: any = {}): string {
   const serializedMsgs = messages.map((m) => `${m.role}:${m.content}`).join('|');
   const optKey = options.responseFormat?.type || 'default';
-  return `${optKey}::${serializedMsgs.slice(0, 500)}::${serializedMsgs.length}`;
+  const modelKey = options.model || 'default';
+  const tempKey = options.temperature !== undefined ? String(options.temperature) : 'default';
+  
+  const rawPayload = `${modelKey}::${optKey}::${tempKey}::${serializedMsgs}`;
+  return createHash('sha256').update(rawPayload).digest('hex');
 }
 
 /**
@@ -178,7 +185,7 @@ export async function getCachedResponseAsync(key: string): Promise<{ content: st
   if (!redis) return null;
 
   try {
-    const cached = await redis.get<{ content: string; modelUsed: string }>(`indi:cache:ai:${key.slice(0, 80)}`);
+    const cached = await redis.get<{ content: string; modelUsed: string }>(`indi:cache:ai:v2:${key}`);
     if (cached && cached.content) {
       setCachedResponse(key, cached.content, cached.modelUsed);
       return { content: cached.content, modelUsed: `${cached.modelUsed} (redis-cache)` };
@@ -206,7 +213,7 @@ export function setCachedResponse(key: string, content: string, modelUsed: strin
 
   const redis = getUpstashRedis();
   if (redis) {
-    redis.set(`indi:cache:ai:${key.slice(0, 80)}`, { content, modelUsed }, { ex: 3600 }).catch(() => {});
+    redis.set(`indi:cache:ai:v2:${key}`, { content, modelUsed }, { ex: 3600 }).catch(() => {});
   }
 }
 

@@ -708,7 +708,7 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
       };
     }
 
-    const { text, type, mode, targetRole, company, role, skills, impactAnswer, userId } = parsed.data;
+    const { text, type, mode, targetRole, company, role, skills, impactAnswer, userId, bypassCache } = parsed.data;
 
     // 2. Guardrails de Sesión y Entitlements
     const sessionResult = await getSafeAuthenticatedUserId(userId);
@@ -799,21 +799,48 @@ REGLAS DE ORO OBLIGATORIAS:
     }
 5. Devuelve ÚNICAMENTE un objeto JSON válido con la clave "suggestions", conteniendo un array de exactamente 3 variantes distintas y profesionales sin texto introductorio ni formato markdown extra.`;
 
-    const userPrompt = `TEXTO ORIGINAL A MEJORAR:
+    const specificRole = role || (type === 'SUMMARY' ? targetRole : undefined) || 'Profesional';
+    const specificCompany = company || 'la organización';
+
+    const userPrompt = type === 'BULLET'
+      ? `CONTEXTO LABORAL ESPECÍFICO (AISLAMIENTO ESTRICTO DE EXPERIENCIA):
+- Puesto / Cargo Desempeñado: "${specificRole}"
+- Empresa u Organización: "${specificCompany}"
+${targetRole && targetRole !== role ? `- Rol Objetivo General del CV: "${targetRole}"\n` : ''}${skillsContext ? `- ${skillsContext}\n` : ''}
+⚠️ REGLA DE AISLAMIENTO:
+Esta sugerencia es EXCLUSIVA para el puesto de "${specificRole}" en "${specificCompany}". Queda estrictamente PROHIBIDO mezclar responsabilidades de otras empresas, rubros no relacionados o inventar experiencias de puestos ajenos.
+
+TEXTO ACTUAL DE LA VIÑETA A TRANSFORMAR:
 "${cleanInput}"
-${impactAnswer ? `\nDATO CUANTITATIVO O RESULTADO PROPORCIONADO POR EL USUARIO:\n"${impactAnswer.trim()}"\n(Incorpora este dato real e indudable armónicamente en la formulación Google XYZ sin inventar otras cifras distintas)` : ''}
+${impactAnswer ? `\nDATO CUANTITATIVO APORTADO POR EL USUARIO:\n"${impactAnswer.trim()}"\n(Incorpora este dato real sin inventar otras cifras distintas)` : ''}
 
-TIPO DE SECCIÓN: ${type === 'SUMMARY' ? 'Resumen Profesional / Perfil' : isMultiBullet ? 'Conjunto de Logros Laborales' : 'Viñeta de Logro Laboral'}
+TIPO DE SECCIÓN: ${isMultiBullet ? 'Conjunto de Logros Laborales' : 'Viñeta de Logro Laboral'}
 ENFOQUE SOLICITADO: ${
-      mode === 'XYZ_IMPACT'
-        ? 'Impacto Cuantitativo (Google XYZ)'
-        : mode === 'EXECUTIVE'
-        ? 'Tono Ejecutivo y Estratégico de Liderazgo'
-        : 'Optimización de Palabras Clave ATS y Técnicas'
-    }
-${contextSummary ? `CONTEXTO ADICIONAL:\n${contextSummary}` : ''}
+        mode === 'XYZ_IMPACT'
+          ? 'Impacto Cuantitativo (Fórmula Google XYZ: Logré [X], medido por [Y], mediante [Z])'
+          : mode === 'EXECUTIVE'
+          ? 'Tono Ejecutivo y Estratégico de Liderazgo'
+          : 'Optimización de Palabras Clave ATS y Técnicas'
+      }
 
-Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
+Devuelve exactamente 3 opciones pulcras, con verbos fuertes de acción, de estándar mundial 2026 y estrictamente adaptadas a las funciones de "${specificRole}" en "${specificCompany}".`
+      : `PERFIL PROFESIONAL Y OBJETIVO DE CARRERA:
+- Rol Objetivo: "${targetRole || role || 'Profesional'}"
+${role && role !== targetRole ? `- Cargo actual / reciente: "${role}"\n` : ''}${company ? `- Empresa actual / reciente: "${company}"\n` : ''}${skillsContext ? `- ${skillsContext}\n` : ''}
+
+TEXTO ORIGINAL DEL RESUMEN A MEJORAR:
+"${cleanInput}"
+
+TIPO DE SECCIÓN: Resumen Profesional / Perfil Ejecutivo
+ENFOQUE SOLICITADO: ${
+        mode === 'XYZ_IMPACT'
+          ? 'Impacto y Logros de Carrera'
+          : mode === 'EXECUTIVE'
+          ? 'Tono Ejecutivo y Estratégico de Liderazgo'
+          : 'Optimización de Palabras Clave ATS y Especialidad Técnica'
+      }
+
+Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporativo adaptadas al perfil.`;
 
     // 4. Invocación al Motor LLM (NVIDIA NIM Llama 3.3 70B / Groq LPU / Gemini Flash Failover)
     const aiResult = await callNvidiaNimChat(
@@ -826,6 +853,7 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
         temperature: 0.25,
         maxTokens: isMultiBullet ? 1200 : 700,
         responseFormat: { type: 'json_object' },
+        bypassCache: Boolean(bypassCache),
       }
     );
 
@@ -876,7 +904,9 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
     // 5. Modo Asistente Determinista Honesto (Sin IA / Modo Offline Seguro)
     // PROHIBICIÓN ABSOLUTA: Nunca inventar plantillas como "Implementé mejores prácticas de visión estratégica..."
     // En su lugar, entrega 3 variantes ejecutivas contextualizadas y respetuosas de la verdad.
-    const effectiveTarget = targetRole || role || 'Profesional';
+    const effectiveTarget = type === 'SUMMARY'
+      ? (targetRole || role || 'Profesional')
+      : (role || targetRole || 'Profesional');
 
     if (type === 'SUMMARY') {
       const cleanSummary = cleanInput || '';
@@ -892,7 +922,10 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
       };
     }
 
-    // Viñetas laborales: saneamiento auténtico sin alucinaciones
+    // Viñetas laborales: saneamiento auténtico sin alucinaciones ni cruce de cargos
+    const fallbackRole = role || targetRole || 'el puesto';
+    const fallbackOrg = company || 'la organización';
+
     const stripRedundantPrefixes = (str: string): string => {
       return str
         .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '')
@@ -908,34 +941,34 @@ Devuelve exactamente 3 opciones pulcras y de alta calidad adaptadas al rol.`;
 
       if (hasMetric) {
         return [
-          `Lideré ${cleanLower}, consolidando un impacto verificable en ${company || 'la organización'}.`,
-          `Orquesté ${cleanLower}, optimizando la entrega técnica y garantizando la calidad para ${effectiveTarget}.`,
-          `Dirigí la ejecución de ${cleanLower}, asegurando estándares de excelencia operativa en ${company || 'el equipo'}.`,
+          `Lideré ${cleanLower}, consolidando un impacto verificable en ${fallbackOrg}.`,
+          `Orquesté ${cleanLower}, optimizando la entrega técnica y garantizando la calidad como ${fallbackRole}.`,
+          `Dirigí la ejecución de ${cleanLower}, asegurando estándares de excelencia operativa en ${fallbackOrg}.`,
         ];
       }
 
       if (mode === 'EXECUTIVE') {
         return [
-          `Dirigí estratégicamente ${cleanLower}, optimizando flujos de trabajo en ${company || 'la organización'}.`,
-          `Lideré la coordinación de ${cleanLower}, garantizando alineación con los estándares de ${effectiveTarget}.`,
-          `Supervisé la ejecución técnica de ${cleanLower}, elevando la eficiencia de entrega.`,
+          `Dirigí estratégicamente ${cleanLower}, optimizando flujos de trabajo en ${fallbackOrg}.`,
+          `Lideré la coordinación de ${cleanLower}, garantizando alineación con las metas de ${fallbackRole}.`,
+          `Supervisé la ejecución técnica de ${cleanLower}, elevando la eficiencia operativa en ${fallbackOrg}.`,
         ];
       }
 
       if (mode === 'ATS_KEYWORDS') {
         const keywordPill = preRoute.focusKeywords.slice(0, 2).join(' y ');
         return [
-          `Coordiné la ejecución de ${cleanLower}, incorporando estándares de ${keywordPill} en ${company || 'el equipo'}.`,
-          `Optimizé procesos técnicos de ${cleanLower}, reforzando criterios de ${keywordPill}.`,
-          `Diseñé soluciones enfocadas en ${keywordPill} mediante ${cleanLower} para el rol de ${effectiveTarget}.`,
+          `Coordiné la ejecución de ${cleanLower}, incorporando estándares de ${keywordPill} en ${fallbackOrg}.`,
+          `Optimizé procesos de ${cleanLower}, reforzando criterios de ${keywordPill} como ${fallbackRole}.`,
+          `Diseñé soluciones enfocadas en ${keywordPill} mediante ${cleanLower} para el puesto de ${fallbackRole} en ${fallbackOrg}.`,
         ];
       }
 
       // Default XYZ_IMPACT con llamado honesto a cuantificar entre corchetes
       return [
-        `Lideré ${cleanLower}, optimizando los flujos de trabajo en ${company || 'la organización'} [añadir métrica de impacto].`,
-        `Orquesté la ejecución de ${cleanLower}, mejorando la calidad del servicio para el rol de ${effectiveTarget} [especificar volumen o mejora lograda].`,
-        `Diseñé e implementé mejoras en ${cleanLower}, alineando las entregas con las prioridades de ${company || effectiveTarget} [especificar métrica o porcentaje alcanzado].`,
+        `Lideré ${cleanLower}, optimizando los procesos en ${fallbackOrg} [añadir métrica de impacto].`,
+        `Orquesté la ejecución de ${cleanLower}, mejorando los resultados como ${fallbackRole} [especificar volumen o mejora lograda].`,
+        `Diseñé e implementé mejoras en ${cleanLower}, alineando las entregas con las prioridades de ${fallbackOrg} [especificar métrica o porcentaje alcanzado].`,
       ];
     };
 

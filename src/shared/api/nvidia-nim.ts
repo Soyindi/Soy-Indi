@@ -19,6 +19,7 @@ interface NvidiaNimOptions {
   temperature?: number;
   maxTokens?: number;
   responseFormat?: { type: 'json_object' };
+  bypassCache?: boolean;
 }
 
 import {
@@ -47,15 +48,17 @@ export async function callNvidiaNimChat(
         : msg.content,
   }));
 
-  // 0. Micro-Caché Semántica Distribuida (Redis + Memoria LRU): Retornar de inmediato si ya fue resuelto
+  // 0. Micro-Caché Semántica Distribuida (Redis + Memoria LRU): Retornar de inmediato si ya fue resuelto y no se solicitó bypass
   const requestKey = generateRequestKey(sanitizedMessages, options);
-  const cached = (await getCachedResponseAsync(requestKey)) || getCachedResponse(requestKey);
-  if (cached) {
-    return {
-      success: true,
-      content: cached.content,
-      modelUsed: cached.modelUsed,
-    };
+  if (!options.bypassCache) {
+    const cached = (await getCachedResponseAsync(requestKey)) || getCachedResponse(requestKey);
+    if (cached) {
+      return {
+        success: true,
+        content: cached.content,
+        modelUsed: cached.modelUsed,
+      };
+    }
   }
 
   // Deduplicación concurrente (Request Coalescing): Si dos componentes piden lo mismo al unísono
