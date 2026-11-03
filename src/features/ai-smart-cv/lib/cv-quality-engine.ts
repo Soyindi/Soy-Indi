@@ -187,6 +187,21 @@ export function verifyAndPurgeCrossRoleContamination(
     }
   }
 
+  // Prevención de Fusión Causal Alucinada (Domain Conflation Bias) en perfiles multidisciplinarios:
+  // Si el usuario tiene experiencia clínica y competencias de software paralelas, pero el texto original
+  // NO afirma que haya creado software para registros clínicos o atención de pacientes, purgar ese nexo inventado.
+  const sourceHasClinicalSoftwareLink = /\b(?:software|arquitecturas?\s+de\s+datos|inteligencia\s+artificial)\b[^.]*\b(?:registros?\s+cl[ií]nicos?|fichas?\s+cl[ií]nicas?|atenci[oó]n\s+cl[ií]nica|atenci[oó]n\s+integral|pacientes?)\b/i.test(sourceText);
+  if (!sourceHasClinicalSoftwareLink) {
+    const conflatedSoftwareClinicalRegex = /(?:,\s*)?optimizando\s+la\s+gesti[oó]n\s+de\s+registros?\s+cl[ií]nicos?[^.]*(?:atenci[oó]n\s+integral|pacientes?|cl[ií]nica)/gi;
+    if (conflatedSoftwareClinicalRegex.test(cleanText)) {
+      contaminatedTerms.push('fusión-causal-software-clínico');
+      cleanText = cleanText.replace(
+        conflatedSoftwareClinicalRegex,
+        ', con sistemas y proyectos tecnológicos propios en producción orientados a la automatización y optimización de procesos'
+      );
+    }
+  }
+
   // Limpiar posibles espacios dobles tras la sustitución
   cleanText = cleanText.replace(/\s{2,}/g, ' ').trim();
 

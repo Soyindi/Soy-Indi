@@ -896,9 +896,15 @@ Devuelve exactamente 3 variantes de estándar mundial 2026, con verbos de acció
       : `PERFIL PROFESIONAL Y OBJETIVO DE CARRERA:
 - Rol Objetivo: "${targetRole || role || 'Profesional'}"
 ${role && role !== targetRole ? `- Cargo actual / reciente: "${role}"\n` : ''}${company ? `- Empresa actual / reciente: "${company}"\n` : ''}${skillsContext ? `- ${skillsContext}\n` : ''}
+⚠️ REGLA DE PRESERVACIÓN DE DOMINIOS PARALELOS (CERO FUSIÓN CAUSAL ALUCINADA):
+Si el candidato presenta un perfil multidisciplinario o dual (por ejemplo: carrera en Psicología/Salud/Educación sumada a competencias autodidactas o proyectos propios en Desarrollo de Software, Arquitectura de Datos, IA o Finanzas), TIENES TERMINANTEMENTE PROHIBIDO inventar nexos causales falsos entre ambos mundos.
+- PROHIBIDO afirmar que el candidato desarrolló software para "gestionar registros clínicos", "optimizar fichas médicas" o "atender pacientes" si el texto original no lo dice explícitamente.
+- Presenta ambas facetas con fidelidad a la verdad: primero su trayectoria principal (ej. clínica, psicosocial o institucional) y, de forma paralela e independiente, su capacidad en desarrollo de sistemas propios, arquitecturas de datos e inteligencia artificial en producción.
 
 TEXTO ORIGINAL DEL RESUMEN A MEJORAR:
-"${cleanInput}"
+"""
+${cleanInput}
+"""
 
 TIPO DE SECCIÓN: Resumen Profesional / Perfil Ejecutivo
 ENFOQUE SOLICITADO: ${
@@ -908,6 +914,11 @@ ENFOQUE SOLICITADO: ${
           ? 'Tono Ejecutivo y Estratégico de Liderazgo'
           : 'Optimización de Palabras Clave ATS y Especialidad Técnica'
       }
+
+ESTRUCTURA DE LAS 3 VARIANTES A ENTREGAR:
+- Variante #1: Enfoque de Impacto y Trayectoria Dual Equilibrada (destaca su experiencia principal y presenta sus proyectos o competencias paralelas sin mezclarlas artificialmente).
+- Variante #2: Enfoque de Rigor Metodológico y Especialización (resalta los marcos técnicos de cada área por separado con precisión conceptual).
+- Variante #3: Enfoque Ejecutivo y Síntesis ATS Directa (resumen conciso, sobrio y 100% fiel a los hechos del candidato).
 
 Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporativo adaptadas al perfil.`;
 

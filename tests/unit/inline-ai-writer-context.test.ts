@@ -212,4 +212,33 @@ Contención emocional en situaciones de crisis y acompañamiento en duelo antici
       expect(sug).not.toMatch(/cuidados\s+paliativos/i);
     }
   });
+
+  it('detecta perfiles multidisciplinarios y purga la fusión causal alucinada entre desarrollo de software y registros clínicos en el Resumen', async () => {
+    const { verifyAndPurgeCrossRoleContamination } = await import('@/features/ai-smart-cv/lib/cv-quality-engine');
+    const { evaluateCvPreRouteStrategy } = await import('@/features/ai-smart-cv/lib/cv-auditor');
+
+    const sourceSummary =
+      'Psicólogo con más de cinco años de trayectoria en los ámbitos de salud, educación y justicia. A esta formación clínica sumo competencias autodidactas en desarrollo de software, arquitecturas de datos seguras e inteligencia artificial, con sistemas reales en producción orientados a la optimización de procesos.';
+
+    const preRoute = evaluateCvPreRouteStrategy(
+      `${sourceSummary} Python TypeScript FastAPI`,
+      'Psicólogo · Intervención Clínica y Psicosocial | Desarrollo de Sistemas e IA'
+    );
+
+    expect(preRoute.isMultidisciplinary).toBe(true);
+    expect(preRoute.secondaryArchetype).toBeDefined();
+
+    const hallucinatedSummary =
+      'Psicólogo Clínico con más de cinco años de trayectoria en los sectores de salud, educación y justicia. Integra la práctica clínica basada en la ética profesional con competencias avanzadas en desarrollo de software y arquitectura de datos segura, optimizando la gestión de registros clínicos y automatizando procesos para garantizar la continuidad operativa y la calidad en la atención integral.';
+
+    const purged = verifyAndPurgeCrossRoleContamination(
+      hallucinatedSummary,
+      sourceSummary,
+      'Psicólogo · Intervención Clínica y Psicosocial | Desarrollo de Sistemas e IA'
+    );
+
+    expect(purged.hadContamination).toBe(true);
+    expect(purged.cleanText).not.toMatch(/optimizando la gestión de registros clínicos/i);
+    expect(purged.cleanText).toContain('proyectos tecnológicos propios en producción');
+  });
 });

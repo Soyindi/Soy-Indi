@@ -24,6 +24,8 @@ export type CvCandidateArchetype =
 
 export interface CvPreRouteAssessment {
   detectedArchetype: CvCandidateArchetype;
+  secondaryArchetype?: CvCandidateArchetype;
+  isMultidisciplinary?: boolean;
   recommendedTone: string;
   focusKeywords: string[];
   requiresExecutiveSummary: boolean;
@@ -90,6 +92,12 @@ export function evaluateCvPreRouteStrategy(rawText: string, specificRole?: strin
     tone: 'Profesional, preciso y orientado a resultados medibles',
   };
 
+  const scoredArchetypes: Array<{
+    archetype: Exclude<CvCandidateArchetype, 'general_professional'>;
+    score: number;
+    config: { keywords: string[]; tone: string };
+  }> = [];
+
   for (const [archetype, config] of Object.entries(archetypesPatterns) as [Exclude<CvCandidateArchetype, 'general_professional'>, any][]) {
     let score = 0;
     if (roleText && config.title.test(roleText)) {
@@ -101,12 +109,30 @@ export function evaluateCvPreRouteStrategy(rawText: string, specificRole?: strin
       score += 1;
     }
 
+    if (score > 0) {
+      scoredArchetypes.push({ archetype, score, config });
+    }
+
     if (score > highestScore) {
       highestScore = score;
       bestArchetype = archetype;
       selectedConfig = config;
     }
   }
+
+  scoredArchetypes.sort((a, b) => b.score - a.score);
+  const secondaryCandidate = scoredArchetypes.length > 1 && scoredArchetypes[1].score >= 3
+    ? scoredArchetypes[1]
+    : undefined;
+  const isMultidisciplinary = Boolean(secondaryCandidate);
+
+  const finalTone = isMultidisciplinary && secondaryCandidate
+    ? `Perfil multidisciplinario con dos líneas de competencia independientes (${bestArchetype} + ${secondaryCandidate.archetype}): mantener cada dominio separado con rigor técnico sin inventar cruces causales entre ellos`
+    : selectedConfig.tone;
+
+  const finalKeywords = isMultidisciplinary && secondaryCandidate
+    ? [...selectedConfig.keywords.slice(0, 3), ...secondaryCandidate.config.keywords.slice(0, 2)]
+    : selectedConfig.keywords;
 
   // 2. Estimación de seniority según años o títulos
   const yearsMatches = fullText.match(/\b(1[0-9]|[5-9])\s*(?:años|years)\b/i);
@@ -121,8 +147,10 @@ export function evaluateCvPreRouteStrategy(rawText: string, specificRole?: strin
 
   return {
     detectedArchetype: bestArchetype,
-    recommendedTone: selectedConfig.tone,
-    focusKeywords: selectedConfig.keywords,
+    secondaryArchetype: secondaryCandidate?.archetype,
+    isMultidisciplinary,
+    recommendedTone: finalTone,
+    focusKeywords: finalKeywords,
     requiresExecutiveSummary: estimatedSeniority === 'senior' || estimatedSeniority === 'executive',
     estimatedSeniority,
   };
