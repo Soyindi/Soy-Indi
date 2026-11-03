@@ -286,7 +286,10 @@ l Pasarela de pago Flow.cl con firma HMAC-SHA256.
 ContaPymePUQ · contapymepuq.cl
 Ecosistema contable, laboral y publicitario para pymes de Magallanes: siete módulos en una sola plataforma, operativa con 37 organizaciones cliente, 189
 colaboradores y 400 liquidaciones. Next.js 16, React 19, TypeScript, FastAPI (Python 3.12), Supabase/PostgreSQL con RLS multi-tenant, Mercado Pago.
-l Contabilidad y tributario: facturación electrónica DTE ante el SII.
+l Contabilidad y tributario: facturación electrónica DTE ante el SII (facturas, boletas, guías), órdenes de compra convertibles a factura,
+conciliación bancaria con encadenamiento SHA-256 y asistente legal tributario que genera escritos al SII en Word.
+l Remuneraciones: Libro de Remuneraciones Electrónico (LRE), créditos sociales CCAF y portal de autoatención laboral por WhatsApp.
+l ContaEmpleos Magallanes: bolsa laboral regional de autoservicio con auditoría de cada oferta bajo el Art. 2° del Código del Trabajo.
 Slingshot · github.com/matiquelmec/Slingshot
 Terminal cuantitativa autónoma de análisis y ejecución algorítmica (cripto y cuentas de fondeo). Python 3.12, FastAPI, Polars, WebSocket, Next.js 15, Turso
 + Drizzle, XGBoost / ONNX, Ollama y NVIDIA NIM.

@@ -366,8 +366,13 @@ export function parseCvTextToStructuredData(
     const trimmed = str.trim();
     const s = trimmed.toLowerCase();
 
-    // Excluir viñetas etiquetadas (ej. "Arquitectura: frontend...", "Contabilidad y tributario:"), URLs o leyes
-    if (/^[a-záéíóúñ\s/]{2,35}:/i.test(trimmed) && !/^proyectos?\s+de\s+desarrollo/i.test(trimmed)) {
+    // Excluir oraciones que inician en minúscula, terminan en punto, viñetas etiquetadas, URLs o leyes
+    if (
+      /^[a-záéíóúñ]/.test(trimmed) ||
+      trimmed.endsWith('.') ||
+      trimmed.length > 85 ||
+      (/^[a-záéíóúñ\s/]{2,35}:/i.test(trimmed) && !/^proyectos?\s+de\s+desarrollo/i.test(trimmed))
+    ) {
       return false;
     }
     if (
@@ -459,7 +464,7 @@ export function parseCvTextToStructuredData(
       while (i + 1 < expLines.length) {
         const peekRaw = expLines[i + 1];
         const peekStripped = stripLeadingBullet(peekRaw);
-        if (isNamedProjectWithUrl(peekStripped) || looksLikeRoleHeader(peekStripped)) {
+        if (isNamedProjectWithUrl(peekStripped)) {
           break;
         }
         i++;
