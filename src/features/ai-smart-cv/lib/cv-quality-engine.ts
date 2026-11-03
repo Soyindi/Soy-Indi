@@ -113,19 +113,111 @@ export function verifyBulletGrounding(sourceText: string, suggestedText: string)
 }
 
 /**
+ * Filtra la lista global de habilidades del CV para preservar EXCLUSIVAMENTE
+ * aquellas que guarden relación fáctica o léxica con el cargo y viñeta actual.
+ * Evita que habilidades de otros cargos (ej: 'Evaluación psico-criminológica' o 'SHA-256')
+ * se inyecten al optimizar un cargo ajeno (ej: 'Psicólogo Practicante' en SEREMI de Salud).
+ */
+export function filterRoleRelevantSkills(
+  skills: string[] = [],
+  role?: string,
+  company?: string,
+  bulletText?: string
+): string[] {
+  if (!Array.isArray(skills) || skills.length === 0) return [];
+  const context = `${role || ''} ${company || ''} ${bulletText || ''}`.toLowerCase();
+  if (!context.trim()) return [];
+
+  // Palabras comunes a ignorar al comparar tokens
+  const stopwords = new Set(['de', 'la', 'en', 'el', 'y', 'a', 'los', 'del', 'con', 'para', 'un', 'una', 'por']);
+
+  return skills.filter((skill) => {
+    const sLower = skill.toLowerCase().trim();
+    if (!sLower) return false;
+
+    // 1. Coincidencia directa completa en el contexto del cargo o viñeta
+    if (context.includes(sLower)) return true;
+
+    // 2. Coincidencia por tokens significativos (ej: 'diagnóstico', 'burnout', 'paliativos', 'rnr')
+    const skillTokens = sLower
+      .replace(/[^a-záéíóúñ0-9]/g, ' ')
+      .split(/\s+/)
+      .filter((t) => t.length > 3 && !stopwords.has(t));
+
+    return skillTokens.some((token) => context.includes(token));
+  });
+}
+
+/**
+ * Lista de términos hipersensibles de alta especificidad de dominio
+ * que suelen contaminarse indebidamente si el modelo LLM hace asociaciones libres.
+ */
+const DOMAIN_SPECIFIC_MARKERS = [
+  { pattern: /\bpsico[- ]?criminol[oó]gic[oa]s?\b/gi, canonicalReplacement: 'de diagnóstico institucional e intervención' },
+  { pattern: /\bmodelo\s+rnr\b/gi, canonicalReplacement: 'estándares técnicos de intervención' },
+  { pattern: /\bcuidados\s+paliativos\b/gi, canonicalReplacement: 'atención en salud' },
+  { pattern: /\bevent\s+sourcing\b/gi, canonicalReplacement: 'arquitectura de datos' },
+  { pattern: /\bsha[- ]?256\b/gi, canonicalReplacement: 'integridad de datos' },
+  { pattern: /\bpenitenciari[oa]s?\b/gi, canonicalReplacement: 'institucionales' },
+];
+
+/**
+ * Validador y purgador post-generación de contaminación cruzada entre experiencias.
+ * Si la sugerencia incluye términos de un dominio técnico ajeno que NO existían
+ * en el texto original de la viñeta ni en el título del cargo, los purga o sustituye.
+ */
+export function verifyAndPurgeCrossRoleContamination(
+  suggestedText: string,
+  sourceText: string = '',
+  role: string = '',
+  company: string = ''
+): { cleanText: string; hadContamination: boolean; contaminatedTerms: string[] } {
+  let cleanText = suggestedText;
+  const context = `${sourceText} ${role} ${company}`.toLowerCase();
+  const contaminatedTerms: string[] = [];
+
+  for (const marker of DOMAIN_SPECIFIC_MARKERS) {
+    if (marker.pattern.test(cleanText)) {
+      // Verificar si el término ya existía legítimamente en el cargo o viñeta original
+      const testRegex = new RegExp(marker.pattern.source, 'i');
+      if (!testRegex.test(context)) {
+        contaminatedTerms.push(marker.pattern.source);
+        cleanText = cleanText.replace(marker.pattern, marker.canonicalReplacement);
+      }
+    }
+  }
+
+  // Limpiar posibles espacios dobles tras la sustitución
+  cleanText = cleanText.replace(/\s{2,}/g, ' ').trim();
+
+  return {
+    cleanText,
+    hadContamination: contaminatedTerms.length > 0,
+    contaminatedTerms,
+  };
+}
+
+/**
  * Sanitiza y repara sugerencias generadas por la IA:
  * 1. Remueve corchetes residuales o placeholders de plantilla como [especificar volumen], [añadir métrica de impacto]
  * 2. Verifica grounding frente al texto original para prevenir alucinaciones de cifras inventadas
+ * 3. Purga contaminación cruzada entre roles
  */
 export function sanitizeAndGroundAiBullet(
   suggestedBullet: string,
-  sourceText?: string
+  sourceText?: string,
+  role?: string,
+  company?: string
 ): { cleanText: string; isGrounded: boolean; hallucinatedMetrics: string[] } {
   let cleanText = suggestedBullet;
 
   // 1. Eliminar marcadores entre corchetes
   cleanText = cleanText.replace(/\[(?:especificar|añadir|completar|ingresar|indicar)[^\]]*\]/gi, '').trim();
   cleanText = cleanText.replace(/\[[^\]]{3,35}\]/g, '').trim();
+
+  // 2. Purgar contaminación cruzada de términos de otros puestos
+  const isolationCheck = verifyAndPurgeCrossRoleContamination(cleanText, sourceText, role, company);
+  cleanText = isolationCheck.cleanText;
 
   // Limpiar posibles espacios dobles o comas huérfanas dejadas por el borrado
   cleanText = cleanText
@@ -140,7 +232,7 @@ export function sanitizeAndGroundAiBullet(
     cleanText += '.';
   }
 
-  // 2. Verificación de Grounding si se proveyó texto fuente
+  // 3. Verificación de Grounding si se proveyó texto fuente
   if (sourceText && sourceText.trim().length > 0) {
     const check = verifyBulletGrounding(sourceText, cleanText);
     return {

@@ -596,5 +596,22 @@ Todo agente de IA o desarrollador asistido debe operar bajo el protocolo de entr
 6. **Privacidad de Datos Personales por Defecto (Ley N° 21.719 Chile)**:
    - Toda renderización pública en `/cv/[slug]` pasa por `sanitizeCvForPublicView`, ocultando el RUT y ofuscando teléfonos de terceros (`[Disponible a solicitud]`) salvo que el titular active explícitamente `showRutOnPublic` o `showReferenceContactsOnPublic` en `SmartCvBuilder.tsx`.
 
+---
+
+### SOP-138: Aislamiento Hermético por Cargo, Prevención de Contaminación Cruzada y Cardinalidad 1:1 en Smart CV
+1. **Aislamiento Hermético de Habilidades por Rol (`filterRoleRelevantSkills`)**:
+   - Al optimizar logros o viñetas de una experiencia laboral específica en `rewriteCvSectionAction` o `InlineAiWriter.tsx`, queda estrictamente prohibido pasar la lista global completa de `skills` del currículum al modelo de lenguaje.
+   - Toda habilidad pasada al LLM debe ser previamente filtrada mediante `filterRoleRelevantSkills(skills, role, company, bulletText)`, reteniendo únicamente aquellas que tengan pertinencia temática o léxica con el cargo evaluado.
+2. **Purgado de Contaminación Cruzada Post-Generación (`verifyAndPurgeCrossRoleContamination`)**:
+   - Todo texto generado o reescrito por IA para una viñeta debe pasar por `verifyAndPurgeCrossRoleContamination`. Si la sugerencia incluye palabras de dominio especializado (ej. *psico-criminológico*, *modelo rnr*, *cuidados paliativos*, *event sourcing*, *sha-256*, *penitenciario*) que no figuraban en el texto original del cargo auditado, la frase contaminante debe ser neutralizada y depurada inmediatamente.
+3. **Cardinalidad Estricta 1 a 1 en Viñetas de Experiencia**:
+   - Si una experiencia ingresa con $N$ viñetas independientes, la respuesta del asistente de IA debe preservar exactamente $N$ viñetas independientes separadas por salto de línea (`\n`). Queda prohibido colapsar múltiples viñetas en un solo párrafo resumen.
+4. **Erradicación del Cliché Robótico "Logré..." & Enfoque Multi-Ángulo**:
+   - Queda prohibido iniciar todas las sugerencias con la fórmula robótica *"Logré..."*. El motor debe ofrecer 3 variantes con ángulos estratégicos diferenciados:
+     - *Variante #1*: Enfoque de Impacto & Resultados (Google XYZ con verbos de acción fuertes en primera persona).
+     - *Variante #2*: Enfoque de Rigor Metodológico y Procedimientos (marcos de trabajo y estándares).
+     - *Variante #3*: Enfoque Ejecutivo y Síntesis ATS (densidad conceptual y palabras clave esenciales).
+
+
 
 

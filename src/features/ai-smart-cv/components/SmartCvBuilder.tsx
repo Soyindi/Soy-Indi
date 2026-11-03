@@ -1416,7 +1416,7 @@ export function SmartCvBuilder({
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                       <input
                         type="text"
                         value={exp.role}
@@ -1425,8 +1425,9 @@ export function SmartCvBuilder({
                           updated[idx].role = e.target.value;
                           handleContentChange('experience', updated);
                         }}
-                        className="text-xs font-medium text-white bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5 focus:border-teal-500/40"
+                        className="sm:col-span-4 text-xs font-medium text-white bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5 focus:border-teal-500/40"
                         placeholder="Cargo profesional"
+                        title={exp.role}
                       />
                       <input
                         type="text"
@@ -1436,8 +1437,9 @@ export function SmartCvBuilder({
                           updated[idx].company = e.target.value;
                           handleContentChange('experience', updated);
                         }}
-                        className="text-xs text-zinc-300 bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5 focus:border-teal-500/40"
+                        className="sm:col-span-5 text-xs text-zinc-300 bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5 focus:border-teal-500/40"
                         placeholder="Empresa o Institución"
+                        title={exp.company}
                       />
                       <input
                         type="text"
@@ -1447,8 +1449,9 @@ export function SmartCvBuilder({
                           updated[idx].period = e.target.value;
                           handleContentChange('experience', updated);
                         }}
-                        className="text-xs font-mono text-zinc-400 bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5 focus:border-teal-500/40"
+                        className="sm:col-span-3 text-xs font-mono text-zinc-400 bg-zinc-900/80 rounded-lg px-2.5 py-1.5 border border-white/5 focus:border-teal-500/40"
                         placeholder="ej. 2022 - Presente"
+                        title={exp.period}
                       />
                     </div>
 
@@ -1491,7 +1494,7 @@ export function SmartCvBuilder({
                           company={exp.company}
                           targetRole={formData.targetRole}
                           skills={formData.content.skills}
-                          label={(exp.bullets || []).length > 1 ? "Optimizar todo con IA" : "Mejorar con IA"}
+                          label={(exp.bullets || []).length > 1 ? `Optimizar las ${(exp.bullets || []).length} viñetas con IA` : "Mejorar con IA"}
                           onApply={(newText) => {
                             const updated = [...formData.content.experience];
                             // Si el texto generado contiene varias líneas o viñetas, dividirlas

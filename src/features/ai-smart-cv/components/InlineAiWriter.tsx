@@ -338,7 +338,13 @@ export function InlineAiWriter({
                       className="p-3 rounded-xl bg-black/40 hover:bg-black/60 border border-white/5 hover:border-cyan-500/30 transition-all text-xs text-zinc-300 flex flex-col gap-2.5 group/item"
                     >
                       <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 border-b border-white/5 pb-1">
-                        <span>Variante #{idx + 1}</span>
+                        <span>
+                          {idx === 0
+                            ? 'Variante #1 • Impacto & Resultados'
+                            : idx === 1
+                            ? 'Variante #2 • Rigor Metodológico'
+                            : 'Variante #3 • Síntesis Ejecutiva ATS'}
+                        </span>
                         <span className="text-cyan-400 font-medium">
                           {activeMode === 'XYZ_IMPACT'
                             ? 'Fórmula XYZ'

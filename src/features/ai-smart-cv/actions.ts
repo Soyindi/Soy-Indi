@@ -803,8 +803,21 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
     });
 
     const { evaluateCvPreRouteStrategy, auditAndRepairCvBullet } = await import('@/features/ai-smart-cv/lib/cv-auditor');
+    const { filterRoleRelevantSkills } = await import('@/features/ai-smart-cv/lib/cv-quality-engine');
+
+    // AISLAMIENTO HERMÉTICO DE DOMINIO:
+    // Si es una viñeta, evaluar el preRoute enfocado exclusivamente en el cargo y viñeta actual,
+    // y filtrar las habilidades para que habilidades ajenas (ej. psico-criminología, RNR, Python)
+    // NO se inyecten jamás al optimizar un cargo distinto.
+    const relevantSkills = type === 'BULLET'
+      ? filterRoleRelevantSkills(skills, role, company, cleanInput)
+      : (skills || []);
+
     const preRoute = evaluateCvPreRouteStrategy(
-      `${targetRole || ''} ${role || ''} ${company || ''} ${skills?.join(' ') || ''} ${cleanInput}`
+      type === 'BULLET'
+        ? `${role || ''} ${company || ''} ${relevantSkills.join(' ')} ${cleanInput}`
+        : `${targetRole || ''} ${role || ''} ${company || ''} ${relevantSkills.join(' ')} ${cleanInput}`,
+      type === 'BULLET' ? role : targetRole
     );
 
     const inputBullets = cleanInput
@@ -816,8 +829,8 @@ export async function rewriteCvSectionAction(params: RewriteCvSectionInput): Pro
 
     const roleContext = role ? `Cargo actual: ${role}` : '';
     const companyContext = company ? `Empresa: ${company}` : '';
-    const targetRoleContext = targetRole ? `Rol Objetivo del CV: ${targetRole}` : '';
-    const skillsContext = skills && skills.length > 0 ? `Habilidades del perfil: ${skills.join(', ')}` : '';
+    const targetRoleContext = type === 'SUMMARY' && targetRole ? `Rol Objetivo del CV: ${targetRole}` : '';
+    const skillsContext = relevantSkills.length > 0 ? `Habilidades del puesto: ${relevantSkills.join(', ')}` : '';
 
     const contextSummary = [
       roleContext,
@@ -836,41 +849,50 @@ TONO RECOMENDADO: ${preRoute.recommendedTone}
 PALABRAS CLAVE DEL SECTOR: ${preRoute.focusKeywords.join(', ')}
 
 REGLAS DE ORO OBLIGATORIAS:
-1. STRICT ZERO-HALLUCINATION & CERO PLACEHOLDERS: No inventes cifras numéricas no proporcionadas (como porcentajes ficticios o millones inventados). Si el usuario no entregó un número, enfoca la medición en el rigor metodológico, precisión técnica, calidad de entrega, adherencia a estándares o continuidad operativa. Queda estrictamente PROHIBIDO usar corchetes o marcadores artificiales como "[añadir métrica...]" o "[especificar...]".
-2. Si es una viñeta laboral, aplica la fórmula de Google XYZ: "Logré [X], medido por [Y], mediante [Z]" usando verbos de acción fuertes en primera persona singular o pasado ("Lideré", "Diseñé", "Orquesté", "Optimicé", "Implementé", "Coordiné", "Ejecuté").
-3. Mantén estricta coherencia con el contexto provisto (${contextSummary || 'Perfil Profesional'}).
-4. ${
-      isMultiBullet
-        ? `MULTILÍNEA: El usuario ha proporcionado ${inputBullets.length} viñetas. En cada sugerencia, devuelve exactamente ${inputBullets.length} viñetas mejoradas separadas por saltos de línea (\\n), sin viñetas tipográficas (• o -).`
-        : 'VIÑETA ÚNICA: Devuelve exactamente 3 opciones completas y profesionales para esta viñeta.'
-    }
+1. STRICT ZERO-HALLUCINATION & CERO CONTAMINACIÓN CRUZADA:
+   - Tienes TERMINANTEMENTE PROHIBIDO asociar o inventar funciones, metodologías o herramientas de otros puestos ajenos. Trabaja con fidelidad quirúrgica sobre los hechos del texto original provisto.
+   - Si el usuario no entregó un número, enfoca la medición en el rigor metodológico, precisión técnica, calidad de entrega, adherencia a estándares o continuidad operativa. Queda estrictamente PROHIBIDO usar corchetes o marcadores artificiales como "[añadir métrica...]" o "[especificar...]".
+2. ESTILO EDITORIAL NATURAL (CERO ROBOTIZACIÓN "LOGRÉ"):
+   - PROHIBIDO iniciar todas las viñetas con la palabra "Logré...". La fórmula Google XYZ significa estructurar Impacto + Medición/Protocolo + Acción, pero utilizando verbos de acción fuertes en primera persona singular o pasado ("Articulé", "Elaboré", "Ejecuté", "Diseñé", "Coordiné", "Implementé", "Gestioné", "Diagnosticé", "Supervisé").
+3. GENERACIÓN EN 3 ÁNGULOS ESTRATÉGICOS DIFERENCIADOS:
+   - Variante #1: Enfoque de Impacto & Resultados (fórmula XYZ con verbo activo directo, qué se logró y aporte a la entidad).
+   - Variante #2: Enfoque de Rigor Metodológico y Procedimientos (estándares técnicos, calidad diagnóstica y coordinación).
+   - Variante #3: Enfoque Ejecutivo y Síntesis de Alta Densidad ATS (redacción ágil, concisa y directa al grano para lectura rápida).
+4. PRESERVACIÓN ESTRICTA DE CARDINALIDAD 1:1:
+   ${
+     isMultiBullet
+       ? `MULTILÍNEA: El usuario ha proporcionado exactamente ${inputBullets.length} viñetas independientes. En cada una de las 3 sugerencias, DEBES devolver exactamente ${inputBullets.length} viñetas correspondientes separadas por saltos de línea (\\n). Queda estrictamente PROHIBIDO colapsar o fusionar las ${inputBullets.length} viñetas en un solo párrafo.`
+       : 'VIÑETA ÚNICA: Devuelve exactamente 3 opciones completas y profesionales para esta viñeta.'
+   }
 5. Devuelve ÚNICAMENTE un objeto JSON válido con la clave "suggestions", conteniendo un array de exactamente 3 variantes distintas y profesionales sin texto introductorio ni formato markdown extra.`;
 
     const specificRole = role || (type === 'SUMMARY' ? targetRole : undefined) || 'Profesional';
     const specificCompany = company || 'la organización';
 
     const userPrompt = type === 'BULLET'
-      ? `CONTEXTO LABORAL ESPECÍFICO (AISLAMIENTO ESTRICTO DE EXPERIENCIA):
+      ? `CONTEXTO LABORAL ESPECÍFICO (AISLAMIENTO HERMÉTICO DE EXPERIENCIA):
 - Puesto / Cargo Desempeñado: "${specificRole}"
 - Empresa u Organización: "${specificCompany}"
-${targetRole && targetRole !== role ? `- Rol Objetivo General del CV: "${targetRole}"\n` : ''}${skillsContext ? `- ${skillsContext}\n` : ''}
-⚠️ REGLA DE AISLAMIENTO:
-Esta sugerencia es EXCLUSIVA para el puesto de "${specificRole}" en "${specificCompany}". Queda estrictamente PROHIBIDO mezclar responsabilidades de otras empresas, rubros no relacionados o inventar experiencias de puestos ajenos.
+${skillsContext ? `- ${skillsContext}\n` : ''}
+⚠️ REGLA DE AISLAMIENTO ABSOLUTO:
+Esta sugerencia es EXCLUSIVA para las funciones de "${specificRole}" en "${specificCompany}". Queda estrictamente PROHIBIDO mezclar responsabilidades de otras instituciones, inventar marcos ajenos (como penitenciarios, cuidados paliativos o software) o cruzar tareas de otros empleos.
 
-TEXTO ACTUAL DE LA VIÑETA A TRANSFORMAR:
-"${cleanInput}"
+TEXTO ACTUAL DE LA VIÑETA A TRANSFORMAR (${isMultiBullet ? `${inputBullets.length} viñetas independientes` : '1 viñeta'}):
+"""
+${cleanInput}
+"""
 ${impactAnswer ? `\nDATO CUANTITATIVO APORTADO POR EL USUARIO:\n"${impactAnswer.trim()}"\n(Incorpora este dato real sin inventar otras cifras distintas)` : ''}
 
-TIPO DE SECCIÓN: ${isMultiBullet ? 'Conjunto de Logros Laborales' : 'Viñeta de Logro Laboral'}
+TIPO DE SECCIÓN: ${isMultiBullet ? `Conjunto de ${inputBullets.length} Logros Laborales Independientes` : 'Viñeta de Logro Laboral'}
 ENFOQUE SOLICITADO: ${
         mode === 'XYZ_IMPACT'
-          ? 'Impacto Cuantitativo (Fórmula Google XYZ: Logré [X], medido por [Y], mediante [Z])'
+          ? 'Impacto Cuantitativo (Fórmula Google XYZ con verbos de acción directos, sin el cliché "Logré")'
           : mode === 'EXECUTIVE'
           ? 'Tono Ejecutivo y Estratégico de Liderazgo'
           : 'Optimización de Palabras Clave ATS y Técnicas'
       }
 
-Devuelve exactamente 3 opciones pulcras, con verbos fuertes de acción, de estándar mundial 2026 y estrictamente adaptadas a las funciones de "${specificRole}" en "${specificCompany}".`
+Devuelve exactamente 3 variantes de estándar mundial 2026, con verbos de acción fuertes y ${isMultiBullet ? `respetando estrictamente las ${inputBullets.length} viñetas separadas por \\n sin fusionarlas` : 'sin duplicaciones'}.`
       : `PERFIL PROFESIONAL Y OBJETIVO DE CARRERA:
 - Rol Objetivo: "${targetRole || role || 'Profesional'}"
 ${role && role !== targetRole ? `- Cargo actual / reciente: "${role}"\n` : ''}${company ? `- Empresa actual / reciente: "${company}"\n` : ''}${skillsContext ? `- ${skillsContext}\n` : ''}
@@ -916,16 +938,25 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
           const cleanedSuggestions = parsedJson.suggestions.slice(0, 3).map((s: any) => {
             const raw = String(s).trim();
             if (isMultiBullet) {
-              return raw
-                .split('\n')
+              const splitted = raw.split('\n').filter(Boolean);
+              // Si el LLM colapsó las N viñetas en menos líneas, intentar mapear contra las viñetas originales
+              if (splitted.length === inputBullets.length) {
+                return splitted
+                  .map((b, bIdx) => {
+                    const sanitized = sanitizeAndGroundAiBullet(b, inputBullets[bIdx], specificRole, specificCompany).cleanText;
+                    return auditAndRepairCvBullet(sanitized).repairedText;
+                  })
+                  .join('\n');
+              }
+              return splitted
                 .map((b) => {
-                  const sanitized = sanitizeAndGroundAiBullet(b, cleanInput).cleanText;
+                  const sanitized = sanitizeAndGroundAiBullet(b, cleanInput, specificRole, specificCompany).cleanText;
                   return auditAndRepairCvBullet(sanitized).repairedText;
                 })
                 .filter(Boolean)
                 .join('\n');
             }
-            const sanitized = sanitizeAndGroundAiBullet(raw, cleanInput).cleanText;
+            const sanitized = sanitizeAndGroundAiBullet(raw, cleanInput, specificRole, specificCompany).cleanText;
             const { repairedText } = auditAndRepairCvBullet(sanitized);
             return repairedText;
           });
@@ -943,7 +974,7 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
           .filter((l) => l.length > 15);
         if (lines.length >= 2) {
           const cleanedSuggestions = lines.slice(0, 3).map((s) => {
-            const sanitized = sanitizeAndGroundAiBullet(s, cleanInput).cleanText;
+            const sanitized = sanitizeAndGroundAiBullet(s, cleanInput, specificRole, specificCompany).cleanText;
             const { repairedText } = auditAndRepairCvBullet(sanitized);
             return repairedText;
           });
@@ -992,13 +1023,22 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
     const generateSingleBulletOptions = (bulletText: string): string[] => {
       const cleanBase = stripRedundantPrefixes(bulletText);
       const cleanLower = cleanBase ? cleanBase.charAt(0).toLowerCase() + cleanBase.slice(1) : bulletText;
+      const cleanCap = cleanBase ? cleanBase.charAt(0).toUpperCase() + cleanBase.slice(1) : bulletText;
       const hasMetric = /\b(?:\d+[%kKmM]?|\$\d+|\d+\s?(?:personas|usuarios|pacientes|clientes|meses|días|proyectos|ms|s))\b/i.test(bulletText);
+
+      // Verbos de acción dinámicos según el arquetipo (salud, educación, tecnología, etc.)
+      const isClinical = preRoute.detectedArchetype === 'clinical_healthcare';
+      const isTech = preRoute.detectedArchetype === 'technical_specialist';
+
+      const vImpact = isClinical ? 'Articulé' : isTech ? 'Desarrollé' : 'Coordiné';
+      const vMethod = isClinical ? 'Ejecuté' : isTech ? 'Arquitecté' : 'Estandaricé';
+      const vDirect = isClinical ? 'Facilité' : isTech ? 'Implementé' : 'Supervisé';
 
       if (hasMetric) {
         return [
-          `Lideré ${cleanLower}, consolidando un impacto verificable y trazabilidad en ${fallbackOrg}.`,
-          `Orquesté ${cleanLower}, optimizando la entrega técnica y garantizando la calidad como ${fallbackRole}.`,
-          `Dirigí la ejecución de ${cleanLower}, asegurando estándares de excelencia operativa en ${fallbackOrg}.`,
+          `${vImpact} ${cleanLower}, consolidando un impacto verificable y trazabilidad en ${fallbackOrg}.`,
+          `${vMethod} ${cleanLower}, optimizando la entrega técnica y garantizando la calidad como ${fallbackRole}.`,
+          `${vDirect} la ejecución de ${cleanLower}, asegurando estándares de excelencia en ${fallbackOrg}.`,
         ];
       }
 
@@ -1019,11 +1059,12 @@ Devuelve exactamente 3 opciones ejecutivas, atractivas y de alto valor corporati
         ];
       }
 
-      // Default XYZ_IMPACT con redacción pulcra de clase mundial (cero corchetes ni texto truncado)
+      // Default XYZ_IMPACT con 3 ángulos diferenciados sin el cliché "Logré":
+      // Ángulo 1: Impacto & Resultados | Ángulo 2: Rigor y Metodología | Ángulo 3: Síntesis Ejecutiva
       return [
-        `Lideré ${cleanLower}, optimizando los procesos y protocolos de atención en ${fallbackOrg}.`,
-        `Orquesté la ejecución de ${cleanLower}, mejorando la efectividad del servicio y la entrega de resultados como ${fallbackRole}.`,
-        `Diseñé e implementé mejoras continuas en ${cleanLower}, asegurando el cumplimiento riguroso de estándares en ${fallbackOrg}.`,
+        `${vImpact} ${cleanLower}, optimizando los procesos y protocolos de atención en ${fallbackOrg}.`,
+        `${vMethod} metodologías para ${cleanLower}, asegurando el rigor técnico y la continuidad operativa en ${fallbackOrg}.`,
+        `${vDirect} ${cleanLower}, garantizando el cumplimiento de estándares institucionales como ${fallbackRole}.`,
       ];
     };
 

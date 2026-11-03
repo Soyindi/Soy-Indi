@@ -178,4 +178,38 @@ Contención emocional en situaciones de crisis y acompañamiento en duelo antici
       expect(lines).toHaveLength(3);
     }
   });
+
+  it('bloquea contaminación cruzada de términos ajenos (ej. "psico-criminológico" o "RNR") en Psicólogo Practicante en SEREMI', async () => {
+    const rawBullet = 'Colaboré con Gendarmería de Chile, Geopark y el Ministerio de Desarrollo Social.';
+    const globalCvSkills = [
+      'Evaluación psico-criminológica',
+      'Modelo RNR',
+      'Cuidados paliativos',
+      'Python',
+      'Event Sourcing',
+      'SHA-256'
+    ];
+
+    const res = await rewriteCvSectionAction({
+      text: rawBullet,
+      type: 'BULLET',
+      mode: 'XYZ_IMPACT',
+      role: 'Psicólogo Practicante',
+      company: 'Secretaría Regional Ministerial de Salud Magallanes',
+      targetRole: 'Psicólogo Clínico · Desarrollo de Sistemas e IA',
+      skills: globalCvSkills
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.suggestions).toHaveLength(3);
+
+    for (const sug of res.suggestions) {
+      // Jamás debe inyectar terminología carcelaria/penitenciaria o de software en la práctica de SEREMI de Salud
+      expect(sug).not.toMatch(/psico[- ]?criminol/i);
+      expect(sug).not.toMatch(/modelo\s+rnr/i);
+      expect(sug).not.toMatch(/event\s+sourcing/i);
+      expect(sug).not.toMatch(/sha[- ]?256/i);
+      expect(sug).not.toMatch(/cuidados\s+paliativos/i);
+    }
+  });
 });
