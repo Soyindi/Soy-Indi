@@ -111,6 +111,73 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
       return { success: false, error: 'No se pudo extraer información estructurada del currículum.' };
     }
 
+    // Rehidratar años de cursos previamente acreditados en la cuenta del usuario o en su sesión actual
+    // (cuando el usuario sube una versión actualizada de su CV sin adjuntar nuevamente las páginas de diplomas)
+    const knownEducationPool: Array<{ degree: string; institution: string; year: string }> = [];
+    const currentEduParam = formData.get('currentEducation') as string | null;
+    if (currentEduParam) {
+      try {
+        const parsedCurrentEdu = JSON.parse(currentEduParam);
+        if (Array.isArray(parsedCurrentEdu)) {
+          knownEducationPool.push(...parsedCurrentEdu);
+        }
+      } catch {
+        // Ignorar error de parseo opcional
+      }
+    }
+
+    if (userAuth.userId) {
+      try {
+        const previousCvs = await db.query.smartCvs.findMany({
+          where: eq(smartCvs.userId, userAuth.userId),
+          orderBy: [desc(smartCvs.updatedAt)],
+        });
+        for (const prevCv of previousCvs) {
+          const prevEdu = (prevCv.content as any)?.education;
+          if (Array.isArray(prevEdu)) {
+            knownEducationPool.push(...prevEdu);
+          }
+        }
+      } catch {
+        // Degradación silenciosa si la DB no está disponible en test
+      }
+    }
+
+    const normDegree = (s: string) =>
+      (s || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+
+    const rehydratedEducation = extracted.education.map((edu) => {
+      if (edu.year && /\b(?:19|20)\d{2}\b/.test(edu.year)) {
+        return {
+          degree: edu.degree,
+          institution: edu.institution,
+          year: edu.year,
+          credentialType: 'UNVERIFIED' as const,
+        };
+      }
+      const targetNorm = normDegree(edu.degree);
+      const matchedKnown = knownEducationPool.find((k) => {
+        const kNorm = normDegree(k.degree);
+        return (
+          kNorm.length > 5 &&
+          (kNorm.includes(targetNorm) || targetNorm.includes(kNorm)) &&
+          k.year &&
+          /\b(?:19|20)\d{2}\b/.test(k.year) &&
+          !/no\s+especificado|graduado/i.test(k.year)
+        );
+      });
+      return {
+        degree: edu.degree,
+        institution: edu.institution,
+        year: matchedKnown ? matchedKnown.year.trim() : edu.year,
+        credentialType: 'UNVERIFIED' as const,
+      };
+    });
+
     // Mapear a CVFormValues con soporte de viñetas XYZ
     const structuredCv: Partial<CVFormValues> = {
       title: `CV Optimizado - ${extracted.targetRole || 'Profesional'}`,
@@ -136,12 +203,7 @@ export async function parseCvDocumentAction(formData: FormData): Promise<{
             needs_metric: b.needs_metric,
           })),
         })),
-        education: extracted.education.map((edu) => ({
-          degree: edu.degree,
-          institution: edu.institution,
-          year: edu.year,
-          credentialType: 'UNVERIFIED',
-        })),
+        education: rehydratedEducation,
         references: extracted.references || [],
         credentials: [],
         signatureType: 'NONE',

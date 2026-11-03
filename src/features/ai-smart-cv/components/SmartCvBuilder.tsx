@@ -268,6 +268,35 @@ export function SmartCvBuilder({
       const newTargetRole = extractedCv.targetRole || prev.targetRole;
       const autoSlug = !isSlugManuallyEdited && newFullName ? generateCvSlug(newFullName, false) : prev.slug;
 
+      const norm = (s: string) =>
+        (s || '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]/g, '');
+
+      // Si el usuario re-sube una versión actualizada de su CV sin adjuntar nuevamente los diplomas,
+      // preservar los años y credenciales verificadas de los cursos que ya tenía acreditados en su perfil
+      const mergedEducation = (extractedCv.content?.education || prev.content.education || []).map((newEdu) => {
+        if (newEdu.year && /\b(?:19|20)\d{2}\b/.test(newEdu.year)) {
+          return newEdu;
+        }
+        const newDegNorm = norm(newEdu.degree);
+        const prevMatch = (prev.content.education || []).find((pEdu) => {
+          const pDegNorm = norm(pEdu.degree);
+          return pDegNorm.length > 5 && (pDegNorm.includes(newDegNorm) || newDegNorm.includes(pDegNorm));
+        });
+        if (prevMatch && prevMatch.year && /\b(?:19|20)\d{2}\b/.test(prevMatch.year)) {
+          return {
+            ...newEdu,
+            year: prevMatch.year,
+            credentialType: prevMatch.credentialType || newEdu.credentialType,
+            verifiedCredentialId: prevMatch.verifiedCredentialId || newEdu.verifiedCredentialId,
+          };
+        }
+        return newEdu;
+      });
+
       return {
         ...prev,
         title: extractedCv.title || (newFullName ? `CV de ${newFullName}` : prev.title),
@@ -276,7 +305,11 @@ export function SmartCvBuilder({
         content: {
           ...prev.content,
           ...extractedCv.content,
-          credentials: extractedCv.content?.credentials || [],
+          education: mergedEducation,
+          credentials:
+            extractedCv.content?.credentials && extractedCv.content.credentials.length > 0
+              ? extractedCv.content.credentials
+              : prev.content.credentials || [],
         },
       };
     });

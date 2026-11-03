@@ -90,6 +90,9 @@ export function SmartDocumentDropzone({
 
       if (type === 'cv') {
         formData.append('type', 'cv');
+        if (currentEducation && currentEducation.length > 0) {
+          formData.append('currentEducation', JSON.stringify(currentEducation));
+        }
         setStatusMessage('Analizando competencias y aplicando sanitización EU AI Act...');
         
         let result: any = null;
