@@ -99,10 +99,10 @@ export function parseCvTextToStructuredData(
   // 0. Aislar cuerpo del CV de posibles certificados anexos al final del archivo
   const cleanCvBody = isolateCvBodyFromAttachments(rawText);
 
-  // 1. Limpieza inicial de texto y separación en líneas
+  // 1. Limpieza inicial de texto y separación en líneas (incluyendo normalización de glifos Wingdings 'l ' -> '● ')
   const lines = cleanCvBody
     .split(/\r?\n/)
-    .map((l) => l.trim())
+    .map((l) => l.trim().replace(/^[lL|]\s+(?=[A-ZÁÉÍÓÚÑ0-9«"“])/u, '● '))
     .filter((l) => l.length > 0 && !/^(?:---\s*)?p[áa]gina\s+siguiente(?:\s*---)?$/i.test(l) && !/^[-—]{3,}$/.test(l));
 
   // 1.1 Extraer RUT chileno primero con máxima prioridad (formato XX.XXX.XXX-K o XXXXXXXX-K)
@@ -357,26 +357,55 @@ export function parseCvTextToStructuredData(
   const datePattern = /(?:(?:ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+)?(?:19|20)\d{2}\b/i;
   // Regex universal de caracteres de viñeta: bullets unicode, guiones, asteriscos, círculos, etc.
   const bulletSymbolRegex = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/g;
-  const stripLeadingBullet = (s: string) => s.replace(bulletSymbolRegex, '').trim();
+  const stripLeadingBullet = (s: string) =>
+    s.replace(bulletSymbolRegex, '').replace(/^[lL|]\s+(?=[A-ZÁÉÍÓÚÑ0-9«"“])/u, '').trim();
   let pendingCompanyCandidate = '';
 
-  // Helper para detectar si una línea parece un cargo profesional nuevo o proyecto
+  // Helper para detectar si una línea parece un cargo profesional nuevo o bloque de proyectos
   const looksLikeRoleHeader = (str: string): boolean => {
-    const s = str.toLowerCase();
-    const roleKeywords = [
-      'psicólog', 'psicolog', 'ingenier', 'desarrollador', 'arquitect', 'analista', 'consultor',
-      'coordinador', 'director', 'jefe', 'especialista', 'docente', 'profesor',
-      'terapeuta', 'investigador', 'asistente', 'practicante', 'reemplazante', 'encargado',
-      'full stack', 'frontend', 'backend', 'lead', 'tech lead', 'creador', 'fundador', 'autor'
-    ];
-    return roleKeywords.some((k) => s.includes(k));
+    const trimmed = str.trim();
+    const s = trimmed.toLowerCase();
+
+    // Excluir viñetas etiquetadas (ej. "Arquitectura: frontend...", "Contabilidad y tributario:"), URLs o leyes
+    if (/^[a-záéíóúñ\s/]{2,35}:/i.test(trimmed) && !/^proyectos?\s+de\s+desarrollo/i.test(trimmed)) {
+      return false;
+    }
+    if (
+      s.includes('github.com') ||
+      s.includes('http://') ||
+      s.includes('https://') ||
+      /\b[a-z0-9-]+\.(?:cl|com|io|dev|org)\b/i.test(s) ||
+      s.includes('ley 19') ||
+      s.includes('res. exenta') ||
+      s.startsWith('competencias técnicas') ||
+      s.startsWith('diseño e implementación autónoma')
+    ) {
+      return false;
+    }
+
+    if (/^proyectos?\s+de\s+desarrollo\s+tecnol[óo]gico/i.test(trimmed)) {
+      return true;
+    }
+
+    // Matching con fronteras de palabra para no confundir "arquitectura" con "arquitecto" ni "ingeniería" con "ingeniero"
+    return /\b(?:psic[oó]log[oa]s?|ingenier[oa]s?|desarrollador(?:es|a)?|developer|arquitect[oa]s?|analistas?|consultor(?:es|a)?|coordinador(?:es|a)?|director(?:es|a)?|jef[ea]s?|especialistas?|docentes?|profesor(?:es|a)?|terapeutas?|investigador(?:es|a)?|asistentes?|practicantes?|reemplazantes?|encargad[oa]s?|full\s*stack|frontend|backend|tech\s*lead|creador(?:es|a)?|fundador(?:es|a)?)\b/i.test(
+      s
+    );
   };
 
-  // Helper para detectar proyectos tecnológicos (ej. ClicLaboral, ContaPymePuq, Slingshot)
+  // Helper para detectar encabezados de proyectos con dominio o repositorio (ej. "Soyindi (INDI) · soyindi.cl")
+  const isNamedProjectWithUrl = (str: string): boolean => {
+    const s = str.trim();
+    if (s.length > 75 || s.startsWith('●') || s.startsWith('•') || s.startsWith('-')) return false;
+    return /^[A-ZÁÉÍÓÚÑ][A-Za-z0-9ÁÉÍÓÚÑáéíóúñ\s()_-]{1,40}\s*[·•|–—-]\s*(?:https?:\/\/)?(?:github\.com\/[A-Za-z0-9_/-]+|[a-z0-9-]+\.(?:cl|com|io|dev|org|net))$/i.test(
+      s
+    );
+  };
+
+  // Helper para detectar proyectos tecnológicos independientes cuando NO estamos ya dentro del bloque de Proyectos
   const looksLikeProjectHeader = (str: string): boolean => {
     const s = str.trim();
     if (s.length > 60 || s.includes('@') || s.startsWith('http')) return false;
-    // Nombres de proyectos típicamente en PascalCase o con descripción de stack entre paréntesis o guiones
     if (/^[A-Z][a-zA-Z0-9_-]{2,25}(?:\s*\(.*\))?$/.test(s)) return true;
     if (/^(proyecto|sistema|plataforma|software|aplicación|app)\s*[:–—\-·]/i.test(s)) return true;
     return false;
@@ -387,8 +416,71 @@ export function parseCvTextToStructuredData(
     let strippedLine = stripLeadingBullet(rawLine);
     const hasBulletPrefix = rawLine !== strippedLine;
     const hasYear = datePattern.test(strippedLine);
-    const isRoleHeader = looksLikeRoleHeader(strippedLine);
-    const isProject = !hasBulletPrefix && looksLikeProjectHeader(strippedLine);
+    const isInPortfolioSection: boolean = Boolean(
+      currentExp && /proyectos?\s+de\s+desarrollo|portafolio/i.test(`${currentExp.role} ${currentExp.company}`)
+    );
+
+    // Dentro de la sección de Proyectos Tecnológicos, si aparece un sub-proyecto con su dominio/repo
+    // (ej. "Soyindi (INDI) · soyindi.cl" o "Slingshot · github.com/matiquelmec/Slingshot"),
+    // consolidarlo como una viñeta ejecutiva limpia dentro de Proyectos de Desarrollo Tecnológico
+    if (isInPortfolioSection && currentExp && !hasBulletPrefix && isNamedProjectWithUrl(strippedLine)) {
+      let projectSummary = strippedLine;
+      if (i + 1 < expLines.length) {
+        const nextRaw = expLines[i + 1];
+        const nextStripped = stripLeadingBullet(nextRaw);
+        const nextIsBullet = nextRaw !== nextStripped || /^[\s•\-\*·\u2022\u25cf]/.test(nextRaw);
+        if (!nextIsBullet && !isNamedProjectWithUrl(nextStripped) && nextStripped.length > 15) {
+          projectSummary = `${strippedLine} — ${nextStripped}`;
+          i++;
+          // Si la descripción de 2 líneas continúa en la siguiente línea sin viñeta
+          if (i + 1 < expLines.length) {
+            const thirdRaw = expLines[i + 1];
+            const thirdStripped = stripLeadingBullet(thirdRaw);
+            const thirdIsBullet = thirdRaw !== thirdStripped || /^[\s•\-\*·\u2022\u25cf]/.test(thirdRaw);
+            if (
+              !thirdIsBullet &&
+              !isNamedProjectWithUrl(thirdStripped) &&
+              !looksLikeRoleHeader(thirdStripped) &&
+              !projectSummary.endsWith('.')
+            ) {
+              projectSummary += ` ${thirdStripped}`;
+              i++;
+            }
+          }
+        }
+      }
+      currentExp.rawAchievements.push(projectSummary);
+      currentExp.xyzBullets.push({
+        text: projectSummary,
+        needs_metric: !/\b\d+\b/.test(projectSummary),
+      });
+      // Saltar las sub-viñetas internas de este sub-proyecto si ya se capturó su descripción ejecutiva completa,
+      // para evitar generar 40 viñetas anidadas que desborden las 2 páginas A4
+      while (i + 1 < expLines.length) {
+        const peekRaw = expLines[i + 1];
+        const peekStripped = stripLeadingBullet(peekRaw);
+        if (isNamedProjectWithUrl(peekStripped) || looksLikeRoleHeader(peekStripped)) {
+          break;
+        }
+        i++;
+      }
+      continue;
+    }
+
+    // Ignorar introducciones o pies de stack redundantes dentro del bloque de proyectos
+    if (
+      isInPortfolioSection &&
+      (/^diseño\s+e\s+implementaci[óo]n\s+aut[óo]noma/i.test(strippedLine) ||
+        /^de\s+rehabilitaci[óo]n\s+basado\s+en\s+evidencia/i.test(strippedLine) ||
+        /^competencias\s+t[ée]cnicas:/i.test(strippedLine) ||
+        /^integraci[óo]n\s+de\s+pagos\s*\(/i.test(strippedLine) ||
+        /^t[ée]cnico,\s+la\s+validaci[óo]n\s+metodol[óo]gica/i.test(strippedLine))
+    ) {
+      continue;
+    }
+
+    const isRoleHeader: boolean = !isInPortfolioSection && looksLikeRoleHeader(strippedLine);
+    const isProject: boolean = !isInPortfolioSection && !hasBulletPrefix && looksLikeProjectHeader(strippedLine);
 
     // Condición para nueva experiencia:
     const hasBulletSymbol = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]/.test(rawLine);
@@ -402,10 +494,16 @@ export function parseCvTextToStructuredData(
     }
 
     const isExplicitDateHeader =
+      !isInPortfolioSection &&
       hasYear &&
       !isBulletLine &&
       strippedLine.length < 90 &&
-      !/^(en|durante|a lo largo de|mediante|lider[ée]|implement[ée]|diseñ[ée]|desarroll[ée]|logr[ée]|reduj[ée]|gestion[ée])\b/i.test(strippedLine) &&
+      !strippedLine.endsWith('.') &&
+      !/^(en|durante|a lo largo de|mediante|lider[ée]|implement[ée]|diseñ[ée]|desarroll[ée]|logr[ée]|reduj[ée]|gestion[ée]|trabajo)\b/i.test(strippedLine) &&
+      !strippedLine.toLowerCase().includes('ley ') &&
+      !strippedLine.toLowerCase().includes('res. exenta') &&
+      !strippedLine.toLowerCase().includes('github.com') &&
+      !strippedLine.toLowerCase().includes('arquitectura') &&
       !strippedLine.includes('reducción') &&
       !strippedLine.includes('diseño') &&
       !strippedLine.includes('desarrollo') &&
@@ -416,7 +514,8 @@ export function parseCvTextToStructuredData(
 
     const isNewRole =
       !isBulletLine &&
-      ((isRoleHeader && (strippedLine.includes('·') || strippedLine.includes(' - ') || strippedLine.includes('(') || strippedLine.length < 90)) ||
+      ((/^proyectos?\s+de\s+desarrollo\s+tecnol[óo]gico/i.test(strippedLine)) ||
+      (isRoleHeader && (strippedLine.includes('·') || strippedLine.includes(' - ') || strippedLine.includes('(') || strippedLine.length < 90)) ||
       (isProject && !hasYear && strippedLine.length < 50) ||
       isExplicitDateHeader);
 

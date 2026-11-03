@@ -227,8 +227,17 @@ export async function parseCvDocumentMultimodal(
         if (extractedRawText) {
           const textParsed = parseCvTextToStructuredData(extractedRawText, fileName);
 
-          // A. Preservar todas las experiencias laborales si la IA omitió cargos o viñetas
-          if (textParsed.experience && textParsed.experience.length > data.experience.length) {
+          // Preservar el titular profesional completo si el LLM lo truncó a una sola palabra (ej. "Psicólogo")
+          if (
+            textParsed.targetRole &&
+            textParsed.targetRole.length > (data.targetRole?.length || 0) + 8 &&
+            (!data.targetRole || data.targetRole.split(/\s+/).length <= 2)
+          ) {
+            data.targetRole = textParsed.targetRole.replace(/\s*\(autodidacta\)/i, '').trim();
+          }
+
+          // A. Preservar todas las experiencias laborales y proyectos sin duplicar cargos
+          if (textParsed.experience && textParsed.experience.length > 0) {
             data.experience = mergeExperiences(data.experience, textParsed.experience);
           }
 
@@ -330,8 +339,17 @@ Extrae y estructura toda la información cumpliendo con las REGLAS DE PROCESAMIE
         if (extractedRawText) {
           const textParsed = parseCvTextToStructuredData(extractedRawText, fileName);
 
-          // A. Preservar todas las experiencias laborales si la IA omitió cargos
-          if (textParsed.experience && textParsed.experience.length > data.experience.length) {
+          // Preservar el titular profesional completo si el LLM lo truncó a una sola palabra
+          if (
+            textParsed.targetRole &&
+            textParsed.targetRole.length > (data.targetRole?.length || 0) + 8 &&
+            (!data.targetRole || data.targetRole.split(/\s+/).length <= 2)
+          ) {
+            data.targetRole = textParsed.targetRole.replace(/\s*\(autodidacta\)/i, '').trim();
+          }
+
+          // A. Preservar todas las experiencias laborales y proyectos sin duplicar cargos
+          if (textParsed.experience && textParsed.experience.length > 0) {
             data.experience = mergeExperiences(data.experience, textParsed.experience);
           }
 
@@ -1056,8 +1074,66 @@ function mergeEducations(
 }
 
 /**
+ * Determina semánticamente si dos entradas de experiencia laboral o proyectos representan el mismo cargo,
+ * independientemente de cómo se haya repartido la ciudad ("Concepción", "Penco") o el área entre role y company.
+ */
+function areSameExperienceEntry(
+  a: { company: string; role: string; period: string },
+  b: { company: string; role: string; period: string }
+): boolean {
+  const norm = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const aFull = norm(`${a.role} ${a.company}`);
+  const bFull = norm(`${b.role} ${b.company}`);
+
+  const aCompact = aFull.replace(/\s+/g, '');
+  const bCompact = bFull.replace(/\s+/g, '');
+  if (aCompact.includes(bCompact) || bCompact.includes(aCompact)) return true;
+
+  // Marcadores institucionales o de portafolio inequívocos
+  const institutionalClusters = [
+    ['penitenciario', 'sodexo', 'reinsercion'],
+    ['hospital clinico', 'cuidados paliativos'],
+    ['almirante jorge montt', 'convivencia escolar'],
+    ['cesfam'],
+    ['secretaria regional', 'seremi', 'practicante'],
+    ['proyectos de desarrollo', 'portafolio', 'desarrollo tecnologico', 'desarrollador de sistemas'],
+  ];
+
+  for (const cluster of institutionalClusters) {
+    const aHas = cluster.some((kw) => aFull.includes(kw));
+    const bHas = cluster.some((kw) => bFull.includes(kw));
+    if (aHas && bHas) return true;
+  }
+
+  // Comparación por período compartido + palabras significativas de rol/empresa
+  const aYears = (a.period.match(/\b(?:19|20)\d{2}\b/g) || []).join('-');
+  const bYears = (b.period.match(/\b(?:19|20)\d{2}\b/g) || []).join('-');
+  const genericWords = new Set(['psicologo', 'reemplazante', 'concepcion', 'penco', 'magallanes', 'chile', 'de', 'en', 'el', 'la', 'los', 'las', 'y']);
+  const aTokens = aFull.split(' ').filter((w) => w.length >= 4 && !genericWords.has(w));
+  const bTokens = bFull.split(' ').filter((w) => w.length >= 4 && !genericWords.has(w));
+
+  if (aTokens.length > 0 && bTokens.length > 0) {
+    const shared = aTokens.filter((w) => bTokens.includes(w)).length;
+    const minLen = Math.min(aTokens.length, bTokens.length);
+    if (shared / minLen >= 0.5) return true;
+    if (aYears && aYears === bYears && shared >= 1) return true;
+  }
+
+  return false;
+}
+
+/**
  * Fusiona la experiencia laboral extraída por la IA con las experiencias detectadas
- * por el parser heurístico de texto para garantizar que ningún cargo o viñeta se pierda.
+ * por el parser heurístico de texto para garantizar que ningún cargo o viñeta se pierda
+ * y que jamás se dupliquen cargos existentes.
  */
 function mergeExperiences(
   aiExp: Array<{
@@ -1087,26 +1163,37 @@ function mergeExperiences(
   const result = [...aiExp];
 
   for (const tExp of textExp) {
-    const tNorm = (tExp.role + ' ' + tExp.company).toLowerCase().replace(/[^a-z0-9]/g, '');
-    const existingIndex = result.findIndex((item) => {
-      const itemNorm = (item.role + ' ' + item.company).toLowerCase().replace(/[^a-z0-9]/g, '');
-      return (
-        itemNorm.includes(tNorm) ||
-        tNorm.includes(itemNorm) ||
-        (item.role.toLowerCase() === tExp.role.toLowerCase() && item.company.toLowerCase() === tExp.company.toLowerCase())
-      );
-    });
+    // Descartar falsos cargos producto de cortes de línea (ej. URLs, leyes o etiquetas técnicas en el título)
+    const lowerRole = tExp.role.toLowerCase();
+    if (
+      tExp.role.length > 85 ||
+      /^[lL|]\s+/.test(tExp.role) ||
+      lowerRole.includes('github.com') ||
+      lowerRole.includes('ley 19') ||
+      lowerRole.startsWith('arquitectura:') ||
+      lowerRole.startsWith('trabajo y la ley')
+    ) {
+      continue;
+    }
+
+    const existingIndex = result.findIndex((item) => areSameExperienceEntry(item, tExp));
 
     if (existingIndex === -1) {
-      // Cargo no extraído por la IA: agregar íntegramente
+      // Cargo legítimo no extraído por la IA: agregar íntegramente
       result.push(tExp);
     } else {
-      // Si la IA extrajo el cargo pero omitió viñetas originales
+      // Si la IA extrajo el cargo pero omitió viñetas originales o desordenó los proyectos del portafolio
       const existing = result[existingIndex];
       const existingCount = (existing.xyzBullets || []).length;
       const textCount = (tExp.xyzBullets || []).length;
+      const isPortfolio = /proyectos?\s+de\s+desarrollo|portafolio|desarrollador\s+de\s+sistemas/i.test(
+        `${existing.role} ${existing.company} ${tExp.role}`
+      );
+      const textBulletsClean = (tExp.xyzBullets || []).every(
+        (b) => !/^[lL|]\s+/.test(b.text) && (b.text.match(/\|/g) || []).length <= 1
+      );
 
-      if (textCount > existingCount) {
+      if (textBulletsClean && (textCount > existingCount || (isPortfolio && textCount >= 3))) {
         result[existingIndex] = {
           ...existing,
           rawAchievements:

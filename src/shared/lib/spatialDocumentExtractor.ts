@@ -168,6 +168,15 @@ export async function extractSpatialTextFromPdf(uint8: Uint8Array): Promise<stri
 }
 
 /**
+ * Normaliza glifos de fuentes Wingdings / Symbol que codifican el punto de viñeta (●)
+ * como la letra ASCII 'l' o '|' aislada al comienzo de la línea.
+ */
+function normalizeWingdingsBulletLine(line: string): string {
+  const trimmed = line.trim();
+  return trimmed.replace(/^[lL|]\s+(?=[A-ZÁÉÍÓÚÑ0-9«"“])/u, '● ');
+}
+
+/**
  * Helper para reconstruir líneas visuales a partir de ítems de texto ya ordenados.
  */
 function reconstructLinesFromItems(items: TextItemWithCoords[]): string[] {
@@ -189,7 +198,7 @@ function reconstructLinesFromItems(items: TextItemWithCoords[]): string[] {
       lastX = Math.max(lastX, item.x + item.width);
     } else {
       // Nueva línea visual
-      lines.push(currentLine.trim());
+      lines.push(normalizeWingdingsBulletLine(currentLine));
       currentLine = item.str;
       currentY = item.y;
       lastX = item.x + item.width;
@@ -197,7 +206,7 @@ function reconstructLinesFromItems(items: TextItemWithCoords[]): string[] {
   }
 
   if (currentLine.trim().length > 0) {
-    lines.push(currentLine.trim());
+    lines.push(normalizeWingdingsBulletLine(currentLine));
   }
 
   return lines;
