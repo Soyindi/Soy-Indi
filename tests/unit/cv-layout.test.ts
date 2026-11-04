@@ -158,4 +158,100 @@ describe('INDI Smart CV - Motor de Distribución y Balance Geométrico A4 (cv-la
     expect(result.totalWeight).toBeGreaterThan(5.5);
     expect(result.totalWeight).toBeLessThan(8.5);
   });
+
+  it('divide el portafolio de 8 proyectos entre Hoja 1 y Hoja 2 cuando Hoja 1 está bajo el 86% y evita sobrecargar la Hoja 2', () => {
+    const denseMultidisciplinaryCv = {
+      templateId: 'swiss-minimalist',
+      targetRole: 'Psicólogo Clínico y Psicosocial · Desarrollador de Software Full-Stack e IA',
+      content: {
+        fullName: 'MATÍAS RICARDO RIQUELME CÁRDENAS',
+        email: 'psicodomo.mr@gmail.com',
+        phone: '+56 9 8252 8235',
+        location: 'Punta Arenas, Chile',
+        rut: '18.209.442-0',
+        linkedinUrl: 'linkedin.com/in/matias-riquelme',
+        websiteUrl: 'soyindi.cl',
+        summary:
+          'Psicólogo titulado por la Universidad de Magallanes (2018), con registro vigente en la Superintendencia de Salud y Secreduc. Seis años de experiencia clínica y psicosocial en contextos de alta exigencia y desarrollador full-stack autodidacta con sistemas en producción.',
+        skills: [
+          'Psicodiagnóstico clínico', 'WAIS-IV', 'WISC-V', 'Luscher', 'HTP', 'ASSIST',
+          'Primeros Auxilios Psicológicos (PAP)', 'Terapia Breve', 'Intervención en Crisis',
+          'Python', 'TypeScript', 'JavaScript', 'SQL', 'Node.js', 'React', 'Next.js',
+          'FastAPI', 'Tailwind CSS', 'PostgreSQL', 'Supabase', 'Turso (libSQL)', 'Drizzle ORM',
+          'Redis', 'Docker', 'Integración de APIs LLM (Claude, OpenAI, Gemini, DeepSeek)',
+        ],
+        experience: [
+          {
+            role: 'Psicólogo de Reinserción Social',
+            company: 'Complejo Penitenciario Biobío · Sodexo · Concepción',
+            period: 'Oct. 2021 – Abr. 2024',
+            bullets: [
+              '– Evaluaciones psicocriminológicas e informes técnicos para tribunales de justicia y comisiones de libertad condicional.',
+              '– Diseño y ejecución de planes de intervención individual y grupal bajo el modelo Riesgo-Necesidad-Responsividad (RNR) orientados a disminuir factores dinámicos de reincidencia.',
+              '– Atención psicológica semanal, contención en crisis y monitoreo periódico de riesgo suicida en población penal.',
+              '– Talleres de autocuidado y manejo de estrés para personal penitenciario de trato directo.',
+            ],
+          },
+          {
+            role: 'Psicólogo Clínico (Reemplazante)',
+            company: 'Unidad de Cuidados Paliativos Universales · Hospital Clínico de Magallanes',
+            period: 'Dic. 2023 – Feb. 2024',
+            bullets: [
+              '– Acompañamiento psicológico a pacientes oncológicos y no oncológicos en etapa avanzada y a sus grupos familiares.',
+              '– Intervención en crisis, elaboración de duelo anticipado y coordinación clínica con equipo médico, de enfermería y trabajo social.',
+            ],
+          },
+          {
+            role: 'Psicólogo PIE y Convivencia Escolar',
+            company: 'Escuela República del Paraguay (DAEM Recoleta)',
+            period: 'Mar. 2020 – Nov. 2021',
+            bullets: [
+              '– Evaluación psicodiagnóstica integral (WISC-V, WAIS-IV, pruebas proyectivas) y planes de apoyo para estudiantes con NEE.',
+              '– Intervención familiar, mediación escolar, promoción del buen trato y articulación con redes de protección de derechos de NNA.',
+            ],
+          },
+          {
+            role: 'Desarrollador Full-Stack e Ingeniería de IA Independiente',
+            company: 'Diseño, desarrollo y despliegue en producción de plataformas SaaS',
+            period: 'Ene. 2025 – Presente',
+            bullets: [
+              'PSICODOMO · Plataforma clínica y gestión en salud mental · psicodomo.cl — Python · FastAPI · PostgreSQL · React · Docker. Sistema web con ficha clínica electrónica y agendamiento.',
+              'INDI (Soyindi) · Ecosistema de identidad profesional verificable · soyindi.cl — Next.js 15 · TypeScript · Turso · Drizzle ORM. Plataforma multi-tenant con tarjetas digitales y Smart CV.',
+              'Slingshot · Sistema de análisis cuantitativo y datos financieros en tiempo real — Python · Node.js · WebSockets · SQLite WAL. Ingesta de mercado de baja latencia.',
+              'Kumo Relational · Motor de inteligencia relacional y memoria semántica — Python · SQLite WAL · Embeddings vectoriales. Infraestructura híbrida relacional-vectorial.',
+              'ClicLaboral · Plataforma de intermediación y empleabilidad — Next.js · TypeScript · PostgreSQL. Portal orientado a conectar oferta laboral regional.',
+              'NeuroScan · Asistente de apoyo al análisis psicométrico y neuropsicológico — Python · Procesamiento documental. Sistematización de puntajes clínicos.',
+              'Visant Coffee Break · Plataforma digital comercial y catálogo gastronómico — Next.js · Tailwind CSS. Sitio comercial responsivo con cotización por WhatsApp.',
+              'Agente Postulador · Automatización inteligente de flujos de postulación — Python · Automatización web. Adecuación semántica de antecedentes con supervisión humana.',
+            ],
+          },
+        ],
+        education: Array.from({ length: 15 }, (_, i) => ({
+          degree: i === 0 ? 'Licenciado en Psicología · Título de Psicólogo' : `Curso Especializado #${i}`,
+          institution: i === 0 ? 'Universidad de Magallanes' : 'Servicio de Salud Magallanes',
+          year: `202${i % 6}`,
+          credentialType: i === 0 ? 'DEGREE' : 'CERTIFICATION',
+        })),
+        references: Array.from({ length: 5 }, (_, i) => ({
+          name: `Referencia Profesional ${i + 1}`,
+          role: 'Jefatura Clínica',
+          company: 'Hospital Clínico de Magallanes',
+          contact: `+56 9 9949 711${i}`,
+        })),
+      },
+    };
+
+    const dist = calculateCvPageDistribution(denseMultidisciplinaryCv as unknown as CVFormValues);
+
+    // Hoja 1 debe incluir los 3 cargos clínicos + la primera parte del portafolio tecnológico (4 ítems en page1Experiences)
+    expect(dist.page1Experiences).toHaveLength(4);
+    expect(dist.page1Experiences[3].bullets.length).toBeGreaterThanOrEqual(2);
+    expect(dist.page1Experiences[3].bullets.length).toBeLessThan(8);
+    expect(dist.capacityUtilizationPct).toBeGreaterThanOrEqual(85);
+    expect(dist.capacityUtilizationPct).toBeLessThanOrEqual(100);
+
+    // Hoja 2 recibe la continuación del portafolio sin desbordar (o desborda limpiamente a Hoja 3 si supera capacidad)
+    expect(dist.page2Experiences[0].isContinued).toBe(true);
+    expect(dist.page2Weight).toBeLessThanOrEqual(A4_PAGE_MAX_CAPACITY);
+  });
 });

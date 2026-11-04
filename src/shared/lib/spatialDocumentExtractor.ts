@@ -75,6 +75,68 @@ export async function extractSpatialTextFromPdf(uint8: Uint8Array): Promise<stri
         rightColItems.length > items.length * 0.15;
 
       if (!isTwoColumn) {
+        // Detectar si existe una sub-sección de REFERENCIAS en grilla multi-columna (2 o 3 columnas) al final de una página de 1 columna
+        const refHeaderItem = items.find((it) =>
+          /^(?:referencias(?:\s+profesionales|\s+laborales)?|contactos\s+de\s+referencia)$/i.test(it.str.trim())
+        );
+
+        if (refHeaderItem) {
+          const refY = refHeaderItem.y;
+          const aboveAndHeaderItems = items.filter((it) => it.y >= refY - 2);
+          const belowRefItems = items.filter((it) => it.y < refY - 2);
+
+          // Separar pie de página (ej. "Página 3 de 3" o línea muy baja y < 48)
+          const footerItems = belowRefItems.filter(
+            (it) => it.y < 48 || /p[áa]gina\s+\d+\s+de\s+\d+|curriculum\s+vitae/i.test(it.str)
+          );
+          const footerSet = new Set(footerItems);
+          const refGridItems = belowRefItems.filter((it) => !footerSet.has(it));
+
+          const col3Threshold = pageWidth * 0.62;
+          const col2Threshold3Col = pageWidth * 0.34;
+          const col2Threshold2Col = pageWidth * 0.46;
+
+          const hasCol3 = refGridItems.some((it) => it.x >= col3Threshold);
+          const hasCol2 = refGridItems.some((it) => it.x >= (hasCol3 ? col2Threshold3Col : col2Threshold2Col));
+          const hasWideCrossingRef = refGridItems.some(
+            (it) => it.x < pageWidth * 0.3 && it.x + it.width > pageWidth * 0.55
+          );
+
+          if (hasCol2 && !hasWideCrossingRef && refGridItems.length >= 4) {
+            const sortTopToBottom = (arr: TextItemWithCoords[]) =>
+              [...arr].sort((a, b) => {
+                const yDiff = b.y - a.y;
+                if (Math.abs(yDiff) < 4) return a.x - b.x;
+                return yDiff;
+              });
+
+            const topLines = reconstructLinesFromItems(sortTopToBottom(aboveAndHeaderItems));
+            const colLines: string[] = [];
+
+            if (hasCol3) {
+              const col1 = refGridItems.filter((it) => it.x < col2Threshold3Col);
+              const col2 = refGridItems.filter((it) => it.x >= col2Threshold3Col && it.x < col3Threshold);
+              const col3 = refGridItems.filter((it) => it.x >= col3Threshold);
+              colLines.push(
+                ...reconstructLinesFromItems(sortTopToBottom(col1)),
+                ...reconstructLinesFromItems(sortTopToBottom(col2)),
+                ...reconstructLinesFromItems(sortTopToBottom(col3))
+              );
+            } else {
+              const col1 = refGridItems.filter((it) => it.x < col2Threshold2Col);
+              const col2 = refGridItems.filter((it) => it.x >= col2Threshold2Col);
+              colLines.push(
+                ...reconstructLinesFromItems(sortTopToBottom(col1)),
+                ...reconstructLinesFromItems(sortTopToBottom(col2))
+              );
+            }
+
+            const footerLines = reconstructLinesFromItems(sortTopToBottom(footerItems));
+            pagesText.push([...topLines, ...colLines, ...footerLines].join('\n'));
+            continue;
+          }
+        }
+
         // Ordenamiento lineal estándar de arriba a abajo (mayor Y a menor Y en PDF), luego de izquierda a derecha (menor X)
         items.sort((a, b) => {
           const yDiff = b.y - a.y;

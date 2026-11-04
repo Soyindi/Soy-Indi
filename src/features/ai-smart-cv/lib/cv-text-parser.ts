@@ -99,11 +99,19 @@ export function parseCvTextToStructuredData(
   // 0. Aislar cuerpo del CV de posibles certificados anexos al final del archivo
   const cleanCvBody = isolateCvBodyFromAttachments(rawText);
 
-  // 1. Limpieza inicial de texto y separación en líneas (incluyendo normalización de glifos Wingdings 'l ' -> '● ')
+  // 1. Limpieza inicial de texto y separación en líneas (incluyendo normalización de glifos Wingdings 'l ' -> '● ' y cabeceras/pies de paginación repetitivos)
   const lines = cleanCvBody
     .split(/\r?\n/)
     .map((l) => l.trim().replace(/^[lL|]\s+(?=[A-ZÁÉÍÓÚÑ0-9«"“])/u, '● '))
-    .filter((l) => l.length > 0 && !/^(?:---\s*)?p[áa]gina\s+siguiente(?:\s*---)?$/i.test(l) && !/^[-—]{3,}$/.test(l));
+    .filter(
+      (l) =>
+        l.length > 0 &&
+        !/^(?:---\s*)?p[áa]gina\s+siguiente(?:\s*---)?$/i.test(l) &&
+        !/^[-—]{3,}$/.test(l) &&
+        !/\bp[áa]gina\s+\d+\s+de\s+\d+\b/i.test(l) &&
+        !/curriculum\s+vitae\s*·\s*(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+\d{4}/i.test(l) &&
+        !/^[A-ZÁÉÍÓÚÑ\s]{8,45}\s+Psic[óo]logo\s*·\s*Desarrollo\s+de\s+Sistemas\s+e\s+IA$/i.test(l)
+    );
 
   // 1.1 Extraer RUT chileno primero con máxima prioridad (formato XX.XXX.XXX-K o XXXXXXXX-K)
   const rutMatch = cleanCvBody.match(/\b\d{1,2}\.?\d{3}\.?\d{3}-[\dkK]\b/);
@@ -138,7 +146,7 @@ export function parseCvTextToStructuredData(
   const linkedinUrl = linkedinMatch ? linkedinMatch[0] : '';
 
   const websiteMatch = rawText.match(
-    /(?:https?:\/\/)?(?:www\.)?(github\.com\/[a-zA-Z0-9_-]+|[a-zA-Z0-9_-]+\.(?:cl|com|io|dev|me))/i
+    /(?:https?:\/\/)?(?:www\.)?(github\.com\/[a-zA-Z0-9_-]+|(?!gmail|hotmail|outlook|yahoo|icloud|live|linkedin)[a-zA-Z0-9_-]+\.(?:cl|com|io|dev|me))/i
   );
   const websiteUrl = websiteMatch && !websiteMatch[0].includes('linkedin') ? websiteMatch[0] : '';
 
@@ -148,90 +156,21 @@ export function parseCvTextToStructuredData(
   );
   const location = locationMatch ? (locationMatch[0].toLowerCase().includes('chile') ? locationMatch[0] : `${locationMatch[0]}, Chile`) : '';
 
-  // 2. Extraer Nombre del Candidato
-  let fullName = '';
-  for (let i = 0; i < Math.min(8, lines.length); i++) {
-    const l = lines[i];
-    const lower = l.toLowerCase();
-    if (
-      lower.includes('curriculum') ||
-      lower.includes('hoja de vida') ||
-      lower.includes('resume') ||
-      lower.includes('@') ||
-      lower.includes('http') ||
-      lower.includes('www.') ||
-      /\d{4}/.test(l) ||
-      l.length < 3 ||
-      l.length > 55 ||
-      l.includes(':')
-    ) {
-      continue;
-    }
-    fullName = l;
-    break;
-  }
-
-  if (!fullName || fullName.length < 3) {
-    const cleanFileName = fileName
-      .replace(/\.[^/.]+$/, '')
-      .replace(/^(cv|curriculum|resume)[_\s-]*/i, '')
-      .replace(/[_-]/g, ' ')
-      .trim();
-    fullName = cleanFileName.length > 3 ? cleanFileName : 'Profesional';
-  }
-
-  // 3. Extraer y Normalizar Rol Objetivo / Titular Profesional
-  let targetRole = '';
-  for (let i = 0; i < Math.min(12, lines.length); i++) {
-    const l = lines[i];
-    if (l === fullName) continue;
-    const lower = l.toLowerCase();
-    
-    // Evitar oraciones discursivas largas como titular
-    if (lower.startsWith('a esta') || lower.startsWith('con experiencia') || lower.startsWith('profesional orientado')) {
-      // Si la frase contiene roles técnicos o clínicos, sintetizar un titular limpio
-      if (lower.includes('psicólogo') && lower.includes('desarrollo de software')) {
-        targetRole = 'Psicólogo Clínico & Desarrollador de Software';
-        break;
-      } else if (lower.includes('desarrollo de software') || lower.includes('software')) {
-        targetRole = 'Desarrollador de Software & Arquitectura de Datos';
-        break;
-      }
-      continue;
-    }
-
-    if (
-      lower.includes('ingenier') ||
-      lower.includes('desarrollador') ||
-      lower.includes('developer') ||
-      lower.includes('arquitect') ||
-      lower.includes('psicólog') ||
-      lower.includes('psicolog') ||
-      lower.includes('analista') ||
-      lower.includes('consultor') ||
-      lower.includes('especialista') ||
-      lower.includes('manager') ||
-      lower.includes('director') ||
-      lower.includes('jefe') ||
-      lower.includes('lead') ||
-      lower.includes('diseñador')
-    ) {
-      targetRole = l.trim();
-      break;
-    }
-  }
-
-  if (!targetRole) {
-    targetRole = 'Profesional Especialista';
-  }
-
-  // 4. Identificar Secciones del CV por Palabras Clave
+  // 2. Identificar Secciones del CV por Palabras Clave (antes de extraer nombre para no confundir encabezados de sección cuando el banner de portada viene al final de la página 1 en el flujo PDF)
   type SectionType = 'summary' | 'experience' | 'education' | 'skills' | 'references' | 'other';
   const sectionIndices: Array<{ type: SectionType; lineIndex: number; title: string }> = [];
 
   const isSectionHeader = (line: string): { isHeader: boolean; type: SectionType } => {
     const lower = line.toLowerCase().replace(/[:\-#*]/g, '').trim();
-    if (lower.length > 40) return { isHeader: false, type: 'other' };
+    if (
+      lower.length > 50 ||
+      (/\b(?:19|20)\d{2}\b/.test(lower) && !lower.includes('proyectos de desarrollo')) ||
+      /\b(?:ministerio\s+de|centro\s+de\s+estudios|universidad\s+de|hospital|servicio\s+de\s+salud|superintendencia|subsecretar[íi]a|escuela\s+|complejo\s+)\b/i.test(
+        lower
+      )
+    ) {
+      return { isHeader: false, type: 'other' };
+    }
 
     if (
       lower.includes('referencia') ||
@@ -277,6 +216,8 @@ export function parseCvTextToStructuredData(
       lower.includes('estudios') ||
       lower.includes('education') ||
       lower.includes('antecedentes académicos') ||
+      lower.includes('registros profesionales') ||
+      lower.includes('registro profesional') ||
       lower.includes('cursos') ||
       lower.includes('capacitación') ||
       lower.includes('capacitacion') ||
@@ -302,7 +243,156 @@ export function parseCvTextToStructuredData(
     return { isHeader: false, type: 'other' };
   };
 
+  // 3. Extraer Nombre del Candidato y detectar posible bloque de encabezado desplazado por contenedores gráficos PDF
+  let fullName = '';
+  let nameLineIndex = -1;
+  const headerBannerIndices = new Set<number>();
+
+  const isPlausibleCandidateName = (l: string): boolean => {
+    const lower = l.toLowerCase();
+    if (
+      isSectionHeader(l).isHeader ||
+      lower.includes('curriculum') ||
+      lower.includes('hoja de vida') ||
+      lower.includes('resume') ||
+      lower.includes('@') ||
+      lower.includes('http') ||
+      lower.includes('www.') ||
+      lower.includes('linkedin') ||
+      lower.includes('github') ||
+      /\d/.test(l) ||
+      l.length < 4 ||
+      l.length > 55 ||
+      l.includes(':') ||
+      l.includes('·') ||
+      l.includes('|') ||
+      /^[●•\-\*]/.test(l) ||
+      /\b(?:psic[óo]log|ingenier|desarrollador|arquitect|hospital|escuela|complejo|cesfam|universidad|secretar[íi]a|enfermer|jefe|coordinador|inspector)\b/i.test(l)
+    ) {
+      return false;
+    }
+    const words = l.split(/\s+/).filter(Boolean);
+    if (words.length < 2 || words.length > 5) return false;
+    return words.every((w) => /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+$/.test(w) || /^[A-ZÁÉÍÓÚÑ]{2,}$/.test(w));
+  };
+
+  for (let i = 0; i < Math.min(8, lines.length); i++) {
+    if (isPlausibleCandidateName(lines[i])) {
+      fullName = lines[i];
+      nameLineIndex = i;
+      headerBannerIndices.add(i);
+      break;
+    }
+  }
+
+  // Si el contenedor gráfico del encabezado quedó al final de la Página 1 en el stream del PDF, buscar la línea de nombre seguida de rol/contacto
+  if (!fullName) {
+    for (let i = 0; i < lines.length; i++) {
+      if (isPlausibleCandidateName(lines[i])) {
+        const nearby = lines.slice(i + 1, i + 4).join(' ').toLowerCase();
+        if (
+          (email && nearby.includes(email)) ||
+          nearby.includes('linkedin.com') ||
+          nearby.includes('psicólogo') ||
+          nearby.includes('ingenier') ||
+          nearby.includes('desarrollador')
+        ) {
+          fullName = lines[i];
+          nameLineIndex = i;
+          headerBannerIndices.add(i);
+          break;
+        }
+      }
+    }
+  }
+
+  if (!fullName || fullName.length < 3) {
+    const cleanFileName = fileName
+      .replace(/\.[^/.]+$/, '')
+      .replace(/^(cv|curriculum|resume)[_\s-]*/i, '')
+      .replace(/[_-]/g, ' ')
+      .trim();
+    fullName = cleanFileName.length > 3 ? cleanFileName : 'Profesional';
+  }
+
+  // 4. Extraer y Normalizar Rol Objetivo / Titular Profesional
+  let targetRole = '';
+  const roleSearchOrder: number[] = [];
+  if (nameLineIndex >= 0) {
+    for (let j = nameLineIndex + 1; j <= Math.min(lines.length - 1, nameLineIndex + 4); j++) {
+      roleSearchOrder.push(j);
+    }
+  }
+  for (let i = 0; i < Math.min(12, lines.length); i++) {
+    if (!roleSearchOrder.includes(i)) roleSearchOrder.push(i);
+  }
+
+  for (const i of roleSearchOrder) {
+    const l = lines[i];
+    if (l === fullName || isSectionHeader(l).isHeader) continue;
+    const lower = l.toLowerCase();
+
+    // Evitar oraciones discursivas largas como titular
+    if (
+      lower.startsWith('a esta') ||
+      lower.startsWith('con experiencia') ||
+      lower.startsWith('profesional orientado') ||
+      lower.startsWith('psicólogo con más de')
+    ) {
+      if (lower.includes('psicólogo') && lower.includes('desarrollo de software')) {
+        targetRole = 'Psicólogo Clínico & Desarrollador de Software';
+        break;
+      } else if (lower.includes('desarrollo de software') || lower.includes('software')) {
+        targetRole = 'Desarrollador de Software & Arquitectura de Datos';
+        break;
+      }
+      continue;
+    }
+
+    if (
+      lower.includes('ingenier') ||
+      lower.includes('desarrollador') ||
+      lower.includes('developer') ||
+      lower.includes('arquitect') ||
+      lower.includes('psicólog') ||
+      lower.includes('psicolog') ||
+      lower.includes('analista') ||
+      lower.includes('consultor') ||
+      lower.includes('especialista') ||
+      lower.includes('manager') ||
+      lower.includes('director') ||
+      lower.includes('jefe') ||
+      lower.includes('lead') ||
+      lower.includes('diseñador')
+    ) {
+      targetRole = l.trim();
+      headerBannerIndices.add(i);
+      break;
+    }
+  }
+
+  if (!targetRole) {
+    targetRole = 'Profesional Especialista';
+  }
+
+  // Marcar también líneas de contacto/redes/disponibilidad del banner de portada para no infiltrarlas en secciones intermedias
+  if (nameLineIndex >= 0) {
+    for (let j = nameLineIndex + 1; j <= Math.min(lines.length - 1, nameLineIndex + 5); j++) {
+      const candidate = lines[j].toLowerCase();
+      if (
+        (email && candidate.includes(email)) ||
+        candidate.includes('linkedin.com/in/') ||
+        candidate.includes('github.com/') ||
+        candidate.startsWith('disponibilidad inmediata') ||
+        candidate.includes('licencia clase b')
+      ) {
+        headerBannerIndices.add(j);
+      }
+    }
+  }
+
   lines.forEach((line, idx) => {
+    if (headerBannerIndices.has(idx)) return;
     const { isHeader, type } = isSectionHeader(line);
     if (isHeader) {
       sectionIndices.push({ type, lineIndex: idx, title: line });
@@ -315,9 +405,16 @@ export function parseCvTextToStructuredData(
     
     const aggregated: string[] = [];
     for (const section of matching) {
+      if (type === 'experience' && /proyectos?\s+de\s+desarrollo/i.test(section.title)) {
+        aggregated.push(section.title);
+      }
       const nextSection = sectionIndices.find((s) => s.lineIndex > section.lineIndex);
       const endIndex = nextSection ? nextSection.lineIndex : lines.length;
-      aggregated.push(...lines.slice(section.lineIndex + 1, endIndex));
+      for (let idx = section.lineIndex + 1; idx < endIndex; idx++) {
+        if (!headerBannerIndices.has(idx)) {
+          aggregated.push(lines[idx]);
+        }
+      }
     }
     return aggregated;
   };
@@ -354,9 +451,9 @@ export function parseCvTextToStructuredData(
     xyzBullets: Array<{ text: string; needs_metric: boolean }>;
   } | null = null;
 
-  const datePattern = /(?:(?:ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+)?(?:19|20)\d{2}\b/i;
-  // Regex universal de caracteres de viñeta: bullets unicode, guiones, asteriscos, círculos, etc.
-  const bulletSymbolRegex = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/g;
+  const datePattern = /(?:(?:ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)[a-z.]*\s+)?(?:19|20)\d{2}\b/i;
+  // Regex universal de caracteres de viñeta: bullets unicode, guiones (incluyendo en-dash/em-dash), asteriscos, círculos, etc.
+  const bulletSymbolRegex = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\u2013\u2014–—>]+/g;
   const stripLeadingBullet = (s: string) =>
     s.replace(bulletSymbolRegex, '').replace(/^[lL|]\s+(?=[A-ZÁÉÍÓÚÑ0-9«"“])/u, '').trim();
   let pendingCompanyCandidate = '';
@@ -383,7 +480,9 @@ export function parseCvTextToStructuredData(
       s.includes('ley 19') ||
       s.includes('res. exenta') ||
       s.startsWith('competencias técnicas') ||
-      s.startsWith('diseño e implementación autónoma')
+      s.startsWith('diseño e implementación autónoma') ||
+      s.startsWith('diseño, desarrollo y despliegue') ||
+      s.startsWith('respaldos de la experiencia')
     ) {
       return false;
     }
@@ -393,18 +492,63 @@ export function parseCvTextToStructuredData(
     }
 
     // Matching con fronteras de palabra para no confundir "arquitectura" con "arquitecto" ni "ingeniería" con "ingeniero"
-    return /\b(?:psic[oó]log[oa]s?|ingenier[oa]s?|desarrollador(?:es|a)?|developer|arquitect[oa]s?|analistas?|consultor(?:es|a)?|coordinador(?:es|a)?|director(?:es|a)?|jef[ea]s?|especialistas?|docentes?|profesor(?:es|a)?|terapeutas?|investigador(?:es|a)?|asistentes?|practicantes?|reemplazantes?|encargad[oa]s?|full\s*stack|frontend|backend|tech\s*lead|creador(?:es|a)?|fundador(?:es|a)?)\b/i.test(
+    return /\b(?:psic[oó]log[oa]s?|ingenier[oa]s?|desarrollador(?:es|a)?|developer|arquitect[oa]s?|analistas?|consultor(?:es|a)?|coordinador(?:es|a)?|director(?:es|a)?|jef[ea]s?|especialistas?|docentes?|profesor(?:es|a)?|terapeutas?|investigador(?:es|a)?|asistentes?|practicantes?|reemplazantes?|encargad[oa]s?|full\s*stack|frontend|backend|tech\s*lead|creador(?:es|a)?|fundador(?:es|a)?|diseñador(?:es|a)?)\b/i.test(
       s
     );
   };
 
-  // Helper para detectar encabezados de proyectos con dominio o repositorio (ej. "Soyindi (INDI) · soyindi.cl")
-  const isNamedProjectWithUrl = (str: string): boolean => {
+  // Helper para detectar líneas de stack tecnológico (ej. "Next.js 16 · React 19 · TypeScript · Tailwind v4...")
+  const isTechStackLine = (str: string): boolean => {
     const s = str.trim();
-    if (s.length > 75 || s.startsWith('●') || s.startsWith('•') || s.startsWith('-')) return false;
-    return /^[A-ZÁÉÍÓÚÑ][A-Za-z0-9ÁÉÍÓÚÑáéíóúñ\s()_-]{1,40}\s*[·•|–—-]\s*(?:https?:\/\/)?(?:github\.com\/[A-Za-z0-9_/-]+|[a-z0-9-]+\.(?:cl|com|io|dev|org|net))$/i.test(
+    if (s.length < 10 || s.length > 180 || s.endsWith('.')) return false;
+    const hasSeparator = /[·•|]/.test(s);
+    const hasTechKeyword = /\b(?:Next\.js|React|TypeScript|Python|FastAPI|NestJS|PostgreSQL|Tailwind|Drizzle|Turso|Vite|Event\s+Sourcing|Supabase|Flow\.cl|XGBoost|Polars|Docker|Node\.js)\b/i.test(
       s
     );
+    return hasSeparator && hasTechKeyword;
+  };
+
+  // Helper para detectar encabezados de proyectos con dominio o repositorio (ej. "Soyindi (INDI) · soyindi.cl" o "Soyindi (INDI) · Plataforma SaaS soyindi.cl · github.com/...")
+  const isNamedProjectWithUrl = (str: string): boolean => {
+    const s = str.trim();
+    if (s.length > 140 || s.startsWith('●') || s.startsWith('•') || s.startsWith('-') || s.startsWith('–')) return false;
+    return /^[A-ZÁÉÍÓÚÑ][A-Za-z0-9ÁÉÍÓÚÑáéíóúñ\s()_-]{1,40}\s*[·•|–—-]\s*(?:.+?\s+)?(?:https?:\/\/)?(?:github\.com\/[A-Za-z0-9_/-]+|[a-z0-9-]+\.(?:cl|com|io|dev|org|net))(?:\s*[·•|–—-]\s*(?:https?:\/\/)?(?:github\.com\/[A-Za-z0-9_/-]+|[a-z0-9-]+\.(?:cl|com|io|dev|org|net)))?$/i.test(
+      s
+    );
+  };
+
+  // Helper para detectar encabezados de proyectos con subtítulo descriptivo seguidos de línea de stack tecnológico (incluso sin URL en el título, ej. "Slingshot · Terminal cuantitativa de análisis y ejecución algorítmica")
+  const isNamedProjectWithSubtitle = (str: string): boolean => {
+    const s = str.trim();
+    if (s.length > 120 || s.startsWith('●') || s.startsWith('•') || s.startsWith('-') || s.startsWith('–')) return false;
+    if (isTechStackLine(s)) return false;
+    return /^[A-ZÁÉÍÓÚÑ][A-Za-z0-9ÁÉÍÓÚÑáéíóúñ\s()_-]{1,35}\s*[·•|–—-]\s*[A-ZÁÉÍÓÚÑa-záéíóúñ].{8,95}$/.test(s);
+  };
+
+  const resolveProjectHeaderAt = (idx: number): { matched: boolean; headerText: string; linesUsed: number } => {
+    if (idx >= expLines.length) return { matched: false, headerText: '', linesUsed: 0 };
+    const rawCurrent = expLines[idx];
+    const strippedCurrent = stripLeadingBullet(rawCurrent);
+    if (rawCurrent !== strippedCurrent || /^[\s•\-\*·\u2022\u25cf\u2013\u2014–—]/.test(rawCurrent)) {
+      return { matched: false, headerText: '', linesUsed: 0 };
+    }
+    if (isNamedProjectWithUrl(strippedCurrent)) {
+      return { matched: true, headerText: strippedCurrent, linesUsed: 1 };
+    }
+    if (idx + 1 < expLines.length) {
+      const rawNext = expLines[idx + 1];
+      const strippedNext = stripLeadingBullet(rawNext);
+      if (rawNext === strippedNext && !/^[\s•\-\*·\u2022\u25cf\u2013\u2014–—]/.test(rawNext)) {
+        const combined = `${strippedCurrent} ${strippedNext}`.trim();
+        if (isNamedProjectWithUrl(combined)) {
+          return { matched: true, headerText: combined, linesUsed: 2 };
+        }
+        if (isNamedProjectWithSubtitle(strippedCurrent) && isTechStackLine(strippedNext)) {
+          return { matched: true, headerText: strippedCurrent, linesUsed: 1 };
+        }
+      }
+    }
+    return { matched: false, headerText: '', linesUsed: 0 };
   };
 
   // Helper para detectar proyectos tecnológicos independientes cuando NO estamos ya dentro del bloque de Proyectos
@@ -422,29 +566,56 @@ export function parseCvTextToStructuredData(
     const hasBulletPrefix = rawLine !== strippedLine;
     const hasYear = datePattern.test(strippedLine);
     const isInPortfolioSection: boolean = Boolean(
-      currentExp && /proyectos?\s+de\s+desarrollo|portafolio/i.test(`${currentExp.role} ${currentExp.company}`)
+      currentExp &&
+        /proyectos?\s+de\s+desarrollo|desarrollador\s+full-?stack.*independiente/i.test(currentExp.role)
     );
 
-    // Dentro de la sección de Proyectos Tecnológicos, si aparece un sub-proyecto con su dominio/repo
-    // (ej. "Soyindi (INDI) · soyindi.cl" o "Slingshot · github.com/matiquelmec/Slingshot"),
+    // Filtrar nota administrativa de respaldos al final de la experiencia clínica
+    if (/^respaldos\s+de\s+la\s+experiencia\b/i.test(strippedLine)) {
+      continue;
+    }
+
+    // Dentro de la sección de Proyectos Tecnológicos, si aparece un cargo remoto corto (ej. "Diseñador web · Modalidad remota" / "Antflor SpA" / "Jul. 2026 – actual") antes de la lista de sistemas:
+    if (
+      isInPortfolioSection &&
+      !hasBulletPrefix &&
+      /^diseñador\s+web\b/i.test(strippedLine) &&
+      i + 2 < expLines.length &&
+      datePattern.test(expLines[i + 2])
+    ) {
+      i += 2;
+      continue;
+    }
+
+    // Dentro de la sección de Proyectos Tecnológicos, si aparece un sub-proyecto con su dominio/repo o subtítulo + stack
+    // (ej. "Soyindi (INDI) · soyindi.cl" o "Slingshot · Terminal cuantitativa de análisis y ejecución algorítmica"),
     // consolidarlo como una viñeta ejecutiva limpia dentro de Proyectos de Desarrollo Tecnológico
-    if (isInPortfolioSection && currentExp && !hasBulletPrefix && isNamedProjectWithUrl(strippedLine)) {
-      let projectSummary = strippedLine;
+    const projectHeaderCheck = isInPortfolioSection && currentExp && !hasBulletPrefix
+      ? resolveProjectHeaderAt(i)
+      : { matched: false, headerText: '', linesUsed: 0 };
+
+    if (projectHeaderCheck.matched && currentExp) {
+      let projectSummary = projectHeaderCheck.headerText;
+      let secondLineWasPureStack = false;
+      if (projectHeaderCheck.linesUsed === 2) {
+        i++;
+      }
       if (i + 1 < expLines.length) {
         const nextRaw = expLines[i + 1];
         const nextStripped = stripLeadingBullet(nextRaw);
-        const nextIsBullet = nextRaw !== nextStripped || /^[\s•\-\*·\u2022\u25cf]/.test(nextRaw);
-        if (!nextIsBullet && !isNamedProjectWithUrl(nextStripped) && nextStripped.length > 15) {
-          projectSummary = `${strippedLine} — ${nextStripped}`;
+        const nextIsBullet = nextRaw !== nextStripped || /^[\s•\-\*·\u2022\u25cf\u2013\u2014–—]/.test(nextRaw);
+        if (!nextIsBullet && !resolveProjectHeaderAt(i + 1).matched && nextStripped.length > 15) {
+          secondLineWasPureStack = isTechStackLine(nextStripped);
+          projectSummary = `${projectSummary} — ${nextStripped}`;
           i++;
           // Si la descripción de 2 líneas continúa en la siguiente línea sin viñeta
           if (i + 1 < expLines.length) {
             const thirdRaw = expLines[i + 1];
             const thirdStripped = stripLeadingBullet(thirdRaw);
-            const thirdIsBullet = thirdRaw !== thirdStripped || /^[\s•\-\*·\u2022\u25cf]/.test(thirdRaw);
+            const thirdIsBullet = thirdRaw !== thirdStripped || /^[\s•\-\*·\u2022\u25cf\u2013\u2014–—]/.test(thirdRaw);
             if (
               !thirdIsBullet &&
-              !isNamedProjectWithUrl(thirdStripped) &&
+              !resolveProjectHeaderAt(i + 1).matched &&
               !looksLikeRoleHeader(thirdStripped) &&
               !projectSummary.endsWith('.')
             ) {
@@ -454,17 +625,40 @@ export function parseCvTextToStructuredData(
           }
         }
       }
+
+      // Si la segunda línea era únicamente el listado de tecnologías (ej. "Next.js 16 · React 19..."),
+      // enriquecer con la primera viñeta de impacto sustantiva del proyecto (saltando notas de "Estado: plan comunitario...")
+      if (secondLineWasPureStack) {
+        let scanIdx = i + 1;
+        while (scanIdx < expLines.length && !resolveProjectHeaderAt(scanIdx).matched) {
+          const bRaw = expLines[scanIdx];
+          const bStripped = stripLeadingBullet(bRaw);
+          if (bRaw !== bStripped && !/^estado:\s*/i.test(bStripped) && bStripped.length > 15) {
+            let firstAchievement = bStripped;
+            // Si la viñeta continúa en la línea siguiente sin símbolo de viñeta
+            if (scanIdx + 1 < expLines.length && !resolveProjectHeaderAt(scanIdx + 1).matched) {
+              const contRaw = expLines[scanIdx + 1];
+              const contStripped = stripLeadingBullet(contRaw);
+              if (contRaw === contStripped && !firstAchievement.endsWith('.')) {
+                firstAchievement += ` ${contStripped}`;
+              }
+            }
+            projectSummary = `${projectSummary}. ${firstAchievement}`;
+            break;
+          }
+          scanIdx++;
+        }
+      }
+
       currentExp.rawAchievements.push(projectSummary);
       currentExp.xyzBullets.push({
         text: projectSummary,
         needs_metric: !/\b\d+\b/.test(projectSummary),
       });
       // Saltar las sub-viñetas internas de este sub-proyecto si ya se capturó su descripción ejecutiva completa,
-      // para evitar generar 40 viñetas anidadas que desborden las 2 páginas A4
+      // para evitar generar 40 viñetas anidadas que desborden las páginas A4
       while (i + 1 < expLines.length) {
-        const peekRaw = expLines[i + 1];
-        const peekStripped = stripLeadingBullet(peekRaw);
-        if (isNamedProjectWithUrl(peekStripped)) {
+        if (resolveProjectHeaderAt(i + 1).matched) {
           break;
         }
         i++;
@@ -476,7 +670,11 @@ export function parseCvTextToStructuredData(
     if (
       isInPortfolioSection &&
       (/^diseño\s+e\s+implementaci[óo]n\s+aut[óo]noma/i.test(strippedLine) ||
+        /^diseño,\s+desarrollo\s+y\s+despliegue\s+aut[óo]nomo/i.test(strippedLine) ||
+        /^emprendimientos\s+propios\.?$/i.test(strippedLine) ||
         /^de\s+rehabilitaci[óo]n\s+basado\s+en\s+evidencia/i.test(strippedLine) ||
+        /^\(?ecosistema\s+de\s+rehabilitaci[óo]n/i.test(strippedLine) ||
+        /^base\s+del\s+proyecto\s+de\s+investigaci[óo]n/i.test(strippedLine) ||
         /^competencias\s+t[ée]cnicas:/i.test(strippedLine) ||
         /^integraci[óo]n\s+de\s+pagos\s*\(/i.test(strippedLine) ||
         /^t[ée]cnico,\s+la\s+validaci[óo]n\s+metodol[óo]gica/i.test(strippedLine))
@@ -488,7 +686,7 @@ export function parseCvTextToStructuredData(
     const isProject: boolean = !isInPortfolioSection && !hasBulletPrefix && looksLikeProjectHeader(strippedLine);
 
     // Condición para nueva experiencia:
-    const hasBulletSymbol = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]/.test(rawLine);
+    const hasBulletSymbol = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\u2013\u2014–—>]/.test(rawLine);
     const isBulletLine = hasBulletPrefix || hasBulletSymbol;
 
     // Ignorar si es un subtítulo de sección dentro de experiencia
@@ -529,13 +727,27 @@ export function parseCvTextToStructuredData(
         experience.push(currentExp);
       }
 
-      // Si la línea siguiente es la fecha correspondiente a este cargo
+      // Si la línea siguiente (o subsiguiente en encabezados de 3 líneas: Cargo / Institución / Fecha) contiene la empresa y fecha
       let period = '';
       if (!hasYear && i + 1 < expLines.length) {
-        const nextLine = stripLeadingBullet(expLines[i + 1]);
-        if (datePattern.test(nextLine) && !looksLikeRoleHeader(nextLine) && !nextLine.startsWith('●') && !nextLine.startsWith('•')) {
-          period = nextLine;
-          i++;
+        const nextRaw = expLines[i + 1];
+        const nextLine = stripLeadingBullet(nextRaw);
+        const nextIsBullet = nextRaw !== nextLine || /^[\s•\-\*·\u2022\u25cf\u2013\u2014–—]/.test(nextRaw);
+
+        if (!nextIsBullet && !looksLikeRoleHeader(nextLine)) {
+          if (datePattern.test(nextLine)) {
+            period = nextLine;
+            i++;
+          } else if (i + 2 < expLines.length) {
+            const thirdRaw = expLines[i + 2];
+            const thirdLine = stripLeadingBullet(thirdRaw);
+            const thirdIsBullet = thirdRaw !== thirdLine || /^[\s•\-\*·\u2022\u25cf\u2013\u2014–—]/.test(thirdRaw);
+            if (!thirdIsBullet && datePattern.test(thirdLine) && !looksLikeRoleHeader(thirdLine)) {
+              pendingCompanyCandidate = nextLine;
+              period = thirdLine;
+              i += 2;
+            }
+          }
         }
       }
 
@@ -607,8 +819,8 @@ export function parseCvTextToStructuredData(
         });
 
         // Si es un proyecto tecnológico, asignar rol o nombre de proyecto
-        if (isProject && !role) {
-          role = `Proyecto: ${strippedLine}`;
+        if (isProject) {
+          if (!role) role = `Proyecto: ${strippedLine}`;
           inlineCompany = inlineCompany || 'Portafolio Técnico / Proyectos Independientes';
         }
       }
@@ -740,6 +952,8 @@ export function parseCvTextToStructuredData(
       lower.includes('especializaciones y formacion complementaria') ||
       lower.includes('cursos y capacitaciones') ||
       lower.includes('cursos y talleres') ||
+      lower.includes('registros profesionales') ||
+      lower.includes('registro profesional') ||
       lower.includes('área laboral') ||
       lower.includes('area laboral') ||
       lower.includes('evaluación y clínica') ||
@@ -790,11 +1004,86 @@ export function parseCvTextToStructuredData(
       lower.includes('postítulo') ||
       lower.includes('postitulo') ||
       lower.includes('paliativ') ||
-      lower.includes('clínic')
+      lower.includes('clínic') ||
+      lower.includes('registro') ||
+      lower.includes('prestador')
     );
   };
 
-  for (const rawLine of eduLines) {
+  const trailingYearHoursPattern = /\s+((?:(?:ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)[a-z.]*\s+)?(?:19|20)\d{2}(?:\s*[-–—]\s*(?:(?:19|20)\d{2}|presente))?(?:\s*[·•|]\s*\d+\s*h(?:oras?)?)?)$/i;
+  const trailingInstitutionPattern = /\s+(Superintendencia\s+de\s+Salud|Ministerio\s+de\s+Educaci[óo]n|Subsecretar[íi]a\s+de\s+Salud\s+P[úu]blica|Subsecretar[íi]a\s+de\s+(?:los\s+)?Derechos\s+Humanos|Servicio\s+de\s+Salud\s+Magallanes|Centro\s+de\s+Estudios\s+de\s+la\s+Conducta|Grupo\s+ASCS\s+Do\s+Agile|Education\s+Business\s+Group,\s*Inc\.?|Organizaci[óo]n\s+Panamericana\s+de\s+la\s+Salud(?:\s*\(OPS\))?|OPS\s*\/\s*OMS|(?:Pontificia\s+)?Universidad\s+[A-ZÁÉÍÓÚÑa-záéíóúñ\s,]+|Instituto\s+[A-ZÁÉÍÓÚÑa-záéíóúñ\s,]+|SENCE|SENDA|ADIPA|MINSAL|SEREMI[A-ZÁÉÍÓÚÑa-záéíóúñ\s]*|Coursera|Udemy|Platzi|edX)$/i;
+
+  const isEduInstitution = (p: string): boolean => {
+    const low = p.toLowerCase();
+    return (
+      low.includes('universidad') ||
+      low.includes('instituto') ||
+      low.includes('superintendencia') ||
+      low.includes('ministerio') ||
+      low.includes('subdirección') ||
+      low.includes('subsecretaría') ||
+      low.includes('subsecretaria') ||
+      low.includes('servicio') ||
+      low.includes('adipa') ||
+      low.includes('centro') ||
+      low.includes('academia') ||
+      low.includes('escuela') ||
+      low.includes('platzi') ||
+      low.includes('udemy') ||
+      low.includes('coursera') ||
+      low.includes('group') ||
+      low.includes('sence') ||
+      low.includes('senda') ||
+      low.includes('ops') ||
+      low.includes('oms') ||
+      low.includes('organización panamericana') ||
+      low.includes('organizacion panamericana') ||
+      low.includes('agile')
+    );
+  };
+
+  // Unir filas tabulares de formación continua que el PDF partió en 2 o 3 líneas antes de la columna de institución/año
+  const normalizedEduLines: string[] = [];
+  for (let eIdx = 0; eIdx < eduLines.length; eIdx++) {
+    const curr = eduLines[eIdx].trim();
+    const next1 = eIdx + 1 < eduLines.length ? eduLines[eIdx + 1].trim() : '';
+    const next2 = eIdx + 2 < eduLines.length ? eduLines[eIdx + 2].trim() : '';
+
+    if (
+      next1 &&
+      next2 &&
+      !isDateOnlyLine(curr) &&
+      !isEduSubheader(curr) &&
+      !curr.toLowerCase().startsWith('tesis:') &&
+      !trailingYearHoursPattern.test(curr) &&
+      !trailingYearHoursPattern.test(next1) &&
+      !isEduSubheader(next1) &&
+      next1.length <= 32 &&
+      !/^(?:19|20)\d{2}(?:\s*[-–—]\s*(?:19|20)\d{2})?$/.test(next1) &&
+      trailingYearHoursPattern.test(next2)
+    ) {
+      normalizedEduLines.push(`${curr} ${next1} ${next2}`);
+      eIdx += 2;
+    } else if (
+      next1 &&
+      !isDateOnlyLine(curr) &&
+      !isEduSubheader(curr) &&
+      !curr.toLowerCase().startsWith('tesis:') &&
+      !trailingYearHoursPattern.test(curr) &&
+      !/[|•·]/.test(curr) &&
+      trailingYearHoursPattern.test(next1) &&
+      !/^[•\-\*·●–—]/.test(next1) &&
+      !/^(?:t[íi]tulo|diplomado|licenciad|mag[íi]ster|doctorad|universidad|instituto)/i.test(next1)
+    ) {
+      normalizedEduLines.push(`${curr} ${next1}`);
+      eIdx++;
+    } else {
+      normalizedEduLines.push(curr);
+    }
+  }
+
+  for (let eIdx = 0; eIdx < normalizedEduLines.length; eIdx++) {
+    const rawLine = normalizedEduLines[eIdx];
     if (isDateOnlyLine(rawLine) || isEduSubheader(rawLine) || rawLine.toLowerCase().startsWith('tesis:')) {
       continue;
     }
@@ -808,46 +1097,47 @@ export function parseCvTextToStructuredData(
     if (line.length < 4) continue;
 
     const hasBulletSymbol = /^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]/.test(rawLine);
+    const trailingYearMatch = line.match(trailingYearHoursPattern);
+    const lineWithoutYear = trailingYearMatch
+      ? line.slice(0, line.length - trailingYearMatch[0].length).trim()
+      : line;
 
-    if (hasBulletSymbol || hasAcademicKeyword(line)) {
-      const parts = line.split(/[|–—·•]|\s[-–—]\s/).map((p) => p.trim()).filter(Boolean);
-      let year = '';
+    if (
+      hasBulletSymbol ||
+      hasAcademicKeyword(line) ||
+      Boolean(trailingYearMatch) ||
+      trailingInstitutionPattern.test(lineWithoutYear)
+    ) {
+      let year = trailingYearMatch
+        ? trailingYearMatch[1].replace(/\s*[-–—]\s*/, ' – ').replace(/\s*[·•|]\s*/, ' · ').trim()
+        : '';
       let inst = '';
       let deg = '';
 
-      parts.forEach((p) => {
-        if (datePattern.test(p) && p.length <= 15) {
-          year = p;
-        } else if (
-          p.toLowerCase().includes('universidad') ||
-          p.toLowerCase().includes('instituto') ||
-          p.toLowerCase().includes('subdirección') ||
-          p.toLowerCase().includes('subsecretaría') ||
-          p.toLowerCase().includes('subsecretaria') ||
-          p.toLowerCase().includes('servicio') ||
-          p.toLowerCase().includes('adipa') ||
-          p.toLowerCase().includes('centro') ||
-          p.toLowerCase().includes('academia') ||
-          p.toLowerCase().includes('escuela') ||
-          p.toLowerCase().includes('platzi') ||
-          p.toLowerCase().includes('udemy') ||
-          p.toLowerCase().includes('coursera') ||
-          p.toLowerCase().includes('group') ||
-          p.toLowerCase().includes('sence') ||
-          p.toLowerCase().includes('senda') ||
-          p.toLowerCase().includes('ops') ||
-          p.toLowerCase().includes('oms') ||
-          p.toLowerCase().includes('organización panamericana') ||
-          p.toLowerCase().includes('organizacion panamericana') ||
-          p.toLowerCase().includes('agile')
-        ) {
-          inst = p;
-        } else if (!deg) {
-          deg = p;
-        } else if (!inst) {
-          inst = p;
+      const instSuffixMatch = lineWithoutYear.match(trailingInstitutionPattern);
+      if (instSuffixMatch) {
+        inst = instSuffixMatch[1].trim();
+        deg = lineWithoutYear.slice(0, lineWithoutYear.length - instSuffixMatch[0].length).trim();
+      } else {
+        const parts = lineWithoutYear.split(/[|–—·•]|\s[-–—]\s/).map((p) => p.trim()).filter(Boolean);
+        if (parts.length === 1) {
+          deg = parts[0];
+        } else {
+          parts.forEach((p) => {
+            if (!year && datePattern.test(p) && p.length <= 18 && !isEduInstitution(p)) {
+              year = p;
+            } else if (isEduInstitution(p)) {
+              inst = inst ? `${inst}, ${p}` : p;
+            } else if (!deg) {
+              deg = p;
+            } else if (/^(?:licenciad|t[íi]tulo|mag[íi]ster|diplomad|doctorad| menci[óo]n)/i.test(p)) {
+              deg = `${deg} · ${p}`;
+            } else if (!inst) {
+              inst = p;
+            }
+          });
         }
-      });
+      }
 
       // Extraer año si está entre paréntesis en la línea
       if (!year) {
@@ -855,22 +1145,32 @@ export function parseCvTextToStructuredData(
         if (yearMatch) year = yearMatch[0].replace(/[()]/g, '');
       }
 
-      // Si no se detectó año en la línea, buscar si la línea siguiente en eduLines es un año aislado (ej. "2013 – 2018")
-      const rawIdx = eduLines.indexOf(rawLine);
-      if (!year && rawIdx >= 0 && rawIdx + 1 < eduLines.length) {
-        const nextEdu = eduLines[rawIdx + 1].trim();
-        if (/^(?:19|20)\d{2}(?:\s*[-–—]\s*(?:(?:19|20)\d{2}|presente))?$/i.test(nextEdu)) {
-          year = nextEdu.replace(/[-–—]/, '–');
+      // Si no se detectó institución en la línea actual y la siguiente línea es una institución (ej. "Universidad de Magallanes · Punta Arenas, Chile")
+      if (!inst && eIdx + 1 < normalizedEduLines.length) {
+        const nextCandidate = normalizedEduLines[eIdx + 1].trim();
+        if (
+          isEduInstitution(nextCandidate) &&
+          !trailingYearHoursPattern.test(nextCandidate) &&
+          !datePattern.test(nextCandidate) &&
+          !/^[•\-\*·●–—]/.test(nextCandidate) &&
+          !/^(?:t[íi]tulo|diplomado|curso|formaci[óo]n)/i.test(nextCandidate)
+        ) {
+          inst = nextCandidate.replace(/\s*[·•|]\s*/g, ', ').trim();
+          eIdx++;
         }
       }
 
-      // Si no se detectó institución pero hay más de una parte, asignar la segunda
-      if (!inst && parts.length > 1) {
-        inst = parts[1];
+      // Si no se detectó año en la línea, buscar si la línea siguiente en normalizedEduLines es un año aislado (ej. "2013 – 2018")
+      if (!year && eIdx + 1 < normalizedEduLines.length) {
+        const nextEdu = normalizedEduLines[eIdx + 1].trim();
+        if (/^(?:19|20)\d{2}(?:\s*[-–—]\s*(?:(?:19|20)\d{2}|presente))?$/i.test(nextEdu)) {
+          year = nextEdu.replace(/\s*[-–—]\s*/, ' – ');
+          eIdx++;
+        }
       }
 
       education.push({
-        degree: deg || line.replace(/\((?:19|20)\d{2}.*\)/, '').trim(),
+        degree: deg || lineWithoutYear.replace(/\((?:19|20)\d{2}.*\)/, '').trim(),
         institution: inst || 'Centro de Formación Profesional',
         year: year || '',
       });
@@ -886,15 +1186,38 @@ export function parseCvTextToStructuredData(
     });
   }
 
-  // 8. Procesar Habilidades y Competencias
+  // 8. Procesar Habilidades y Competencias (uniendo líneas partidas antes de tokenizar y preservando paréntesis)
   const skillLines = getSectionLines('skills');
   const extractedSkills: string[] = [];
 
   if (skillLines.length > 0) {
-    skillLines.forEach((line) => {
-      const tokens = line.split(/[,|•·\/\n]/).map((t) => t.trim());
+    const joinedSkillLines: string[] = [];
+    for (const rawSkillLine of skillLines) {
+      const trimmed = rawSkillLine.trim();
+      if (!trimmed) continue;
+      if (
+        joinedSkillLines.length > 0 &&
+        (/^\(/.test(trimmed) || /^[a-záéíóúñ]/.test(trimmed))
+      ) {
+        joinedSkillLines[joinedSkillLines.length - 1] += ` ${trimmed}`;
+      } else {
+        joinedSkillLines.push(trimmed);
+      }
+    }
+
+    joinedSkillLines.forEach((line) => {
+      const cleanedSkillLine = line
+        .replace(
+          /^(?:Cl[íi]nicas\s+y\s+psicosociales|Desarrollo|Datos\s+e\s+infraestructura|Seguridad\s+y\s+arquitectura|Inteligencia\s+artificial|Calidad|Habilidades\s+t[ée]cnicas|Competencias\s+cl[íi]nicas)\s+/i,
+          ''
+        )
+        .trim();
+      const rawTokens = /[|•·]/.test(cleanedSkillLine)
+        ? cleanedSkillLine.split(/[|•·\n]/)
+        : cleanedSkillLine.split(/,(?![^()]*\))|\n/);
+      const tokens = rawTokens.map((t) => t.trim());
       tokens.forEach((t) => {
-        if (t.length >= 2 && t.length <= 35 && !extractedSkills.includes(t)) {
+        if (t.length >= 2 && t.length <= 75 && !extractedSkills.includes(t)) {
           extractedSkills.push(t);
         }
       });
@@ -961,7 +1284,7 @@ export function parseCvTextToStructuredData(
     // o encabezado de certificado/anexo, el CV terminó formalmente aquí.
     if (
       cleanLine.includes('______') ||
-      (fullName && cleanLine.includes(fullName) && (cleanLine.includes('RUT') || cleanLine.includes('18.'))) ||
+      (fullName && cleanLine.toLowerCase().includes(fullName.toLowerCase()) && (cleanLine.includes('RUT') || cleanLine.includes('18.'))) ||
       cleanLine.toLowerCase().startsWith('certificado') ||
       cleanLine.toLowerCase().startsWith('diploma') ||
       cleanLine.toLowerCase().startsWith('constancia')
@@ -1003,6 +1326,7 @@ export function parseCvTextToStructuredData(
     if (currentContacts.email) contactParts.push(currentContacts.email);
 
     let extraRoleOrCompanyCandidate = '';
+    let extraCompanyCandidate = '';
     let linesConsumed = 0;
 
     // Helper para determinar si una línea es PURAMENTE de contacto (ej: "Tel: +56 9...", "Contacto: ...")
@@ -1031,9 +1355,15 @@ export function parseCvTextToStructuredData(
         'psicologo', 'psicologa', 'docente', 'profesor', 'profesora', 'ingeniero', 'ingeniera',
         'analista', 'asistente', 'consultor', 'consultora', 'supervisor', 'supervisora', 'encargado',
         'encargada', 'operador', 'operadora', 'técnico', 'tecnico', 'subdirector', 'subdirectora',
-        'profesional', 'especialista', 'asesor', 'asesora'
+        'profesional', 'especialista', 'asesor', 'asesora', 'inspector', 'inspectora'
       ];
       return jobKeywords.some((k) => new RegExp(`\\b${k}\\b`, 'i').test(lower));
+    };
+
+    const isReferenceInstitutionLine = (text: string): boolean => {
+      return /\b(?:hospital|cl[íi]nica|complejo|penitenciario|sodexo|escuela|colegio|liceo|cesfam|universidad|instituto|ministerio|seremi|subsecretar[íi]a|servicio|fundaci[óo]n|corporaci[óo]n|municipalidad|centro|direcci[óo]n|empresa)\b/i.test(
+        text
+      );
     };
 
     // Helper para determinar si una línea representa una NUEVA persona de referencia
@@ -1052,14 +1382,21 @@ export function parseCvTextToStructuredData(
       // 1. Si la línea tiene un separador claro (em-dash, en-dash, bullet interno, guión con espacios, barra)
       if (/[—–|·]|\s-\s/.test(stripped)) {
         const firstSegment = stripped.split(/[—–|·]|\s-\s/)[0].trim();
-        // Si antes del separador NO parece un cargo (sino un nombre de persona de 4+ caracteres)
-        if (firstSegment.length >= 4 && !isJobTitleLine(firstSegment)) {
+        // Si antes del separador NO parece un cargo ni institución (sino un nombre de persona de 4+ caracteres)
+        if (firstSegment.length >= 4 && !isJobTitleLine(firstSegment) && !isReferenceInstitutionLine(firstSegment)) {
           return true;
         }
         // Si antes del separador SÍ es un cargo (ej: "Inspectora General - Escuela..."), es cargo de la actual
         if (!currentHasRoleOrCompany && isJobTitleLine(firstSegment)) {
           return false;
         }
+        if (isReferenceInstitutionLine(firstSegment)) {
+          return false;
+        }
+      }
+
+      if (isReferenceInstitutionLine(stripped)) {
+        return false;
       }
 
       // 2. Si la línea contiene palabras típicas de cargo
@@ -1070,17 +1407,27 @@ export function parseCvTextToStructuredData(
         }
       }
 
-      // 3. Si la línea parece ser un nombre propio de persona (2 a 4 palabras capitalizadas, sin números ni palabras de contacto)
+      // 3. Si empieza con prefijo de título profesional (Psi., Dr., Dra., E.U., Ing., etc.)
+      if (/^(?:psi|dr|dra|e\.?u|ing|mg|lic|sr|sra|prof)\.\s+/i.test(stripped)) {
+        return true;
+      }
+
+      // 4. Si la línea parece ser un nombre propio de persona (2 a 4 palabras, sin números ni palabras de contacto)
       if (
         stripped.length >= 6 &&
         stripped.length <= 40 &&
         !/\d/.test(stripped) &&
         !isJobTitleLine(stripped) &&
-        !/^(?:instituci[óo]n|empresa|hospital|cl[íi]nica|colegio|universidad|servicio|ministerio)[:\s]/i.test(stripped)
+        !isReferenceInstitutionLine(stripped)
       ) {
         const words = stripped.split(/\s+/).filter(Boolean);
         const capitalizedWords = words.filter((w) => /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+$/.test(w));
-        if (words.length >= 2 && words.length <= 4 && capitalizedWords.length === words.length) {
+        if (
+          words.length >= 2 &&
+          words.length <= 4 &&
+          (capitalizedWords.length === words.length ||
+            (words.length === 2 && /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+$/.test(words[0]) && /^[a-záéíóúñ]+$/i.test(words[1])))
+        ) {
           return true;
         }
       }
@@ -1088,9 +1435,13 @@ export function parseCvTextToStructuredData(
       return false;
     };
 
-    // 2. Inspeccionar líneas siguientes sólo si nos falta rol/empresa o contacto para ESTA referencia
+    // Si la línea actual ya contiene separadores de cargo/empresa Y teléfono/correo en la misma línea, no buscar en líneas siguientes
+    const isCompleteSingleLineRef =
+      /[—–|·]|\s-\s/.test(cleanLine) && Boolean(currentContacts.phone || currentContacts.email);
+
+    // 2. Inspeccionar líneas siguientes sólo si nos falta rol/empresa o contacto para ESTA referencia (soporta bloques de hasta 5 líneas con cargo/institución envueltos)
     let lookAheadOffset = 1;
-    while (i + lookAheadOffset < refLines.length && lookAheadOffset <= 2) {
+    while (!isCompleteSingleLineRef && i + lookAheadOffset < refLines.length && lookAheadOffset <= 5) {
       const candidateRaw = refLines[i + lookAheadOffset];
 
       // Si la línea candidata parece una NUEVA referencia, DETENER lookahead inmediatamente
@@ -1101,7 +1452,7 @@ export function parseCvTextToStructuredData(
         nextRaw.length < 3 ||
         isCertificateOrNoise(nextRaw) ||
         nextRaw.includes('______') ||
-        (fullName && nextRaw.includes(fullName) && (nextRaw.includes('RUT') || nextRaw.includes('18.')))
+        (fullName && nextRaw.toLowerCase().includes(fullName.toLowerCase()) && (nextRaw.includes('RUT') || nextRaw.includes('18.')))
       ) {
         break;
       }
@@ -1114,8 +1465,29 @@ export function parseCvTextToStructuredData(
         // Una vez consumido el contacto para esta persona, terminar lookahead
         break;
       } else if (!extraRoleOrCompanyCandidate && nextRaw.length < 120 && !isPureContactLine(nextRaw)) {
-        // Línea de cargo / institución (ej: "Enfermera encargada • Cuidados Paliativos")
+        // Primera línea descriptiva: Cargo (o Cargo • Institución)
         extraRoleOrCompanyCandidate = nextRaw;
+        linesConsumed = lookAheadOffset;
+        lookAheadOffset++;
+      } else if (
+        extraRoleOrCompanyCandidate &&
+        !extraCompanyCandidate &&
+        !isReferenceInstitutionLine(nextRaw) &&
+        i + lookAheadOffset + 1 < refLines.length &&
+        isReferenceInstitutionLine(stripLeadingBullet(refLines[i + lookAheadOffset + 1]).trim())
+      ) {
+        // Continuación de cargo envuelto en 2 líneas antes de la línea de institución (ej. "Enfermera encargada, Cuidados Paliativos" + "Universales")
+        extraRoleOrCompanyCandidate = `${extraRoleOrCompanyCandidate} ${nextRaw}`;
+        linesConsumed = lookAheadOffset;
+        lookAheadOffset++;
+      } else if (!extraCompanyCandidate && nextRaw.length < 120 && !isPureContactLine(nextRaw)) {
+        // Segunda línea descriptiva: Institución (ej: "Hospital Clínico de Magallanes")
+        extraCompanyCandidate = nextRaw;
+        linesConsumed = lookAheadOffset;
+        lookAheadOffset++;
+      } else if (extraCompanyCandidate && nextRaw.length < 120 && !isPureContactLine(nextRaw)) {
+        // Continuación de institución envuelta en 2 líneas (ej. "Complejo Penitenciario Biobío · Sociedad" + "Concesionaria Grupo 2 (Sodexo)")
+        extraCompanyCandidate = `${extraCompanyCandidate} ${nextRaw}`;
         linesConsumed = lookAheadOffset;
         lookAheadOffset++;
       } else {
@@ -1165,22 +1537,27 @@ export function parseCvTextToStructuredData(
         company = c.join(',').trim();
       } else {
         role = parts[1];
-        company = extraRoleOrCompanyCandidate || 'Institución de Referencia';
+        company = extraCompanyCandidate || extraRoleOrCompanyCandidate || 'Institución de Referencia';
       }
     } else if (parts.length === 1 && extraRoleOrCompanyCandidate) {
       name = parts[0];
-      // Si extraRoleOrCompanyCandidate tiene bullet (•), dash (—, –), o guión con espacio
-      const extraParts = extraRoleOrCompanyCandidate.split(/[—–|·•\t]|\s-\s/).map((p) => p.trim()).filter(Boolean);
-      if (extraParts.length >= 2) {
-        role = extraParts[0];
-        company = extraParts.slice(1).join(' - ');
-      } else if (extraRoleOrCompanyCandidate.includes(',')) {
-        const [r, ...c] = extraRoleOrCompanyCandidate.split(',');
-        role = r.trim();
-        company = c.join(',').trim();
-      } else {
+      if (extraCompanyCandidate) {
         role = extraRoleOrCompanyCandidate;
-        company = 'Institución de Referencia';
+        company = extraCompanyCandidate.replace(/\s*·\s*/g, ', ').trim();
+      } else {
+        // Si extraRoleOrCompanyCandidate tiene bullet (•), dash (—, –), o guión con espacio
+        const extraParts = extraRoleOrCompanyCandidate.split(/[—–|·•\t]|\s-\s/).map((p) => p.trim()).filter(Boolean);
+        if (extraParts.length >= 2) {
+          role = extraParts[0];
+          company = extraParts.slice(1).join(' - ');
+        } else if (extraRoleOrCompanyCandidate.includes(',')) {
+          const [r, ...c] = extraRoleOrCompanyCandidate.split(',');
+          role = r.trim();
+          company = c.join(',').trim();
+        } else {
+          role = extraRoleOrCompanyCandidate;
+          company = 'Institución de Referencia';
+        }
       }
     } else if (parts.length === 1) {
       // Si la línea era solo el nombre (y el contacto venía en línea separada o ya fue extraído)

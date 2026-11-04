@@ -174,7 +174,7 @@ export function auditAndRepairCvBullet(rawBullet: string): {
 
   // 1. Eliminar viñetas decorativas y prefijos de etiqueta obvia ("Logro:", "Responsabilidad:", etc.)
   let clean = rawBullet
-    .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7>]+/, '')
+    .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\u2013\u2014–—>]+/, '')
     .replace(/^(?:logros?|responsabilidad(?:es)?|funciones?|tareas?|actividades?|tarea|meta)[:.\-\s]*/i, '')
     .trim();
 

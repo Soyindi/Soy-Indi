@@ -33,16 +33,27 @@ export interface CvPageDistributionResult {
   splitExpIndex: number;
   page1Experiences: DistributedExperienceItem[];
   page2Experiences: DistributedExperienceItem[];
+  page3Experiences?: DistributedExperienceItem[];
+  page1Education?: NonNullable<CVFormValues['content']['education']>;
+  page2Education?: NonNullable<CVFormValues['content']['education']>;
+  page3Education?: NonNullable<CVFormValues['content']['education']>;
+  skillsPage?: 1 | 2 | 3;
+  referencesPage?: 1 | 2 | 3;
+  signaturePage?: 1 | 2 | 3;
   page1Weight: number;
+  page2Weight?: number;
+  page3Weight?: number;
   remainingWeight: number;
   capacityUtilizationPct: number;
+  page2UtilizationPct?: number;
+  page3UtilizationPct?: number;
 }
 
 export function cleanBulletText(text: string): string {
   if (!text) return '';
   return text
     .replace(/^[%‰]\s*[ÏïîIíi]?\s*/i, '')
-    .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '')
+    .replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\u2013\u2014–—\.\d+\)]+\s*/, '')
     .trim();
 }
 
@@ -130,17 +141,22 @@ export function getSecondarySectionsWeights(content: CVFormValues['content']): {
 } {
   const skillsCount = content.skills?.length || 0;
   const skillsWeight = skillsCount > 0
-    ? 1.8 + Math.ceil(skillsCount / 8) * 1.6 + 0.8 // Título + renglones de tags + margen
+    ? 1.8 + Math.ceil(skillsCount / 9) * 1.25 + 0.6 // Título + renglones de tags compactos + margen
     : 0;
 
   const eduCount = content.education?.length || 0;
+  // Con > 4 ítems educativos, la formación complementaria se renderiza en grilla ejecutiva de 2 columnas
   const eduWeight = eduCount > 0
-    ? 1.8 + eduCount * 1.6 + 0.8 // Título + grados + margen
+    ? eduCount <= 4
+      ? 1.8 + eduCount * 1.5 + 0.6
+      : 1.8 + 1.6 + Math.ceil((eduCount - 1) / 2) * 1.35 + 0.6
     : 0;
 
   const refCount = content.references?.length || 0;
+  const refCols = refCount >= 3 ? 3 : 2;
+  const refRowWeight = refCount >= 3 ? 2.6 : 3.0;
   const refWeight = refCount > 0
-    ? 1.8 + Math.ceil(refCount / 2) * 3.2 + 0.8 // Título + filas de 2 referencias + margen
+    ? 1.8 + Math.ceil(refCount / refCols) * refRowWeight + 0.6 // Título + filas de 2 o 3 referencias + margen
     : 0;
 
   return {
@@ -152,7 +168,7 @@ export function getSecondarySectionsWeights(content: CVFormValues['content']): {
 }
 
 /**
- * Algoritmo maestro de partición y balance armónico A4
+ * Algoritmo maestro de partición y balance armónico A4 (Soporte elástico 1, 2 y 3 hojas)
  */
 export function calculateCvPageDistribution(
   cv: CVFormValues,
@@ -160,11 +176,12 @@ export function calculateCvPageDistribution(
 ): CvPageDistributionResult {
   const { content } = cv;
   const experiences = content.experience || [];
+  const eduList = content.education || [];
 
   const headerWeight = getHeaderWeight(content, cv.targetRole);
   const summaryWeight = getSummaryWeight(content.summary);
   const expSectionTitleWeight = experiences.length > 0 ? 1.8 : 0;
-  const { totalSecondaryWeight } = getSecondarySectionsWeights(content);
+  const { skillsWeight, eduWeight, refWeight, totalSecondaryWeight } = getSecondarySectionsWeights(content);
 
   // 1. Caso base: si todo el contenido (incluyendo secundarias) cabe en 1 hoja
   const expDetails = experiences.map((exp) => getSingleExperienceWeight(exp));
@@ -185,18 +202,29 @@ export function calculateCvPageDistribution(
         originalIndex: idx,
       })),
       page2Experiences: [],
+      page3Experiences: [],
+      page1Education: eduList,
+      page2Education: [],
+      page3Education: [],
+      skillsPage: 1,
+      referencesPage: 1,
+      signaturePage: 1,
       page1Weight: allContentWeight,
+      page2Weight: 0,
+      page3Weight: 0,
       remainingWeight: 0,
       capacityUtilizationPct: Math.round((allContentWeight / maxPageCapacity) * 100),
+      page2UtilizationPct: 0,
+      page3UtilizationPct: 0,
     };
   }
 
-  // 2. Necesita 2 páginas: distribuir experiencias en Hoja 1
+  // 2. Necesita 2+ páginas: distribuir experiencias en Hoja 1 aprovechando hasta el 86%-95% de capacidad
   let accumulatedPage1Weight = headerWeight + summaryWeight + expSectionTitleWeight;
   let splitExpIndex = 0;
 
   const page1Experiences: DistributedExperienceItem[] = [];
-  const page2Experiences: DistributedExperienceItem[] = [];
+  const postPage1Experiences: DistributedExperienceItem[] = [];
 
   for (let i = 0; i < experiences.length; i++) {
     const exp = experiences[i];
@@ -216,14 +244,15 @@ export function calculateCvPageDistribution(
       splitExpIndex = i + 1;
     } else {
       // No cabe completa.
-      // Si la Hoja 1 ya está al menos al 72% de capacidad (~33 unidades), es preferible NO cortar
-      // la experiencia por la mitad y dejarla íntegra al inicio de la Hoja 2.
-      const isPageSufficientlyFilled = accumulatedPage1Weight >= maxPageCapacity * 0.72;
-
-      // Si la página tiene poco contenido (<72%) y la experiencia tiene suficientes viñetas,
-      // evaluamos si cabe la cabecera del cargo + al menos 2 viñetas.
+      // Solo evitamos subdividir si la Hoja 1 ya está al >= 86% de su capacidad (~39.5 unidades).
+      // Debajo del 86% (ej. 73%), subdividimos para eliminar huecos blancos al final de la Hoja 1 y descargar la Hoja 2.
+      const isPageSufficientlyFilled = accumulatedPage1Weight >= maxPageCapacity * 0.86;
       const availableSpace = maxPageCapacity - accumulatedPage1Weight;
-      const canFitPartial = !isPageSufficientlyFilled && availableSpace >= details.headerWeight + 2.5 && bullets.length >= 4;
+      const minBulletsRequired = accumulatedPage1Weight >= maxPageCapacity * 0.65 ? 1 : 2;
+      const canFitPartial =
+        !isPageSufficientlyFilled &&
+        availableSpace >= details.headerWeight + 2.2 &&
+        bullets.length >= 2;
 
       if (canFitPartial) {
         let partialBulletsWeight = details.headerWeight;
@@ -239,8 +268,7 @@ export function calculateCvPageDistribution(
           }
         }
 
-        if (fitBulletCount >= 2 && fitBulletCount < bullets.length) {
-          // Dividir viñetas entre Hoja 1 y Hoja 2
+        if (fitBulletCount >= minBulletsRequired && fitBulletCount < bullets.length) {
           page1Experiences.push({
             role: exp.role,
             company: exp.company,
@@ -250,7 +278,7 @@ export function calculateCvPageDistribution(
           });
           accumulatedPage1Weight += partialBulletsWeight;
 
-          page2Experiences.push({
+          postPage1Experiences.push({
             role: exp.role,
             company: exp.company,
             period: exp.period,
@@ -260,10 +288,9 @@ export function calculateCvPageDistribution(
           });
           splitExpIndex = i;
 
-          // Añadir las experiencias restantes a Hoja 2
           for (let j = i + 1; j < experiences.length; j++) {
             const nextExp = experiences[j];
-            page2Experiences.push({
+            postPage1Experiences.push({
               role: nextExp.role,
               company: nextExp.company,
               period: nextExp.period,
@@ -275,11 +302,11 @@ export function calculateCvPageDistribution(
         }
       }
 
-      // Si no se subdivide, todas las experiencias a partir de `i` van a Hoja 2
+      // Si no se subdivide, todas las experiencias a partir de `i` van después de Hoja 1
       splitExpIndex = i;
       for (let j = i; j < experiences.length; j++) {
         const nextExp = experiences[j];
-        page2Experiences.push({
+        postPage1Experiences.push({
           role: nextExp.role,
           company: nextExp.company,
           period: nextExp.period,
@@ -302,15 +329,146 @@ export function calculateCvPageDistribution(
       originalIndex: 0,
     });
     splitExpIndex = 1;
-    page2Experiences.shift();
+    postPage1Experiences.shift();
     accumulatedPage1Weight += expDetails[0].totalWeight;
   }
 
-  const remainingWeight = page2Experiences.reduce((acc, item) => {
-    return acc + getSingleExperienceWeight(item as any).totalWeight;
-  }, 0) + totalSecondaryWeight;
+  // 3. Si todas las experiencias cupieron en Hoja 1 y aún queda espacio en Hoja 1 para Habilidades, adelantarlas a Hoja 1
+  let skillsPage: 1 | 2 | 3 = 2;
+  if (
+    postPage1Experiences.length === 0 &&
+    skillsWeight > 0 &&
+    accumulatedPage1Weight + skillsWeight <= maxPageCapacity * 0.94
+  ) {
+    skillsPage = 1;
+    accumulatedPage1Weight += skillsWeight;
+  }
 
-  const totalPages = remainingWeight > maxPageCapacity ? Math.min(3, 2 + Math.ceil((remainingWeight - maxPageCapacity) / maxPageCapacity)) : 2;
+  // 4. Distribuir contenido restante entre Hoja 2 y Hoja 3 (si excede la capacidad de Hoja 2)
+  const page2Experiences: DistributedExperienceItem[] = [];
+  const page3Experiences: DistributedExperienceItem[] = [];
+  let accumulatedPage2Weight = 1.4; // Cabecera compacta de continuación en Hoja 2
+  let accumulatedPage3Weight = 1.4; // Cabecera compacta de continuación en Hoja 3
+
+  if (postPage1Experiences.length > 0) {
+    accumulatedPage2Weight += 1.5; // Título de sección de experiencia en Hoja 2
+    for (let k = 0; k < postPage1Experiences.length; k++) {
+      const item = postPage1Experiences[k];
+      const itemDetails = getSingleExperienceWeight(item);
+
+      if (page2Experiences.length === 0 || accumulatedPage2Weight + itemDetails.totalWeight <= maxPageCapacity) {
+        page2Experiences.push(item);
+        accumulatedPage2Weight += itemDetails.totalWeight;
+      } else {
+        const avail2 = maxPageCapacity - accumulatedPage2Weight;
+        if (avail2 >= itemDetails.headerWeight + 2.2 && item.bullets.length >= 2) {
+          let partialWeight = itemDetails.headerWeight;
+          let fitCount = 0;
+          for (const bw of itemDetails.bulletWeights) {
+            if (partialWeight + bw <= avail2) {
+              partialWeight += bw;
+              fitCount++;
+            } else {
+              break;
+            }
+          }
+          if (fitCount >= 1 && fitCount < item.bullets.length) {
+            page2Experiences.push({
+              ...item,
+              bullets: item.bullets.slice(0, fitCount),
+            });
+            accumulatedPage2Weight += partialWeight;
+            page3Experiences.push({
+              ...item,
+              bullets: item.bullets.slice(fitCount),
+              isContinued: true,
+            });
+            accumulatedPage3Weight += 1.5 + (itemDetails.totalWeight - partialWeight);
+            for (let m = k + 1; m < postPage1Experiences.length; m++) {
+              page3Experiences.push(postPage1Experiences[m]);
+              accumulatedPage3Weight += getSingleExperienceWeight(postPage1Experiences[m]).totalWeight;
+            }
+            break;
+          }
+        }
+
+        for (let m = k; m < postPage1Experiences.length; m++) {
+          page3Experiences.push(postPage1Experiences[m]);
+          accumulatedPage3Weight += getSingleExperienceWeight(postPage1Experiences[m]).totalWeight;
+        }
+        break;
+      }
+    }
+  }
+
+  // Asignar página de Habilidades (si no quedó en Hoja 1)
+  if (skillsPage !== 1) {
+    if (page3Experiences.length === 0 && (accumulatedPage2Weight + skillsWeight <= maxPageCapacity || skillsWeight === 0)) {
+      skillsPage = 2;
+      accumulatedPage2Weight += skillsWeight;
+    } else {
+      skillsPage = 3;
+      accumulatedPage3Weight += skillsWeight;
+    }
+  }
+
+  // Asignar Educación entre Hoja 2 y Hoja 3
+  const page1Education: NonNullable<CVFormValues['content']['education']> = [];
+  let page2Education: NonNullable<CVFormValues['content']['education']> = [];
+  let page3Education: NonNullable<CVFormValues['content']['education']> = [];
+
+  if (eduList.length > 0) {
+    if (skillsPage <= 2 && page3Experiences.length === 0 && accumulatedPage2Weight + eduWeight <= maxPageCapacity) {
+      page2Education = eduList;
+      accumulatedPage2Weight += eduWeight;
+    } else if (skillsPage <= 2 && page3Experiences.length === 0 && maxPageCapacity - accumulatedPage2Weight >= 4.5) {
+      const availEduSpace = maxPageCapacity - accumulatedPage2Weight - 2.0;
+      const perItemWeight = eduList.length <= 4 ? 1.5 : 0.72;
+      const fitEduCount = Math.max(1, Math.min(eduList.length, Math.floor(availEduSpace / perItemWeight)));
+      if (fitEduCount < eduList.length) {
+        page2Education = eduList.slice(0, fitEduCount);
+        page3Education = eduList.slice(fitEduCount);
+        accumulatedPage2Weight += 2.0 + fitEduCount * perItemWeight;
+        accumulatedPage3Weight += 2.0 + (eduList.length - fitEduCount) * perItemWeight;
+      } else {
+        page2Education = eduList;
+        accumulatedPage2Weight += eduWeight;
+      }
+    } else {
+      page3Education = eduList;
+      accumulatedPage3Weight += eduWeight;
+    }
+  }
+
+  // Asignar Referencias entre Hoja 2 y Hoja 3
+  let referencesPage: 1 | 2 | 3 = 2;
+  if (refWeight === 0) {
+    referencesPage = page3Experiences.length > 0 || page3Education.length > 0 || skillsPage === 3 ? 3 : 2;
+  } else if (
+    page3Experiences.length === 0 &&
+    page3Education.length === 0 &&
+    skillsPage <= 2 &&
+    accumulatedPage2Weight + refWeight <= maxPageCapacity
+  ) {
+    referencesPage = 2;
+    accumulatedPage2Weight += refWeight;
+  } else {
+    referencesPage = 3;
+    accumulatedPage3Weight += refWeight;
+  }
+
+  const remainingWeight = postPage1Experiences.reduce((acc, item) => {
+    return acc + getSingleExperienceWeight(item as any).totalWeight;
+  }, 0) + (skillsPage === 1 ? eduWeight + refWeight : totalSecondaryWeight);
+
+  const hasPage3Content =
+    page3Experiences.length > 0 ||
+    page3Education.length > 0 ||
+    skillsPage === 3 ||
+    (referencesPage === 3 && (content.references?.length || 0) > 0);
+
+  const totalPages: 2 | 3 = hasPage3Content ? 3 : 2;
+  const signaturePage: 2 | 3 = totalPages;
 
   return {
     needsTwoPages: true,
@@ -318,8 +476,19 @@ export function calculateCvPageDistribution(
     splitExpIndex,
     page1Experiences,
     page2Experiences,
+    page3Experiences,
+    page1Education,
+    page2Education,
+    page3Education,
+    skillsPage,
+    referencesPage,
+    signaturePage,
     page1Weight: accumulatedPage1Weight,
+    page2Weight: accumulatedPage2Weight,
+    page3Weight: hasPage3Content ? accumulatedPage3Weight : 0,
     remainingWeight,
     capacityUtilizationPct: Math.round((accumulatedPage1Weight / maxPageCapacity) * 100),
+    page2UtilizationPct: Math.min(100, Math.round((accumulatedPage2Weight / maxPageCapacity) * 100)),
+    page3UtilizationPct: hasPage3Content ? Math.min(100, Math.round((accumulatedPage3Weight / maxPageCapacity) * 100)) : 0,
   };
 }

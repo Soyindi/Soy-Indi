@@ -15,8 +15,8 @@ export function sanitizeBulletText(text: string): string {
   if (!text) return '';
   // 1. Eliminar artefactos de OCR comunes (%Ï, %ï, ï%, , etc.) al inicio o embebidos al arranque
   let cleaned = text.replace(/^[%‰]\s*[ÏïîIíi]?\s*/i, '');
-  // 2. Eliminar viñetas y caracteres no textuales comunes al inicio
-  cleaned = cleaned.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\.\d+\)]+\s*/, '');
+  // 2. Eliminar viñetas y caracteres no textuales comunes al inicio (incluyendo en-dash/em-dash)
+  cleaned = cleaned.replace(/^[\s•\-\*·\u2022\u25cf\u25cb\u25e6\u2219\u22c5\u00b7\u2013\u2014–—\.\d+\)]+\s*/, '');
   return cleaned.trim();
 }
 
@@ -229,109 +229,117 @@ export function buildCvPdfDocument(
 
   // --- 4. EDUCACIÓN Y CERTIFICACIONES VERIFICADAS ---
   if (content.education && content.education.length > 0) {
-    drawSectionHeader('Educación y Certificaciones');
+    drawSectionHeader('Educación, Registros y Certificaciones');
+    const isDenseEdu = content.education.length > 4;
 
-    for (const edu of content.education) {
+    for (let eIdx = 0; eIdx < content.education.length; eIdx++) {
+      const edu = content.education[eIdx];
       const degreeTitle = sanitizeBulletText(edu.degree || 'Título o Grado');
+      const instName = sanitizeBulletText(edu.institution || '');
       const cleanYear =
         edu.year && !/no\s+especificado|sin\s+fecha|pendiente|n\/a/i.test(edu.year)
           ? edu.year.trim()
           : '';
       const maxDegreeWidth = cleanYear ? contentWidth - 28 : contentWidth;
 
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9.5);
-      const degreeLines = doc.splitTextToSize(degreeTitle, maxDegreeWidth);
-      checkPageBreak(degreeLines.length * 4 + 9);
-
-      doc.setTextColor(...pdfTokens.headerColor);
-      doc.text(degreeLines, marginX, cursorY);
-
-      if (cleanYear) {
+      if (isDenseEdu && eIdx > 0) {
+        // Fila compacta de 1 línea para registros y cursos continuos: "Curso · Institución" + fecha a la derecha
+        const combinedLine = instName ? `${degreeTitle}  •  ${instName}` : degreeTitle;
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8.5);
-        doc.setTextColor(...pdfTokens.metaColor);
-        doc.text(cleanYear, marginX + contentWidth, cursorY, { align: 'right' });
-      }
-      cursorY += degreeLines.length * 4;
+        const rowLines = doc.splitTextToSize(combinedLine, maxDegreeWidth);
+        checkPageBreak(rowLines.length * 3.8 + 2);
 
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(...pdfTokens.bodyColor);
-      const instName = sanitizeBulletText(edu.institution || 'Institución');
-      doc.text(instName, marginX, cursorY);
+        doc.setTextColor(...pdfTokens.bodyColor);
+        doc.text(rowLines, marginX, cursorY);
 
-      if (edu.verifiedCredentialId) {
-        cursorY += 3.8;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7.5);
-        doc.setTextColor(...pdfTokens.accentColor);
-        doc.text(`[✓ VERIFICADO W3C: ${edu.verifiedCredentialId}]`, marginX, cursorY);
-      }
-      cursorY += 5;
-    }
-  }
-
-  // --- 4.5. REFERENCIAS LABORALES (FORMATO EJECUTIVO DE ALTA CONVERSIÓN) ---
-  if (content.references && content.references.length > 0) {
-    drawSectionHeader('Referencias Laborales');
-
-    // Layout en 2 columnas si hay más de una referencia y caben en el ancho
-    const refColWidth = (contentWidth - 6) / 2;
-
-    for (let rIdx = 0; rIdx < content.references.length; rIdx += 2) {
-      const ref1 = content.references[rIdx];
-      const ref2 = content.references[rIdx + 1];
-
-      // Altura requerida para este renglón de referencias
-      const hasContact = Boolean(ref1?.contact || ref2?.contact);
-      const neededHeight = hasContact ? 19 : 14;
-      checkPageBreak(neededHeight);
-
-      // Renderizar Referencia 1 (Columna Izquierda o Ancho Completo si es impar único)
-      const isSingle = !ref2;
-      const currentWidth = isSingle ? contentWidth : refColWidth;
-
-      const renderRefCard = (ref: typeof ref1, xPos: number, cardWidth: number) => {
-        const startY = cursorY;
-
-        // Nombre
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.5);
-        doc.setTextColor(...pdfTokens.headerColor);
-        doc.text(ref.name, xPos, startY);
-
-        // Cargo y Empresa
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8.5);
-        doc.setTextColor(...pdfTokens.accentColor);
-        const roleOrg = `${ref.role} • ${ref.company}`;
-        const splitRoleOrg = doc.splitTextToSize(roleOrg, cardWidth);
-        doc.text(splitRoleOrg, xPos, startY + 4);
-
-        const afterRoleY = startY + 4 + (splitRoleOrg.length * 3.6);
-
-        // Contacto Verificable (Teléfono / Email)
-        if (ref.contact && ref.contact.trim().length > 0) {
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
-          doc.setTextColor(...pdfTokens.headerColor);
-          doc.text(`Contacto: `, xPos, afterRoleY + 1);
-
+        if (cleanYear) {
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(8);
           doc.setTextColor(...pdfTokens.metaColor);
-          const contactX = xPos + doc.getTextWidth('Contacto: ');
-          doc.text(ref.contact, contactX, afterRoleY + 1);
+          doc.text(cleanYear, marginX + contentWidth, cursorY, { align: 'right' });
+        }
+        cursorY += rowLines.length * 3.8 + 1.2;
+      } else {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        const degreeLines = doc.splitTextToSize(degreeTitle, maxDegreeWidth);
+        checkPageBreak(degreeLines.length * 4 + 9);
+
+        doc.setTextColor(...pdfTokens.headerColor);
+        doc.text(degreeLines, marginX, cursorY);
+
+        if (cleanYear) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(...pdfTokens.metaColor);
+          doc.text(cleanYear, marginX + contentWidth, cursorY, { align: 'right' });
+        }
+        cursorY += degreeLines.length * 4;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...pdfTokens.bodyColor);
+        doc.text(instName || 'Institución', marginX, cursorY);
+
+        if (edu.verifiedCredentialId) {
+          cursorY += 3.8;
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7.5);
+          doc.setTextColor(...pdfTokens.accentColor);
+          doc.text(`[✓ VERIFICADO W3C: ${edu.verifiedCredentialId}]`, marginX, cursorY);
+        }
+        cursorY += 4.5;
+      }
+    }
+  }
+
+  // --- 4.5. REFERENCIAS LABORALES (GRILLA EJECUTIVA 2 O 3 COLUMNAS) ---
+  if (content.references && content.references.length > 0) {
+    drawSectionHeader('Referencias Laborales');
+
+    const numCols = content.references.length >= 3 ? 3 : 2;
+    const colGap = 5;
+    const refColWidth = (contentWidth - colGap * (numCols - 1)) / numCols;
+
+    for (let rIdx = 0; rIdx < content.references.length; rIdx += numCols) {
+      const rowRefs = content.references.slice(rIdx, rIdx + numCols);
+      const hasContact = rowRefs.some((r) => Boolean(r?.contact));
+      const neededHeight = hasContact ? 17 : 13;
+      checkPageBreak(neededHeight);
+
+      const renderRefCard = (ref: (typeof rowRefs)[number], xPos: number, cardWidth: number) => {
+        const startY = cursorY;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(...pdfTokens.headerColor);
+        const splitName = doc.splitTextToSize(ref.name, cardWidth);
+        doc.text(splitName[0], xPos, startY);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...pdfTokens.accentColor);
+        const roleOrg = `${ref.role} • ${ref.company}`;
+        const splitRoleOrg = doc.splitTextToSize(roleOrg, cardWidth);
+        doc.text(splitRoleOrg, xPos, startY + 3.8);
+
+        const afterRoleY = startY + 3.8 + splitRoleOrg.length * 3.4;
+
+        if (ref.contact && ref.contact.trim().length > 0) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.8);
+          doc.setTextColor(...pdfTokens.metaColor);
+          doc.text(ref.contact, xPos, afterRoleY + 0.8);
         }
       };
 
-      renderRefCard(ref1, marginX, currentWidth);
-      if (ref2) {
-        renderRefCard(ref2, marginX + refColWidth + 6, refColWidth);
-      }
+      rowRefs.forEach((ref, cIdx) => {
+        const currentWidth = rowRefs.length === 1 && numCols === 2 ? contentWidth : refColWidth;
+        renderRefCard(ref, marginX + cIdx * (refColWidth + colGap), currentWidth);
+      });
 
-      cursorY += neededHeight + 2;
+      cursorY += neededHeight + 1.5;
     }
   }
 
