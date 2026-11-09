@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { authClient, signIn } from '@/shared/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Loader2, ArrowRight, ShieldCheck, Mail, Lock, User } from 'lucide-react';
@@ -33,6 +34,7 @@ export function AuthModal({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [acceptedPrivacyAndTerms, setAcceptedPrivacyAndTerms] = useState(false);
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
   const [isLoadingEmail, setIsLoadingEmail] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -77,6 +79,10 @@ export function AuthModal({
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    if (mode === 'signup' && !acceptedPrivacyAndTerms) {
+      setErrorMsg('Debes aceptar expresamente la Política de Privacidad y los Términos y Condiciones (Ley N° 21.719).');
+      return;
+    }
     setIsLoadingEmail(true);
 
     let targetCallback = safeCallbackUrl;
@@ -287,9 +293,36 @@ export function AuthModal({
             </div>
           </div>
 
+          {mode === 'signup' && (
+            <label
+              htmlFor="auth-privacy-optin"
+              className="flex items-start gap-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-colors cursor-pointer text-left"
+            >
+              <input
+                id="auth-privacy-optin"
+                type="checkbox"
+                required
+                checked={acceptedPrivacyAndTerms}
+                onChange={(e) => setAcceptedPrivacyAndTerms(e.target.checked)}
+                className="w-4 h-4 mt-0.5 accent-cyan-400 rounded cursor-pointer shrink-0"
+              />
+              <span className="text-[11px] text-zinc-300 leading-relaxed">
+                Declaro ser mayor de 14 años y otorgo mi consentimiento libre, informado y expreso para el tratamiento de mis datos conforme a la{' '}
+                <Link href="/privacy" className="text-cyan-400 hover:text-cyan-300 underline font-semibold">
+                  Política de Privacidad (Ley N° 21.719)
+                </Link>{' '}
+                y los{' '}
+                <Link href="/terms" className="text-cyan-400 hover:text-cyan-300 underline font-semibold">
+                  Términos y Condiciones
+                </Link>
+                .
+              </span>
+            </label>
+          )}
+
           <button
             type="submit"
-            disabled={isLoadingEmail}
+            disabled={isLoadingEmail || (mode === 'signup' && !acceptedPrivacyAndTerms)}
             className="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98] cursor-pointer disabled:opacity-50"
           >
             {isLoadingEmail ? (

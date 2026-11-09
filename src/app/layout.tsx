@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { APP_CACHE_VERSION, CACHE_STORAGE_VERSION_KEY } from '@/shared/lib/cacheGovernance';
+import { CookieConsentBanner } from '@/shared/ui/CookieConsentBanner';
 
 export const viewport: Viewport = {
   themeColor: '#080A12',
@@ -64,6 +65,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
         {children}
+        <CookieConsentBanner />
       </body>
     </html>
   );

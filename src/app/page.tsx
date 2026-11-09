@@ -203,6 +203,8 @@ const FOOTER_LINKS = [
   { href: '/presentations', label: 'Presentaciones' },
   { href: '/pricing', label: 'Membresía' },
   { href: '/dashboard?tab=affiliates', label: 'Referidos & Premios' },
+  { href: '/privacy', label: 'Privacidad & ARCOP (Ley 21.719)' },
+  { href: '/terms', label: 'Términos & Comercio Electrónico' },
 ];
 
 /**

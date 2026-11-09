@@ -117,4 +117,36 @@ describe('Ley N° 21.719 Compliance & Data Privacy Engine', () => {
       expect(result.error).toContain('ELIMINAR MI CUENTA');
     });
   });
+
+  describe('CMP Opt-In Estricto, Anonimización de IP y Plazos Legales ARCOP (Ley 21.719 & Decreto 14)', () => {
+    it('anonimiza direcciones IPv4 e IPv6 cumpliendo el principio de minimización', async () => {
+      const { anonymizeIpAddress } = await import('@/entities/privacy/compliance-config');
+      expect(anonymizeIpAddress('190.162.45.128')).toBe('190.162.45.0/24');
+      expect(anonymizeIpAddress('2001:db8:85a3:0000:0000:8a2e:0370:7334')).toBe('2001:db8:85a3:0000::/64');
+      expect(anonymizeIpAddress(null)).toBe('0.0.0.0/24');
+    });
+
+    it('genera registros auditables de consentimiento CMP y valida con cookieConsentRecordSchema', async () => {
+      const { buildConsentRecord, cookieConsentRecordSchema, ARCOP_LEGAL_SLA } = await import(
+        '@/entities/privacy/compliance-config'
+      );
+
+      const rejectRecord = buildConsentRecord({
+        categories: { functional: false, analytics: false, marketing: false },
+        interactionMethod: 'reject_all',
+        rawIp: '181.43.12.99',
+      });
+
+      expect(rejectRecord.categories.strictlyNecessary).toBe(true);
+      expect(rejectRecord.categories.analytics).toBe(false);
+      expect(rejectRecord.anonymizedIp).toBe('181.43.12.0/24');
+      expect(cookieConsentRecordSchema.safeParse(rejectRecord).success).toBe(true);
+
+      // Verificación de SLAs legales obligatorios en Chile
+      expect(ARCOP_LEGAL_SLA.standardResponseCalendarDays).toBe(30);
+      expect(ARCOP_LEGAL_SLA.temporaryBlockBusinessDays).toBe(2);
+      expect(ARCOP_LEGAL_SLA.retractPeriodCalendarDays).toBe(10);
+      expect(ARCOP_LEGAL_SLA.legalWarrantyMonths).toBe(6);
+    });
+  });
 });

@@ -30,11 +30,13 @@ interface ArcoRightsModalProps {
   userName?: string;
 }
 
-type ArcoTab = 'acceso' | 'rectificacion' | 'cancelacion' | 'oposicion';
+type ArcoTab = 'acceso' | 'rectificacion' | 'cancelacion' | 'oposicion' | 'bloqueo';
 
 export function ArcoRightsModal({ isOpen, onClose, userEmail, userName }: ArcoRightsModalProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<ArcoTab>('acceso');
+  const [blockReason, setBlockReason] = useState('');
+  const [blockFeedback, setBlockFeedback] = useState<string | null>(null);
   const [isPendingExport, startExportTransition] = useTransition();
   const [isPendingDelete, startDeleteTransition] = useTransition();
   const [isPendingRectify, startRectifyTransition] = useTransition();
@@ -157,16 +159,16 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail, userName }: ArcoRi
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 id="arco-modal-title" className="text-base sm:text-lg font-black text-white">
-                  Tus Derechos ARCO
+                  Tus Derechos ARCOP y Bloqueo Temporal
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  Ley N° 21.719
+                  Ley N° 21.719 • Art. 4 y 11
                 </span>
               </div>
               <p className="text-xs text-zinc-400">
-                Garantía legal de Acceso, Rectificación, Cancelación y Oposición.
+                Acceso, Rectificación, Cancelación, Oposición, Portabilidad (máx. 30 días corridos) y Bloqueo Temporal (máx. 2 días hábiles).
               </p>
             </div>
           </div>
@@ -232,6 +234,19 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail, userName }: ArcoRi
           >
             <Lock className="w-3.5 h-3.5" />
             <span>Oposición</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('bloqueo')}
+            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'bloqueo'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+            }`}
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>Bloqueo Temporal (2d)</span>
           </button>
         </div>
 
@@ -506,7 +521,7 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail, userName }: ArcoRi
                 <div className="pt-2 border-t border-white/10 flex items-center justify-between flex-wrap gap-2">
                   <span className="text-[11px] text-zinc-500">¿Dudas o requerimientos adicionales?</span>
                   <a
-                    href="mailto:privacidad@soyindi.cl?subject=[ARCO%20-%20Oposición]%20Consulta%20General"
+                    href="mailto:privacidad@soyindi.cl?subject=[ARCOP%20-%20Oposición]%20Consulta%20General"
                     className="min-h-[36px] px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 inline-flex items-center gap-1.5 text-cyan-300 font-bold text-xs transition-colors"
                   >
                     <span>Contactar al DPO (privacidad@soyindi.cl)</span>
@@ -514,6 +529,70 @@ export function ArcoRightsModal({ isOpen, onClose, userEmail, userName }: ArcoRi
                   </a>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* 5. DERECHO DE BLOQUEO TEMPORAL DEL TRATAMIENTO (SLA 2 DÍAS HÁBILES - ART. 11 LEY 21.719) */}
+          {activeTab === 'bloqueo' && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/25">
+                <h4 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  <span>Derecho de Bloqueo Temporal (Artículos 8 bis y 11 • Plazo: 2 Días Hábiles)</span>
+                </h4>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  Puedes solicitar la suspensión temporal del tratamiento de tus datos mientras se resuelve una solicitud de rectificación, oposición o cancelación. Conforme al Artículo 11 de la Ley N° 21.719, las solicitudes de bloqueo temporal se resuelven en un plazo máximo de <strong>2 días hábiles</strong>.
+                </p>
+              </div>
+
+              {blockFeedback && (
+                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2 animate-fade-in">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>{blockFeedback}</span>
+                </div>
+              )}
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const subject = encodeURIComponent(
+                    `[URGENTE SLA 2 DÍAS HÁBILES - Bloqueo Temporal ARCOP] ${userEmail || 'Titular'}`
+                  );
+                  const body = encodeURIComponent(
+                    `Estimado Delegado de Protección de Datos (DPO) de INDI:\n\n` +
+                      `En virtud de los artículos 4, 8 bis y 11 de la Ley N° 21.719, solicito el BLOQUEO TEMPORAL del tratamiento de mis datos personales:\n\n` +
+                      `Titular / Correo: ${userEmail || 'No especificado'}\n` +
+                      `Fundamento de la solicitud: ${blockReason}\n\n` +
+                      `Quedo atento a la resolución dentro del plazo legal máximo de 2 días hábiles.`
+                  );
+                  window.open(`mailto:privacidad@soyindi.cl?subject=${subject}&body=${body}`, '_blank');
+                  setBlockFeedback(
+                    'Solicitud de Bloqueo Temporal emitida con prioridad legal (SLA máximo: 2 días hábiles).'
+                  );
+                }}
+                className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3"
+              >
+                <div>
+                  <label className="block text-xs font-mono text-zinc-400 mb-1">
+                    Motivo o alcance del Bloqueo Temporal solicitado
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={blockReason}
+                    onChange={(e) => setBlockReason(e.target.value)}
+                    placeholder="Indica qué datos o perfiles públicos deseas suspender temporalmente mientras se revisa tu caso..."
+                    className="w-full p-3 rounded-xl bg-zinc-900 border border-white/10 text-white text-xs placeholder-zinc-600 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="min-h-[44px] w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Solicitar Bloqueo Temporal Prioritario (SLA 2 Días Hábiles)</span>
+                </button>
+              </form>
             </div>
           )}
         </div>
