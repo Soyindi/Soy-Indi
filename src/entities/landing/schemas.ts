@@ -50,15 +50,15 @@ export const formatClp = (value: number): string => `$${value.toLocaleString('es
 export const LANDING_CONTENT: LandingContent = landingContentSchema.parse({
   sections: ['inicio', 'comparativa', 'soluciones', 'precios', 'faq'],
   hero: {
-    eyebrow: 'Plataforma de Identidad Profesional',
-    title: 'Tu negocio completo',
-    highlight: 'en un solo link.',
+    eyebrow: 'Tarjetas Digitales con Google Wallet',
+    title: 'Tu tarjeta de presentación',
+    highlight: 'siempre en Google Wallet.',
     subtitle:
-      'Tarjeta digital con código QR interactivo y currículum ATS. Tus clientes y reclutadores te contactan en un toque.',
-    trustBadges: ['100% Gratuito', 'Sin tarjeta de crédito', 'Listo en 2 minutos'],
+      'Crea tu tarjeta digital en Chile con código QR y guárdala directamente en Google Wallet para tenerla siempre lista en tu teléfono.',
+    trustBadges: ['Google Wallet Ready', '100% Gratuito', 'Listo en 2 minutos'],
   },
   valueProps: [
-    { title: 'Siempre actualizada', description: 'Cambia tu foto, número u ofertas en segundos, sin reimprimir papel.' },
+    { title: 'En tu Google Wallet', description: 'Accede a tu tarjeta desde la app de tu celular con un solo toque, incluso sin conexión.' },
     { title: 'WhatsApp en un toque', description: 'Tu cliente presiona un botón y abre la conversación contigo de inmediato.' },
     { title: 'Métricas en tiempo real', description: 'Descubre cuántas personas vieron tu tarjeta y cuántas guardaron tu contacto.' },
     { title: 'Cero gasto en papel', description: 'Acceso 100% gratuito sin costos de impresión, ecológico y siempre en tu celular.' },
@@ -66,8 +66,8 @@ export const LANDING_CONTENT: LandingContent = landingContentSchema.parse({
   products: [
     {
       id: 'card',
-      title: 'Tarjeta Digital + QR',
-      description: 'Tu foto, biografía y enlaces de contacto en un link elegante que se comparte por QR o WhatsApp.',
+      title: 'Tarjeta Digital + Wallet',
+      description: 'Tu perfil profesional con código QR dinámico y acceso instantáneo desde Google Wallet en tu móvil.',
       href: '/cards/new',
       cta: 'Crear mi tarjeta gratis',
     },
@@ -88,7 +88,7 @@ export const LANDING_CONTENT: LandingContent = landingContentSchema.parse({
   ],
   pricing: { monthlyClp: 2500, semiannualClp: 6000, trialDays: 3 },
   closing: {
-    title: 'Comienza hoy con tu Plan Gratuito',
-    subtitle: 'Tu tarjeta y CV estarán listos en 2 minutos. Compártelos y destaca profesionalmente sin costo.',
+    title: 'Crea tu Tarjeta Digital Gratis Hoy',
+    subtitle: 'Lista en 2 minutos con código QR y soporte para Google Wallet. Destaca profesionalmente sin costo.',
   },
 });

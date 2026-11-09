@@ -9,6 +9,10 @@ import {
   MessageCircle,
   BarChart3,
   Sparkles,
+  Wallet,
+  Smartphone,
+  Zap,
+  Activity,
   type LucideIcon,
 } from 'lucide-react';
 import { DigitalCard, type CardData } from '@/entities/card/components/DigitalCard';
@@ -158,7 +162,7 @@ const HOME_STRUCTURED_DATA = [
 ];
 
 const PRODUCT_ICONS: Record<LandingProduct['id'], LucideIcon> = {
-  card: QrCode,
+  card: Wallet,
   cv: FileText,
   presentation: Presentation,
 };
@@ -167,29 +171,29 @@ const VALUE_PROP_CONFIG: Record<
   string,
   { icon: LucideIcon; badge: string; color: string; border: string; glow: string }
 > = {
-  'Siempre actualizada': {
-    icon: RefreshCw,
-    badge: 'En Segundos',
-    color: 'text-cyan-300',
-    border: 'group-hover:border-cyan-400/50',
-    glow: 'from-cyan-500/15 via-blue-500/5 to-transparent',
+  'En tu Google Wallet': {
+    icon: Wallet,
+    badge: 'Acceso Rápido',
+    color: 'text-amber-300',
+    border: 'group-hover:border-amber-400/50',
+    glow: 'from-amber-500/15 via-orange-500/5 to-transparent',
   },
   'WhatsApp en un toque': {
-    icon: MessageCircle,
-    badge: '1 Toque',
+    icon: Zap,
+    badge: 'Directo',
     color: 'text-emerald-300',
     border: 'group-hover:border-emerald-400/50',
     glow: 'from-emerald-500/15 via-teal-500/5 to-transparent',
   },
   'Métricas en tiempo real': {
-    icon: BarChart3,
+    icon: Activity,
     badge: 'En Vivo',
     color: 'text-indigo-300',
     border: 'group-hover:border-indigo-400/50',
     glow: 'from-indigo-500/15 via-purple-500/5 to-transparent',
   },
   'Cero gasto en papel': {
-    icon: Sparkles,
+    icon: Smartphone,
     badge: '100% Ecológico',
     color: 'text-teal-300',
     border: 'group-hover:border-teal-400/50',

@@ -12,14 +12,14 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://soyindi.cl'),
-  title: 'INDI — Plataforma SaaS de Identidad Digital y Networking',
-  description: 'Tarjetas digitales inteligentes, Smart CVs y presentaciones interactivas con rendimiento Edge ultra-rápido.',
+  title: 'Tarjetas Digitales en Chile con Google Wallet y QR | INDI',
+  description: 'Crea tu tarjeta digital de presentación en Chile. Compatible con Google Wallet para acceso instantáneo en tu celular, código QR y Smart CV ATS.',
   alternates: {
     canonical: 'https://soyindi.cl',
   },
   openGraph: {
-    title: 'INDI — Plataforma SaaS de Identidad Digital y Networking',
-    description: 'Tarjetas digitales inteligentes, Smart CVs y presentaciones interactivas con rendimiento Edge ultra-rápido.',
+    title: 'Tarjetas Digitales en Chile con Google Wallet y QR | INDI',
+    description: 'Crea tu tarjeta digital de presentación en Chile. Compatible con Google Wallet para acceso instantáneo en tu celular, código QR y Smart CV ATS.',
     url: 'https://soyindi.cl',
     siteName: 'INDI',
     images: [
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
         url: 'https://soyindi.cl/brand/indi-tech-lockup.webp',
         width: 1376,
         height: 768,
-        alt: 'INDI — Identidad Digital & Networking Profesional',
+        alt: 'INDI — Tarjetas Digitales de Presentación en Chile con Google Wallet',
       },
     ],
     locale: 'es_CL',
@@ -35,8 +35,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'INDI — Plataforma SaaS de Identidad Digital y Networking',
-    description: 'Tarjetas digitales inteligentes, Smart CVs y presentaciones interactivas.',
+    title: 'Tarjetas Digitales en Chile con Google Wallet y QR | INDI',
+    description: 'Crea tu tarjeta digital de presentación en Chile. Compatible con Google Wallet para acceso instantáneo en tu celular.',
     images: ['https://soyindi.cl/brand/indi-tech-lockup.webp'],
   },
   icons: {
