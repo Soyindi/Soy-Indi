@@ -541,6 +541,46 @@ describe('Programa de Afiliados & Pagos Quincenales (INDI 2026)', () => {
         await db.delete(user).where(eq(user.id, ambassadorId));
       }
     });
+
+    it('calcula determinísticamente los cupos gratuitos e insignias en calculateCommunityCapacityRewards (Simulador de Capacidad)', async () => {
+      const { calculateCommunityCapacityRewards } = await import(
+        '@/features/affiliates/components/AffiliateEarningsCalculator'
+      );
+
+      // 0 colegas -> Base Plan Comunitario (1 Tarjeta, 1 CV, Miembro Inicial)
+      const base = calculateCommunityCapacityRewards(0);
+      expect(base.totalCards).toBe(1);
+      expect(base.totalCvs).toBe(1);
+      expect(base.isUnlimited).toBe(false);
+      expect(base.rankTitle).toBe('Miembro Inicial');
+      expect(base.nextMilestoneTarget).toBe(3);
+      expect(base.colleaguesToNextMilestone).toBe(3);
+
+      // 3 colegas -> Nivel 1 (+1 Tarjeta = 2 Tarjetas, 1 CV, Miembro Activo)
+      const level1 = calculateCommunityCapacityRewards(3);
+      expect(level1.totalCards).toBe(2);
+      expect(level1.totalCvs).toBe(1);
+      expect(level1.rankTitle).toBe('Miembro Activo');
+      expect(level1.nextMilestoneTarget).toBe(5);
+      expect(level1.colleaguesToNextMilestone).toBe(2);
+
+      // 5 colegas -> Nivel 2 (2 Tarjetas, +1 CV = 2 CVs, Embajador Plata)
+      const level2 = calculateCommunityCapacityRewards(5);
+      expect(level2.totalCards).toBe(2);
+      expect(level2.totalCvs).toBe(2);
+      expect(level2.rankTitle).toBe('Embajador Plata');
+      expect(level2.nextMilestoneTarget).toBe(10);
+      expect(level2.colleaguesToNextMilestone).toBe(5);
+
+      // 10 colegas -> Nivel 3 (Cupos Ilimitados, Embajador Oro)
+      const level3 = calculateCommunityCapacityRewards(10);
+      expect(level3.isUnlimited).toBe(true);
+      expect(level3.totalCards).toBe('unlimited');
+      expect(level3.totalCvs).toBe('unlimited');
+      expect(level3.rankTitle).toBe('Embajador Oro');
+      expect(level3.nextMilestoneTarget).toBeNull();
+      expect(level3.colleaguesToNextMilestone).toBe(0);
+    });
   });
 });
 

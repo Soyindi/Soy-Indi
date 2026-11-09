@@ -652,8 +652,8 @@ export function AffiliateDashboardTab({ overview, onRefresh }: AffiliateDashboar
         </div>
       </div>
 
-      {/* Simulador Educativo de Ganancias de Afiliado (25% en Planes Starter, Pro y Max) */}
-      <AffiliateEarningsCalculator />
+      {/* Simulador Interactivo de Cupos Gratuitos por Referidos */}
+      <AffiliateEarningsCalculator currentReferralsCount={overview.totalReferralsCount} />
     </div>
   );
 }

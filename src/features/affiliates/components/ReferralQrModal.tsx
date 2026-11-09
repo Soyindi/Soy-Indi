@@ -189,7 +189,7 @@ export function ReferralQrModal({
         </div>
 
         <p className="mt-5 text-[10px] text-zinc-400 font-mono">
-          Al escanear, el invitado recibe su Plan Gratuito de por vida y queda vinculado a tus beneficios y comisiones de afiliado.
+          Al escanear, el invitado recibe su Plan Gratuito de por vida y queda vinculado a tus recompensas y cupos extra comunitarios.
         </p>
       </div>
     </div>

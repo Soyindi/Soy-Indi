@@ -71,7 +71,7 @@ export const PRICING_TIERS: Record<PlanTier, TierPlanConfig> = {
       { text: '1 Smart CV descargable en PDF vectorial ATS' },
       { text: 'Botón directo a WhatsApp y descarga vCard' },
       { text: 'Contador de visitas básico en el Edge' },
-      { text: 'Programa de Afiliados oficial (25% en futuras compras)' },
+      { text: 'Recompensas por Referidos (+1 Tarjeta c/3, +1 CV c/5 e Ilimitado c/10)' },
       { text: 'Sin marca de agua (Identidad profesional limpia)', highlight: true },
     ],
   },
