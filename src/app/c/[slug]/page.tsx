@@ -9,7 +9,7 @@ import { OFFICIAL_DEMO_CARD } from '@/entities/card/themes';
 import { PublicContextualHeader } from '@/shared/ui/PublicContextualHeader';
 import { JsonLd } from '@/shared/ui/JsonLd';
 import { getAppBaseUrl, buildCanonicalUrl } from '@/entities/brand/domain';
-import { ShieldAlert, Sparkles } from 'lucide-react';
+import { ShieldAlert, WalletCards } from 'lucide-react';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -143,7 +143,7 @@ export default async function PublicCardPage({ params }: PageProps) {
               href="/login?mode=signup&callbackUrl=/cards/new"
               className="min-h-[48px] w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 hover:opacity-95 transition-all"
             >
-              <Sparkles className="w-4 h-4" />
+              <WalletCards className="w-4 h-4" />
               <span>Crear mi Tarjeta Digital Gratis</span>
             </Link>
           </div>

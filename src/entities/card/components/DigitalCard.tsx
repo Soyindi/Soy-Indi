@@ -826,7 +826,7 @@ export function DigitalCard({ card, isInteractive = true }: DigitalCardProps) {
             href="/login?mode=signup&callbackUrl=/start"
             className="inline-flex items-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300 tracking-wider font-mono transition-colors"
           >
-            <Sparkles className="w-2.5 h-2.5" style={{ color: primaryColor }} />
+            <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block animate-pulse" style={{ backgroundColor: primaryColor }} />
             <span>CREADO CON INDI</span>
           </a>
         </div>

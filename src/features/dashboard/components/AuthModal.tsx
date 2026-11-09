@@ -176,7 +176,7 @@ export function AuthModal({
         {/* Encabezado */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill border border-indigo-500/30 text-xs font-semibold text-indigo-300 mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
             <span>Membresía INDI 2026</span>
           </div>
 

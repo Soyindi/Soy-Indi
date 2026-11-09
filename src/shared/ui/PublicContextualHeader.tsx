@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useSession } from '@/shared/lib/auth-client';
-import { Sparkles, ArrowRight, LayoutDashboard } from 'lucide-react';
+import { WalletCards, ArrowRight, LayoutDashboard } from 'lucide-react';
 import { BrandLogo } from '@/shared/ui/BrandLogo';
 
 interface PublicHeaderProps {
@@ -40,7 +40,7 @@ export function PublicContextualHeader({ ownerMode = false }: PublicHeaderProps)
           href="/login?mode=signup&callbackUrl=/start"
           className="min-h-[44px] inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 hover:from-indigo-500/30 hover:to-cyan-500/30 text-white text-xs font-semibold border border-cyan-500/30 shadow-lg shadow-indigo-500/10 hover:shadow-cyan-500/20 transition-all active:scale-95"
         >
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <WalletCards className="w-3.5 h-3.5 text-cyan-400" />
           <span>Crea tu perfil gratis</span>
           <ArrowRight className="w-3 h-3 text-cyan-300" />
         </Link>

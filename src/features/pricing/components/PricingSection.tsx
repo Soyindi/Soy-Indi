@@ -138,7 +138,7 @@ export function PricingSection({
                 href={targetHref}
                 className="min-h-[48px] inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl font-bold text-sm bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-zinc-950 hover:brightness-110 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer active:scale-[0.98]"
               >
-                <Sparkles className="w-4 h-4 text-zinc-950" />
+                <Zap className="w-4 h-4 text-zinc-950" />
                 <span>{isAuthenticated ? 'Ir a mi Panel de Control' : 'Comenzar Gratis (Sin Tarjeta)'}</span>
                 <ArrowRight className="w-4 h-4 text-zinc-950" />
               </Link>

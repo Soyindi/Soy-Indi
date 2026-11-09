@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useSession, signOut } from '@/shared/lib/auth-client';
-import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, WalletCards, Gift, CreditCard, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, WalletCards, Gift, CreditCard, Zap, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon, TikTokIcon } from '@/shared/ui/icons/SocialBrandIcons';
@@ -238,7 +238,7 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
                       onClick={() => setIsOpen(false)}
                       className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-all"
                     >
-                      <Sparkles className="w-4 h-4" />
+                      <Zap className="w-4 h-4" />
                       <span>Comenzar Gratis (Sin tarjeta)</span>
                       <ArrowRight className="w-4 h-4 ml-auto" />
                     </Link>

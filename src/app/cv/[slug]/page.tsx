@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm';
 import { CVFormValues, sanitizeCvForPublicView } from '@/entities/cv/schemas';
 import { PublicCvViewer } from '@/features/ai-smart-cv/components/PublicCvViewer';
 import { getAppBaseUrl, buildCanonicalUrl } from '@/entities/brand/domain';
-import { Sparkles, ArrowLeft, FileText } from 'lucide-react';
+import { ArrowLeft, FileText, FileCheck } from 'lucide-react';
 import { JsonLd } from '@/shared/ui/JsonLd';
 
 interface PublicCvPageProps {
@@ -111,7 +111,7 @@ export default async function PublicCvPage({ params }: PublicCvPageProps) {
             href="/login?mode=signup&callbackUrl=/cv"
             className="min-h-[44px] inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/20 hover:opacity-95 transition"
           >
-            <Sparkles className="w-4 h-4" />
+            <FileCheck className="w-4 h-4" />
             <span>Crear mi Smart CV Gratis</span>
           </Link>
           <Link

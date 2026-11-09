@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { UserEntitlement } from '../actions';
-import { Sparkles, ArrowRight, ShieldCheck, AlertCircle, Clock } from 'lucide-react';
+import { Sparkles, Gift, ArrowRight, ShieldCheck, AlertCircle, Clock } from 'lucide-react';
 import { TrialCountdownTimer } from './TrialCountdownTimer';
 
 interface TrialBannerProps {
@@ -257,7 +257,7 @@ export function TrialBanner({ entitlement }: TrialBannerProps) {
             href="/dashboard?tab=affiliates"
             className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-400 hover:text-emerald-300 text-xs font-semibold border border-white/10 transition-colors"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Gift className="w-3.5 h-3.5" />
             <span>Invitar Colegas (+1 Tarjeta)</span>
           </Link>
           <Link

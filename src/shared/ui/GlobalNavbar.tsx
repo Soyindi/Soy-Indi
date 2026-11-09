@@ -6,7 +6,7 @@ import { useSession, signOut } from '@/shared/lib/auth-client';
 import { MobileNavDrawer } from './MobileNavDrawer';
 import { BrandLogo } from './BrandLogo';
 import { AuthModal } from '@/features/dashboard/components/AuthModal';
-import { Sparkles, LayoutDashboard, LogIn, LogOut, Plus, Gift } from 'lucide-react';
+import { Sparkles, LayoutDashboard, LogIn, LogOut, Plus, Gift, Zap } from 'lucide-react';
 
 import { BrandSocialLinks } from '@/entities/brand/socials';
 
@@ -154,7 +154,7 @@ export function GlobalNavbar({ className = '', socials }: GlobalNavbarProps) {
                 onClick={() => openAuth('signup', '/start')}
                 className="min-h-[44px] inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 transition-all text-center cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <Zap className="w-3.5 h-3.5" />
                 <span>Comenzar Gratis</span>
               </button>
             </>
