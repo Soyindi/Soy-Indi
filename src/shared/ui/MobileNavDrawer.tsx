@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useSession, signOut } from '@/shared/lib/auth-client';
-import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, Tag, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Sparkles, Layers, FileText, MonitorPlay, WalletCards, Gift, CreditCard, ArrowRight, LogIn, LogOut, LayoutDashboard } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InstagramIcon, LinkedInIcon, XTwitterIcon, WhatsAppIcon, TikTokIcon } from '@/shared/ui/icons/SocialBrandIcons';
@@ -60,7 +60,7 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
       title: 'Planes & Comunidad',
       href: '#precios',
       description: 'Plan Comunitario Gratuito · 1 Tarjeta + 1 Smart CV de por vida',
-      icon: Tag,
+      icon: CreditCard,
     },
     {
       title: 'Preguntas Frecuentes',
@@ -81,7 +81,7 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
       title: 'Diseñar Tarjeta Digital',
       href: '/cards/new',
       description: 'Editor con QR dinámico y botón directo a WhatsApp',
-      icon: Tag,
+      icon: WalletCards,
     },
     {
       title: 'Smart CV (ATS)',
@@ -93,7 +93,7 @@ export function MobileNavDrawer({ socials }: MobileNavDrawerProps) {
       title: 'Programa de Referidos & Premios',
       href: '/dashboard?tab=affiliates',
       description: 'Comparte tu link con colegas y desbloquea tarjetas y beneficios',
-      icon: Sparkles,
+      icon: Gift,
     },
   ];
 

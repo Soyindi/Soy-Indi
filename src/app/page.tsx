@@ -9,6 +9,7 @@ import {
   MessageCircle,
   BarChart3,
   Sparkles,
+  ShieldCheck,
   Wallet,
   Smartphone,
   Zap,
@@ -239,7 +240,7 @@ export default async function HomePage() {
 
             {/* Pill de Ecosistema Profesional (Sin confusión de sesión activa) */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-400/25 backdrop-blur-md text-xs font-mono font-semibold text-cyan-300 shadow-[0_0_20px_-3px_rgba(34,211,238,0.3)] mb-6 transition-all hover:border-cyan-400/50 hover:scale-[1.02]">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-300" aria-hidden="true" />
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-300" aria-hidden="true" />
               <span className="tracking-widest uppercase">{hero.eyebrow}</span>
             </div>
 

@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { 
-  Sparkles, 
+  Sparkles, ShieldCheck, 
   Plus, 
   ExternalLink, 
   Eye, 
@@ -92,7 +92,7 @@ export function CardsDashboardView({ initialCards }: CardsDashboardViewProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-pill text-xs font-medium text-indigo-400 mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
+            <ShieldCheck className="w-3.5 h-3.5" />
             <span>Gestor de Identidad Digital</span>
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white">

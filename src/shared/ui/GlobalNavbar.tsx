@@ -6,7 +6,7 @@ import { useSession, signOut } from '@/shared/lib/auth-client';
 import { MobileNavDrawer } from './MobileNavDrawer';
 import { BrandLogo } from './BrandLogo';
 import { AuthModal } from '@/features/dashboard/components/AuthModal';
-import { Sparkles, LayoutDashboard, LogIn, LogOut, Plus } from 'lucide-react';
+import { Sparkles, LayoutDashboard, LogIn, LogOut, Plus, Gift } from 'lucide-react';
 
 import { BrandSocialLinks } from '@/entities/brand/socials';
 
@@ -55,7 +55,7 @@ export function GlobalNavbar({ className = '', socials }: GlobalNavbarProps) {
                 Comunidad & Planes
               </Link>
               <Link href="/dashboard?tab=affiliates" className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
+                <Gift className="w-3.5 h-3.5" />
                 <span>Referidos & Premios</span>
               </Link>
             </>

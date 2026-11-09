@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useSession } from '@/shared/lib/auth-client';
-import { ArrowRight, Sparkles, LayoutDashboard } from 'lucide-react';
+import { ArrowRight, WalletCards, LayoutDashboard } from 'lucide-react';
 
 interface HeroCtaButtonsProps {
   className?: string;
@@ -27,7 +27,7 @@ export function HeroCtaButtons({ className = '' }: HeroCtaButtonsProps) {
           href="/start"
           className="group relative w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-cyan-500 to-teal-400 text-white font-bold text-sm shadow-xl shadow-cyan-500/25 hover:shadow-cyan-400/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 min-h-[48px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
         >
-          <Sparkles className="w-4 h-4 text-cyan-100 group-hover:rotate-12 transition-transform duration-300" />
+          <WalletCards className="w-4 h-4 text-cyan-100 group-hover:scale-110 transition-transform duration-300" />
           <span>Crear Nueva Tarjeta / Hub</span>
           <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1 duration-300" />
         </Link>
