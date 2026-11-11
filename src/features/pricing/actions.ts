@@ -51,26 +51,8 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
       return buildPreviewEntitlement(nowMs, 'anonymous');
     }
 
-    // Auto-healing atómico y persistido para cuentas TRIAL legacy sin trialEndsAt definido
-    let effectiveTrialEndsAt = targetUser.trialEndsAt;
-    if (targetUser.status === 'TRIAL' && !targetUser.trialEndsAt) {
-      const anchoredTrialEndsAt = new Date(resolveLegacyTrialAnchor(nowMs));
-      effectiveTrialEndsAt = anchoredTrialEndsAt;
-      try {
-        await db
-          .update(user)
-          .set({
-            trialEndsAt: anchoredTrialEndsAt,
-            updatedAt: new Date(nowMs),
-          })
-          .where(and(eq(user.id, targetUserId), eq(user.status, 'TRIAL')));
-      } catch (patchErr) {
-        console.error('[Entitlement Auto-Healing] Falló la persistencia de trialEndsAt para usuario:', targetUserId, patchErr);
-      }
-    }
-
     // Resolver tier contratado mediante el historial de pagos
-    let resolvedTier: PlanTier = 'pro';
+    let resolvedTier: PlanTier = 'starter';
     try {
       const latestPayment = await db.query.paymentsHistory.findFirst({
         where: and(eq(paymentsHistory.userId, targetUserId), eq(paymentsHistory.status, 'approved')),
@@ -80,13 +62,13 @@ export async function checkUserEntitlementAction(userId?: string): Promise<UserE
         resolvedTier = latestPayment.planTier as PlanTier;
       }
     } catch {
-      resolvedTier = 'pro';
+      resolvedTier = 'starter';
     }
 
     return resolveEntitlementState(
       {
         status: targetUser.status,
-        trialEndsAt: effectiveTrialEndsAt,
+        trialEndsAt: targetUser.trialEndsAt,
         subscriptionEndsAt: targetUser.subscriptionEndsAt,
         resolvedTier,
       },
