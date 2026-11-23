@@ -4,8 +4,10 @@ import React, { useState, useRef, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DigitalCard, CardData } from '@/entities/card/components/DigitalCard';
 import { upsertCardAction, checkCardSlugAvailabilityAction, SlugAvailabilityResult } from '@/features/card-builder/actions';
+import { getUserSmartCvsAction } from '@/features/ai-smart-cv/actions';
 import { generateBioVariantsAction } from '@/features/card-builder/ai-bio-actions';
 import { getPresignedAvatarUploadUrlAction } from '@/features/card-builder/storage-actions';
+import { WalletPassModal } from '@/features/card-builder/components/WalletPassModal';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
 import { CARD_DESIGN_PRESETS, CardDesignPreset, INDUSTRY_COVERS_GALLERY, OFFICIAL_DEMO_CARD } from '@/entities/card/themes';
 import { slugifyCardName, generateCardSlug, CardBentoBlock } from '@/entities/card/schemas';
@@ -40,7 +42,12 @@ import {
   Plus,
   LayoutGrid,
   TrendingUp,
-  Tag
+  Tag,
+  Wallet,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  Gift,
 } from 'lucide-react';
 
 interface CardBuilderProps {
@@ -69,6 +76,10 @@ export function CardBuilder({
   const [activeTab, setActiveTab] = useState<'profile' | 'contact' | 'social' | 'theme'>('profile');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [showAdvancedTheme, setShowAdvancedTheme] = useState(false);
+  const [isImportingFromCv, setIsImportingFromCv] = useState(false);
+  const [importCvNotice, setImportCvNotice] = useState<string | null>(null);
   const [bioVariants, setBioVariants] = useState<Array<{ tone: string; label: string; bio: string }>>([]);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
@@ -135,9 +146,9 @@ export function CardBuilder({
   const [formData, setFormData] = useState<CardData>({
     slug: initialData?.slug || initialSlug,
     title: resolvedDefaultTitle,
-    profession: initialData?.profession || OFFICIAL_DEMO_CARD.profession,
-    about: initialData?.about ?? OFFICIAL_DEMO_CARD.about,
-    phone: initialData?.phone ?? (isCustomUserWithoutSavedCard ? '' : ''),
+    profession: initialData?.profession ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.profession),
+    about: initialData?.about ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.about),
+    phone: initialData?.phone ?? '',
     whatsapp: initialData?.whatsapp ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.whatsapp),
     emailContact: resolvedDefaultEmail,
     websiteUrl: initialData?.websiteUrl ?? (isCustomUserWithoutSavedCard ? '' : OFFICIAL_DEMO_CARD.websiteUrl),
@@ -302,6 +313,38 @@ export function CardBuilder({
       ...prev,
       bentoBlocks: (prev.bentoBlocks || []).filter((block) => block.id !== id),
     }));
+  };
+
+  // Autocompletar Tarjeta Digital en 1 clic desde el Smart CV más reciente del usuario
+  const handleImportFromSmartCv = async () => {
+    try {
+      setIsImportingFromCv(true);
+      setImportCvNotice(null);
+      const res = await getUserSmartCvsAction();
+      if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
+        setImportCvNotice('Aún no tienes un Smart CV guardado. Crea uno en /cv o completa tus datos aquí.');
+        return;
+      }
+      const latestCv = res.data[0];
+      const content = (latestCv.content || {}) as Record<string, any>;
+      setFormData((prev) => ({
+        ...prev,
+        title: content.fullName || prev.title,
+        profession: latestCv.targetRole || prev.profession,
+        about: (content.summary || '').slice(0, 320) || prev.about,
+        phone: content.phone || prev.phone,
+        whatsapp: content.phone || prev.whatsapp,
+        emailContact: content.email || prev.emailContact,
+        linkedinUrl: content.linkedinUrl || prev.linkedinUrl,
+        websiteUrl: content.websiteUrl || prev.websiteUrl,
+        address: content.location || prev.address,
+      }));
+      setImportCvNotice(`Datos importados desde tu Smart CV "${latestCv.title}". ¡Revisa y guarda!`);
+    } catch {
+      setImportCvNotice('No se pudo conectar con tu Smart CV en este momento.');
+    } finally {
+      setIsImportingFromCv(false);
+    }
   };
 
   // Función auxiliar de extracción cromática adaptativa e inmediata
@@ -691,9 +734,47 @@ export function CardBuilder({
             href="/dashboard?tab=affiliates"
             className="min-h-[44px] inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-300 font-semibold text-xs border border-white/10 transition-colors shrink-0"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Gift className="w-3.5 h-3.5" />
             <span>Desbloquear +1 Tarjeta</span>
           </a>
+        </div>
+      )}
+
+      {/* Panel de Celebración Post-Guardado con Acceso Directo a Google Wallet, QR y Vista en Vivo */}
+      {savedSuccess && formData.slug && (
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-cyan-950/40 to-slate-900 border border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-300 shrink-0">
+              <Check className="w-5 h-5 stroke-[3]" />
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-white">
+                ¡Tarjeta Digital guardada y activa en soyindi.cl/c/{formData.slug}!
+              </p>
+              <p className="text-[11px] text-emerald-200/80">
+                Guárdala ahora en tu Google Wallet para llevarla siempre en tu celular.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsWalletModalOpen(true)}
+              className="min-h-[42px] px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs inline-flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+            >
+              <Wallet className="w-3.5 h-3.5" />
+              <span>Añadir a Google Wallet</span>
+            </button>
+            <a
+              href={`/c/${formData.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-h-[42px] px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs inline-flex items-center gap-1.5 border border-white/10 transition-all"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Ver en Vivo</span>
+            </a>
+          </div>
         </div>
       )}
 
@@ -758,6 +839,29 @@ export function CardBuilder({
           {/* Tab 1: Perfil */}
           {activeTab === 'profile' && (
             <div className="space-y-5 animate-fade-in">
+              {/* Puente 1-Click desde Smart CV */}
+              <div className="p-3.5 rounded-2xl bg-cyan-950/30 border border-cyan-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <FileText className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span className="text-xs text-zinc-200">
+                    ¿Ya creaste tu <strong className="text-white">Smart CV</strong>? Importa tus datos en 1 clic.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleImportFromSmartCv}
+                  disabled={isImportingFromCv}
+                  className="min-h-[38px] px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/30 text-xs font-semibold inline-flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isImportingFromCv ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                  <span>Autocompletar desde mi CV</span>
+                </button>
+              </div>
+              {importCvNotice && (
+                <p className="text-xs text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 rounded-xl px-3.5 py-2">
+                  {importCvNotice}
+                </p>
+              )}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-mono font-semibold uppercase text-zinc-400">
@@ -2032,6 +2136,20 @@ export function CardBuilder({
                 </div>
               </div>
 
+              {/* Acordeón de Ajustes Avanzados de Partículas y Animación */}
+              <div className="pt-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedTheme((prev) => !prev)}
+                  className="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 flex items-center justify-between text-xs font-semibold text-zinc-200 transition-all cursor-pointer"
+                >
+                  <span>Ajustes Avanzados de Partículas y Efectos</span>
+                  {showAdvancedTheme ? <ChevronUp className="w-4 h-4 text-zinc-400" /> : <ChevronDown className="w-4 h-4 text-zinc-400" />}
+                </button>
+              </div>
+
+              {showAdvancedTheme && (
+              <div className="space-y-5 animate-fade-in">
               {/* Comportamiento SmartParticles */}
               <div>
                 <label className="block text-xs font-mono font-semibold uppercase text-zinc-400 mb-3">
@@ -2085,6 +2203,8 @@ export function CardBuilder({
                   })}
                 </div>
               </div>
+              </div>
+              )}
             </div>
           )}
         </div>
@@ -2132,13 +2252,34 @@ export function CardBuilder({
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Wallet className="w-4 h-4" />
                 <span>Guardar Tarjeta</span>
               </>
             )}
           </button>
         </div>
       </div>
+
+      {/* Modal de Google Wallet / Apple Wallet accesible al instante tras guardar */}
+      {formData.slug && (
+        <WalletPassModal
+          isOpen={isWalletModalOpen}
+          onClose={() => setIsWalletModalOpen(false)}
+          initialTab="google"
+          card={{
+            slug: formData.slug,
+            title: formData.title,
+            profession: formData.profession,
+            about: formData.about,
+            photoUrl: formData.photoUrl,
+            phone: formData.phone,
+            whatsapp: formData.whatsapp,
+            emailContact: formData.emailContact,
+            websiteUrl: formData.websiteUrl,
+            address: formData.address,
+          }}
+        />
+      )}
     </div>
   );
 }
