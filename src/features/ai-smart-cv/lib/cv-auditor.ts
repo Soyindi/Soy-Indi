@@ -263,12 +263,53 @@ export function auditAndRepairCvExtraction(
     };
   });
 
+  // 4. Cross-Section Sanitizer: Evitar que capacitaciones, cursos o rangos laborales contaminen Referencias
+  const trainingKeywordsRegex = /\b(?:curso|taller|diplomado|seminario|capacitaci[oó]n|post[ií]tulo|mag[ií]ster|licenciatura|certificaci[oó]n|sence|adipa|coursera|udemy|\d+\s*horas?)\b/i;
+  const dateRangeRegex = /\b(?:19|20)\d{2}\s*[-–—]\s*(?:(?:19|20)\d{2}|presente|actual)\b/i;
+  const actionVerbOpenerRegex = /^(?:lider[ée]|desarroll[ée]|diseñ[ée]|implement[ée]|coordin[ée]|gestion[ée]|optimic[ée]|responsable\s+de)\b/i;
+
+  const cleanReferences: MultimodalCvExtraction['references'] = [];
+  for (const ref of extraction.references || []) {
+    const name = (ref.name || '').trim();
+    const role = (ref.role || '').trim();
+    const combined = `${name} ${role}`;
+
+    // Si es un curso o capacitación colado en Referencias -> reubicar a Educación
+    if (trainingKeywordsRegex.test(name) || trainingKeywordsRegex.test(role)) {
+      const normName = name.toLowerCase().slice(0, 22);
+      const existsInEdu = auditedEducation.some((e) => e.degree.toLowerCase().includes(normName));
+      if (!existsInEdu && name.length >= 5) {
+        const yearMatch = `${ref.company || ''} ${role} ${name}`.match(/\b((?:19|20)\d{2}(?:\s*[-–—]\s*(?:19|20)\d{2})?)\b/);
+        auditedEducation.push({
+          degree: name,
+          institution: ref.company && !/^(?:19|20)\d{2}$/.test(ref.company.trim()) ? ref.company : 'Centro de Formación Profesional',
+          year: yearMatch ? yearMatch[1] : '',
+        });
+      }
+      continue;
+    }
+
+    // Descartar rangos de años laborales o viñetas de experiencia coladas como nombre de referencia
+    if (dateRangeRegex.test(name) || actionVerbOpenerRegex.test(name) || /\d{4}/.test(name)) {
+      continue;
+    }
+
+    // Validar que el nombre parezca un nombre humano (no un párrafo ni una palabra suelta inválida)
+    const wordCount = name.split(/\s+/).filter(Boolean).length;
+    if (name.length < 4 || name.length > 65 || wordCount > 7) {
+      continue;
+    }
+
+    cleanReferences.push(ref);
+  }
+
   return {
     auditedExtraction: {
       ...extraction,
       summary: cleanSummary,
       experience: auditedExperience,
       education: auditedEducation,
+      references: cleanReferences,
     },
     repairedBulletsCount,
   };

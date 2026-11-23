@@ -14,6 +14,8 @@ import {
 } from '@/entities/cv/schemas';
 import { telemetryViewSchema } from '@/entities/telemetry/schemas';
 import { buildCvPdfDocument } from '@/features/ai-smart-cv/lib/pdf-engine';
+import { parseCvTextToStructuredData } from '@/features/ai-smart-cv/lib/cv-text-parser';
+import { auditAndRepairCvExtraction } from '@/features/ai-smart-cv/lib/cv-auditor';
 
 describe('Smart CV 2.0 — Career Copilot, Bilingual ATS, Sync & Telemetry', () => {
   const sampleCvContent = cvContentSchema.parse({
@@ -159,5 +161,35 @@ describe('Smart CV 2.0 — Career Copilot, Bilingual ATS, Sync & Telemetry', () 
     if (parsed.success) {
       expect(parsed.data.eventType).toBe('pdf_download');
     }
+  });
+
+  it('Anti-Contaminación: evita que cursos/capacitaciones o rangos laborales contaminen Referencias y los reubica en Educación', () => {
+    const messyCvText = `
+JUAN PÉREZ SOTO
+Ingeniero Comercial
+juan.perez@mail.cl · +56 9 8765 4321
+
+REFERENCIAS LABORALES
+Dra. Marisol Cárcamo — Jefa de Área — Hospital Clínico — +56 9 8226 8970
+Diplomado en Gestión de Proyectos · Universidad Católica · 2024
+Curso de Power BI Avanzado · 40 horas · 2023
+Jefe de Operaciones — Empresa Andina (2020 - 2023)
+`;
+
+    const parsed = parseCvTextToStructuredData(messyCvText, 'cv-juan.pdf');
+    const { auditedExtraction } = auditAndRepairCvExtraction(parsed);
+
+    // Solo debe conservar a la persona real en Referencias
+    expect(auditedExtraction.references.length).toBe(1);
+    expect(auditedExtraction.references[0].name).toContain('Marisol');
+
+    // Los cursos/diplomados deben haberse reubicado a Educación y nunca quedar en Referencias
+    const refNames = auditedExtraction.references.map((r) => r.name.toLowerCase()).join(' ');
+    expect(refNames).not.toContain('diplomado');
+    expect(refNames).not.toContain('curso');
+    expect(refNames).not.toContain('2020');
+
+    const eduDegrees = auditedExtraction.education.map((e) => e.degree.toLowerCase()).join(' ');
+    expect(eduDegrees).toContain('diplomado');
   });
 });

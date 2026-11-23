@@ -162,8 +162,10 @@ export function parseCvTextToStructuredData(
 
   const isSectionHeader = (line: string): { isHeader: boolean; type: SectionType } => {
     const lower = line.toLowerCase().replace(/[:\-#*]/g, '').trim();
+    const isAllCapsHeader = line.trim() === line.trim().toUpperCase() && /[A-ZÁÉÍÓÚÑ]{4,}/.test(line) && !/[·•|]/.test(line);
+    const maxLen = isAllCapsHeader ? 80 : 50;
     if (
-      lower.length > 50 ||
+      lower.length > maxLen ||
       (/\b(?:19|20)\d{2}\b/.test(lower) && !lower.includes('proyectos de desarrollo')) ||
       /\b(?:ministerio\s+de|centro\s+de\s+estudios|universidad\s+de|hospital|servicio\s+de\s+salud|superintendencia|subsecretar[íi]a|escuela\s+|complejo\s+)\b/i.test(
         lower
@@ -216,6 +218,8 @@ export function parseCvTextToStructuredData(
       lower.includes('estudios') ||
       lower.includes('education') ||
       lower.includes('antecedentes académicos') ||
+      lower.includes('antecedentes academicos') ||
+      lower.includes('perfeccionamiento') ||
       lower.includes('registros profesionales') ||
       lower.includes('registro profesional') ||
       lower.includes('cursos') ||
@@ -1286,10 +1290,32 @@ export function parseCvTextToStructuredData(
       cleanLine.includes('______') ||
       (fullName && cleanLine.toLowerCase().includes(fullName.toLowerCase()) && (cleanLine.includes('RUT') || cleanLine.includes('18.'))) ||
       cleanLine.toLowerCase().startsWith('certificado') ||
-      cleanLine.toLowerCase().startsWith('diploma') ||
+      (cleanLine.toLowerCase().startsWith('diploma') && !cleanLine.toLowerCase().startsWith('diplomado')) ||
       cleanLine.toLowerCase().startsWith('constancia')
     ) {
       break; // DETENER: Todo lo posterior son anexos o certificados adjuntos
+    }
+
+    // Guardrail anti-mezcla: si aparece un curso/diplomado/taller o un rango de fechas laborales dentro del bloque de referencias,
+    // no contaminar references (los cursos se reubican en education)
+    if (
+      /\b(?:curso|taller|diplomado|seminario|post[ií]tulo|mag[ií]ster|licenciatura|certificaci[oó]n|\d+\s*horas?)\b/i.test(cleanLine) ||
+      /\b(?:19|20)\d{2}\s*[-–—]\s*(?:(?:19|20)\d{2}|presente|actual)\b/i.test(cleanLine)
+    ) {
+      if (/\b(?:curso|taller|diplomado|seminario|post[ií]tulo|mag[ií]ster|licenciatura|certificaci[oó]n)\b/i.test(cleanLine)) {
+        const yearMatch = cleanLine.match(/\b((?:19|20)\d{2}(?:\s*[-–—]\s*(?:19|20)\d{2})?)\b/);
+        const alreadyInEdu = education.some((e) =>
+          e.degree.toLowerCase().includes(cleanLine.toLowerCase().slice(0, 20))
+        );
+        if (!alreadyInEdu) {
+          education.push({
+            degree: cleanLine.replace(/\b(?:19|20)\d{2}.*$/, '').replace(/[·•|–—-]\s*$/, '').trim(),
+            institution: 'Centro de Formación Profesional',
+            year: yearMatch ? yearMatch[1] : '',
+          });
+        }
+      }
+      continue;
     }
 
     if (isCertificateOrNoise(cleanLine)) continue;

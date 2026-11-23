@@ -96,6 +96,7 @@ export function SmartCvBuilder({
   const [isTranslating, startTranslateTransition] = useTransition();
   const [isSyncingCard, startSyncCardTransition] = useTransition();
   const [copilotNotice, setCopilotNotice] = useState<string | null>(null);
+  const [activeEditorTab, setActiveEditorTab] = useState<'profile' | 'experience' | 'design' | 'apply'>('profile');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState(false);
@@ -651,15 +652,15 @@ export function SmartCvBuilder({
             <span>Importar</span>
           </button>
 
-          {/* Botón Job Match AI (Comparar Oferta Laboral) */}
+          {/* Botón Job Match AI (Adaptar CV a Oferta) */}
           <button
             type="button"
-            onClick={() => setIsJobMatchModalOpen(true)}
-            className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-semibold shadow-sm transition-all cursor-pointer active:scale-95"
-            title="Compara tu currículum contra una oferta laboral real y detecta brechas ATS"
+            onClick={() => setActiveEditorTab('apply')}
+            className="inline-flex items-center gap-2 min-h-[44px] px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 hover:from-cyan-500/30 hover:to-emerald-500/30 border border-cyan-500/40 text-cyan-200 text-xs font-semibold shadow-sm transition-all cursor-pointer active:scale-95"
+            title="Adapta tu CV a una oferta laboral, genera tu Pitch y traduce a Inglés"
           >
             <Target className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">Comparar Oferta</span>
+            <span>Postular con IA</span>
           </button>
         </div>
 
@@ -967,131 +968,59 @@ export function SmartCvBuilder({
         currentFullName={formData.content.fullName}
       />
 
-      {/* Barra Inteligente Smart CV 2.0: Bilingüe · Pitch · Puente Tarjeta Digital · Sello QR */}
-      <div className="mt-4 p-3 sm:p-3.5 rounded-2xl bg-slate-900/70 border border-white/10 flex flex-wrap items-center justify-between gap-2.5">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* 1. Switch Bilingüe ES ⇄ EN */}
-          <button
-            type="button"
-            disabled={isTranslating}
-            onClick={() => {
-              const nextLang: 'es' | 'en' = formData.content.language === 'en' ? 'es' : 'en';
-              setCopilotNotice(null);
-              startTranslateTransition(async () => {
-                const res = await translateSmartCvAction({
-                  cvContent: formData.content,
-                  targetRole: formData.targetRole,
-                  targetLanguage: nextLang,
-                });
-                if (res.success && res.data) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    targetRole: res.data!.targetRole,
-                    content: {
-                      ...prev.content,
-                      language: res.data!.language,
-                      summary: res.data!.summary,
-                      skills: res.data!.skills,
-                      experience: res.data!.experience,
-                      education: res.data!.education,
-                    },
-                  }));
-                  setCopilotNotice(
-                    nextLang === 'en'
-                      ? 'CV traducido a English ATS (Executive Standard).'
-                      : 'CV restaurado a Español Ejecutivo.'
-                  );
-                } else {
-                  setCopilotNotice(res.error || 'No se pudo traducir el CV.');
-                }
-              });
-            }}
-            className="min-h-[40px] px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-200 border border-indigo-500/30 text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-          >
-            {isTranslating ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Languages className="w-3.5 h-3.5 text-indigo-300" />
-            )}
-            <span>
-              {formData.content.language === 'en' ? 'Switch a Español (ES)' : 'Traducir a Inglés (EN)'}
-            </span>
-          </button>
+      {/* Navegación Guiada del Editor en 4 Pasos Limpios */}
+      <div className="mt-4 p-1.5 rounded-2xl bg-slate-900/80 border border-white/10 grid grid-cols-2 lg:grid-cols-4 gap-1.5">
+        <button
+          type="button"
+          onClick={() => setActiveEditorTab('profile')}
+          className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeEditorTab === 'profile'
+              ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-500/40 shadow-sm'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+          }`}
+        >
+          <span className="w-5 h-5 rounded-full bg-white/10 text-[10px] font-mono flex items-center justify-center">1</span>
+          <span>Perfil & Datos</span>
+        </button>
 
-          {/* 2. Pitch & Carta de Postulación */}
-          <button
-            type="button"
-            onClick={() => setIsPitchModalOpen(true)}
-            className="min-h-[40px] px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-200 border border-emerald-500/30 text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer"
-          >
-            <Send className="w-3.5 h-3.5 text-emerald-300" />
-            <span>Pitch & Carta de Postulación</span>
-          </button>
+        <button
+          type="button"
+          onClick={() => setActiveEditorTab('experience')}
+          className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeEditorTab === 'experience'
+              ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-500/40 shadow-sm'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+          }`}
+        >
+          <span className="w-5 h-5 rounded-full bg-white/10 text-[10px] font-mono flex items-center justify-center">2</span>
+          <span>Experiencia & Educación</span>
+        </button>
 
-          {/* 3. Sincronización 1-Click con Tarjeta Digital */}
-          <button
-            type="button"
-            disabled={isSyncingCard}
-            onClick={() => {
-              setCopilotNotice(null);
-              startSyncCardTransition(async () => {
-                const res = await syncCvWithDigitalCardAction({ direction: 'CARD_TO_CV' });
-                if (res.success && res.contentPatch) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    targetRole: res.targetRole || prev.targetRole,
-                    content: {
-                      ...prev.content,
-                      ...res.contentPatch,
-                      summary: prev.content.summary || res.contentPatch?.summary || '',
-                    },
-                  }));
-                  setCopilotNotice(`Datos sincronizados desde tu Tarjeta Digital (/c/${res.cardSlug}).`);
-                } else {
-                  const exportRes = await syncCvWithDigitalCardAction({
-                    direction: 'CV_TO_CARD',
-                    cvData: formData,
-                  });
-                  if (exportRes.success && exportRes.cardSlug) {
-                    handleContentChange('indiCardSlug', exportRes.cardSlug);
-                    setCopilotNotice(`¡Tarjeta Digital creada y vinculada en /c/${exportRes.cardSlug}!`);
-                  } else {
-                    setCopilotNotice(exportRes.error || res.error || 'No se pudo sincronizar.');
-                  }
-                }
-              });
-            }}
-            className="min-h-[40px] px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-200 border border-cyan-500/30 text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-          >
-            {isSyncingCard ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <WalletCards className="w-3.5 h-3.5 text-cyan-300" />
-            )}
-            <span>Sincronizar Tarjeta Digital</span>
-          </button>
+        <button
+          type="button"
+          onClick={() => setActiveEditorTab('design')}
+          className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeEditorTab === 'design'
+              ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-500/40 shadow-sm'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
+          }`}
+        >
+          <span className="w-5 h-5 rounded-full bg-white/10 text-[10px] font-mono flex items-center justify-center">3</span>
+          <span>Firma, QR & Enlace</span>
+        </button>
 
-          {/* 4. Toggle Sello QR Verificado en Hoja A4 / PDF */}
-          <button
-            type="button"
-            onClick={() => handleContentChange('showQrOnPdf', formData.content.showQrOnPdf === false)}
-            className={`min-h-[40px] px-3 py-1.5 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
-              formData.content.showQrOnPdf !== false
-                ? 'bg-white/10 text-white border-white/20'
-                : 'bg-white/5 text-zinc-400 border-white/10'
-            }`}
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>QR en A4/PDF: {formData.content.showQrOnPdf !== false ? 'Activo' : 'Oculto'}</span>
-          </button>
-        </div>
-
-        {/* Telemetría rápida del candidato */}
-        {(formData.content.telemetryStats?.pdfDownloads ?? 0) > 0 && (
-          <span className="text-[11px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 rounded-full">
-            {formData.content.telemetryStats?.pdfDownloads} descargas PDF por reclutadores
-          </span>
-        )}
+        <button
+          type="button"
+          onClick={() => setActiveEditorTab('apply')}
+          className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeEditorTab === 'apply'
+              ? 'bg-gradient-to-r from-emerald-500/25 to-cyan-500/25 text-emerald-200 border border-emerald-400/40 shadow-sm'
+              : 'text-emerald-300/80 hover:text-emerald-200 hover:bg-emerald-500/10 border border-transparent'
+          }`}
+        >
+          <Target className="w-3.5 h-3.5" />
+          <span>4. Postular con IA</span>
+        </button>
       </div>
 
       {copilotNotice && (
@@ -1151,7 +1080,140 @@ export function SmartCvBuilder({
         {/* Columna Formulario */}
         {(viewMode === 'split' || viewMode === 'edit') && (
           <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'w-full'} space-y-6`}>
-            {/* Banner de Ingesta Rápida (1 Clic) */}
+            {/* ==================== PESTAÑA 4: CENTRO DE POSTULACIÓN CON IA ==================== */}
+            {activeEditorTab === 'apply' && (
+              <div className="space-y-4 animate-fade-in">
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-cyan-950/30 to-slate-900 border border-emerald-500/30 space-y-4">
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-300 font-bold">
+                      Centro de Empleabilidad Inteligente
+                    </span>
+                    <h3 className="text-lg font-bold text-white mt-0.5">
+                      Prepara tu postulación ganadora en minutos
+                    </h3>
+                    <p className="text-xs text-zinc-300 mt-1">
+                      Adapta tu CV a la vacante exacta, redacta tu mensaje para el reclutador y traduce a inglés corporativo sin salir del editor.
+                    </p>
+                  </div>
+
+                  {/* Tarjeta 1: Tailor to Job en 1 Clic */}
+                  <div className="p-4 rounded-2xl bg-black/40 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-300 shrink-0">
+                        <Target className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white">
+                          1. Adaptar mi CV a una Oferta Laboral (Tailor to Job)
+                        </h4>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">
+                          Pega un aviso de Buk, Laborum o LinkedIn. La IA detecta palabras clave faltantes y adapta tu resumen y logros en 1 clic sin inventar datos.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsJobMatchModalOpen(true)}
+                      className="min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shrink-0 cursor-pointer transition-all"
+                    >
+                      Comparar y Adaptar CV
+                    </button>
+                  </div>
+
+                  {/* Tarjeta 2: Pitch & Carta Multicanal */}
+                  <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-300 shrink-0">
+                        <Send className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white">
+                          2. Pitch de Postulación (LinkedIn · WhatsApp · Correo)
+                        </h4>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">
+                          Genera el mensaje exacto para enviar al reclutador con tu mejor logro cuantitativo y tu link público de INDI.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsPitchModalOpen(true)}
+                      className="min-h-[44px] px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs shadow-lg shrink-0 cursor-pointer transition-all"
+                    >
+                      Generar Mensajes
+                    </button>
+                  </div>
+
+                  {/* Tarjeta 3: Switch Bilingüe ES ⇄ EN */}
+                  <div className="p-4 rounded-2xl bg-black/40 border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-300 shrink-0">
+                        <Languages className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white">
+                          3. Versión Bilingüe ATS ({formData.content.language === 'en' ? 'Actual: Inglés 🇺🇸' : 'Actual: Español 🇨🇱'})
+                        </h4>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">
+                          Traduce todo tu currículum y los encabezados del PDF A4 al inglés ejecutivo estándar de multinacionales en 1 clic.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isTranslating}
+                      onClick={() => {
+                        const nextLang: 'es' | 'en' = formData.content.language === 'en' ? 'es' : 'en';
+                        setCopilotNotice(null);
+                        startTranslateTransition(async () => {
+                          const res = await translateSmartCvAction({
+                            cvContent: formData.content,
+                            targetRole: formData.targetRole,
+                            targetLanguage: nextLang,
+                          });
+                          if (res.success && res.data) {
+                            setFormData((prev) => ({
+                              ...prev,
+                              targetRole: res.data!.targetRole,
+                              content: {
+                                ...prev.content,
+                                language: res.data!.language,
+                                summary: res.data!.summary,
+                                skills: res.data!.skills,
+                                experience: res.data!.experience,
+                                education: res.data!.education,
+                              },
+                            }));
+                            setCopilotNotice(
+                              nextLang === 'en'
+                                ? 'CV traducido a English ATS (Executive Standard).'
+                                : 'CV restaurado a Español Ejecutivo.'
+                            );
+                          } else {
+                            setCopilotNotice(res.error || 'No se pudo traducir el CV.');
+                          }
+                        });
+                      }}
+                      className="min-h-[44px] px-4 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 font-bold text-xs shrink-0 cursor-pointer transition-all disabled:opacity-50 inline-flex items-center gap-2"
+                    >
+                      {isTranslating && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      <span>{formData.content.language === 'en' ? 'Cambiar a Español' : 'Traducir a Inglés'}</span>
+                    </button>
+                  </div>
+
+                  {/* Tarjeta 4: Telemetría del Candidato */}
+                  <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-xs">
+                    <span className="text-zinc-300 font-medium">Actividad de reclutadores en tu CV público:</span>
+                    <span className="font-mono font-bold text-emerald-300">
+                      {formData.content.telemetryStats?.pdfDownloads ?? 0} descargas PDF registradas
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Banner de Ingesta Rápida + Sincronización Tarjeta Digital (Solo en Pestaña 1) */}
+            {activeEditorTab === 'profile' && (
             <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-blue-950/20 to-slate-900/60 border border-cyan-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
               <div className="flex items-start sm:items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
@@ -1159,24 +1221,87 @@ export function SmartCvBuilder({
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-white tracking-wide">
-                    ¿Ya tienes un CV en PDF o imagen?
+                    Inicio Rápido: Importa tu CV o tu Tarjeta Digital
                   </h4>
                   <p className="text-[11px] text-slate-300">
-                    Importa tu documento para auto-completar todos los campos con IA y redacción STAR en segundos.
+                    Autocompleta todos los campos en segundos sin escribir desde cero.
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsImportModalOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md transition-all active:scale-95 shrink-0 min-h-[40px]"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Importar CV</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-semibold shadow-md transition-all active:scale-95 min-h-[40px] cursor-pointer"
+                >
+                  <UploadCloud className="w-3.5 h-3.5" />
+                  <span>Subir PDF / Word</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={isSyncingCard}
+                  onClick={() => {
+                    setCopilotNotice(null);
+                    startSyncCardTransition(async () => {
+                      const res = await syncCvWithDigitalCardAction({ direction: 'CARD_TO_CV' });
+                      if (res.success && res.contentPatch) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          targetRole: res.targetRole || prev.targetRole,
+                          content: {
+                            ...prev.content,
+                            ...res.contentPatch,
+                            summary: prev.content.summary || res.contentPatch?.summary || '',
+                          },
+                        }));
+                        setCopilotNotice(`Datos importados desde tu Tarjeta Digital (/c/${res.cardSlug}).`);
+                      } else {
+                        const exportRes = await syncCvWithDigitalCardAction({
+                          direction: 'CV_TO_CARD',
+                          cvData: formData,
+                        });
+                        if (exportRes.success && exportRes.cardSlug) {
+                          handleContentChange('indiCardSlug', exportRes.cardSlug);
+                          setCopilotNotice(`¡Tarjeta Digital creada y vinculada en /c/${exportRes.cardSlug}!`);
+                        } else {
+                          setCopilotNotice(exportRes.error || res.error || 'No se pudo sincronizar.');
+                        }
+                      }
+                    });
+                  }}
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-cyan-200 border border-cyan-500/30 text-xs font-semibold transition-all min-h-[40px] cursor-pointer disabled:opacity-50"
+                >
+                  {isSyncingCard ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <WalletCards className="w-3.5 h-3.5" />}
+                  <span>Sincronizar Tarjeta</span>
+                </button>
+              </div>
             </div>
+            )}
 
-            {/* Sección: Enlace Digital & Visibilidad */}
+            {/* Sección: Enlace Digital, QR & Visibilidad (Pestaña 3: Diseño, Firma & Enlace) */}
+            <div className={activeEditorTab === 'design' ? 'space-y-4' : 'hidden'}>
+              <div className="p-4 rounded-2xl bg-slate-900/50 border border-white/10 flex items-center justify-between gap-3">
+                <div>
+                  <span className="text-xs font-bold text-white flex items-center gap-2">
+                    <QrCode className="w-4 h-4 text-cyan-400" />
+                    Sello QR Verificado en Hoja A4 y PDF
+                  </span>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                    Imprime un código QR escaneable en la esquina inferior que lleva directo a tu CV interactivo en vivo.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleContentChange('showQrOnPdf', formData.content.showQrOnPdf === false)}
+                  className={`min-h-[40px] px-3.5 py-1.5 rounded-xl border text-xs font-bold shrink-0 transition-all cursor-pointer ${
+                    formData.content.showQrOnPdf !== false
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      : 'bg-white/5 text-zinc-400 border-white/10'
+                  }`}
+                >
+                  {formData.content.showQrOnPdf !== false ? 'QR Activo' : 'QR Oculto'}
+                </button>
+              </div>
             <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-white/5">
                 <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
@@ -1364,9 +1489,10 @@ export function SmartCvBuilder({
                 )}
               </div>
             </div>
+            </div>
 
-            {/* Sección: Identidad Profesional */}
-            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+            {/* Sección: Identidad Profesional (Pestaña 1: Perfil & Datos) */}
+            <div className={activeEditorTab === 'profile' ? 'p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4' : 'hidden'}>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                   Identidad Profesional
@@ -1519,8 +1645,8 @@ export function SmartCvBuilder({
               </div>
             </div>
 
-            {/* Sección: Habilidades */}
-            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-3">
+            {/* Sección: Habilidades (Pestaña 2: Experiencia & Educación) */}
+            <div className={activeEditorTab === 'experience' ? 'p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-3' : 'hidden'}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
@@ -1591,8 +1717,8 @@ export function SmartCvBuilder({
               )}
             </div>
 
-            {/* Sección: Experiencia Laboral con Inline AI Writer */}
-            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-5">
+            {/* Sección: Experiencia Laboral con Inline AI Writer (Pestaña 2) */}
+            <div className={activeEditorTab === 'experience' ? 'p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-5' : 'hidden'}>
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
@@ -1829,8 +1955,8 @@ export function SmartCvBuilder({
               </div>
             </div>
 
-            {/* Sección: Educación y Firma */}
-            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+            {/* Sección: Educación y Firma (Pestaña 2: Educación · Pestaña 3: Firma) */}
+            <div className={activeEditorTab === 'experience' || activeEditorTab === 'design' ? 'p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4' : 'hidden'}>
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -1948,8 +2074,8 @@ export function SmartCvBuilder({
               </div>
             </div>
 
-            {/* Sección: Referencias Laborales */}
-            <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+            {/* Sección: Referencias Laborales (Pestaña 2) */}
+            <div className={activeEditorTab === 'experience' ? 'p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4' : 'hidden'}>
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
