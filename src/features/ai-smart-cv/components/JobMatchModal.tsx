@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { CVContent, JobMatchAnalysisResult } from '@/entities/cv/schemas';
-import { analyzeJobMatchAction } from '@/features/ai-smart-cv/actions';
+import { CVContent, JobMatchAnalysisResult, TailoredCvResult } from '@/entities/cv/schemas';
+import { analyzeJobMatchAction, tailorCvToJobAction } from '@/features/ai-smart-cv/actions';
 import { 
   Target, 
   Sparkles, 
@@ -23,6 +23,7 @@ interface JobMatchModalProps {
   cvContent: CVContent;
   targetRole?: string;
   onApplyKeywordToSkills?: (keyword: string) => void;
+  onApplyTailoredCv?: (tailored: TailoredCvResult) => void;
 }
 
 export function JobMatchModal({
@@ -31,10 +32,13 @@ export function JobMatchModal({
   cvContent,
   targetRole,
   onApplyKeywordToSkills,
+  onApplyTailoredCv,
 }: JobMatchModalProps) {
   const [jobText, setJobText] = useState('');
   const [isPending, startTransition] = useTransition();
+  const [isTailoring, startTailorTransition] = useTransition();
   const [result, setResult] = useState<JobMatchAnalysisResult | null>(null);
+  const [tailoredApplied, setTailoredApplied] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [addedKeywords, setAddedKeywords] = useState<Set<string>>(new Set());
 
@@ -67,6 +71,24 @@ export function JobMatchModal({
       onApplyKeywordToSkills(kw);
       setAddedKeywords((prev) => new Set(prev).add(kw));
     }
+  };
+
+  const handleTailorOneClick = () => {
+    if (!jobText.trim() || !onApplyTailoredCv) return;
+    setErrorMsg(null);
+    startTailorTransition(async () => {
+      const res = await tailorCvToJobAction({
+        jobDescriptionText: jobText,
+        targetRole,
+        cvContent,
+      });
+      if (res.success && res.data) {
+        onApplyTailoredCv(res.data);
+        setTailoredApplied(true);
+      } else {
+        setErrorMsg(res.error || 'No se pudo adaptar el CV automáticamente.');
+      }
+    });
   };
 
   return (
@@ -254,6 +276,43 @@ export function JobMatchModal({
                   {result.tailoredSummaryAdvice}
                 </p>
               </div>
+
+              {/* Botón Tailor to Job en 1 Clic */}
+              {onApplyTailoredCv && (
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-500/15 via-cyan-500/15 to-emerald-500/15 border border-cyan-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="text-xs font-bold text-white block">
+                      Adaptación Automática a esta Oferta (Zero Hallucination)
+                    </span>
+                    <p className="text-[11px] text-zinc-300 mt-0.5">
+                      Optimiza tu resumen, prioriza logros con métricas y suma las keywords clave en 1 clic.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleTailorOneClick}
+                    disabled={isTailoring || tailoredApplied}
+                    className="min-h-[44px] px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-zinc-950 font-bold text-xs shadow-lg flex items-center gap-2 shrink-0 cursor-pointer transition-all disabled:opacity-60"
+                  >
+                    {isTailoring ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Adaptando CV...</span>
+                      </>
+                    ) : tailoredApplied ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>¡CV Adaptado!</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileCheck className="w-4 h-4" />
+                        <span>Adaptar mi CV en 1 Clic</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

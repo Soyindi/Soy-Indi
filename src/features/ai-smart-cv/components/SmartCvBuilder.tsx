@@ -6,6 +6,7 @@ import {
   CVFormValues,
   AtsAuditResult,
   VerifiedCredential,
+  TailoredCvResult,
   generateCvSlug,
   slugifyCvTitle,
 } from '@/entities/cv/schemas';
@@ -14,7 +15,9 @@ import {
   upsertSmartCvAction, 
   checkCvSlugAvailabilityAction,
   CvSlugAvailabilityResult,
-  getSkillRecommendationsAction
+  getSkillRecommendationsAction,
+  translateSmartCvAction,
+  syncCvWithDigitalCardAction,
 } from '@/features/ai-smart-cv/actions';
 import { CvDocumentPreview } from '@/features/ai-smart-cv/components/CvDocumentPreview';
 import { CvTemplateSelector } from '@/features/ai-smart-cv/components/CvTemplateSelector';
@@ -22,6 +25,7 @@ import { ImportDocumentModal } from '@/features/ai-smart-cv/components/ImportDoc
 import { SignatureModal } from '@/features/ai-smart-cv/components/SignatureModal';
 import { InlineAiWriter } from '@/features/ai-smart-cv/components/InlineAiWriter';
 import { JobMatchModal } from '@/features/ai-smart-cv/components/JobMatchModal';
+import { ApplicationPitchModal } from '@/features/ai-smart-cv/components/ApplicationPitchModal';
 import { generateAndDownloadCvPdf } from '@/features/ai-smart-cv/lib/pdf-engine';
 import { hasQuantitativeMetric } from '@/features/ai-smart-cv/lib/cv-matching-engine';
 import { AppEditorHeader } from '@/shared/ui/AppEditorHeader';
@@ -52,7 +56,11 @@ import {
   AlertTriangle,
   AlertCircle,
   ArrowRight,
-  Target
+  Target,
+  Send,
+  Languages,
+  WalletCards,
+  QrCode,
 } from 'lucide-react';
 
 export interface SmartCvBuilderProps {
@@ -84,6 +92,10 @@ export function SmartCvBuilder({
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [isJobMatchModalOpen, setIsJobMatchModalOpen] = useState(false);
+  const [isPitchModalOpen, setIsPitchModalOpen] = useState(false);
+  const [isTranslating, startTranslateTransition] = useTransition();
+  const [isSyncingCard, startSyncCardTransition] = useTransition();
+  const [copilotNotice, setCopilotNotice] = useState<string | null>(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState(false);
@@ -955,7 +967,147 @@ export function SmartCvBuilder({
         currentFullName={formData.content.fullName}
       />
 
-      {/* Modal de Matching contra Oferta Laboral (Job Match AI) */}
+      {/* Barra Inteligente Smart CV 2.0: Bilingüe · Pitch · Puente Tarjeta Digital · Sello QR */}
+      <div className="mt-4 p-3 sm:p-3.5 rounded-2xl bg-slate-900/70 border border-white/10 flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* 1. Switch Bilingüe ES ⇄ EN */}
+          <button
+            type="button"
+            disabled={isTranslating}
+            onClick={() => {
+              const nextLang: 'es' | 'en' = formData.content.language === 'en' ? 'es' : 'en';
+              setCopilotNotice(null);
+              startTranslateTransition(async () => {
+                const res = await translateSmartCvAction({
+                  cvContent: formData.content,
+                  targetRole: formData.targetRole,
+                  targetLanguage: nextLang,
+                });
+                if (res.success && res.data) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    targetRole: res.data!.targetRole,
+                    content: {
+                      ...prev.content,
+                      language: res.data!.language,
+                      summary: res.data!.summary,
+                      skills: res.data!.skills,
+                      experience: res.data!.experience,
+                      education: res.data!.education,
+                    },
+                  }));
+                  setCopilotNotice(
+                    nextLang === 'en'
+                      ? 'CV traducido a English ATS (Executive Standard).'
+                      : 'CV restaurado a Español Ejecutivo.'
+                  );
+                } else {
+                  setCopilotNotice(res.error || 'No se pudo traducir el CV.');
+                }
+              });
+            }}
+            className="min-h-[40px] px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-200 border border-indigo-500/30 text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+          >
+            {isTranslating ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Languages className="w-3.5 h-3.5 text-indigo-300" />
+            )}
+            <span>
+              {formData.content.language === 'en' ? 'Switch a Español (ES)' : 'Traducir a Inglés (EN)'}
+            </span>
+          </button>
+
+          {/* 2. Pitch & Carta de Postulación */}
+          <button
+            type="button"
+            onClick={() => setIsPitchModalOpen(true)}
+            className="min-h-[40px] px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-200 border border-emerald-500/30 text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer"
+          >
+            <Send className="w-3.5 h-3.5 text-emerald-300" />
+            <span>Pitch & Carta de Postulación</span>
+          </button>
+
+          {/* 3. Sincronización 1-Click con Tarjeta Digital */}
+          <button
+            type="button"
+            disabled={isSyncingCard}
+            onClick={() => {
+              setCopilotNotice(null);
+              startSyncCardTransition(async () => {
+                const res = await syncCvWithDigitalCardAction({ direction: 'CARD_TO_CV' });
+                if (res.success && res.contentPatch) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    targetRole: res.targetRole || prev.targetRole,
+                    content: {
+                      ...prev.content,
+                      ...res.contentPatch,
+                      summary: prev.content.summary || res.contentPatch?.summary || '',
+                    },
+                  }));
+                  setCopilotNotice(`Datos sincronizados desde tu Tarjeta Digital (/c/${res.cardSlug}).`);
+                } else {
+                  const exportRes = await syncCvWithDigitalCardAction({
+                    direction: 'CV_TO_CARD',
+                    cvData: formData,
+                  });
+                  if (exportRes.success && exportRes.cardSlug) {
+                    handleContentChange('indiCardSlug', exportRes.cardSlug);
+                    setCopilotNotice(`¡Tarjeta Digital creada y vinculada en /c/${exportRes.cardSlug}!`);
+                  } else {
+                    setCopilotNotice(exportRes.error || res.error || 'No se pudo sincronizar.');
+                  }
+                }
+              });
+            }}
+            className="min-h-[40px] px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-200 border border-cyan-500/30 text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+          >
+            {isSyncingCard ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <WalletCards className="w-3.5 h-3.5 text-cyan-300" />
+            )}
+            <span>Sincronizar Tarjeta Digital</span>
+          </button>
+
+          {/* 4. Toggle Sello QR Verificado en Hoja A4 / PDF */}
+          <button
+            type="button"
+            onClick={() => handleContentChange('showQrOnPdf', formData.content.showQrOnPdf === false)}
+            className={`min-h-[40px] px-3 py-1.5 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
+              formData.content.showQrOnPdf !== false
+                ? 'bg-white/10 text-white border-white/20'
+                : 'bg-white/5 text-zinc-400 border-white/10'
+            }`}
+          >
+            <QrCode className="w-3.5 h-3.5" />
+            <span>QR en A4/PDF: {formData.content.showQrOnPdf !== false ? 'Activo' : 'Oculto'}</span>
+          </button>
+        </div>
+
+        {/* Telemetría rápida del candidato */}
+        {(formData.content.telemetryStats?.pdfDownloads ?? 0) > 0 && (
+          <span className="text-[11px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 rounded-full">
+            {formData.content.telemetryStats?.pdfDownloads} descargas PDF por reclutadores
+          </span>
+        )}
+      </div>
+
+      {copilotNotice && (
+        <div className="mt-3 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-200 text-xs flex items-center justify-between gap-2 animate-fade-in">
+          <span>{copilotNotice}</span>
+          <button
+            type="button"
+            onClick={() => setCopilotNotice(null)}
+            className="text-cyan-300 hover:text-white font-bold px-2 cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Modal de Matching contra Oferta Laboral (Job Match AI + Tailor 1-Click) */}
       <JobMatchModal
         isOpen={isJobMatchModalOpen}
         onClose={() => setIsJobMatchModalOpen(false)}
@@ -966,6 +1118,30 @@ export function SmartCvBuilder({
             handleContentChange('skills', [...formData.content.skills, keyword]);
           }
         }}
+        onApplyTailoredCv={(tailored: TailoredCvResult) => {
+          setFormData((prev) => ({
+            ...prev,
+            targetRole: tailored.tailoredRole || prev.targetRole,
+            content: {
+              ...prev.content,
+              summary: tailored.tailoredSummary,
+              skills: tailored.tailoredSkills,
+              experience: tailored.tailoredExperience,
+            },
+          }));
+          setCopilotNotice(
+            `CV adaptado a la oferta: ${tailored.highlightsApplied[0] || 'Resumen y habilidades optimizados.'}`
+          );
+        }}
+      />
+
+      {/* Modal de Pitch & Carta de Postulación Multicanal */}
+      <ApplicationPitchModal
+        isOpen={isPitchModalOpen}
+        onClose={() => setIsPitchModalOpen(false)}
+        cvContent={formData.content}
+        targetRole={formData.targetRole}
+        cvSlug={formData.slug}
       />
 
       {/* Lienzo Principal con Filosofía Minimalista */}

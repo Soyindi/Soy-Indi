@@ -33,10 +33,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Payload de telemetría inválido' }, { status: 400 });
     }
 
-    const { slug, entityType } = parsed.data;
+    const { slug, entityType, eventType = 'view' } = parsed.data;
 
     if (slug === 'demo') {
       return NextResponse.json({ success: true, ignored: 'demo_slug' });
+    }
+
+    // Si es descarga de PDF de un CV, registrar directamente en content.telemetryStats
+    if (entityType === 'cv' && eventType === 'pdf_download') {
+      const cvRecord = await db.query.smartCvs.findFirst({
+        where: eq(smartCvs.slug, slug),
+        columns: { id: true, content: true },
+      });
+
+      if (!cvRecord) {
+        return NextResponse.json({ success: false, error: 'Smart CV no encontrado' }, { status: 404 });
+      }
+
+      const currentContent = (cvRecord.content || {}) as Record<string, any>;
+      const prevStats = currentContent.telemetryStats || { pdfDownloads: 0 };
+      const updatedContent = {
+        ...currentContent,
+        telemetryStats: {
+          ...prevStats,
+          pdfDownloads: (Number(prevStats.pdfDownloads) || 0) + 1,
+          lastDownloadedAt: Date.now(),
+        },
+      };
+
+      await db
+        .update(smartCvs)
+        .set({ content: updatedContent })
+        .where(eq(smartCvs.id, cvRecord.id));
+
+      return NextResponse.json({ success: true, eventType: 'pdf_download' });
     }
 
     const redis = getUpstashRedis();

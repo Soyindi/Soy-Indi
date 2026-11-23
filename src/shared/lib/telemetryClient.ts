@@ -8,7 +8,8 @@ import { TelemetryViewPayload } from '@/entities/telemetry/schemas';
 export function trackResourceView(payload: TelemetryViewPayload): void {
   if (typeof window === 'undefined') return;
 
-  const storageKey = `indi_view_${payload.entityType}_${payload.slug}`;
+  const eventSuffix = payload.eventType ? `_${payload.eventType}` : '';
+  const storageKey = `indi_view_${payload.entityType}_${payload.slug}${eventSuffix}`;
   try {
     if (sessionStorage.getItem(storageKey)) {
       // Ya contabilizado en esta sesión de pestaña

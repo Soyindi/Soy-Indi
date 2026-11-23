@@ -50,6 +50,32 @@ export function buildCvPdfDocument(
 
   const fullName = (content.fullName || 'PROFESIONAL').toUpperCase();
   const targetRole = cv.targetRole || 'ROL PROFESIONAL';
+  const isEnglish = content.language === 'en';
+  const labels = isEnglish
+    ? {
+        continuation: '(Continued)',
+        summary: 'Executive Summary',
+        experience: 'Professional Experience',
+        education: 'Education & Certifications',
+        skills: 'Core Competencies & Skills',
+        references: 'Professional References',
+        signed: 'Digitally signed',
+        footerLabel: 'INDI Smart CV • Enterprise ATS Standard',
+        pageOf: (i: number, total: number) => `Page ${i} of ${total}`,
+        qrVerifyPrefix: 'Verified Interactive CV:',
+      }
+    : {
+        continuation: '(Continuación)',
+        summary: 'Resumen Profesional',
+        experience: 'Experiencia Laboral',
+        education: 'Educación, Registros & Formación Continua',
+        skills: 'Habilidades y Competencias',
+        references: 'Referencias Laborales',
+        signed: 'Firmado digitalmente',
+        footerLabel: 'INDI Smart CV • Estándar ATS Grado Empresarial',
+        pageOf: (i: number, total: number) => `Página ${i} de ${total}`,
+        qrVerifyPrefix: 'Perfil Digital Verificado:',
+      };
 
   // Helper para verificar saltos de página con encabezado de continuación corporativo
   const checkPageBreak = (neededHeight: number) => {
@@ -59,7 +85,7 @@ export function buildCvPdfDocument(
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8.5);
       doc.setTextColor(100, 116, 139); // Slate 500
-      doc.text(`${fullName}  •  ${targetRole}  (Continuación)`, marginX, 15);
+      doc.text(`${fullName}  •  ${targetRole}  ${labels.continuation}`, marginX, 15);
 
       doc.setDrawColor(226, 232, 240); // Slate 200
       doc.setLineWidth(0.2);
@@ -126,7 +152,7 @@ export function buildCvPdfDocument(
 
   // --- 1. RESUMEN PROFESIONAL (JUSTIFICADO EMPRESARIAL) ---
   if (content.summary && content.summary.trim().length > 0) {
-    drawSectionHeader('Resumen Profesional');
+    drawSectionHeader(labels.summary);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
     doc.setTextColor(...pdfTokens.bodyColor);
@@ -142,7 +168,7 @@ export function buildCvPdfDocument(
 
   // --- 2. EXPERIENCIA LABORAL ---
   if (content.experience && content.experience.length > 0) {
-    drawSectionHeader('Experiencia Laboral');
+    drawSectionHeader(labels.experience);
 
     for (const exp of content.experience) {
       checkPageBreak(18);
@@ -397,24 +423,28 @@ export function buildCvPdfDocument(
       doc.setFont('helvetica', 'italic');
       doc.setFontSize(7);
       doc.setTextColor(148, 163, 184);
-      doc.text(`Firmado digitalmente: ${content.signatureDate}`, signatureBlockX + 32.5, cursorY, { align: 'center' });
+      doc.text(`${labels.signed}: ${content.signatureDate}`, signatureBlockX + 32.5, cursorY, { align: 'center' });
     }
   }
 
-  // --- 6. METADATOS DE SEGURIDAD Y ATS (PIE DE PÁGINA) ---
+  // --- 6. METADATOS DE SEGURIDAD, VERIFICACIÓN EN VIVO Y ATS (PIE DE PÁGINA) ---
   const totalPages = doc.getNumberOfPages();
+  const liveProfileLink = cv.slug ? `https://soyindi.cl/cv/${cv.slug}` : null;
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(148, 163, 184); // Slate 400
+    const footerText =
+      content.showQrOnPdf !== false && liveProfileLink
+        ? `${labels.qrVerifyPrefix} ${liveProfileLink}`
+        : `${labels.footerLabel} • ${format === 'a4' ? 'A4' : 'Letter'}`;
+    doc.text(footerText, marginX, pageHeight - 8);
+    if (content.showQrOnPdf !== false && liveProfileLink) {
+      doc.link(marginX, pageHeight - 11, 110, 5, { url: liveProfileLink });
+    }
     doc.text(
-      `INDI Smart CV • Estándar ATS Grado Empresarial • Formato Unificado: ${format === 'a4' ? 'A4 Internacional' : 'Carta (US)'}`,
-      marginX,
-      pageHeight - 8
-    );
-    doc.text(
-      `Página ${i} de ${totalPages}`,
+      labels.pageOf(i, totalPages),
       marginX + contentWidth,
       pageHeight - 8,
       { align: 'right' }

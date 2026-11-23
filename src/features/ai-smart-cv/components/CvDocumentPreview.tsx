@@ -4,6 +4,7 @@ import React from 'react';
 import { CVFormValues } from '@/entities/cv/schemas';
 import { getCvDesignTemplate } from '@/entities/cv/templates';
 import { Mail, Phone, MapPin, Globe, ShieldCheck, Link2 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { sanitizeBulletText } from '@/features/ai-smart-cv/lib/pdf-engine';
 import { calculateCvPageDistribution, cleanBulletText } from '@/features/ai-smart-cv/lib/cv-layout';
 
@@ -15,6 +16,22 @@ interface CvDocumentPreviewProps {
 
 export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocumentPreviewProps) {
   const { content } = cv;
+  const isEnglish = content.language === 'en';
+  const sectionLabels = isEnglish
+    ? {
+        skills: 'Core Competencies & Skills',
+        education: 'Education & Certifications',
+        educationCont: 'Education & Certifications (Continued)',
+        references: 'Professional References',
+        verifiedProfile: 'Verified Digital Profile • Scan Live CV',
+      }
+    : {
+        skills: 'Habilidades y Competencias',
+        education: 'Educación, Registros & Formación Continua',
+        educationCont: 'Educación & Formación (Continuación)',
+        references: 'Referencias Laborales',
+        verifiedProfile: 'Perfil Digital Verificado • Escanear CV en vivo',
+      };
   const template = getCvDesignTemplate(cv.templateId);
   const { webTokens } = template;
 
@@ -42,7 +59,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
     return (
       <div className="mb-5">
         <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-2.5`}>
-          Habilidades y Competencias
+          {sectionLabels.skills}
         </h2>
         <div className="flex flex-wrap gap-1.5">
           {content.skills.map((skill, sIdx) => (
@@ -106,7 +123,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
     return (
       <div className="mb-5">
         <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-2.5`}>
-          {isContinuation ? 'Educación & Formación (Continuación)' : 'Educación, Registros & Formación Continua'}
+          {isContinuation ? sectionLabels.educationCont : sectionLabels.education}
         </h2>
         {useCompactTwoColumnGrid ? (
           <div className="space-y-2">
@@ -132,7 +149,7 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
     return (
       <div className="mb-5">
         <h2 className={`text-xs font-bold uppercase tracking-wider text-zinc-900 border-b ${webTokens.sectionHeaderBorder} pb-1.5 mb-2.5`}>
-          Referencias Laborales
+          {sectionLabels.references}
         </h2>
         <div className={`grid grid-cols-1 ${isThreeColumn ? 'sm:grid-cols-3 gap-2.5' : 'sm:grid-cols-2 gap-3'}`}>
           {content.references.map((ref, rIdx) => (
@@ -161,14 +178,29 @@ export function CvDocumentPreview({ cv, pageFormat = 'a4', scale = 1 }: CvDocume
   };
 
   const renderSignatureArea = () => (
-    <div className="flex items-end justify-between pb-3 mb-3 border-b border-zinc-100">
-      <div className="text-[11px] text-zinc-500 space-y-0.5">
-        <p className="font-semibold text-zinc-800">
-          {content.fullName} • Perfil Profesional Verificado
-        </p>
-        <p className="text-[10px] text-zinc-400">
-          Ecosistema de Identidad Profesional INDI • Estándar ATS 2026
-        </p>
+    <div className="flex items-end justify-between pb-3 mb-3 border-b border-zinc-100 gap-4">
+      <div className="flex items-center gap-3 text-[11px] text-zinc-500">
+        {content.showQrOnPdf !== false && cv.slug && (
+          <div className="p-1.5 bg-white border border-zinc-200 rounded-lg shadow-xs shrink-0">
+            <QRCodeSVG
+              value={`https://soyindi.cl/cv/${cv.slug}`}
+              size={48}
+              level="M"
+              fgColor="#0f172a"
+              bgColor="#ffffff"
+            />
+          </div>
+        )}
+        <div className="space-y-0.5">
+          <p className="font-semibold text-zinc-800">
+            {content.fullName} • {isEnglish ? 'Verified Professional Profile' : 'Perfil Profesional Verificado'}
+          </p>
+          <p className="text-[10px] text-zinc-400">
+            {content.showQrOnPdf !== false && cv.slug
+              ? `${sectionLabels.verifiedProfile} · soyindi.cl/cv/${cv.slug}`
+              : 'Ecosistema de Identidad Profesional INDI • Estándar ATS 2026'}
+          </p>
+        </div>
       </div>
 
       {content.signatureUrl ? (

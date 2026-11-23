@@ -95,6 +95,16 @@ export const cvContentSchema = z.object({
   // Controles de Privacidad Pública (Ley N° 21.719)
   showRutOnPublic: z.boolean().default(false).optional(),
   showReferenceContactsOnPublic: z.boolean().default(false).optional(),
+  // Smart CV 2.0: Idioma Bilingüe ATS, Sello QR en PDF y Telemetría Granular
+  language: z.enum(['es', 'en']).default('es').optional(),
+  showQrOnPdf: z.boolean().default(true).optional(),
+  telemetryStats: z
+    .object({
+      pdfDownloads: z.number().int().min(0).default(0),
+      lastViewedAt: z.number().optional(),
+      lastDownloadedAt: z.number().optional(),
+    })
+    .optional(),
 });
 
 export type CVContent = z.infer<typeof cvContentSchema>;
@@ -360,5 +370,80 @@ export function sanitizeCvForPublicView(cvData: CVFormValues): CVFormValues {
     content,
   };
 }
+
+// ============================================================================
+// SMART CV 2.0: CONTRATOS ZOD PARA TAILOR TO JOB, PITCH MULTICANAL & BILINGÜE
+// ============================================================================
+
+export const tailorCvToJobSchema = z.object({
+  jobDescriptionText: z
+    .string()
+    .min(10, 'La descripción de la oferta debe tener al menos 10 caracteres')
+    .max(15000, 'Texto demasiado largo'),
+  targetRole: z.string().optional(),
+  cvContent: cvContentSchema,
+  userId: z.string().optional(),
+});
+
+export type TailorCvToJobInput = z.infer<typeof tailorCvToJobSchema>;
+
+export interface TailoredCvResult {
+  tailoredRole: string;
+  tailoredSummary: string;
+  addedSkills: string[];
+  tailoredSkills: string[];
+  tailoredExperience: CVContent['experience'];
+  highlightsApplied: string[];
+}
+
+export const generateApplicationPitchSchema = z.object({
+  cvContent: cvContentSchema,
+  targetRole: z.string().min(2, 'Rol objetivo requerido').max(160),
+  cvSlug: z.string().max(100).optional(),
+  companyName: z.string().max(120).optional(),
+  hiringManagerName: z.string().max(120).optional(),
+  jobDescriptionText: z.string().max(10000).optional(),
+  language: z.enum(['es', 'en']).default('es').optional(),
+  userId: z.string().optional(),
+});
+
+export type GenerateApplicationPitchInput = z.infer<typeof generateApplicationPitchSchema>;
+
+export interface ApplicationPitchResult {
+  linkedinDm: string;
+  whatsappPitch: string;
+  formalEmail: {
+    subject: string;
+    body: string;
+  };
+  canonicalCvUrl: string;
+}
+
+export const translateCvSchema = z.object({
+  cvContent: cvContentSchema,
+  targetRole: z.string().min(1, 'Rol objetivo requerido').max(160),
+  targetLanguage: z.enum(['es', 'en']),
+  userId: z.string().optional(),
+});
+
+export type TranslateCvInput = z.infer<typeof translateCvSchema>;
+
+export interface TranslatedCvResult {
+  language: 'es' | 'en';
+  targetRole: string;
+  summary: string;
+  skills: string[];
+  experience: CVContent['experience'];
+  education: CVContent['education'];
+}
+
+export const syncCvWithCardSchema = z.object({
+  direction: z.enum(['CARD_TO_CV', 'CV_TO_CARD']),
+  cvData: cvFormSchema.optional(),
+  userId: z.string().optional(),
+});
+
+export type SyncCvWithCardInput = z.infer<typeof syncCvWithCardSchema>;
+
 
 

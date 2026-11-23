@@ -772,9 +772,16 @@ export function UnifiedDashboardView({
                             <span className="truncate">Plantilla: {cv.templateId}</span>
                           </div>
                           {typeof cv.viewsCount === 'number' && (
-                            <div className="flex items-center gap-1.5 text-zinc-300 text-[11px] shrink-0">
-                              <Eye className="w-3.5 h-3.5 text-teal-400" />
-                              <span>{cv.viewsCount} {cv.viewsCount === 1 ? 'visita' : 'visitas'}</span>
+                            <div className="flex items-center gap-2.5 text-zinc-300 text-[11px] shrink-0">
+                              <span className="inline-flex items-center gap-1">
+                                <Eye className="w-3.5 h-3.5 text-teal-400" />
+                                <span>{cv.viewsCount} {cv.viewsCount === 1 ? 'visita' : 'visitas'}</span>
+                              </span>
+                              {(((cv as any).content)?.telemetryStats?.pdfDownloads ?? 0) > 0 && (
+                                <span className="inline-flex items-center gap-1 text-emerald-300">
+                                  <span>• {((cv as any).content).telemetryStats.pdfDownloads} PDF</span>
+                                </span>
+                              )}
                             </div>
                           )}
                         </div>

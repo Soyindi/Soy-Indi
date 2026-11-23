@@ -1397,3 +1397,496 @@ export async function getSkillRecommendationsAction(targetRole: string, currentS
   }
 }
 
+/**
+ * Server Action Smart CV 2.0: Tailor to Job en 1 Clic (Reescritura ATS Anti-Alucinación)
+ */
+export async function tailorCvToJobAction(input: any): Promise<{
+  success: boolean;
+  data?: import('@/entities/cv/schemas').TailoredCvResult;
+  error?: string;
+}> {
+  try {
+    const { tailorCvToJobSchema } = await import('@/entities/cv/schemas');
+    const parsed = tailorCvToJobSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message || 'Parámetros inválidos para adaptar el currículum.',
+      };
+    }
+
+    const { jobDescriptionText, targetRole, cvContent, userId } = parsed.data;
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const targetUserId = sessionResult.userId;
+
+    if (targetUserId) {
+      const { assertUserEntitlementAction } = await import('@/features/pricing/actions');
+      const entitlement = await assertUserEntitlementAction(targetUserId, 'cvs');
+      if (!entitlement.allowed) {
+        return {
+          success: false,
+          error: entitlement.error || 'Tu cuenta no tiene acceso activo para optimizar CVs.',
+        };
+      }
+    }
+
+    const { checkAiRateLimit } = await import('@/shared/lib/rateLimiter');
+    const rateLimit = await checkAiRateLimit(targetUserId || 'anonymous-tailor');
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: 'Límite de solicitudes de IA alcanzado. Por favor espera unos momentos.',
+      };
+    }
+
+    const { buildDeterministicTailoredCv } = await import('@/features/ai-smart-cv/lib/cv-career-copilot');
+    const deterministic = buildDeterministicTailoredCv(cvContent, jobDescriptionText, targetRole || '');
+
+    try {
+      const systemPrompt = `Eres un Estratega de Empleabilidad y Especialista ATS (Workday, Buk, Greenhouse).
+REGLA ESTRICTA DE CERO ALUCINACIÓN (EU AI ACT):
+- NUNCA inventes empresas, cargos, títulos, fechas ni porcentajes que no existan en el CV original.
+- Adapta el resumen profesional para alinearlo a la oferta laboral y reordena/refina los logros reales existentes destacando las competencias coincidentes.
+Devuelve EXCLUSIVAMENTE un JSON válido:
+{
+  "tailoredRole": string,
+  "tailoredSummary": string,
+  "addedSkills": string[],
+  "highlightsApplied": string[]
+}`;
+
+      const userPrompt = `OFERTA LABORAL:\n"""${jobDescriptionText.slice(0, 3500)}"""\n\nCV ACTUAL:\nRol: ${targetRole || ''}\nResumen: ${cvContent.summary}\nSkills: ${cvContent.skills.join(', ')}\nExperiencia: ${cvContent.experience.map((e) => `${e.role} @ ${e.company} (${e.period}): ${e.bullets.join(' | ')}`).join('\n').slice(0, 2800)}`;
+
+      const aiRes = await callNvidiaNimChat(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        {
+          model: 'meta/llama-3.3-70b-instruct',
+          temperature: 0.25,
+          maxTokens: 750,
+          responseFormat: { type: 'json_object' },
+        }
+      );
+
+      if (aiRes.success && aiRes.content) {
+        const cleaned = aiRes.content.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const parsedAi = JSON.parse(cleaned);
+        const aiAddedSkills = Array.isArray(parsedAi.addedSkills)
+          ? parsedAi.addedSkills.filter((s: unknown): s is string => typeof s === 'string' && s.trim().length > 1).slice(0, 6)
+          : deterministic.addedSkills;
+
+        const existingLower = new Set(cvContent.skills.map((s) => s.toLowerCase()));
+        const uniqueAdded = aiAddedSkills.filter((s: string) => !existingLower.has(s.toLowerCase()));
+
+        return {
+          success: true,
+          data: {
+            tailoredRole: typeof parsedAi.tailoredRole === 'string' && parsedAi.tailoredRole.trim() ? parsedAi.tailoredRole.trim() : deterministic.tailoredRole,
+            tailoredSummary: typeof parsedAi.tailoredSummary === 'string' && parsedAi.tailoredSummary.trim().length >= 30 ? parsedAi.tailoredSummary.trim() : deterministic.tailoredSummary,
+            addedSkills: uniqueAdded.length > 0 ? uniqueAdded : deterministic.addedSkills,
+            tailoredSkills: [...cvContent.skills, ...(uniqueAdded.length > 0 ? uniqueAdded : deterministic.addedSkills)],
+            tailoredExperience: deterministic.tailoredExperience,
+            highlightsApplied: Array.isArray(parsedAi.highlightsApplied) && parsedAi.highlightsApplied.length > 0 ? parsedAi.highlightsApplied : deterministic.highlightsApplied,
+          },
+        };
+      }
+    } catch (aiErr) {
+      console.warn('[Tailor CV AI] Fallback a motor determinista:', aiErr);
+    }
+
+    return {
+      success: true,
+      data: deterministic,
+    };
+  } catch (err: any) {
+    console.error('Error en tailorCvToJobAction:', err);
+    return {
+      success: false,
+      error: err.message || 'No se pudo adaptar el currículum a la oferta.',
+    };
+  }
+}
+
+/**
+ * Server Action Smart CV 2.0: Generador de Pitch & Carta de Postulación Multicanal
+ * (LinkedIn DM, WhatsApp Ejecutivo y Correo Formal / Cover Letter)
+ */
+export async function generateApplicationPitchAction(input: any): Promise<{
+  success: boolean;
+  data?: import('@/entities/cv/schemas').ApplicationPitchResult;
+  error?: string;
+}> {
+  try {
+    const { generateApplicationPitchSchema } = await import('@/entities/cv/schemas');
+    const parsed = generateApplicationPitchSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message || 'Parámetros inválidos para generar el pitch.',
+      };
+    }
+
+    const { cvContent, targetRole, cvSlug, companyName, hiringManagerName, jobDescriptionText, language, userId } = parsed.data;
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const targetUserId = sessionResult.userId;
+
+    const { checkAiRateLimit } = await import('@/shared/lib/rateLimiter');
+    const rateLimit = await checkAiRateLimit(targetUserId || 'anonymous-pitch');
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: 'Límite de solicitudes de IA alcanzado. Aguarda un minuto.',
+      };
+    }
+
+    const { buildDeterministicApplicationPitches } = await import('@/features/ai-smart-cv/lib/cv-career-copilot');
+    const deterministic = buildDeterministicApplicationPitches({
+      cvContent,
+      targetRole,
+      cvSlug,
+      companyName,
+      hiringManagerName,
+      language,
+    });
+
+    try {
+      const langLabel = (language || cvContent.language || 'es') === 'en' ? 'English (US Executive)' : 'Español profesional (Chile / LatAm)';
+      const systemPrompt = `Eres un Coach de Carrera Ejecutivo. Genera 3 mensajes de postulación de alta conversión en ${langLabel}.
+Incluye siempre el enlace canónico exacto: ${deterministic.canonicalCvUrl}.
+NO inventes experiencia ni cifras. Devuelve EXCLUSIVAMENTE JSON:
+{
+  "linkedinDm": string (máx 450 caracteres),
+  "whatsappPitch": string (máx 450 caracteres),
+  "formalEmail": { "subject": string, "body": string }
+}`;
+
+      const userPrompt = `Candidato: ${cvContent.fullName}
+Cargo objetivo: ${targetRole}
+Empresa destino: ${companyName || 'No especificada'}
+Reclutador: ${hiringManagerName || 'Equipo de Selección'}
+Resumen: ${cvContent.summary}
+Skills: ${cvContent.skills.slice(0, 8).join(', ')}
+Oferta (opcional): ${(jobDescriptionText || '').slice(0, 1500)}`;
+
+      const aiRes = await callNvidiaNimChat(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        {
+          model: 'meta/llama-3.3-70b-instruct',
+          temperature: 0.35,
+          maxTokens: 800,
+          responseFormat: { type: 'json_object' },
+        }
+      );
+
+      if (aiRes.success && aiRes.content) {
+        const cleaned = aiRes.content.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const parsedAi = JSON.parse(cleaned);
+        return {
+          success: true,
+          data: {
+            linkedinDm: parsedAi.linkedinDm || deterministic.linkedinDm,
+            whatsappPitch: parsedAi.whatsappPitch || deterministic.whatsappPitch,
+            formalEmail: {
+              subject: parsedAi.formalEmail?.subject || deterministic.formalEmail.subject,
+              body: parsedAi.formalEmail?.body || deterministic.formalEmail.body,
+            },
+            canonicalCvUrl: deterministic.canonicalCvUrl,
+          },
+        };
+      }
+    } catch (aiErr) {
+      console.warn('[Application Pitch AI] Fallback determinista:', aiErr);
+    }
+
+    return {
+      success: true,
+      data: deterministic,
+    };
+  } catch (err: any) {
+    console.error('Error en generateApplicationPitchAction:', err);
+    return {
+      success: false,
+      error: err.message || 'No se pudo generar el mensaje de postulación.',
+    };
+  }
+}
+
+/**
+ * Server Action Smart CV 2.0: Switch Bilingüe Instantáneo (Español ⇄ English ATS)
+ */
+export async function translateSmartCvAction(input: any): Promise<{
+  success: boolean;
+  data?: import('@/entities/cv/schemas').TranslatedCvResult;
+  error?: string;
+}> {
+  try {
+    const { translateCvSchema } = await import('@/entities/cv/schemas');
+    const parsed = translateCvSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message || 'Parámetros inválidos para traducir el CV.',
+      };
+    }
+
+    const { cvContent, targetRole, targetLanguage, userId } = parsed.data;
+    const sessionResult = await getSafeAuthenticatedUserId(userId);
+    const targetUserId = sessionResult.userId;
+
+    const { checkAiRateLimit } = await import('@/shared/lib/rateLimiter');
+    const rateLimit = await checkAiRateLimit(targetUserId || 'anonymous-translate');
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: 'Límite de solicitudes alcanzado. Aguarda un momento.',
+      };
+    }
+
+    const { translateCvDeterministically } = await import('@/features/ai-smart-cv/lib/cv-career-copilot');
+    const deterministic = translateCvDeterministically(cvContent, targetRole, targetLanguage);
+
+    try {
+      const targetLangName = targetLanguage === 'en' ? 'Executive US English (Harvard/ATS action verbs: Spearheaded, Engineered, Scaled)' : 'Español Ejecutivo Profesional (Chile / LatAm)';
+      const systemPrompt = `Traduce el siguiente currículum profesional a ${targetLangName}.
+REGLAS ESTRICTAS:
+- Preserva exactamente nombres propios, empresas, fechas, cifras y porcentajes.
+- Mantén el mismo número de elementos en experience y education.
+Devuelve EXCLUSIVAMENTE JSON válido:
+{
+  "targetRole": string,
+  "summary": string,
+  "skills": string[],
+  "experience": [{ "company": string, "role": string, "period": string, "bullets": string[] }],
+  "education": [{ "degree": string, "institution": string, "year": string }]
+}`;
+
+      const payloadToTranslate = {
+        targetRole,
+        summary: cvContent.summary,
+        skills: cvContent.skills,
+        experience: cvContent.experience.map((e) => ({
+          company: e.company,
+          role: e.role,
+          period: e.period,
+          bullets: e.bullets,
+        })),
+        education: cvContent.education.map((ed) => ({
+          degree: ed.degree,
+          institution: ed.institution,
+          year: ed.year,
+        })),
+      };
+
+      const aiRes = await callNvidiaNimChat(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: JSON.stringify(payloadToTranslate).slice(0, 6000) },
+        ],
+        {
+          model: 'meta/llama-3.3-70b-instruct',
+          temperature: 0.2,
+          maxTokens: 1600,
+          responseFormat: { type: 'json_object' },
+        }
+      );
+
+      if (aiRes.success && aiRes.content) {
+        const cleaned = aiRes.content.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const parsedAi = JSON.parse(cleaned);
+
+        const mergedExp = cvContent.experience.map((orig, idx) => {
+          const tExp = Array.isArray(parsedAi.experience) ? parsedAi.experience[idx] : null;
+          const bullets = Array.isArray(tExp?.bullets) && tExp.bullets.length > 0 ? tExp.bullets : deterministic.experience[idx]?.bullets || orig.bullets;
+          return {
+            ...orig,
+            role: tExp?.role || deterministic.experience[idx]?.role || orig.role,
+            period: tExp?.period || deterministic.experience[idx]?.period || orig.period,
+            bullets,
+            detailedBullets: bullets.map((text: string) => ({
+              text,
+              needs_metric: !hasQuantitativeMetric(text),
+            })),
+          };
+        });
+
+        const mergedEdu = cvContent.education.map((orig, idx) => {
+          const tEdu = Array.isArray(parsedAi.education) ? parsedAi.education[idx] : null;
+          return {
+            ...orig,
+            degree: tEdu?.degree || deterministic.education[idx]?.degree || orig.degree,
+            year: tEdu?.year || deterministic.education[idx]?.year || orig.year,
+          };
+        });
+
+        return {
+          success: true,
+          data: {
+            language: targetLanguage,
+            targetRole: parsedAi.targetRole || deterministic.targetRole,
+            summary: parsedAi.summary || deterministic.summary,
+            skills: Array.isArray(parsedAi.skills) && parsedAi.skills.length > 0 ? parsedAi.skills : deterministic.skills,
+            experience: mergedExp,
+            education: mergedEdu,
+          },
+        };
+      }
+    } catch (aiErr) {
+      console.warn('[Translate CV AI] Fallback determinista:', aiErr);
+    }
+
+    return {
+      success: true,
+      data: deterministic,
+    };
+  } catch (err: any) {
+    console.error('Error en translateSmartCvAction:', err);
+    return {
+      success: false,
+      error: err.message || 'No se pudo traducir el currículum.',
+    };
+  }
+}
+
+/**
+ * Server Action Smart CV 2.0: Sincronización Bidireccional 1-Click Tarjeta Digital ⇄ Smart CV
+ */
+export async function syncCvWithDigitalCardAction(input: any): Promise<{
+  success: boolean;
+  direction?: 'CARD_TO_CV' | 'CV_TO_CARD';
+  targetRole?: string;
+  contentPatch?: Partial<import('@/entities/cv/schemas').CVContent>;
+  cardSlug?: string;
+  cardId?: string;
+  error?: string;
+}> {
+  try {
+    const { syncCvWithCardSchema } = await import('@/entities/cv/schemas');
+    const parsed = syncCvWithCardSchema.safeParse(input);
+    if (!parsed.success) {
+      return { success: false, error: 'Parámetros inválidos para sincronizar con Tarjeta Digital.' };
+    }
+
+    const sessionResult = await getSafeAuthenticatedUserId(parsed.data.userId);
+    if (!sessionResult.userId) {
+      return { success: false, error: 'Debes iniciar sesión para sincronizar tu Tarjeta Digital.' };
+    }
+    const targetUserId = sessionResult.userId;
+
+    const { cards } = await import('@/entities/schema');
+    const { mapCardToCvPatch, mapCvToCardDraft } = await import('@/features/ai-smart-cv/lib/cv-career-copilot');
+
+    if (parsed.data.direction === 'CARD_TO_CV') {
+      const latestCard = await db.query.cards.findFirst({
+        where: eq(cards.userId, targetUserId),
+        orderBy: [desc(cards.updatedAt)],
+      });
+
+      if (!latestCard) {
+        return {
+          success: false,
+          error: 'Aún no tienes una Tarjeta Digital creada. Puedes crearla automáticamente desde tu CV.',
+        };
+      }
+
+      const mapped = mapCardToCvPatch(latestCard);
+      return {
+        success: true,
+        direction: 'CARD_TO_CV',
+        targetRole: mapped.targetRole,
+        contentPatch: mapped.contentPatch,
+        cardSlug: latestCard.slug,
+        cardId: latestCard.id,
+      };
+    }
+
+    // Dirección: CV_TO_CARD
+    if (!parsed.data.cvData) {
+      return { success: false, error: 'Se requieren los datos del CV para generar la Tarjeta Digital.' };
+    }
+
+    const existingCard = await db.query.cards.findFirst({
+      where: eq(cards.userId, targetUserId),
+      orderBy: [desc(cards.updatedAt)],
+    });
+
+    const draft = mapCvToCardDraft(parsed.data.cvData);
+
+    if (existingCard) {
+      await db
+        .update(cards)
+        .set({
+          title: draft.title,
+          profession: draft.profession,
+          about: draft.about || existingCard.about,
+          phone: draft.phone || existingCard.phone,
+          whatsapp: draft.whatsapp || existingCard.whatsapp,
+          emailContact: draft.emailContact || existingCard.emailContact,
+          websiteUrl: draft.websiteUrl || existingCard.websiteUrl,
+          linkedinUrl: draft.linkedinUrl || existingCard.linkedinUrl,
+          address: draft.address || existingCard.address,
+        })
+        .where(and(eq(cards.id, existingCard.id), eq(cards.userId, targetUserId)));
+
+      revalidatePath(`/c/${existingCard.slug}`);
+      revalidatePath('/dashboard');
+
+      return {
+        success: true,
+        direction: 'CV_TO_CARD',
+        cardSlug: existingCard.slug,
+        cardId: existingCard.id,
+      };
+    }
+
+    // Crear nueva tarjeta si no existe
+    const baseSlug = slugifyCvTitle(draft.title);
+    const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 5)}`;
+    const newId = crypto.randomUUID();
+
+    await db.insert(cards).values({
+      id: newId,
+      userId: targetUserId,
+      slug: uniqueSlug,
+      title: draft.title,
+      profession: draft.profession,
+      about: draft.about,
+      phone: draft.phone || null,
+      whatsapp: draft.whatsapp || null,
+      emailContact: draft.emailContact || null,
+      websiteUrl: draft.websiteUrl || null,
+      linkedinUrl: draft.linkedinUrl || null,
+      address: draft.address || null,
+      themeConfig: {
+        themeId: 'stellar',
+        primaryColorOklch: '#6366f1',
+        backgroundColorOklch: '#090a10',
+        particleBehavior: 'ambient',
+        particleIntensity: 'balanced',
+        fontFamily: 'Inter',
+        enableGlassRefraction: true,
+      },
+      isActive: true,
+    });
+
+    revalidatePath('/dashboard');
+    return {
+      success: true,
+      direction: 'CV_TO_CARD',
+      cardSlug: uniqueSlug,
+      cardId: newId,
+    };
+  } catch (err: any) {
+    console.error('Error en syncCvWithDigitalCardAction:', err);
+    return {
+      success: false,
+      error: err.message || 'No se pudo sincronizar con tu Tarjeta Digital.',
+    };
+  }
+}
+
+

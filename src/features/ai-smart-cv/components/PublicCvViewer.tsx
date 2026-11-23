@@ -64,6 +64,9 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
     try {
       setDownloadingPdf(true);
       await generateAndDownloadCvPdf(cv, { format: 'a4' });
+      if (slug && slug !== 'demo') {
+        trackResourceView({ slug, entityType: 'cv', eventType: 'pdf_download' });
+      }
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 2500);
     } catch (err) {
@@ -144,6 +147,17 @@ export function PublicCvViewer({ cv, slug, atsScore = 90 }: PublicCvViewerProps)
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
               <span>A4 Ejecutivo (ISO 216)</span>
             </div>
+
+            {/* Enlace Cruzado a Tarjeta Digital si está vinculada */}
+            {content.indiCardSlug && (
+              <Link
+                href={`/c/${content.indiCardSlug}`}
+                className="hidden sm:inline-flex min-h-[44px] items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-200 border border-indigo-500/30 text-xs font-semibold transition-all active:scale-95"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Tarjeta Digital</span>
+              </Link>
+            )}
 
             {/* CTA Viral: Crear tu CV gratis */}
             <Link
