@@ -289,7 +289,7 @@ export default async function HomePage() {
               <div className="flex items-center gap-1.5">
                 <span className="text-amber-400" aria-hidden="true">★★★★★</span>
                 <span className="font-semibold text-zinc-200">4.9/5</span>
-                <span className="text-zinc-400">· +3.200 profesionales en Chile</span>
+                <span className="text-zinc-400">· +300 profesionales en Chile</span>
               </div>
             </div>
           </div>
